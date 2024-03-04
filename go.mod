@@ -2,7 +2,10 @@ module github.com/noona-hq/noona-sdk-go
 
 go 1.20
 
-require github.com/deepmap/oapi-codegen v1.16.2
+require (
+	github.com/deepmap/oapi-codegen v1.16.2
+	github.com/pkg/errors v0.8.1
+)
 
 require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
