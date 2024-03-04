@@ -29,12 +29,7 @@ const (
 )
 
 func main() {
-	authHeader := noona.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-		req.Header.Add(noonaAuthHeader, noonaToken)
-		return nil
-	})
-
-	c, err := noona.NewClientWithResponses(noonaAPIBasePath, authHeader)
+	c, err := noona.New(noonaToken)
 	if err != nil {
 		panic(errors.Wrap(err, "failed to create client"))
 	}
@@ -53,5 +48,6 @@ func main() {
 	// Do something with user
 	fmt.Println(*user.Email)
 }
+
 
 ```
