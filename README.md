@@ -23,8 +23,6 @@ import (
 )
 
 const (
-	noonaAPIBasePath = "https://api.noona.is"
-	noonaAuthHeader  = "HQ-ACCESS-KEY"
 	noonaToken       = "<your-noona-token>"
 )
 
