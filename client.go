@@ -401,6 +401,11 @@ const (
 	Survey NotificationSurveyType = "survey"
 )
 
+// Defines values for NotificationWaitlistEntryType.
+const (
+	NotificationWaitlistEntryTypeWaitlistEntry NotificationWaitlistEntryType = "waitlistEntry"
+)
+
 // Defines values for OAuthConsentResponseType.
 const (
 	Code OAuthConsentResponseType = "code"
@@ -426,6 +431,8 @@ const (
 	EventsRead            OAuthScope = "events:read"
 	EventsWrite           OAuthScope = "events:write"
 	IssuersRead           OAuthScope = "issuers:read"
+	MemosRead             OAuthScope = "memos:read"
+	MemosWrite            OAuthScope = "memos:write"
 	MetricsRead           OAuthScope = "metrics:read"
 	NotificationsRead     OAuthScope = "notifications:read"
 	NotificationsWrite    OAuthScope = "notifications:write"
@@ -452,6 +459,8 @@ const (
 	VoucherTemplatesWrite OAuthScope = "voucher_templates:write"
 	VouchersRead          OAuthScope = "vouchers:read"
 	VouchersWrite         OAuthScope = "vouchers:write"
+	WaitlistsRead         OAuthScope = "waitlists:read"
+	WaitlistsWrite        OAuthScope = "waitlists:write"
 )
 
 // Defines values for OAuthTokenRequestGrantType.
@@ -1252,6 +1261,11 @@ type CompanyMarketplace struct {
 	//
 	// `visible: false - enabled: true/false` means that the company is not visible at all. The *enabled* flag is ignored in this case.
 	Visible *bool `json:"visible,omitempty"`
+
+	// Indicates if the company should be able to receive waitlist entries from the marketplace.
+	//
+	// This allows customers to add themselves to the waitlist at company.
+	WaitlistEnabled *bool `json:"waitlist_enabled,omitempty"`
 }
 
 // CompanyProfile defines model for CompanyProfile.
@@ -1745,6 +1759,11 @@ type Event struct {
 	//
 	// This is useful for detecting if an event has been updated since it was last fetched.
 	Version *int32 `json:"version,omitempty"`
+
+	// The ID of the waitlist entry that this event is associated with.
+	//
+	// Waitlist entries are automatically deleted when the event is created.
+	WaitlistEntry *string `json:"waitlist_entry,omitempty"`
 }
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -1919,6 +1938,11 @@ type EventCheckinResult struct {
 	//
 	// This is useful for detecting if an event has been updated since it was last fetched.
 	Version *int32 `json:"version,omitempty"`
+
+	// The ID of the waitlist entry that this event is associated with.
+	//
+	// Waitlist entries are automatically deleted when the event is created.
+	WaitlistEntry *string `json:"waitlist_entry,omitempty"`
 }
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -2173,15 +2197,15 @@ type EventTypeFields []EventTypeField
 // EventTypeGroup defines model for EventTypeGroup.
 type EventTypeGroup struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company    *ExpandableCompany           `json:"company,omitempty"`
-	EventTypes *OrderedExpandableEventTypes `json:"event_types,omitempty"`
-	Id         *string                      `json:"id,omitempty"`
+	Company *ExpandableCompany `json:"company,omitempty"`
+	Id      *string            `json:"id,omitempty"`
 
 	// Whether this is the default group for event types that do not have a group.
 	IsDefaultGroup *bool `json:"is_default_group,omitempty"`
 
 	// Used to control order in list hierarchy.
-	Order *int32 `json:"order,omitempty"`
+	Order             *int32                       `json:"order,omitempty"`
+	OrderedEventTypes *OrderedExpandableEventTypes `json:"ordered_event_types,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	ParentEventTypeGroup *ExpandableEventTypeGroup `json:"parent_event_type_group,omitempty"`
@@ -2673,6 +2697,115 @@ type MarketplaceUser struct {
 // MarketplaceUsers defines model for MarketplaceUsers.
 type MarketplaceUsers []MarketplaceUser
 
+// Memo defines model for Memo.
+type Memo struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	Content   *string            `json:"content,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Date      *string            `json:"date,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee  *ExpandableEmployee `json:"employee,omitempty"`
+	Id        *string             `json:"id,omitempty"`
+	Title     *string             `json:"title,omitempty"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
+}
+
+// MemoCreate defines model for MemoCreate.
+type MemoCreate struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	Content   *string           `json:"content,omitempty"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Date      *string           `json:"date,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee  *ExpandableEmployee `json:"employee,omitempty"`
+	Id        *string             `json:"id,omitempty"`
+	Title     string              `json:"title"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
+}
+
+// MemoCreateOverrides defines model for MemoCreateOverrides.
+type MemoCreateOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company ExpandableCompany `json:"company"`
+	Content *string           `json:"content,omitempty"`
+	Date    *string           `json:"date,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee *ExpandableEmployee `json:"employee,omitempty"`
+	Title    string              `json:"title"`
+}
+
+// Filtering options for Memos
+type MemoFilter struct {
+	// Filter by employees
+	Employees *[]string `json:"employees,omitempty"`
+}
+
+// MemoResponse defines model for MemoResponse.
+type MemoResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	Content   *string           `json:"content,omitempty"`
+	CreatedAt time.Time         `json:"created_at"`
+	Date      *string           `json:"date,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee  *ExpandableEmployee `json:"employee,omitempty"`
+	Id        string              `json:"id"`
+	Title     string              `json:"title"`
+	UpdatedAt time.Time           `json:"updated_at"`
+}
+
+// MemoResponseOverrides defines model for MemoResponseOverrides.
+type MemoResponseOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	Content   *string           `json:"content,omitempty"`
+	CreatedAt time.Time         `json:"created_at"`
+	Date      *string           `json:"date,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee  *ExpandableEmployee `json:"employee,omitempty"`
+	Id        string              `json:"id"`
+	Title     string              `json:"title"`
+	UpdatedAt time.Time           `json:"updated_at"`
+}
+
+// MemoUpdate defines model for MemoUpdate.
+type MemoUpdate struct {
+	Company   *interface{} `json:"company,omitempty"`
+	Content   *string      `json:"content,omitempty"`
+	CreatedAt *time.Time   `json:"created_at,omitempty"`
+	Date      *string      `json:"date,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee  *ExpandableEmployee `json:"employee,omitempty"`
+	Id        *string             `json:"id,omitempty"`
+	Title     *string             `json:"title,omitempty"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
+}
+
+// MemoUpdateOverrides defines model for MemoUpdateOverrides.
+type MemoUpdateOverrides struct {
+	Company *interface{} `json:"company,omitempty"`
+	Content *string      `json:"content,omitempty"`
+	Date    *string      `json:"date,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee *ExpandableEmployee `json:"employee,omitempty"`
+	Title    *string             `json:"title,omitempty"`
+}
+
+// Memos defines model for Memos.
+type Memos []Memo
+
+// MemosResponse defines model for MemosResponse.
+type MemosResponse []MemoResponse
+
 // Notice defines model for Notice.
 type Notice struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
@@ -2701,6 +2834,14 @@ type Notices []Notice
 // Notification defines model for Notification.
 type Notification struct {
 	union json.RawMessage
+}
+
+// NotificationCreate defines model for NotificationCreate.
+type NotificationCreate struct {
+	Company  string `json:"company"`
+	Employee string `json:"employee"`
+	Message  string `json:"message"`
+	Title    string `json:"title"`
 }
 
 // NotificationEvent defines model for NotificationEvent.
@@ -2834,6 +2975,29 @@ type NotificationSurvey struct {
 
 // NotificationSurveyType defines model for NotificationSurvey.Type.
 type NotificationSurveyType string
+
+// NotificationWaitlistEntry defines model for NotificationWaitlistEntry.
+type NotificationWaitlistEntry struct {
+	Company      *string    `json:"company,omitempty"`
+	CreatedAt    *time.Time `json:"created_at,omitempty"`
+	Customer     *string    `json:"customer,omitempty"`
+	CustomerName *string    `json:"customer_name,omitempty"`
+	Employee     *string    `json:"employee,omitempty"`
+	EmployeeName *string    `json:"employee_name,omitempty"`
+
+	// The names of the event types
+	EventTypeNames *[]string `json:"event_type_names,omitempty"`
+
+	// The time when the waitlist entry expires
+	ExpiresAt     *time.Time                    `json:"expires_at,omitempty"`
+	Id            *string                       `json:"id,omitempty"`
+	Type          NotificationWaitlistEntryType `json:"type"`
+	UpdatedAt     *time.Time                    `json:"updated_at,omitempty"`
+	WaitlistEntry *string                       `json:"waitlist_entry,omitempty"`
+}
+
+// NotificationWaitlistEntryType defines model for NotificationWaitlistEntry.Type.
+type NotificationWaitlistEntryType string
 
 // Notifications defines model for Notifications.
 type Notifications []Notification
@@ -4195,6 +4359,139 @@ type VoucherTemplatesResponse []VoucherTemplateResponse
 // Vouchers defines model for Vouchers.
 type Vouchers []Voucher
 
+// WaitlistEntries defines model for WaitlistEntries.
+type WaitlistEntries []WaitlistEntry
+
+// WaitlistEntriesResponse defines model for WaitlistEntriesResponse.
+type WaitlistEntriesResponse []WaitlistEntryResponse
+
+// WaitlistEntry defines model for WaitlistEntry.
+type WaitlistEntry struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Customer *ExpandableCustomer `json:"customer,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee   *ExpandableEmployee    `json:"employee,omitempty"`
+	EventTypes *[]ExpandableEventType `json:"event_types,omitempty"`
+	ExpiresAt  *time.Time             `json:"expires_at,omitempty"`
+	Id         *string                `json:"id,omitempty"`
+	Notes      *string                `json:"notes,omitempty"`
+	UpdatedAt  *time.Time             `json:"updated_at,omitempty"`
+}
+
+// WaitlistEntryCreate defines model for WaitlistEntryCreate.
+type WaitlistEntryCreate struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Customer ExpandableCustomer `json:"customer"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee   *ExpandableEmployee   `json:"employee,omitempty"`
+	EventTypes []ExpandableEventType `json:"event_types"`
+	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
+	Id         *string               `json:"id,omitempty"`
+	Notes      *string               `json:"notes,omitempty"`
+	UpdatedAt  *time.Time            `json:"updated_at,omitempty"`
+}
+
+// WaitlistEntryCreateOverrides defines model for WaitlistEntryCreateOverrides.
+type WaitlistEntryCreateOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company ExpandableCompany `json:"company"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Customer ExpandableCustomer `json:"customer"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee   *ExpandableEmployee   `json:"employee,omitempty"`
+	EventTypes []ExpandableEventType `json:"event_types"`
+	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
+	Notes      *string               `json:"notes,omitempty"`
+}
+
+// WaitlistEntryResponse defines model for WaitlistEntryResponse.
+type WaitlistEntryResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt time.Time         `json:"created_at"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Customer ExpandableCustomer `json:"customer"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee   *ExpandableEmployee   `json:"employee,omitempty"`
+	EventTypes []ExpandableEventType `json:"event_types"`
+	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
+	Id         string                `json:"id"`
+	Notes      *string               `json:"notes,omitempty"`
+	UpdatedAt  time.Time             `json:"updated_at"`
+}
+
+// WaitlistEntryResponseOverrides defines model for WaitlistEntryResponseOverrides.
+type WaitlistEntryResponseOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt time.Time         `json:"created_at"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Customer ExpandableCustomer `json:"customer"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee   *ExpandableEmployee   `json:"employee,omitempty"`
+	EventTypes []ExpandableEventType `json:"event_types"`
+	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
+	Id         string                `json:"id"`
+	Notes      *string               `json:"notes,omitempty"`
+	UpdatedAt  time.Time             `json:"updated_at"`
+}
+
+// WaitlistEntryUpdate defines model for WaitlistEntryUpdate.
+type WaitlistEntryUpdate struct {
+	Company   *interface{} `json:"company,omitempty"`
+	CreatedAt *time.Time   `json:"created_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Customer *ExpandableCustomer `json:"customer,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee   *ExpandableEmployee    `json:"employee,omitempty"`
+	EventTypes *[]ExpandableEventType `json:"event_types,omitempty"`
+	ExpiresAt  *time.Time             `json:"expires_at,omitempty"`
+	Id         *string                `json:"id,omitempty"`
+	Notes      *string                `json:"notes,omitempty"`
+	UpdatedAt  *time.Time             `json:"updated_at,omitempty"`
+}
+
+// WaitlistEntryUpdateOverrides defines model for WaitlistEntryUpdateOverrides.
+type WaitlistEntryUpdateOverrides struct {
+	Company *interface{} `json:"company,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Customer *ExpandableCustomer `json:"customer,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee   *ExpandableEmployee    `json:"employee,omitempty"`
+	EventTypes *[]ExpandableEventType `json:"event_types,omitempty"`
+	ExpiresAt  *time.Time             `json:"expires_at,omitempty"`
+	Notes      *string                `json:"notes,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type WaitlistFilter struct {
+	// Filter by employee IDs
+	Employees *[]string `json:"employees,omitempty"`
+
+	// Filter by maximum duration in minutes
+	MaxDuration *int32 `json:"max_duration,omitempty"`
+}
+
 // Webhook defines model for Webhook.
 type Webhook struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -4611,6 +4908,22 @@ type ListIssuersParams struct {
 	Filter *IssuersFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
+// ListMemosParams defines parameters for ListMemos.
+type ListMemosParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand     `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *MemoFilter `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
 // GetSalesMetricsParams defines parameters for GetSalesMetrics.
 type GetSalesMetricsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -4875,6 +5188,22 @@ type ListVouchersParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand        `form:"expand,omitempty" json:"expand,omitempty"`
 	Filter *VoucherFilter `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// ListWaitlistEntriesParams defines parameters for ListWaitlistEntries.
+type ListWaitlistEntriesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand         `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *WaitlistFilter `form:"filter,omitempty" json:"filter,omitempty"`
 
 	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
 	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
@@ -5510,6 +5839,51 @@ type UpdateLineItemParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
+
+// CreateMemoJSONBody defines parameters for CreateMemo.
+type CreateMemoJSONBody MemoCreate
+
+// CreateMemoParams defines parameters for CreateMemo.
+type CreateMemoParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteMemoParams defines parameters for DeleteMemo.
+type DeleteMemoParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetMemoParams defines parameters for GetMemo.
+type GetMemoParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateMemoJSONBody defines parameters for UpdateMemo.
+type UpdateMemoJSONBody MemoUpdate
+
+// UpdateMemoParams defines parameters for UpdateMemo.
+type UpdateMemoParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// CreateNotificationJSONBody defines parameters for CreateNotification.
+type CreateNotificationJSONBody NotificationCreate
 
 // DeleteNotificationParams defines parameters for DeleteNotification.
 type DeleteNotificationParams struct {
@@ -6417,6 +6791,48 @@ type CreateVoucherNotificationParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 }
 
+// CreateWaitlistEntryJSONBody defines parameters for CreateWaitlistEntry.
+type CreateWaitlistEntryJSONBody WaitlistEntryCreate
+
+// CreateWaitlistEntryParams defines parameters for CreateWaitlistEntry.
+type CreateWaitlistEntryParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteWaitlistEntryParams defines parameters for DeleteWaitlistEntry.
+type DeleteWaitlistEntryParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetWaitlistEntryParams defines parameters for GetWaitlistEntry.
+type GetWaitlistEntryParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateWaitlistEntryJSONBody defines parameters for UpdateWaitlistEntry.
+type UpdateWaitlistEntryJSONBody WaitlistEntryUpdate
+
+// UpdateWaitlistEntryParams defines parameters for UpdateWaitlistEntry.
+type UpdateWaitlistEntryParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // GetWebhookInvocationParams defines parameters for GetWebhookInvocation.
 type GetWebhookInvocationParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -6573,6 +6989,15 @@ type CreateLineItemJSONRequestBody CreateLineItemJSONBody
 // UpdateLineItemJSONRequestBody defines body for UpdateLineItem for application/json ContentType.
 type UpdateLineItemJSONRequestBody UpdateLineItemJSONBody
 
+// CreateMemoJSONRequestBody defines body for CreateMemo for application/json ContentType.
+type CreateMemoJSONRequestBody CreateMemoJSONBody
+
+// UpdateMemoJSONRequestBody defines body for UpdateMemo for application/json ContentType.
+type UpdateMemoJSONRequestBody UpdateMemoJSONBody
+
+// CreateNotificationJSONRequestBody defines body for CreateNotification for application/json ContentType.
+type CreateNotificationJSONRequestBody CreateNotificationJSONBody
+
 // CreateOAuthApplicationJSONRequestBody defines body for CreateOAuthApplication for application/json ContentType.
 type CreateOAuthApplicationJSONRequestBody CreateOAuthApplicationJSONBody
 
@@ -6659,6 +7084,12 @@ type UpdateVoucherJSONRequestBody UpdateVoucherJSONBody
 
 // CreateVoucherNotificationJSONRequestBody defines body for CreateVoucherNotification for application/json ContentType.
 type CreateVoucherNotificationJSONRequestBody CreateVoucherNotificationJSONBody
+
+// CreateWaitlistEntryJSONRequestBody defines body for CreateWaitlistEntry for application/json ContentType.
+type CreateWaitlistEntryJSONRequestBody CreateWaitlistEntryJSONBody
+
+// UpdateWaitlistEntryJSONRequestBody defines body for UpdateWaitlistEntry for application/json ContentType.
+type UpdateWaitlistEntryJSONRequestBody UpdateWaitlistEntryJSONBody
 
 // UpdateWebhookInvocationJSONRequestBody defines body for UpdateWebhookInvocation for application/json ContentType.
 type UpdateWebhookInvocationJSONRequestBody UpdateWebhookInvocationJSONBody
@@ -8029,6 +8460,18 @@ func (t *Notification) FromNotificationEvent(v NotificationEvent) error {
 	return err
 }
 
+func (t Notification) AsNotificationWaitlistEntry() (NotificationWaitlistEntry, error) {
+	var body NotificationWaitlistEntry
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Notification) FromNotificationWaitlistEntry(v NotificationWaitlistEntry) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
 func (t Notification) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -8404,6 +8847,9 @@ type ClientInterface interface {
 	// ListIssuers request
 	ListIssuers(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListMemos request
+	ListMemos(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetSalesMetrics request
 	GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -8470,6 +8916,9 @@ type ClientInterface interface {
 
 	// ListVouchers request
 	ListVouchers(ctx context.Context, companyId string, params *ListVouchersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListWaitlistEntries request
+	ListWaitlistEntries(ctx context.Context, companyId string, params *ListWaitlistEntriesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListWebhookInvocations request
 	ListWebhookInvocations(ctx context.Context, companyId string, params *ListWebhookInvocationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -8696,6 +9145,27 @@ type ClientInterface interface {
 	UpdateLineItemWithBody(ctx context.Context, lineItemId string, params *UpdateLineItemParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateLineItem(ctx context.Context, lineItemId string, params *UpdateLineItemParams, body UpdateLineItemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateMemo request with any body
+	CreateMemoWithBody(ctx context.Context, params *CreateMemoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateMemo(ctx context.Context, params *CreateMemoParams, body CreateMemoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteMemo request
+	DeleteMemo(ctx context.Context, memoId string, params *DeleteMemoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetMemo request
+	GetMemo(ctx context.Context, memoId string, params *GetMemoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateMemo request with any body
+	UpdateMemoWithBody(ctx context.Context, memoId string, params *UpdateMemoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateMemo(ctx context.Context, memoId string, params *UpdateMemoParams, body UpdateMemoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateNotification request with any body
+	CreateNotificationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateNotification(ctx context.Context, body CreateNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteNotification request
 	DeleteNotification(ctx context.Context, notificationId string, params *DeleteNotificationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -9045,6 +9515,22 @@ type ClientInterface interface {
 	CreateVoucherNotificationWithBody(ctx context.Context, voucherId string, params *CreateVoucherNotificationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateVoucherNotification(ctx context.Context, voucherId string, params *CreateVoucherNotificationParams, body CreateVoucherNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWaitlistEntry request with any body
+	CreateWaitlistEntryWithBody(ctx context.Context, params *CreateWaitlistEntryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWaitlistEntry(ctx context.Context, params *CreateWaitlistEntryParams, body CreateWaitlistEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteWaitlistEntry request
+	DeleteWaitlistEntry(ctx context.Context, waitlistEntryId string, params *DeleteWaitlistEntryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWaitlistEntry request
+	GetWaitlistEntry(ctx context.Context, waitlistEntryId string, params *GetWaitlistEntryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateWaitlistEntry request with any body
+	UpdateWaitlistEntryWithBody(ctx context.Context, waitlistEntryId string, params *UpdateWaitlistEntryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateWaitlistEntry(ctx context.Context, waitlistEntryId string, params *UpdateWaitlistEntryParams, body UpdateWaitlistEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetWebhookInvocation request
 	GetWebhookInvocation(ctx context.Context, webhookInvocationId string, params *GetWebhookInvocationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -9422,6 +9908,18 @@ func (c *Client) ListIssuers(ctx context.Context, companyId string, params *List
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListMemos(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListMemosRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSalesMetricsRequest(c.Server, companyId, params)
 	if err != nil {
@@ -9688,6 +10186,18 @@ func (c *Client) ListVoucherTemplates(ctx context.Context, companyId string, par
 
 func (c *Client) ListVouchers(ctx context.Context, companyId string, params *ListVouchersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListVouchersRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListWaitlistEntries(ctx context.Context, companyId string, params *ListWaitlistEntriesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWaitlistEntriesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -10684,6 +11194,102 @@ func (c *Client) UpdateLineItemWithBody(ctx context.Context, lineItemId string, 
 
 func (c *Client) UpdateLineItem(ctx context.Context, lineItemId string, params *UpdateLineItemParams, body UpdateLineItemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateLineItemRequest(c.Server, lineItemId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateMemoWithBody(ctx context.Context, params *CreateMemoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateMemoRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateMemo(ctx context.Context, params *CreateMemoParams, body CreateMemoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateMemoRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteMemo(ctx context.Context, memoId string, params *DeleteMemoParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteMemoRequest(c.Server, memoId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetMemo(ctx context.Context, memoId string, params *GetMemoParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetMemoRequest(c.Server, memoId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateMemoWithBody(ctx context.Context, memoId string, params *UpdateMemoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateMemoRequestWithBody(c.Server, memoId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateMemo(ctx context.Context, memoId string, params *UpdateMemoParams, body UpdateMemoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateMemoRequest(c.Server, memoId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateNotificationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateNotificationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateNotification(ctx context.Context, body CreateNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateNotificationRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -12196,6 +12802,78 @@ func (c *Client) CreateVoucherNotificationWithBody(ctx context.Context, voucherI
 
 func (c *Client) CreateVoucherNotification(ctx context.Context, voucherId string, params *CreateVoucherNotificationParams, body CreateVoucherNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateVoucherNotificationRequest(c.Server, voucherId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWaitlistEntryWithBody(ctx context.Context, params *CreateWaitlistEntryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWaitlistEntryRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWaitlistEntry(ctx context.Context, params *CreateWaitlistEntryParams, body CreateWaitlistEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWaitlistEntryRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteWaitlistEntry(ctx context.Context, waitlistEntryId string, params *DeleteWaitlistEntryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWaitlistEntryRequest(c.Server, waitlistEntryId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetWaitlistEntry(ctx context.Context, waitlistEntryId string, params *GetWaitlistEntryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWaitlistEntryRequest(c.Server, waitlistEntryId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateWaitlistEntryWithBody(ctx context.Context, waitlistEntryId string, params *UpdateWaitlistEntryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWaitlistEntryRequestWithBody(c.Server, waitlistEntryId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateWaitlistEntry(ctx context.Context, waitlistEntryId string, params *UpdateWaitlistEntryParams, body UpdateWaitlistEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWaitlistEntryRequest(c.Server, waitlistEntryId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -14615,6 +15293,106 @@ func NewListIssuersRequest(server string, companyId string, params *ListIssuersP
 	return req, nil
 }
 
+// NewListMemosRequest generates requests for ListMemos
+func NewListMemosRequest(server string, companyId string, params *ListMemosParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/memos", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetSalesMetricsRequest generates requests for GetSalesMetrics
 func NewGetSalesMetricsRequest(server string, companyId string, params *GetSalesMetricsParams) (*http.Request, error) {
 	var err error
@@ -16418,6 +17196,106 @@ func NewListVouchersRequest(server string, companyId string, params *ListVoucher
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/vouchers", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListWaitlistEntriesRequest generates requests for ListWaitlistEntries
+func NewListWaitlistEntriesRequest(server string, companyId string, params *ListWaitlistEntriesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/waitlist_entries", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -21006,6 +21884,345 @@ func NewUpdateLineItemRequestWithBody(server string, lineItemId string, params *
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateMemoRequest calls the generic CreateMemo builder with application/json body
+func NewCreateMemoRequest(server string, params *CreateMemoParams, body CreateMemoJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateMemoRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateMemoRequestWithBody generates requests for CreateMemo with any type of body
+func NewCreateMemoRequestWithBody(server string, params *CreateMemoParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/memos")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteMemoRequest generates requests for DeleteMemo
+func NewDeleteMemoRequest(server string, memoId string, params *DeleteMemoParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "memo_id", runtime.ParamLocationPath, memoId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/memos/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetMemoRequest generates requests for GetMemo
+func NewGetMemoRequest(server string, memoId string, params *GetMemoParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "memo_id", runtime.ParamLocationPath, memoId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/memos/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateMemoRequest calls the generic UpdateMemo builder with application/json body
+func NewUpdateMemoRequest(server string, memoId string, params *UpdateMemoParams, body UpdateMemoJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateMemoRequestWithBody(server, memoId, params, "application/json", bodyReader)
+}
+
+// NewUpdateMemoRequestWithBody generates requests for UpdateMemo with any type of body
+func NewUpdateMemoRequestWithBody(server string, memoId string, params *UpdateMemoParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "memo_id", runtime.ParamLocationPath, memoId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/memos/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateNotificationRequest calls the generic CreateNotification builder with application/json body
+func NewCreateNotificationRequest(server string, body CreateNotificationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateNotificationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateNotificationRequestWithBody generates requests for CreateNotification with any type of body
+func NewCreateNotificationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/notifications")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
@@ -27790,6 +29007,305 @@ func NewCreateVoucherNotificationRequestWithBody(server string, voucherId string
 	return req, nil
 }
 
+// NewCreateWaitlistEntryRequest calls the generic CreateWaitlistEntry builder with application/json body
+func NewCreateWaitlistEntryRequest(server string, params *CreateWaitlistEntryParams, body CreateWaitlistEntryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWaitlistEntryRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateWaitlistEntryRequestWithBody generates requests for CreateWaitlistEntry with any type of body
+func NewCreateWaitlistEntryRequestWithBody(server string, params *CreateWaitlistEntryParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/waitlist_entries")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteWaitlistEntryRequest generates requests for DeleteWaitlistEntry
+func NewDeleteWaitlistEntryRequest(server string, waitlistEntryId string, params *DeleteWaitlistEntryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "waitlist_entry_id", runtime.ParamLocationPath, waitlistEntryId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/waitlist_entries/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetWaitlistEntryRequest generates requests for GetWaitlistEntry
+func NewGetWaitlistEntryRequest(server string, waitlistEntryId string, params *GetWaitlistEntryParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "waitlist_entry_id", runtime.ParamLocationPath, waitlistEntryId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/waitlist_entries/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateWaitlistEntryRequest calls the generic UpdateWaitlistEntry builder with application/json body
+func NewUpdateWaitlistEntryRequest(server string, waitlistEntryId string, params *UpdateWaitlistEntryParams, body UpdateWaitlistEntryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateWaitlistEntryRequestWithBody(server, waitlistEntryId, params, "application/json", bodyReader)
+}
+
+// NewUpdateWaitlistEntryRequestWithBody generates requests for UpdateWaitlistEntry with any type of body
+func NewUpdateWaitlistEntryRequestWithBody(server string, waitlistEntryId string, params *UpdateWaitlistEntryParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "waitlist_entry_id", runtime.ParamLocationPath, waitlistEntryId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/waitlist_entries/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetWebhookInvocationRequest generates requests for GetWebhookInvocation
 func NewGetWebhookInvocationRequest(server string, webhookInvocationId string, params *GetWebhookInvocationParams) (*http.Request, error) {
 	var err error
@@ -28432,6 +29948,9 @@ type ClientWithResponsesInterface interface {
 	// ListIssuers request
 	ListIssuersWithResponse(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*ListIssuersResponse, error)
 
+	// ListMemos request
+	ListMemosWithResponse(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*ListMemosResponse, error)
+
 	// GetSalesMetrics request
 	GetSalesMetricsWithResponse(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*GetSalesMetricsResponse, error)
 
@@ -28498,6 +30017,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListVouchers request
 	ListVouchersWithResponse(ctx context.Context, companyId string, params *ListVouchersParams, reqEditors ...RequestEditorFn) (*ListVouchersResponse, error)
+
+	// ListWaitlistEntries request
+	ListWaitlistEntriesWithResponse(ctx context.Context, companyId string, params *ListWaitlistEntriesParams, reqEditors ...RequestEditorFn) (*ListWaitlistEntriesResponse, error)
 
 	// ListWebhookInvocations request
 	ListWebhookInvocationsWithResponse(ctx context.Context, companyId string, params *ListWebhookInvocationsParams, reqEditors ...RequestEditorFn) (*ListWebhookInvocationsResponse, error)
@@ -28724,6 +30246,27 @@ type ClientWithResponsesInterface interface {
 	UpdateLineItemWithBodyWithResponse(ctx context.Context, lineItemId string, params *UpdateLineItemParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateLineItemResponse, error)
 
 	UpdateLineItemWithResponse(ctx context.Context, lineItemId string, params *UpdateLineItemParams, body UpdateLineItemJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateLineItemResponse, error)
+
+	// CreateMemo request with any body
+	CreateMemoWithBodyWithResponse(ctx context.Context, params *CreateMemoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMemoResponse, error)
+
+	CreateMemoWithResponse(ctx context.Context, params *CreateMemoParams, body CreateMemoJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMemoResponse, error)
+
+	// DeleteMemo request
+	DeleteMemoWithResponse(ctx context.Context, memoId string, params *DeleteMemoParams, reqEditors ...RequestEditorFn) (*DeleteMemoResponse, error)
+
+	// GetMemo request
+	GetMemoWithResponse(ctx context.Context, memoId string, params *GetMemoParams, reqEditors ...RequestEditorFn) (*GetMemoResponse, error)
+
+	// UpdateMemo request with any body
+	UpdateMemoWithBodyWithResponse(ctx context.Context, memoId string, params *UpdateMemoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMemoResponse, error)
+
+	UpdateMemoWithResponse(ctx context.Context, memoId string, params *UpdateMemoParams, body UpdateMemoJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateMemoResponse, error)
+
+	// CreateNotification request with any body
+	CreateNotificationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateNotificationResponse, error)
+
+	CreateNotificationWithResponse(ctx context.Context, body CreateNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateNotificationResponse, error)
 
 	// DeleteNotification request
 	DeleteNotificationWithResponse(ctx context.Context, notificationId string, params *DeleteNotificationParams, reqEditors ...RequestEditorFn) (*DeleteNotificationResponse, error)
@@ -29073,6 +30616,22 @@ type ClientWithResponsesInterface interface {
 	CreateVoucherNotificationWithBodyWithResponse(ctx context.Context, voucherId string, params *CreateVoucherNotificationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVoucherNotificationResponse, error)
 
 	CreateVoucherNotificationWithResponse(ctx context.Context, voucherId string, params *CreateVoucherNotificationParams, body CreateVoucherNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVoucherNotificationResponse, error)
+
+	// CreateWaitlistEntry request with any body
+	CreateWaitlistEntryWithBodyWithResponse(ctx context.Context, params *CreateWaitlistEntryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWaitlistEntryResponse, error)
+
+	CreateWaitlistEntryWithResponse(ctx context.Context, params *CreateWaitlistEntryParams, body CreateWaitlistEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWaitlistEntryResponse, error)
+
+	// DeleteWaitlistEntry request
+	DeleteWaitlistEntryWithResponse(ctx context.Context, waitlistEntryId string, params *DeleteWaitlistEntryParams, reqEditors ...RequestEditorFn) (*DeleteWaitlistEntryResponse, error)
+
+	// GetWaitlistEntry request
+	GetWaitlistEntryWithResponse(ctx context.Context, waitlistEntryId string, params *GetWaitlistEntryParams, reqEditors ...RequestEditorFn) (*GetWaitlistEntryResponse, error)
+
+	// UpdateWaitlistEntry request with any body
+	UpdateWaitlistEntryWithBodyWithResponse(ctx context.Context, waitlistEntryId string, params *UpdateWaitlistEntryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWaitlistEntryResponse, error)
+
+	UpdateWaitlistEntryWithResponse(ctx context.Context, waitlistEntryId string, params *UpdateWaitlistEntryParams, body UpdateWaitlistEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWaitlistEntryResponse, error)
 
 	// GetWebhookInvocation request
 	GetWebhookInvocationWithResponse(ctx context.Context, webhookInvocationId string, params *GetWebhookInvocationParams, reqEditors ...RequestEditorFn) (*GetWebhookInvocationResponse, error)
@@ -29672,6 +31231,28 @@ func (r ListIssuersResponse) StatusCode() int {
 	return 0
 }
 
+type ListMemosResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MemosResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListMemosResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListMemosResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetSalesMetricsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -30128,6 +31709,28 @@ func (r ListVouchersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListVouchersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListWaitlistEntriesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WaitlistEntriesResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWaitlistEntriesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWaitlistEntriesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -31439,6 +33042,114 @@ func (r UpdateLineItemResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateLineItemResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateMemoResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MemoResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateMemoResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateMemoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteMemoResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteMemoResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteMemoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetMemoResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MemoResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetMemoResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetMemoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateMemoResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MemoResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateMemoResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateMemoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateNotificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateNotificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateNotificationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -33547,6 +35258,93 @@ func (r CreateVoucherNotificationResponse) StatusCode() int {
 	return 0
 }
 
+type CreateWaitlistEntryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WaitlistEntryResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWaitlistEntryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWaitlistEntryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteWaitlistEntryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteWaitlistEntryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteWaitlistEntryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetWaitlistEntryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WaitlistEntryResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWaitlistEntryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWaitlistEntryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateWaitlistEntryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WaitlistEntryResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateWaitlistEntryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateWaitlistEntryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetWebhookInvocationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -33958,6 +35756,15 @@ func (c *ClientWithResponses) ListIssuersWithResponse(ctx context.Context, compa
 	return ParseListIssuersResponse(rsp)
 }
 
+// ListMemosWithResponse request returning *ListMemosResponse
+func (c *ClientWithResponses) ListMemosWithResponse(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*ListMemosResponse, error) {
+	rsp, err := c.ListMemos(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListMemosResponse(rsp)
+}
+
 // GetSalesMetricsWithResponse request returning *GetSalesMetricsResponse
 func (c *ClientWithResponses) GetSalesMetricsWithResponse(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*GetSalesMetricsResponse, error) {
 	rsp, err := c.GetSalesMetrics(ctx, companyId, params, reqEditors...)
@@ -34161,6 +35968,15 @@ func (c *ClientWithResponses) ListVouchersWithResponse(ctx context.Context, comp
 		return nil, err
 	}
 	return ParseListVouchersResponse(rsp)
+}
+
+// ListWaitlistEntriesWithResponse request returning *ListWaitlistEntriesResponse
+func (c *ClientWithResponses) ListWaitlistEntriesWithResponse(ctx context.Context, companyId string, params *ListWaitlistEntriesParams, reqEditors ...RequestEditorFn) (*ListWaitlistEntriesResponse, error) {
+	rsp, err := c.ListWaitlistEntries(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListWaitlistEntriesResponse(rsp)
 }
 
 // ListWebhookInvocationsWithResponse request returning *ListWebhookInvocationsResponse
@@ -34885,6 +36701,75 @@ func (c *ClientWithResponses) UpdateLineItemWithResponse(ctx context.Context, li
 		return nil, err
 	}
 	return ParseUpdateLineItemResponse(rsp)
+}
+
+// CreateMemoWithBodyWithResponse request with arbitrary body returning *CreateMemoResponse
+func (c *ClientWithResponses) CreateMemoWithBodyWithResponse(ctx context.Context, params *CreateMemoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMemoResponse, error) {
+	rsp, err := c.CreateMemoWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateMemoResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateMemoWithResponse(ctx context.Context, params *CreateMemoParams, body CreateMemoJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMemoResponse, error) {
+	rsp, err := c.CreateMemo(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateMemoResponse(rsp)
+}
+
+// DeleteMemoWithResponse request returning *DeleteMemoResponse
+func (c *ClientWithResponses) DeleteMemoWithResponse(ctx context.Context, memoId string, params *DeleteMemoParams, reqEditors ...RequestEditorFn) (*DeleteMemoResponse, error) {
+	rsp, err := c.DeleteMemo(ctx, memoId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteMemoResponse(rsp)
+}
+
+// GetMemoWithResponse request returning *GetMemoResponse
+func (c *ClientWithResponses) GetMemoWithResponse(ctx context.Context, memoId string, params *GetMemoParams, reqEditors ...RequestEditorFn) (*GetMemoResponse, error) {
+	rsp, err := c.GetMemo(ctx, memoId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetMemoResponse(rsp)
+}
+
+// UpdateMemoWithBodyWithResponse request with arbitrary body returning *UpdateMemoResponse
+func (c *ClientWithResponses) UpdateMemoWithBodyWithResponse(ctx context.Context, memoId string, params *UpdateMemoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMemoResponse, error) {
+	rsp, err := c.UpdateMemoWithBody(ctx, memoId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateMemoResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateMemoWithResponse(ctx context.Context, memoId string, params *UpdateMemoParams, body UpdateMemoJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateMemoResponse, error) {
+	rsp, err := c.UpdateMemo(ctx, memoId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateMemoResponse(rsp)
+}
+
+// CreateNotificationWithBodyWithResponse request with arbitrary body returning *CreateNotificationResponse
+func (c *ClientWithResponses) CreateNotificationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateNotificationResponse, error) {
+	rsp, err := c.CreateNotificationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateNotificationResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateNotificationWithResponse(ctx context.Context, body CreateNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateNotificationResponse, error) {
+	rsp, err := c.CreateNotification(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateNotificationResponse(rsp)
 }
 
 // DeleteNotificationWithResponse request returning *DeleteNotificationResponse
@@ -35992,6 +37877,58 @@ func (c *ClientWithResponses) CreateVoucherNotificationWithResponse(ctx context.
 	return ParseCreateVoucherNotificationResponse(rsp)
 }
 
+// CreateWaitlistEntryWithBodyWithResponse request with arbitrary body returning *CreateWaitlistEntryResponse
+func (c *ClientWithResponses) CreateWaitlistEntryWithBodyWithResponse(ctx context.Context, params *CreateWaitlistEntryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWaitlistEntryResponse, error) {
+	rsp, err := c.CreateWaitlistEntryWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWaitlistEntryResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWaitlistEntryWithResponse(ctx context.Context, params *CreateWaitlistEntryParams, body CreateWaitlistEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWaitlistEntryResponse, error) {
+	rsp, err := c.CreateWaitlistEntry(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWaitlistEntryResponse(rsp)
+}
+
+// DeleteWaitlistEntryWithResponse request returning *DeleteWaitlistEntryResponse
+func (c *ClientWithResponses) DeleteWaitlistEntryWithResponse(ctx context.Context, waitlistEntryId string, params *DeleteWaitlistEntryParams, reqEditors ...RequestEditorFn) (*DeleteWaitlistEntryResponse, error) {
+	rsp, err := c.DeleteWaitlistEntry(ctx, waitlistEntryId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteWaitlistEntryResponse(rsp)
+}
+
+// GetWaitlistEntryWithResponse request returning *GetWaitlistEntryResponse
+func (c *ClientWithResponses) GetWaitlistEntryWithResponse(ctx context.Context, waitlistEntryId string, params *GetWaitlistEntryParams, reqEditors ...RequestEditorFn) (*GetWaitlistEntryResponse, error) {
+	rsp, err := c.GetWaitlistEntry(ctx, waitlistEntryId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetWaitlistEntryResponse(rsp)
+}
+
+// UpdateWaitlistEntryWithBodyWithResponse request with arbitrary body returning *UpdateWaitlistEntryResponse
+func (c *ClientWithResponses) UpdateWaitlistEntryWithBodyWithResponse(ctx context.Context, waitlistEntryId string, params *UpdateWaitlistEntryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWaitlistEntryResponse, error) {
+	rsp, err := c.UpdateWaitlistEntryWithBody(ctx, waitlistEntryId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateWaitlistEntryResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateWaitlistEntryWithResponse(ctx context.Context, waitlistEntryId string, params *UpdateWaitlistEntryParams, body UpdateWaitlistEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWaitlistEntryResponse, error) {
+	rsp, err := c.UpdateWaitlistEntry(ctx, waitlistEntryId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateWaitlistEntryResponse(rsp)
+}
+
 // GetWebhookInvocationWithResponse request returning *GetWebhookInvocationResponse
 func (c *ClientWithResponses) GetWebhookInvocationWithResponse(ctx context.Context, webhookInvocationId string, params *GetWebhookInvocationParams, reqEditors ...RequestEditorFn) (*GetWebhookInvocationResponse, error) {
 	rsp, err := c.GetWebhookInvocation(ctx, webhookInvocationId, params, reqEditors...)
@@ -36735,6 +38672,32 @@ func ParseListIssuersResponse(rsp *http.Response) (*ListIssuersResponse, error) 
 	return response, nil
 }
 
+// ParseListMemosResponse parses an HTTP response from a ListMemosWithResponse call
+func ParseListMemosResponse(rsp *http.Response) (*ListMemosResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListMemosResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MemosResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetSalesMetricsResponse parses an HTTP response from a GetSalesMetricsWithResponse call
 func ParseGetSalesMetricsResponse(rsp *http.Response) (*GetSalesMetricsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -37271,6 +39234,32 @@ func ParseListVouchersResponse(rsp *http.Response) (*ListVouchersResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Vouchers
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListWaitlistEntriesResponse parses an HTTP response from a ListWaitlistEntriesWithResponse call
+func ParseListWaitlistEntriesResponse(rsp *http.Response) (*ListWaitlistEntriesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListWaitlistEntriesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WaitlistEntriesResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -38743,6 +40732,116 @@ func ParseUpdateLineItemResponse(rsp *http.Response) (*UpdateLineItemResponse, e
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseCreateMemoResponse parses an HTTP response from a CreateMemoWithResponse call
+func ParseCreateMemoResponse(rsp *http.Response) (*CreateMemoResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateMemoResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MemoResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteMemoResponse parses an HTTP response from a DeleteMemoWithResponse call
+func ParseDeleteMemoResponse(rsp *http.Response) (*DeleteMemoResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteMemoResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetMemoResponse parses an HTTP response from a GetMemoWithResponse call
+func ParseGetMemoResponse(rsp *http.Response) (*GetMemoResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetMemoResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MemoResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateMemoResponse parses an HTTP response from a UpdateMemoWithResponse call
+func ParseUpdateMemoResponse(rsp *http.Response) (*UpdateMemoResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateMemoResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MemoResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateNotificationResponse parses an HTTP response from a CreateNotificationWithResponse call
+func ParseCreateNotificationResponse(rsp *http.Response) (*CreateNotificationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateNotificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
@@ -40927,6 +43026,100 @@ func ParseCreateVoucherNotificationResponse(rsp *http.Response) (*CreateVoucherN
 	response := &CreateVoucherNotificationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseCreateWaitlistEntryResponse parses an HTTP response from a CreateWaitlistEntryWithResponse call
+func ParseCreateWaitlistEntryResponse(rsp *http.Response) (*CreateWaitlistEntryResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWaitlistEntryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WaitlistEntryResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteWaitlistEntryResponse parses an HTTP response from a DeleteWaitlistEntryWithResponse call
+func ParseDeleteWaitlistEntryResponse(rsp *http.Response) (*DeleteWaitlistEntryResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteWaitlistEntryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetWaitlistEntryResponse parses an HTTP response from a GetWaitlistEntryWithResponse call
+func ParseGetWaitlistEntryResponse(rsp *http.Response) (*GetWaitlistEntryResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWaitlistEntryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WaitlistEntryResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateWaitlistEntryResponse parses an HTTP response from a UpdateWaitlistEntryWithResponse call
+func ParseUpdateWaitlistEntryResponse(rsp *http.Response) (*UpdateWaitlistEntryResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateWaitlistEntryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WaitlistEntryResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
