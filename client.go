@@ -726,6 +726,11 @@ const (
 	Service VoucherFilterType = "service"
 )
 
+// Defines values for WaitlistEntryField.
+const (
+	WaitlistEntryFieldEmployee WaitlistEntryField = "employee"
+)
+
 // Defines values for WebhookEvent.
 const (
 	WebhookEventCustomerCreated    WebhookEvent = "customer.created"
@@ -4416,6 +4421,12 @@ type WaitlistEntryCreateOverrides struct {
 	Notes      *string               `json:"notes,omitempty"`
 }
 
+// WaitlistEntryField defines model for WaitlistEntryField.
+type WaitlistEntryField string
+
+// WaitlistEntryFields defines model for WaitlistEntryFields.
+type WaitlistEntryFields []WaitlistEntryField
+
 // WaitlistEntryResponse defines model for WaitlistEntryResponse.
 type WaitlistEntryResponse struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -6830,7 +6841,8 @@ type UpdateWaitlistEntryParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand              `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *WaitlistEntryFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // GetWebhookInvocationParams defines parameters for GetWebhookInvocation.
@@ -29281,6 +29293,22 @@ func NewUpdateWaitlistEntryRequestWithBody(server string, waitlistEntryId string
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
