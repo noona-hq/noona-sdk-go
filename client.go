@@ -2171,6 +2171,24 @@ type EventTypeActivityField string
 // EventTypeActivityType defines model for EventTypeActivity.Type.
 type EventTypeActivityType string
 
+// EventTypeCategories defines model for EventTypeCategories.
+type EventTypeCategories []EventTypeCategory
+
+// EventTypeCategory defines model for EventTypeCategory.
+type EventTypeCategory struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// EventTypeCategoryGroup defines model for EventTypeCategoryGroup.
+type EventTypeCategoryGroup struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// EventTypeCategoryGroups defines model for EventTypeCategoryGroups.
+type EventTypeCategoryGroups []EventTypeCategoryGroup
+
 // EventTypeConnections defines model for EventTypeConnections.
 type EventTypeConnections struct {
 	// When booking, users are prompted these booking questions and are required to fill in an answer.
@@ -4820,6 +4838,36 @@ type UpdateEmployeeParams struct {
 
 // ListEventStatusesParams defines parameters for ListEventStatuses.
 type ListEventStatusesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// ListEventTypeCategoriesParams defines parameters for ListEventTypeCategories.
+type ListEventTypeCategoriesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// ListEventTypeCategoryGroupsParams defines parameters for ListEventTypeCategoryGroups.
+type ListEventTypeCategoryGroupsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -8841,6 +8889,12 @@ type ClientInterface interface {
 	// ListEventStatuses request
 	ListEventStatuses(ctx context.Context, companyId string, params *ListEventStatusesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListEventTypeCategories request
+	ListEventTypeCategories(ctx context.Context, companyId string, params *ListEventTypeCategoriesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListEventTypeCategoryGroups request
+	ListEventTypeCategoryGroups(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListEventTypeGroups request
 	ListEventTypeGroups(ctx context.Context, companyId string, params *ListEventTypeGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -9838,6 +9892,30 @@ func (c *Client) UpdateEmployee(ctx context.Context, companyId string, employeeI
 
 func (c *Client) ListEventStatuses(ctx context.Context, companyId string, params *ListEventStatusesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListEventStatusesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListEventTypeCategories(ctx context.Context, companyId string, params *ListEventTypeCategoriesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEventTypeCategoriesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListEventTypeCategoryGroups(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEventTypeCategoryGroupsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -14612,6 +14690,186 @@ func NewListEventStatusesRequest(server string, companyId string, params *ListEv
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/event_statuses", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListEventTypeCategoriesRequest generates requests for ListEventTypeCategories
+func NewListEventTypeCategoriesRequest(server string, companyId string, params *ListEventTypeCategoriesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/event_type_categories", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListEventTypeCategoryGroupsRequest generates requests for ListEventTypeCategoryGroups
+func NewListEventTypeCategoryGroupsRequest(server string, companyId string, params *ListEventTypeCategoryGroupsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/event_type_category_groups", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -29958,6 +30216,12 @@ type ClientWithResponsesInterface interface {
 	// ListEventStatuses request
 	ListEventStatusesWithResponse(ctx context.Context, companyId string, params *ListEventStatusesParams, reqEditors ...RequestEditorFn) (*ListEventStatusesResponse, error)
 
+	// ListEventTypeCategories request
+	ListEventTypeCategoriesWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoriesParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoriesResponse, error)
+
+	// ListEventTypeCategoryGroups request
+	ListEventTypeCategoryGroupsWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoryGroupsResponse, error)
+
 	// ListEventTypeGroups request
 	ListEventTypeGroupsWithResponse(ctx context.Context, companyId string, params *ListEventTypeGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeGroupsResponse, error)
 
@@ -31121,6 +31385,50 @@ func (r ListEventStatusesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListEventStatusesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListEventTypeCategoriesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventTypeCategories
+}
+
+// Status returns HTTPResponse.Status
+func (r ListEventTypeCategoriesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListEventTypeCategoriesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListEventTypeCategoryGroupsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventTypeCategoryGroups
+}
+
+// Status returns HTTPResponse.Status
+func (r ListEventTypeCategoryGroupsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListEventTypeCategoryGroupsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -35730,6 +36038,24 @@ func (c *ClientWithResponses) ListEventStatusesWithResponse(ctx context.Context,
 	return ParseListEventStatusesResponse(rsp)
 }
 
+// ListEventTypeCategoriesWithResponse request returning *ListEventTypeCategoriesResponse
+func (c *ClientWithResponses) ListEventTypeCategoriesWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoriesParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoriesResponse, error) {
+	rsp, err := c.ListEventTypeCategories(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListEventTypeCategoriesResponse(rsp)
+}
+
+// ListEventTypeCategoryGroupsWithResponse request returning *ListEventTypeCategoryGroupsResponse
+func (c *ClientWithResponses) ListEventTypeCategoryGroupsWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoryGroupsResponse, error) {
+	rsp, err := c.ListEventTypeCategoryGroups(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListEventTypeCategoryGroupsResponse(rsp)
+}
+
 // ListEventTypeGroupsWithResponse request returning *ListEventTypeGroupsResponse
 func (c *ClientWithResponses) ListEventTypeGroupsWithResponse(ctx context.Context, companyId string, params *ListEventTypeGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeGroupsResponse, error) {
 	rsp, err := c.ListEventTypeGroups(ctx, companyId, params, reqEditors...)
@@ -38534,6 +38860,58 @@ func ParseListEventStatusesResponse(rsp *http.Response) (*ListEventStatusesRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest EventStatuses
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListEventTypeCategoriesResponse parses an HTTP response from a ListEventTypeCategoriesWithResponse call
+func ParseListEventTypeCategoriesResponse(rsp *http.Response) (*ListEventTypeCategoriesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListEventTypeCategoriesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventTypeCategories
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListEventTypeCategoryGroupsResponse parses an HTTP response from a ListEventTypeCategoryGroupsWithResponse call
+func ParseListEventTypeCategoryGroupsResponse(rsp *http.Response) (*ListEventTypeCategoryGroupsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListEventTypeCategoryGroupsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventTypeCategoryGroups
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
