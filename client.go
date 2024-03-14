@@ -2176,8 +2176,9 @@ type EventTypeCategories []EventTypeCategory
 
 // EventTypeCategory defines model for EventTypeCategory.
 type EventTypeCategory struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Group string `json:"group"`
+	Id    string `json:"id"`
+	Name  string `json:"name"`
 }
 
 // EventTypeCategoryGroup defines model for EventTypeCategoryGroup.
