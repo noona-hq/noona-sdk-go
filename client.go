@@ -1507,7 +1507,7 @@ type Employee struct {
 	Name                 *string                       `json:"name,omitempty"`
 	Notifications        *EmployeeNotificationSettings `json:"notifications,omitempty"`
 
-	// The order of the space in the list of spaces on the marketplace.
+	// The order of the employee in the list of employees on the marketplace.
 	Order *int32 `json:"order,omitempty"`
 
 	// Whether the employee is pending owner approval
@@ -3700,6 +3700,9 @@ type SortOrder string
 
 // Space defines model for Space.
 type Space struct {
+	// Whether the space is visible on the calendar
+	AvailableForBookings *bool `json:"available_for_bookings,omitempty"`
+
 	// Booking interval in minutes.
 	//
 	// Dictates how often customers can book events with employee or space.
