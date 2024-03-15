@@ -2104,8 +2104,14 @@ type EventType struct {
 	Description *string `json:"description,omitempty"`
 
 	// Duration of the event type
-	Duration *int32  `json:"duration,omitempty"`
-	Id       *string `json:"id,omitempty"`
+	Duration *int32 `json:"duration,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	EventTypeCategory *ExpandableEventTypeCategory `json:"event_type_category,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	EventTypeCategoryGroup *ExpandableEventTypeCategoryGroup `json:"event_type_category_group,omitempty"`
+	Id                     *string                           `json:"id,omitempty"`
 
 	// The event type's image URL in the original size
 	Image *string `json:"image,omitempty"`
@@ -2365,6 +2371,16 @@ type ExpandableEvent struct {
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableEventType struct {
+	union json.RawMessage
+}
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableEventTypeCategory struct {
+	union json.RawMessage
+}
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableEventTypeCategoryGroup struct {
 	union json.RawMessage
 }
 
@@ -7816,6 +7832,74 @@ func (t ExpandableEventType) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ExpandableEventType) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableEventTypeCategory) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableEventTypeCategory) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableEventTypeCategory) AsEventTypeCategory() (EventTypeCategory, error) {
+	var body EventTypeCategory
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableEventTypeCategory) FromEventTypeCategory(v EventTypeCategory) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableEventTypeCategory) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableEventTypeCategory) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableEventTypeCategoryGroup) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableEventTypeCategoryGroup) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableEventTypeCategoryGroup) AsEventTypeCategoryGroup() (EventTypeCategoryGroup, error) {
+	var body EventTypeCategoryGroup
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableEventTypeCategoryGroup) FromEventTypeCategoryGroup(v EventTypeCategoryGroup) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableEventTypeCategoryGroup) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableEventTypeCategoryGroup) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
