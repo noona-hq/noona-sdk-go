@@ -873,6 +873,11 @@ type App struct {
 	// Whether the app is enabled for the company.
 	Enabled *bool   `json:"enabled,omitempty"`
 	Id      *string `json:"id,omitempty"`
+
+	// The ID token for the app. Only generated for installed apps.
+	//
+	// The token is sent via a query parameter to the redirect_uri when the user opens an already installed app.
+	IdToken *string `json:"id_token,omitempty"`
 	Logo    *string `json:"logo,omitempty"`
 
 	// Shown to the user when they are asked to give consent.
@@ -3058,6 +3063,13 @@ type OAuthConsentResponseType string
 // OAuthConsentResponse defines model for OAuthConsentResponse.
 type OAuthConsentResponse struct {
 	RedirectUri *string `json:"redirect_uri,omitempty"`
+}
+
+// OAuthPublicKey defines model for OAuthPublicKey.
+type OAuthPublicKey struct {
+	Alg   *string `json:"alg,omitempty"`
+	Use   *string `json:"use,omitempty"`
+	Value *string `json:"value,omitempty"`
 }
 
 // OAuthScope defines model for OAuthScope.
@@ -6044,6 +6056,15 @@ type StartOAuthFlowParams struct {
 
 // CreateOAuthConsentJSONBody defines parameters for CreateOAuthConsent.
 type CreateOAuthConsentJSONBody OAuthConsent
+
+// GetOAuthPublicKeyParams defines parameters for GetOAuthPublicKey.
+type GetOAuthPublicKeyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
 
 // GetOAuthTokenJSONBody defines parameters for GetOAuthToken.
 type GetOAuthTokenJSONBody OAuthTokenRequest
@@ -9354,6 +9375,9 @@ type ClientInterface interface {
 
 	CreateOAuthConsent(ctx context.Context, body CreateOAuthConsentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetOAuthPublicKey request
+	GetOAuthPublicKey(ctx context.Context, params *GetOAuthPublicKeyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOAuthScopes request
 	ListOAuthScopes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -11612,6 +11636,18 @@ func (c *Client) CreateOAuthConsentWithBody(ctx context.Context, contentType str
 
 func (c *Client) CreateOAuthConsent(ctx context.Context, body CreateOAuthConsentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateOAuthConsentRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOAuthPublicKey(ctx context.Context, params *GetOAuthPublicKeyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOAuthPublicKeyRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -23229,6 +23265,69 @@ func NewCreateOAuthConsentRequestWithBody(server string, contentType string, bod
 	return req, nil
 }
 
+// NewGetOAuthPublicKeyRequest generates requests for GetOAuthPublicKey
+func NewGetOAuthPublicKeyRequest(server string, params *GetOAuthPublicKeyParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/publickey")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListOAuthScopesRequest generates requests for ListOAuthScopes
 func NewListOAuthScopesRequest(server string) (*http.Request, error) {
 	var err error
@@ -30681,6 +30780,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateOAuthConsentWithResponse(ctx context.Context, body CreateOAuthConsentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOAuthConsentResponse, error)
 
+	// GetOAuthPublicKey request
+	GetOAuthPublicKeyWithResponse(ctx context.Context, params *GetOAuthPublicKeyParams, reqEditors ...RequestEditorFn) (*GetOAuthPublicKeyResponse, error)
+
 	// ListOAuthScopes request
 	ListOAuthScopesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListOAuthScopesResponse, error)
 
@@ -33770,6 +33872,28 @@ func (r CreateOAuthConsentResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateOAuthConsentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOAuthPublicKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OAuthPublicKey
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOAuthPublicKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOAuthPublicKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -37317,6 +37441,15 @@ func (c *ClientWithResponses) CreateOAuthConsentWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParseCreateOAuthConsentResponse(rsp)
+}
+
+// GetOAuthPublicKeyWithResponse request returning *GetOAuthPublicKeyResponse
+func (c *ClientWithResponses) GetOAuthPublicKeyWithResponse(ctx context.Context, params *GetOAuthPublicKeyParams, reqEditors ...RequestEditorFn) (*GetOAuthPublicKeyResponse, error) {
+	rsp, err := c.GetOAuthPublicKey(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOAuthPublicKeyResponse(rsp)
 }
 
 // ListOAuthScopesWithResponse request returning *ListOAuthScopesResponse
@@ -41545,6 +41678,32 @@ func ParseCreateOAuthConsentResponse(rsp *http.Response) (*CreateOAuthConsentRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest OAuthConsentResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOAuthPublicKeyResponse parses an HTTP response from a GetOAuthPublicKeyWithResponse call
+func ParseGetOAuthPublicKeyResponse(rsp *http.Response) (*GetOAuthPublicKeyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOAuthPublicKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OAuthPublicKey
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
