@@ -881,7 +881,12 @@ type App struct {
 	Logo    *string `json:"logo,omitempty"`
 
 	// Shown to the user when they are asked to give consent.
-	Name        *string      `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// The URL to open the app.
+	//
+	// The URL is sent via a query parameter to the redirect_uri when the user opens an already installed app.
+	OpenUri     *string      `json:"open_uri,omitempty"`
 	RedirectUri *string      `json:"redirect_uri,omitempty"`
 	Scopes      *OAuthScopes `json:"scopes,omitempty"`
 }
@@ -3065,11 +3070,18 @@ type OAuthConsentResponse struct {
 	RedirectUri *string `json:"redirect_uri,omitempty"`
 }
 
-// OAuthPublicKey defines model for OAuthPublicKey.
+// Public key in the JWK format to validate the JWT signature of ID tokens.
 type OAuthPublicKey struct {
-	Alg   *string `json:"alg,omitempty"`
-	Use   *string `json:"use,omitempty"`
-	Value *string `json:"value,omitempty"`
+	Alg string `json:"alg"`
+
+	// base64-encoded-exponent
+	E   string `json:"e"`
+	Kid string `json:"kid"`
+	Kty string `json:"kty"`
+
+	// base64-encoded-modulus
+	N   string `json:"n"`
+	Use string `json:"use"`
 }
 
 // OAuthScope defines model for OAuthScope.
