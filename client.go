@@ -884,11 +884,12 @@ type App struct {
 	Name *string `json:"name,omitempty"`
 
 	// The URL to open the app.
-	//
-	// The URL is sent via a query parameter to the redirect_uri when the user opens an already installed app.
 	OpenUri     *string      `json:"open_uri,omitempty"`
 	RedirectUri *string      `json:"redirect_uri,omitempty"`
 	Scopes      *OAuthScopes `json:"scopes,omitempty"`
+
+	// The URL to uninstall the app.
+	UninstallUri *string `json:"uninstall_uri,omitempty"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
