@@ -4142,6 +4142,7 @@ type User struct {
 	Companies   *ExpandableCompanies `json:"companies,omitempty"`
 	Connections *UserConnections     `json:"connections,omitempty"`
 	Email       *string              `json:"email,omitempty"`
+	Employees   *Employees           `json:"employees,omitempty"`
 	Id          *string              `json:"id,omitempty"`
 }
 
