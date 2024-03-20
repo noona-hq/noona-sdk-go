@@ -888,6 +888,11 @@ type App struct {
 	RedirectUri *string      `json:"redirect_uri,omitempty"`
 	Scopes      *OAuthScopes `json:"scopes,omitempty"`
 
+	// If `true`, the application will appear in the navigation within Noona HQ.
+	//
+	// When clicked, the application's open_uri will be displayed in an iFrame.
+	ShowInNavigation *bool `json:"show_in_navigation,omitempty"`
+
 	// The URL to uninstall the app.
 	UninstallUri *string `json:"uninstall_uri,omitempty"`
 }
@@ -921,7 +926,12 @@ type Application struct {
 	Public       *bool        `json:"public,omitempty"`
 	RedirectUris *[]string    `json:"redirect_uris,omitempty"`
 	Scopes       *OAuthScopes `json:"scopes,omitempty"`
-	UpdatedAt    *time.Time   `json:"updated_at,omitempty"`
+
+	// If `true`, the application will appear in the navigation within Noona HQ.
+	//
+	// When clicked, the application's main redirect_uri will be displayed in an iFrame.
+	ShowInNavigation *bool      `json:"show_in_navigation,omitempty"`
+	UpdatedAt        *time.Time `json:"updated_at,omitempty"`
 }
 
 // Applications defines model for Applications.
@@ -4759,6 +4769,15 @@ type ListAppsParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand    `form:"expand,omitempty" json:"expand,omitempty"`
 	Filter *AppFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// GetAppParams defines parameters for GetApp.
+type GetAppParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // ListBlockedTimesParams defines parameters for ListBlockedTimes.
@@ -8980,6 +8999,9 @@ type ClientInterface interface {
 	// ListApps request
 	ListApps(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetApp request
+	GetApp(ctx context.Context, companyId string, appId string, params *GetAppParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DisableApp request
 	DisableApp(ctx context.Context, companyId string, appId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -9886,6 +9908,18 @@ func (c *Client) ListAllCompanyActivities(ctx context.Context, companyId string,
 
 func (c *Client) ListApps(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAppsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApp(ctx context.Context, companyId string, appId string, params *GetAppParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAppRequest(c.Server, companyId, appId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -13960,6 +13994,83 @@ func NewListAppsRequest(server string, companyId string, params *ListAppsParams)
 			return nil, err
 		} else {
 			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAppRequest generates requests for GetApp
+func NewGetAppRequest(server string, companyId string, appId string, params *GetAppParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "app_id", runtime.ParamLocationPath, appId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/apps/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
@@ -30385,6 +30496,9 @@ type ClientWithResponsesInterface interface {
 	// ListApps request
 	ListAppsWithResponse(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*ListAppsResponse, error)
 
+	// GetApp request
+	GetAppWithResponse(ctx context.Context, companyId string, appId string, params *GetAppParams, reqEditors ...RequestEditorFn) (*GetAppResponse, error)
+
 	// DisableApp request
 	DisableAppWithResponse(ctx context.Context, companyId string, appId string, reqEditors ...RequestEditorFn) (*DisableAppResponse, error)
 
@@ -31371,6 +31485,28 @@ func (r ListAppsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListAppsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAppResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *App
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAppResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAppResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -36166,6 +36302,15 @@ func (c *ClientWithResponses) ListAppsWithResponse(ctx context.Context, companyI
 	return ParseListAppsResponse(rsp)
 }
 
+// GetAppWithResponse request returning *GetAppResponse
+func (c *ClientWithResponses) GetAppWithResponse(ctx context.Context, companyId string, appId string, params *GetAppParams, reqEditors ...RequestEditorFn) (*GetAppResponse, error) {
+	rsp, err := c.GetApp(ctx, companyId, appId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAppResponse(rsp)
+}
+
 // DisableAppWithResponse request returning *DisableAppResponse
 func (c *ClientWithResponses) DisableAppWithResponse(ctx context.Context, companyId string, appId string, reqEditors ...RequestEditorFn) (*DisableAppResponse, error) {
 	rsp, err := c.DisableApp(ctx, companyId, appId, reqEditors...)
@@ -38855,6 +39000,32 @@ func ParseListAppsResponse(rsp *http.Response) (*ListAppsResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Apps
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAppResponse parses an HTTP response from a GetAppWithResponse call
+func ParseGetAppResponse(rsp *http.Response) (*GetAppResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAppResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest App
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
