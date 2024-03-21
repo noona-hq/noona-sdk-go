@@ -103,15 +103,15 @@ const (
 
 // Defines values for CardCardType.
 const (
-	AmericanExpress CardCardType = "american_express"
-	Bancontact      CardCardType = "bancontact"
-	DinersClub      CardCardType = "diners_club"
-	Discover        CardCardType = "discover"
-	Jcb             CardCardType = "jcb"
-	Mastercard      CardCardType = "mastercard"
-	NotApplicable   CardCardType = "not_applicable"
-	Other           CardCardType = "other"
-	Visa            CardCardType = "visa"
+	CardCardTypeAmericanExpress CardCardType = "american_express"
+	CardCardTypeBancontact      CardCardType = "bancontact"
+	CardCardTypeDinersClub      CardCardType = "diners_club"
+	CardCardTypeDiscover        CardCardType = "discover"
+	CardCardTypeJcb             CardCardType = "jcb"
+	CardCardTypeMastercard      CardCardType = "mastercard"
+	CardCardTypeNotApplicable   CardCardType = "not_applicable"
+	CardCardTypeOther           CardCardType = "other"
+	CardCardTypeVisa            CardCardType = "visa"
 )
 
 // Defines values for CardStatus.
@@ -544,6 +544,13 @@ const (
 	AlreadyRefunded       RefundMarketplaceSaleErrorCode = "already_refunded"
 	PaymentHasBeenSettled RefundMarketplaceSaleErrorCode = "payment_has_been_settled"
 	SaleHasBeenMutated    RefundMarketplaceSaleErrorCode = "sale_has_been_mutated"
+)
+
+// Defines values for RoleType.
+const (
+	RoleTypeDefault RoleType = "default"
+	RoleTypeOther   RoleType = "other"
+	RoleTypeRoot    RoleType = "root"
 )
 
 // Defines values for SMSMessageStatus.
@@ -3556,9 +3563,13 @@ type RequiredFields struct {
 
 // Role defines model for Role.
 type Role struct {
-	Id    *string `json:"id,omitempty"`
-	Title *string `json:"title,omitempty"`
+	Id    *string   `json:"id,omitempty"`
+	Title *string   `json:"title,omitempty"`
+	Type  *RoleType `json:"type,omitempty"`
 }
+
+// RoleType defines model for Role.Type.
+type RoleType string
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SMSFilter struct {
