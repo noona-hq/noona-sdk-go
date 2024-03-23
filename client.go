@@ -581,6 +581,13 @@ const (
 	Desc SortOrder = "desc"
 )
 
+// Defines values for SpaceType.
+const (
+	SpaceTypeSpace            SpaceType = "space"
+	SpaceTypeTable            SpaceType = "table"
+	SpaceTypeTableCombination SpaceType = "table_combination"
+)
+
 // Defines values for SubscriptionDiscountApplyOn.
 const (
 	InvoiceAmount     SubscriptionDiscountApplyOn = "invoice_amount"
@@ -3786,16 +3793,33 @@ type Space struct {
 	Image                *Image                `json:"image,omitempty"`
 
 	// If true, space is visible on the marketplace.
-	Marketplace *bool   `json:"marketplace,omitempty"`
+	Marketplace *bool `json:"marketplace,omitempty"`
+
+	// The maximum capacity of the space, for example how many people can occupy a table at maximum.
+	MaxCapacity *int32 `json:"max_capacity,omitempty"`
+
+	// The mininum capacity of the space, for example how many people can occupy a table at minimum.
+	MinCapacity *int32  `json:"min_capacity,omitempty"`
 	Name        *string `json:"name,omitempty"`
 
 	// The order of the space in the list of spaces on the marketplace.
-	Order     *int32     `json:"order,omitempty"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	Order        *int32             `json:"order,omitempty"`
+	SubResources *[]ExpandableSpace `json:"sub_resources,omitempty"`
+	Type         *SpaceType         `json:"type,omitempty"`
+	UpdatedAt    *time.Time         `json:"updated_at,omitempty"`
 }
+
+// SpaceType defines model for SpaceType.
+type SpaceType string
 
 // Spaces defines model for Spaces.
 type Spaces []Space
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type SpacesFilter struct {
+	// Filter by employee IDs
+	Types *[]SpaceType `json:"types,omitempty"`
+}
 
 // SubscriptionCoupon defines model for SubscriptionCoupon.
 type SubscriptionCoupon struct {
@@ -5179,7 +5203,8 @@ type ListSpacesParams struct {
 	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
-	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+	Pagination *Pagination   `form:"pagination,omitempty" json:"pagination,omitempty"`
+	Filter     *SpacesFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // CreateSubscriptionJSONBody defines parameters for CreateSubscription.
@@ -16711,6 +16736,16 @@ func NewListSpacesRequest(server string, companyId string, params *ListSpacesPar
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
