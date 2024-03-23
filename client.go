@@ -3803,10 +3803,10 @@ type Space struct {
 	Name        *string `json:"name,omitempty"`
 
 	// The order of the space in the list of spaces on the marketplace.
-	Order        *int32             `json:"order,omitempty"`
-	SubResources *[]ExpandableSpace `json:"sub_resources,omitempty"`
-	Type         *SpaceType         `json:"type,omitempty"`
-	UpdatedAt    *time.Time         `json:"updated_at,omitempty"`
+	Order        *int32     `json:"order,omitempty"`
+	SubResources *[]string  `json:"sub_resources,omitempty"`
+	Type         *SpaceType `json:"type,omitempty"`
+	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
 }
 
 // SpaceType defines model for SpaceType.
