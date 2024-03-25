@@ -3996,6 +3996,12 @@ type TerminalProvider string
 // Terminals defines model for Terminals.
 type Terminals []Terminal
 
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type TerminalsFilter struct {
+	// Only get terminals directly connected to the company.
+	CompanyOnly *bool `json:"company_only,omitempty"`
+}
+
 // TimeSlot defines model for TimeSlot.
 type TimeSlot struct {
 	// The IDs of the employees that are available for this time slot
@@ -5265,7 +5271,8 @@ type ListTerminalsParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand          `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *TerminalsFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // ListTimeSlotReservationsParams defines parameters for ListTimeSlotReservations.
@@ -17202,6 +17209,16 @@ func NewListTerminalsRequest(server string, companyId string, params *ListTermin
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
