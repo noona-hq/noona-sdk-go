@@ -1344,7 +1344,10 @@ type CompanyProfile struct {
 	PhoneNumber      *string       `json:"phone_number,omitempty"`
 
 	// Whether the company prefers 12 hour time format.
-	Prefer12Hours  *bool           `json:"prefer_12_hours,omitempty"`
+	Prefer12Hours *bool `json:"prefer_12_hours,omitempty"`
+
+	// The price category of the company.
+	PriceCategory  *int32          `json:"price_category,omitempty"`
 	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
 	StoreName      *string         `json:"store_name,omitempty"`
 	WebAuthOptOut  *bool           `json:"web_auth_opt_out,omitempty"`
