@@ -143,6 +143,12 @@ const (
 	Rates CommissionRatesType = "rates"
 )
 
+// Defines values for CompanyVertical.
+const (
+	Appointment CompanyVertical = "appointment"
+	Restaurant  CompanyVertical = "restaurant"
+)
+
 // Defines values for CustomPropertyScope.
 const (
 	CustomPropertyScopeCustomer CustomPropertyScope = "customer"
@@ -1253,8 +1259,12 @@ type Company struct {
 	PhoneNumber *string          `json:"phone_number,omitempty"`
 	Pos         *POSSettings     `json:"pos,omitempty"`
 	Profile     *CompanyProfile  `json:"profile,omitempty"`
+	Vertical    *CompanyVertical `json:"vertical,omitempty"`
 	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
 }
+
+// CompanyVertical defines model for Company.Vertical.
+type CompanyVertical string
 
 // CompanyCheckin defines model for CompanyCheckin.
 type CompanyCheckin struct {
