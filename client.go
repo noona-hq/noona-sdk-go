@@ -1236,9 +1236,10 @@ type Companies []Company
 
 // Company defines model for Company.
 type Company struct {
-	Adyen    *AdyenConnection        `json:"adyen,omitempty"`
-	Checkin  *CompanyCheckin         `json:"checkin,omitempty"`
-	Currency *CompanyDefaultCurrency `json:"currency,omitempty"`
+	Adyen     *AdyenConnection        `json:"adyen,omitempty"`
+	Checkin   *CompanyCheckin         `json:"checkin,omitempty"`
+	CreatedAt *time.Time              `json:"created_at,omitempty"`
+	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Enterprise  *ExpandableEnterprise `json:"enterprise,omitempty"`
@@ -1259,6 +1260,7 @@ type Company struct {
 	PhoneNumber *string          `json:"phone_number,omitempty"`
 	Pos         *POSSettings     `json:"pos,omitempty"`
 	Profile     *CompanyProfile  `json:"profile,omitempty"`
+	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Vertical    *CompanyVertical `json:"vertical,omitempty"`
 	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
 }
