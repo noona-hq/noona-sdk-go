@@ -79,6 +79,21 @@ const (
 	BillingInvoiceStatusVoided     BillingInvoiceStatus = "voided"
 )
 
+// Defines values for BlockedTimeTheme.
+const (
+	Themeblack  BlockedTimeTheme = "themeblack"
+	Themeblue   BlockedTimeTheme = "themeblue"
+	Themecoral  BlockedTimeTheme = "themecoral"
+	Themegreen  BlockedTimeTheme = "themegreen"
+	Themegrey   BlockedTimeTheme = "themegrey"
+	Thememint   BlockedTimeTheme = "thememint"
+	Themeorange BlockedTimeTheme = "themeorange"
+	Themepurple BlockedTimeTheme = "themepurple"
+	Themered    BlockedTimeTheme = "themered"
+	Themewine   BlockedTimeTheme = "themewine"
+	Themeyellow BlockedTimeTheme = "themeyellow"
+)
+
 // Defines values for BookingInterval.
 const (
 	N10  BookingInterval = 10
@@ -1031,6 +1046,13 @@ type BillingInvoices []BillingInvoice
 
 // BlockedTime defines model for BlockedTime.
 type BlockedTime struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	CreatedBy *ExpandableActor `json:"created_by,omitempty"`
+
 	// Date of blocked time
 	Date *string `json:"date,omitempty"`
 
@@ -1038,35 +1060,92 @@ type BlockedTime struct {
 	Duration *int32 `json:"duration,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Employee *BlockedTime_Employee `json:"employee,omitempty"`
+	Employee *ExpandableEmployee `json:"employee,omitempty"`
 
 	// End time of blocked time
 	EndsAt *time.Time `json:"ends_at,omitempty"`
 	Id     *string    `json:"id,omitempty"`
 
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
+	//
+	// The dtstart property is ignored, and the start time of the event/blocked time is used instead.
+	//
+	// If no until is specified, it will default to 2 years from time of creation.
+	//
+	// Until has a maximum value of 2 years from time of creation.
+	//
+	// Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
+	Rrule *RRuleString `json:"rrule,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Space *BlockedTime_Space `json:"space,omitempty"`
+	Space *ExpandableSpace `json:"space,omitempty"`
 
 	// Start time of blocked time
-	StartsAt *time.Time `json:"starts_at,omitempty"`
-	Theme    *string    `json:"theme,omitempty"`
-	Title    *string    `json:"title,omitempty"`
+	StartsAt  *time.Time        `json:"starts_at,omitempty"`
+	Theme     *BlockedTimeTheme `json:"theme,omitempty"`
+	Title     *string           `json:"title,omitempty"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	UpdatedBy *ExpandableActor `json:"updated_by,omitempty"`
 }
 
-// BlockedTimeEmployee0 defines model for .
-type BlockedTimeEmployee0 string
+// BlockedTimeCreate defines model for BlockedTimeCreate.
+type BlockedTimeCreate struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
 
-// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-type BlockedTime_Employee struct {
-	union json.RawMessage
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	CreatedBy *ExpandableActor `json:"created_by,omitempty"`
+
+	// Date of blocked time
+	Date *string `json:"date,omitempty"`
+
+	// Duration of blocked time from start to end
+	Duration *int32 `json:"duration,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee *ExpandableEmployee `json:"employee,omitempty"`
+
+	// End time of blocked time
+	EndsAt time.Time `json:"ends_at"`
+	Id     *string   `json:"id,omitempty"`
+
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
+	//
+	// The dtstart property is ignored, and the start time of the event/blocked time is used instead.
+	//
+	// If no until is specified, it will default to 2 years from time of creation.
+	//
+	// Until has a maximum value of 2 years from time of creation.
+	//
+	// Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
+	Rrule *RRuleString `json:"rrule,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Space *ExpandableSpace `json:"space,omitempty"`
+
+	// Start time of blocked time
+	StartsAt  time.Time         `json:"starts_at"`
+	Theme     *BlockedTimeTheme `json:"theme,omitempty"`
+	Title     *string           `json:"title,omitempty"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	UpdatedBy *ExpandableActor `json:"updated_by,omitempty"`
 }
 
-// BlockedTimeSpace0 defines model for .
-type BlockedTimeSpace0 string
+// BlockedTimeCreateOverrides defines model for BlockedTimeCreateOverrides.
+type BlockedTimeCreateOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company ExpandableCompany `json:"company"`
 
-// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-type BlockedTime_Space struct {
-	union json.RawMessage
+	// End time of blocked time
+	EndsAt time.Time `json:"ends_at"`
+
+	// Start time of blocked time
+	StartsAt time.Time `json:"starts_at"`
 }
 
 // BlockedTimeFilter defines model for BlockedTimeFilter.
@@ -1084,8 +1163,106 @@ type BlockedTimeFilter struct {
 	To *time.Time `json:"to,omitempty"`
 }
 
+// BlockedTimeResponse defines model for BlockedTimeResponse.
+type BlockedTimeResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	CreatedBy *ExpandableActor `json:"created_by,omitempty"`
+
+	// Date of blocked time
+	Date *string `json:"date,omitempty"`
+
+	// Duration of blocked time from start to end
+	Duration *int32 `json:"duration,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee *ExpandableEmployee `json:"employee,omitempty"`
+
+	// End time of blocked time
+	EndsAt time.Time `json:"ends_at"`
+	Id     *string   `json:"id,omitempty"`
+
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
+	//
+	// The dtstart property is ignored, and the start time of the event/blocked time is used instead.
+	//
+	// If no until is specified, it will default to 2 years from time of creation.
+	//
+	// Until has a maximum value of 2 years from time of creation.
+	//
+	// Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
+	Rrule *RRuleString `json:"rrule,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Space *ExpandableSpace `json:"space,omitempty"`
+
+	// Start time of blocked time
+	StartsAt  time.Time        `json:"starts_at"`
+	Theme     BlockedTimeTheme `json:"theme"`
+	Title     *string          `json:"title,omitempty"`
+	UpdatedAt *time.Time       `json:"updated_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	UpdatedBy *ExpandableActor `json:"updated_by,omitempty"`
+}
+
+// BlockedTimeResponseOverrides defines model for BlockedTimeResponseOverrides.
+type BlockedTimeResponseOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	CreatedBy *ExpandableActor `json:"created_by,omitempty"`
+
+	// Date of blocked time
+	Date *string `json:"date,omitempty"`
+
+	// Duration of blocked time from start to end
+	Duration *int32 `json:"duration,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Employee *ExpandableEmployee `json:"employee,omitempty"`
+
+	// End time of blocked time
+	EndsAt time.Time `json:"ends_at"`
+	Id     *string   `json:"id,omitempty"`
+
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
+	//
+	// The dtstart property is ignored, and the start time of the event/blocked time is used instead.
+	//
+	// If no until is specified, it will default to 2 years from time of creation.
+	//
+	// Until has a maximum value of 2 years from time of creation.
+	//
+	// Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
+	Rrule *RRuleString `json:"rrule,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Space *ExpandableSpace `json:"space,omitempty"`
+
+	// Start time of blocked time
+	StartsAt  time.Time        `json:"starts_at"`
+	Theme     BlockedTimeTheme `json:"theme"`
+	Title     *string          `json:"title,omitempty"`
+	UpdatedAt *time.Time       `json:"updated_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	UpdatedBy *ExpandableActor `json:"updated_by,omitempty"`
+}
+
+// BlockedTimeTheme defines model for BlockedTimeTheme.
+type BlockedTimeTheme string
+
 // BlockedTimes defines model for BlockedTimes.
 type BlockedTimes []BlockedTime
+
+// BlockedTimesResponse defines model for BlockedTimesResponse.
+type BlockedTimesResponse []BlockedTimeResponse
 
 // Booking interval in minutes.
 //
@@ -1763,16 +1940,16 @@ type Event struct {
 	Price          *CalculatedPrice      `json:"price,omitempty"`
 	RecurringEvent *Event_RecurringEvent `json:"recurring_event,omitempty"`
 
-	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events.
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 	//
-	// The dtstart property is ignored, and the start time of the event is used instead.
+	// The dtstart property is ignored, and the start time of the event/blocked time is used instead.
 	//
 	// If no until is specified, it will default to 2 years from time of creation.
 	//
 	// Until has a maximum value of 2 years from time of creation.
 	//
-	// Count can be any value, but generated events past the 2 year mark will be ignored.
-	Rrule *string `json:"rrule,omitempty"`
+	// Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
+	Rrule *RRuleString `json:"rrule,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Sale *ExpandableSale `json:"sale,omitempty"`
@@ -1935,16 +2112,16 @@ type EventCheckinResult struct {
 	Price          *CalculatedPrice                   `json:"price,omitempty"`
 	RecurringEvent *EventCheckinResult_RecurringEvent `json:"recurring_event,omitempty"`
 
-	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events.
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 	//
-	// The dtstart property is ignored, and the start time of the event is used instead.
+	// The dtstart property is ignored, and the start time of the event/blocked time is used instead.
 	//
 	// If no until is specified, it will default to 2 years from time of creation.
 	//
 	// Until has a maximum value of 2 years from time of creation.
 	//
-	// Count can be any value, but generated events past the 2 year mark will be ignored.
-	Rrule *string `json:"rrule,omitempty"`
+	// Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
+	Rrule *RRuleString `json:"rrule,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Sale   *ExpandableSale `json:"sale,omitempty"`
@@ -3559,6 +3736,17 @@ type ProductImage struct {
 // Products defines model for Products.
 type Products []Product
 
+// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
+//
+// The dtstart property is ignored, and the start time of the event/blocked time is used instead.
+//
+// If no until is specified, it will default to 2 years from time of creation.
+//
+// Until has a maximum value of 2 years from time of creation.
+//
+// Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
+type RRuleString string
+
 // RefundMarketplaceSaleError defines model for RefundMarketplaceSaleError.
 type RefundMarketplaceSaleError struct {
 	// The error code. Only populated for certain errors.
@@ -4753,6 +4941,18 @@ type ListEventActivitiesParams struct {
 
 // ListPaymentActivitiesParams defines parameters for ListPaymentActivities.
 type ListPaymentActivitiesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// CreateBlockedTimeJSONBody defines parameters for CreateBlockedTime.
+type CreateBlockedTimeJSONBody BlockedTimeCreate
+
+// CreateBlockedTimeParams defines parameters for CreateBlockedTime.
+type CreateBlockedTimeParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -7097,6 +7297,9 @@ type UpdateWebhookParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateBlockedTimeJSONRequestBody defines body for CreateBlockedTime for application/json ContentType.
+type CreateBlockedTimeJSONRequestBody CreateBlockedTimeJSONBody
+
 // CreateCompanyJSONRequestBody defines body for CreateCompany for application/json ContentType.
 type CreateCompanyJSONRequestBody CreateCompanyJSONBody
 
@@ -7310,74 +7513,6 @@ func (t AdyenTransferInstrument) MarshalJSON() ([]byte, error) {
 }
 
 func (t *AdyenTransferInstrument) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-func (t BlockedTime_Employee) AsBlockedTimeEmployee0() (BlockedTimeEmployee0, error) {
-	var body BlockedTimeEmployee0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *BlockedTime_Employee) FromBlockedTimeEmployee0(v BlockedTimeEmployee0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t BlockedTime_Employee) AsEmployee() (Employee, error) {
-	var body Employee
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *BlockedTime_Employee) FromEmployee(v Employee) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t BlockedTime_Employee) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *BlockedTime_Employee) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-func (t BlockedTime_Space) AsBlockedTimeSpace0() (BlockedTimeSpace0, error) {
-	var body BlockedTimeSpace0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *BlockedTime_Space) FromBlockedTimeSpace0(v BlockedTimeSpace0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t BlockedTime_Space) AsSpace() (Space, error) {
-	var body Space
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *BlockedTime_Space) FromSpace(v Space) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t BlockedTime_Space) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *BlockedTime_Space) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -9035,6 +9170,11 @@ type ClientInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateBlockedTime request with any body
+	CreateBlockedTimeWithBody(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateBlockedTime(ctx context.Context, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCompanies request
 	GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -9870,6 +10010,30 @@ func (c *Client) ListEventActivities(ctx context.Context, eventId string, params
 
 func (c *Client) ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPaymentActivitiesRequest(c.Server, paymentId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateBlockedTimeWithBody(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateBlockedTimeRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateBlockedTime(ctx context.Context, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateBlockedTimeRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -13600,6 +13764,82 @@ func NewListPaymentActivitiesRequest(server string, paymentId string, params *Li
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewCreateBlockedTimeRequest calls the generic CreateBlockedTime builder with application/json body
+func NewCreateBlockedTimeRequest(server string, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateBlockedTimeRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateBlockedTimeRequestWithBody generates requests for CreateBlockedTime with any type of body
+func NewCreateBlockedTimeRequestWithBody(server string, params *CreateBlockedTimeParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/blocked_times")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -30552,6 +30792,11 @@ type ClientWithResponsesInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivitiesWithResponse(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*ListPaymentActivitiesResponse, error)
 
+	// CreateBlockedTime request with any body
+	CreateBlockedTimeWithBodyWithResponse(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error)
+
+	CreateBlockedTimeWithResponse(ctx context.Context, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error)
+
 	// GetCompanies request
 	GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error)
 
@@ -31437,6 +31682,28 @@ func (r ListPaymentActivitiesResponse) StatusCode() int {
 	return 0
 }
 
+type CreateBlockedTimeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BlockedTimeResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateBlockedTimeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateBlockedTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetCompaniesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -31615,7 +31882,7 @@ func (r DisableAppResponse) StatusCode() int {
 type ListBlockedTimesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *BlockedTimes
+	JSON200      *BlockedTimesResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -36310,6 +36577,23 @@ func (c *ClientWithResponses) ListPaymentActivitiesWithResponse(ctx context.Cont
 	return ParseListPaymentActivitiesResponse(rsp)
 }
 
+// CreateBlockedTimeWithBodyWithResponse request with arbitrary body returning *CreateBlockedTimeResponse
+func (c *ClientWithResponses) CreateBlockedTimeWithBodyWithResponse(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error) {
+	rsp, err := c.CreateBlockedTimeWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateBlockedTimeResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateBlockedTimeWithResponse(ctx context.Context, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error) {
+	rsp, err := c.CreateBlockedTime(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateBlockedTimeResponse(rsp)
+}
+
 // GetCompaniesWithResponse request returning *GetCompaniesResponse
 func (c *ClientWithResponses) GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error) {
 	rsp, err := c.GetCompanies(ctx, params, reqEditors...)
@@ -38932,6 +39216,32 @@ func ParseListPaymentActivitiesResponse(rsp *http.Response) (*ListPaymentActivit
 	return response, nil
 }
 
+// ParseCreateBlockedTimeResponse parses an HTTP response from a CreateBlockedTimeWithResponse call
+func ParseCreateBlockedTimeResponse(rsp *http.Response) (*CreateBlockedTimeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateBlockedTimeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BlockedTimeResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetCompaniesResponse parses an HTTP response from a GetCompaniesWithResponse call
 func ParseGetCompaniesResponse(rsp *http.Response) (*GetCompaniesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -39145,7 +39455,7 @@ func ParseListBlockedTimesResponse(rsp *http.Response) (*ListBlockedTimesRespons
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest BlockedTimes
+		var dest BlockedTimesResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
