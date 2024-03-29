@@ -79,6 +79,12 @@ const (
 	BillingInvoiceStatusVoided     BillingInvoiceStatus = "voided"
 )
 
+// Defines values for BlockedTimeDeletionBehaviorType.
+const (
+	BlockedTimeDeletionBehaviorTypeFuture BlockedTimeDeletionBehaviorType = "future"
+	BlockedTimeDeletionBehaviorTypeSingle BlockedTimeDeletionBehaviorType = "single"
+)
+
 // Defines values for BlockedTimeTheme.
 const (
 	Themeblack  BlockedTimeTheme = "themeblack"
@@ -639,10 +645,10 @@ const (
 
 // Defines values for SubtransactionFailureState.
 const (
-	Busy      SubtransactionFailureState = "busy"
-	Cancelled SubtransactionFailureState = "cancelled"
-	Declined  SubtransactionFailureState = "declined"
-	Unknown   SubtransactionFailureState = "unknown"
+	SubtransactionFailureStateBusy      SubtransactionFailureState = "busy"
+	SubtransactionFailureStateCancelled SubtransactionFailureState = "cancelled"
+	SubtransactionFailureStateDeclined  SubtransactionFailureState = "declined"
+	SubtransactionFailureStateUnknown   SubtransactionFailureState = "unknown"
 )
 
 // Defines values for SubtransactionOrigin.
@@ -1147,6 +1153,21 @@ type BlockedTimeCreateOverrides struct {
 	// Start time of blocked time
 	StartsAt time.Time `json:"starts_at"`
 }
+
+// [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
+type BlockedTimeDeletionBehavior struct {
+	// What blocked times to delete when deleting an blocked time that is a part of a recurring blocked time.
+	//
+	// - `single` - Only delete the referenced blocked time
+	// - `future` - Delete referenced blocked time and all blocked times in the series after the referenced blocked time
+	Type *BlockedTimeDeletionBehaviorType `json:"type,omitempty"`
+}
+
+// What blocked times to delete when deleting an blocked time that is a part of a recurring blocked time.
+//
+// - `single` - Only delete the referenced blocked time
+// - `future` - Delete referenced blocked time and all blocked times in the series after the referenced blocked time
+type BlockedTimeDeletionBehaviorType string
 
 // BlockedTimeFilter defines model for BlockedTimeFilter.
 type BlockedTimeFilter struct {
@@ -4958,6 +4979,17 @@ type CreateBlockedTimeParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteBlockedTimeParams defines parameters for DeleteBlockedTime.
+type DeleteBlockedTimeParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand   *Expand                      `form:"expand,omitempty" json:"expand,omitempty"`
+	Behavior *BlockedTimeDeletionBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
+	Date     string                       `form:"date" json:"date"`
 }
 
 // GetCompaniesParams defines parameters for GetCompanies.
@@ -9175,6 +9207,9 @@ type ClientInterface interface {
 
 	CreateBlockedTime(ctx context.Context, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteBlockedTime request
+	DeleteBlockedTime(ctx context.Context, blockedTimeId string, params *DeleteBlockedTimeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCompanies request
 	GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -10034,6 +10069,18 @@ func (c *Client) CreateBlockedTimeWithBody(ctx context.Context, params *CreateBl
 
 func (c *Client) CreateBlockedTime(ctx context.Context, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateBlockedTimeRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteBlockedTime(ctx context.Context, blockedTimeId string, params *DeleteBlockedTimeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteBlockedTimeRequest(c.Server, blockedTimeId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -13840,6 +13887,98 @@ func NewCreateBlockedTimeRequestWithBody(server string, params *CreateBlockedTim
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteBlockedTimeRequest generates requests for DeleteBlockedTime
+func NewDeleteBlockedTimeRequest(server string, blockedTimeId string, params *DeleteBlockedTimeParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "blocked_time_id", runtime.ParamLocationPath, blockedTimeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/blocked_times/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Behavior != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Behavior); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("behavior", string(queryParamBuf))
+		}
+
+	}
+
+	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "date", runtime.ParamLocationQuery, params.Date); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -30797,6 +30936,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateBlockedTimeWithResponse(ctx context.Context, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error)
 
+	// DeleteBlockedTime request
+	DeleteBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *DeleteBlockedTimeParams, reqEditors ...RequestEditorFn) (*DeleteBlockedTimeResponse, error)
+
 	// GetCompanies request
 	GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error)
 
@@ -31698,6 +31840,27 @@ func (r CreateBlockedTimeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateBlockedTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteBlockedTimeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteBlockedTimeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteBlockedTimeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -36594,6 +36757,15 @@ func (c *ClientWithResponses) CreateBlockedTimeWithResponse(ctx context.Context,
 	return ParseCreateBlockedTimeResponse(rsp)
 }
 
+// DeleteBlockedTimeWithResponse request returning *DeleteBlockedTimeResponse
+func (c *ClientWithResponses) DeleteBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *DeleteBlockedTimeParams, reqEditors ...RequestEditorFn) (*DeleteBlockedTimeResponse, error) {
+	rsp, err := c.DeleteBlockedTime(ctx, blockedTimeId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteBlockedTimeResponse(rsp)
+}
+
 // GetCompaniesWithResponse request returning *GetCompaniesResponse
 func (c *ClientWithResponses) GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error) {
 	rsp, err := c.GetCompanies(ctx, params, reqEditors...)
@@ -39237,6 +39409,22 @@ func ParseCreateBlockedTimeResponse(rsp *http.Response) (*CreateBlockedTimeRespo
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseDeleteBlockedTimeResponse parses an HTTP response from a DeleteBlockedTimeWithResponse call
+func ParseDeleteBlockedTimeResponse(rsp *http.Response) (*DeleteBlockedTimeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteBlockedTimeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
