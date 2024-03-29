@@ -4992,6 +4992,15 @@ type DeleteBlockedTimeParams struct {
 	Date     string                       `form:"date" json:"date"`
 }
 
+// GetBlockedTimeParams defines parameters for GetBlockedTime.
+type GetBlockedTimeParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // GetCompaniesParams defines parameters for GetCompanies.
 type GetCompaniesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -9210,6 +9219,9 @@ type ClientInterface interface {
 	// DeleteBlockedTime request
 	DeleteBlockedTime(ctx context.Context, blockedTimeId string, params *DeleteBlockedTimeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetBlockedTime request
+	GetBlockedTime(ctx context.Context, blockedTimeId string, params *GetBlockedTimeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCompanies request
 	GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -10081,6 +10093,18 @@ func (c *Client) CreateBlockedTime(ctx context.Context, params *CreateBlockedTim
 
 func (c *Client) DeleteBlockedTime(ctx context.Context, blockedTimeId string, params *DeleteBlockedTimeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteBlockedTimeRequest(c.Server, blockedTimeId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBlockedTime(ctx context.Context, blockedTimeId string, params *GetBlockedTimeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBlockedTimeRequest(c.Server, blockedTimeId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -13976,6 +14000,76 @@ func NewDeleteBlockedTimeRequest(server string, blockedTimeId string, params *De
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetBlockedTimeRequest generates requests for GetBlockedTime
+func NewGetBlockedTimeRequest(server string, blockedTimeId string, params *GetBlockedTimeParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "blocked_time_id", runtime.ParamLocationPath, blockedTimeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/blocked_times/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -30939,6 +31033,9 @@ type ClientWithResponsesInterface interface {
 	// DeleteBlockedTime request
 	DeleteBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *DeleteBlockedTimeParams, reqEditors ...RequestEditorFn) (*DeleteBlockedTimeResponse, error)
 
+	// GetBlockedTime request
+	GetBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *GetBlockedTimeParams, reqEditors ...RequestEditorFn) (*GetBlockedTimeResponse, error)
+
 	// GetCompanies request
 	GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error)
 
@@ -31828,6 +31925,7 @@ type CreateBlockedTimeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *BlockedTimeResponse
+	JSON400      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -31849,6 +31947,7 @@ func (r CreateBlockedTimeResponse) StatusCode() int {
 type DeleteBlockedTimeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON400      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -31861,6 +31960,29 @@ func (r DeleteBlockedTimeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r DeleteBlockedTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetBlockedTimeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BlockedTimeResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBlockedTimeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBlockedTimeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -36766,6 +36888,15 @@ func (c *ClientWithResponses) DeleteBlockedTimeWithResponse(ctx context.Context,
 	return ParseDeleteBlockedTimeResponse(rsp)
 }
 
+// GetBlockedTimeWithResponse request returning *GetBlockedTimeResponse
+func (c *ClientWithResponses) GetBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *GetBlockedTimeParams, reqEditors ...RequestEditorFn) (*GetBlockedTimeResponse, error) {
+	rsp, err := c.GetBlockedTime(ctx, blockedTimeId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBlockedTimeResponse(rsp)
+}
+
 // GetCompaniesWithResponse request returning *GetCompaniesResponse
 func (c *ClientWithResponses) GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error) {
 	rsp, err := c.GetCompanies(ctx, params, reqEditors...)
@@ -39409,6 +39540,13 @@ func ParseCreateBlockedTimeResponse(rsp *http.Response) (*CreateBlockedTimeRespo
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	}
 
 	return response, nil
@@ -39425,6 +39563,49 @@ func ParseDeleteBlockedTimeResponse(rsp *http.Response) (*DeleteBlockedTimeRespo
 	response := &DeleteBlockedTimeResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBlockedTimeResponse parses an HTTP response from a GetBlockedTimeWithResponse call
+func ParseGetBlockedTimeResponse(rsp *http.Response) (*GetBlockedTimeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBlockedTimeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BlockedTimeResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	}
 
 	return response, nil
