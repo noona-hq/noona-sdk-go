@@ -100,6 +100,12 @@ const (
 	Themeyellow BlockedTimeTheme = "themeyellow"
 )
 
+// Defines values for BlockedTimeUpdateBehaviorType.
+const (
+	BlockedTimeUpdateBehaviorTypeDetach BlockedTimeUpdateBehaviorType = "detach"
+	BlockedTimeUpdateBehaviorTypeFuture BlockedTimeUpdateBehaviorType = "future"
+)
+
 // Defines values for BookingInterval.
 const (
 	N10  BookingInterval = 10
@@ -442,6 +448,7 @@ const (
 const (
 	ActivitiesRead        OAuthScope = "activities:read"
 	BlockedTimesRead      OAuthScope = "blocked_times:read"
+	BlockedTimesWrite     OAuthScope = "blocked_times:write"
 	ClaimsRead            OAuthScope = "claims:read"
 	CompaniesRead         OAuthScope = "companies:read"
 	CustomerGroupsRead    OAuthScope = "customer_groups:read"
@@ -645,10 +652,10 @@ const (
 
 // Defines values for SubtransactionFailureState.
 const (
-	SubtransactionFailureStateBusy      SubtransactionFailureState = "busy"
-	SubtransactionFailureStateCancelled SubtransactionFailureState = "cancelled"
-	SubtransactionFailureStateDeclined  SubtransactionFailureState = "declined"
-	SubtransactionFailureStateUnknown   SubtransactionFailureState = "unknown"
+	Busy      SubtransactionFailureState = "busy"
+	Cancelled SubtransactionFailureState = "cancelled"
+	Declined  SubtransactionFailureState = "declined"
+	Unknown   SubtransactionFailureState = "unknown"
 )
 
 // Defines values for SubtransactionOrigin.
@@ -1278,6 +1285,66 @@ type BlockedTimeResponseOverrides struct {
 
 // BlockedTimeTheme defines model for BlockedTimeTheme.
 type BlockedTimeTheme string
+
+// BlockedTimeUpdate defines model for BlockedTimeUpdate.
+type BlockedTimeUpdate struct {
+	Company   *interface{} `json:"company,omitempty"`
+	CreatedAt *time.Time   `json:"created_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	CreatedBy *ExpandableActor `json:"created_by,omitempty"`
+
+	// Date of blocked time
+	Date *string `json:"date,omitempty"`
+
+	// Duration of blocked time from start to end
+	Duration *int32       `json:"duration,omitempty"`
+	Employee *interface{} `json:"employee,omitempty"`
+
+	// End time of blocked time
+	EndsAt *time.Time   `json:"ends_at,omitempty"`
+	Id     *string      `json:"id,omitempty"`
+	Rrule  *interface{} `json:"rrule,omitempty"`
+	Space  *interface{} `json:"space,omitempty"`
+
+	// Start time of blocked time
+	StartsAt  *time.Time        `json:"starts_at,omitempty"`
+	Theme     *BlockedTimeTheme `json:"theme,omitempty"`
+	Title     *string           `json:"title,omitempty"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	UpdatedBy *ExpandableActor `json:"updated_by,omitempty"`
+}
+
+// [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
+type BlockedTimeUpdateBehavior struct {
+	// What blocked time to update when updating a blocked time that is a part of a recurrance.
+	//
+	// - `detach` - Only update the referenced blocked time and detach it from the series
+	// - `future` - Update referenced blocked time and all blocked times in the series after the referenced blocked time
+	Type *BlockedTimeUpdateBehaviorType `json:"type,omitempty"`
+}
+
+// What blocked time to update when updating a blocked time that is a part of a recurrance.
+//
+// - `detach` - Only update the referenced blocked time and detach it from the series
+// - `future` - Update referenced blocked time and all blocked times in the series after the referenced blocked time
+type BlockedTimeUpdateBehaviorType string
+
+// BlockedTimeUpdateOverrides defines model for BlockedTimeUpdateOverrides.
+type BlockedTimeUpdateOverrides struct {
+	Company  *interface{} `json:"company,omitempty"`
+	Employee *interface{} `json:"employee,omitempty"`
+
+	// End time of blocked time
+	EndsAt *time.Time   `json:"ends_at,omitempty"`
+	Rrule  *interface{} `json:"rrule,omitempty"`
+	Space  *interface{} `json:"space,omitempty"`
+
+	// Start time of blocked time
+	StartsAt *time.Time `json:"starts_at,omitempty"`
+}
 
 // BlockedTimes defines model for BlockedTimes.
 type BlockedTimes []BlockedTime
@@ -5001,6 +5068,20 @@ type GetBlockedTimeParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// UpdateBlockedTimeJSONBody defines parameters for UpdateBlockedTime.
+type UpdateBlockedTimeJSONBody BlockedTimeUpdate
+
+// UpdateBlockedTimeParams defines parameters for UpdateBlockedTime.
+type UpdateBlockedTimeParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand   *Expand                    `form:"expand,omitempty" json:"expand,omitempty"`
+	Behavior *BlockedTimeUpdateBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
+	Date     string                     `form:"date" json:"date"`
+}
+
 // GetCompaniesParams defines parameters for GetCompanies.
 type GetCompaniesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -7341,6 +7422,9 @@ type UpdateWebhookParams struct {
 // CreateBlockedTimeJSONRequestBody defines body for CreateBlockedTime for application/json ContentType.
 type CreateBlockedTimeJSONRequestBody CreateBlockedTimeJSONBody
 
+// UpdateBlockedTimeJSONRequestBody defines body for UpdateBlockedTime for application/json ContentType.
+type UpdateBlockedTimeJSONRequestBody UpdateBlockedTimeJSONBody
+
 // CreateCompanyJSONRequestBody defines body for CreateCompany for application/json ContentType.
 type CreateCompanyJSONRequestBody CreateCompanyJSONBody
 
@@ -9222,6 +9306,11 @@ type ClientInterface interface {
 	// GetBlockedTime request
 	GetBlockedTime(ctx context.Context, blockedTimeId string, params *GetBlockedTimeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UpdateBlockedTime request with any body
+	UpdateBlockedTimeWithBody(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateBlockedTime(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCompanies request
 	GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -10105,6 +10194,30 @@ func (c *Client) DeleteBlockedTime(ctx context.Context, blockedTimeId string, pa
 
 func (c *Client) GetBlockedTime(ctx context.Context, blockedTimeId string, params *GetBlockedTimeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBlockedTimeRequest(c.Server, blockedTimeId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBlockedTimeWithBody(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBlockedTimeRequestWithBody(c.Server, blockedTimeId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBlockedTime(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBlockedTimeRequest(c.Server, blockedTimeId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -14073,6 +14186,111 @@ func NewGetBlockedTimeRequest(server string, blockedTimeId string, params *GetBl
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateBlockedTimeRequest calls the generic UpdateBlockedTime builder with application/json body
+func NewUpdateBlockedTimeRequest(server string, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateBlockedTimeRequestWithBody(server, blockedTimeId, params, "application/json", bodyReader)
+}
+
+// NewUpdateBlockedTimeRequestWithBody generates requests for UpdateBlockedTime with any type of body
+func NewUpdateBlockedTimeRequestWithBody(server string, blockedTimeId string, params *UpdateBlockedTimeParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "blocked_time_id", runtime.ParamLocationPath, blockedTimeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/blocked_times/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Behavior != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Behavior); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("behavior", string(queryParamBuf))
+		}
+
+	}
+
+	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "date", runtime.ParamLocationQuery, params.Date); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -31036,6 +31254,11 @@ type ClientWithResponsesInterface interface {
 	// GetBlockedTime request
 	GetBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *GetBlockedTimeParams, reqEditors ...RequestEditorFn) (*GetBlockedTimeResponse, error)
 
+	// UpdateBlockedTime request with any body
+	UpdateBlockedTimeWithBodyWithResponse(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBlockedTimeResponse, error)
+
+	UpdateBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBlockedTimeResponse, error)
+
 	// GetCompanies request
 	GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error)
 
@@ -31983,6 +32206,29 @@ func (r GetBlockedTimeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetBlockedTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateBlockedTimeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BlockedTimeResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateBlockedTimeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateBlockedTimeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -36897,6 +37143,23 @@ func (c *ClientWithResponses) GetBlockedTimeWithResponse(ctx context.Context, bl
 	return ParseGetBlockedTimeResponse(rsp)
 }
 
+// UpdateBlockedTimeWithBodyWithResponse request with arbitrary body returning *UpdateBlockedTimeResponse
+func (c *ClientWithResponses) UpdateBlockedTimeWithBodyWithResponse(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBlockedTimeResponse, error) {
+	rsp, err := c.UpdateBlockedTimeWithBody(ctx, blockedTimeId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBlockedTimeResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBlockedTimeResponse, error) {
+	rsp, err := c.UpdateBlockedTime(ctx, blockedTimeId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBlockedTimeResponse(rsp)
+}
+
 // GetCompaniesWithResponse request returning *GetCompaniesResponse
 func (c *ClientWithResponses) GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error) {
 	rsp, err := c.GetCompanies(ctx, params, reqEditors...)
@@ -39587,6 +39850,39 @@ func ParseGetBlockedTimeResponse(rsp *http.Response) (*GetBlockedTimeResponse, e
 	}
 
 	response := &GetBlockedTimeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BlockedTimeResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateBlockedTimeResponse parses an HTTP response from a UpdateBlockedTimeWithResponse call
+func ParseUpdateBlockedTimeResponse(rsp *http.Response) (*UpdateBlockedTimeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateBlockedTimeResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
