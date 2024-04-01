@@ -3859,6 +3859,74 @@ type RequiredFields struct {
 	Kennitala *bool `json:"kennitala,omitempty"`
 }
 
+// ResourceGroup defines model for ResourceGroup.
+type ResourceGroup struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Id        *string            `json:"id,omitempty"`
+	Title     *string            `json:"title,omitempty"`
+	UpdatedAt *time.Time         `json:"updated_at,omitempty"`
+}
+
+// ResourceGroupCreate defines model for ResourceGroupCreate.
+type ResourceGroupCreate struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Id        *string           `json:"id,omitempty"`
+	Title     string            `json:"title"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+}
+
+// ResourceGroupCreateOverrides defines model for ResourceGroupCreateOverrides.
+type ResourceGroupCreateOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company ExpandableCompany `json:"company"`
+	Title   string            `json:"title"`
+}
+
+// ResourceGroupResponse defines model for ResourceGroupResponse.
+type ResourceGroupResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Id        *string           `json:"id,omitempty"`
+	Title     *string           `json:"title,omitempty"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+}
+
+// ResourceGroupResponseOverrides defines model for ResourceGroupResponseOverrides.
+type ResourceGroupResponseOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Id        *string           `json:"id,omitempty"`
+	Title     *string           `json:"title,omitempty"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+}
+
+// ResourceGroupUpdate defines model for ResourceGroupUpdate.
+type ResourceGroupUpdate struct {
+	Company   *interface{} `json:"company,omitempty"`
+	CreatedAt *time.Time   `json:"created_at,omitempty"`
+	Id        *string      `json:"id,omitempty"`
+	Title     *string      `json:"title,omitempty"`
+	UpdatedAt *time.Time   `json:"updated_at,omitempty"`
+}
+
+// ResourceGroupUpdateOverrides defines model for ResourceGroupUpdateOverrides.
+type ResourceGroupUpdateOverrides struct {
+	Company *interface{} `json:"company,omitempty"`
+	Title   *string      `json:"title,omitempty"`
+}
+
+// ResourceGroups defines model for ResourceGroups.
+type ResourceGroups []ResourceGroup
+
+// ResourceGroupsResponse defines model for ResourceGroupsResponse.
+type ResourceGroupsResponse []ResourceGroupResponse
+
 // Role defines model for Role.
 type Role struct {
 	Id    *string   `json:"id,omitempty"`
@@ -5487,6 +5555,18 @@ type ListCustomPropertiesParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// ListResourceGroupsParams defines parameters for ListResourceGroups.
+type ListResourceGroupsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+}
+
 // ListSalesParams defines parameters for ListSales.
 type ListSalesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -6753,6 +6833,48 @@ type UpdateCustomPropertyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateResourceGroupJSONBody defines parameters for CreateResourceGroup.
+type CreateResourceGroupJSONBody ResourceGroupCreate
+
+// CreateResourceGroupParams defines parameters for CreateResourceGroup.
+type CreateResourceGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteResourceGroupParams defines parameters for DeleteResourceGroup.
+type DeleteResourceGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetResourceGroupParams defines parameters for GetResourceGroup.
+type GetResourceGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateResourceGroupJSONBody defines parameters for UpdateResourceGroup.
+type UpdateResourceGroupJSONBody ResourceGroupUpdate
+
+// UpdateResourceGroupParams defines parameters for UpdateResourceGroup.
+type UpdateResourceGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateSaleJSONBody defines parameters for CreateSale.
 type CreateSaleJSONBody Sale
 
@@ -7556,6 +7678,12 @@ type CreateCustomPropertyJSONRequestBody CreateCustomPropertyJSONBody
 
 // UpdateCustomPropertyJSONRequestBody defines body for UpdateCustomProperty for application/json ContentType.
 type UpdateCustomPropertyJSONRequestBody UpdateCustomPropertyJSONBody
+
+// CreateResourceGroupJSONRequestBody defines body for CreateResourceGroup for application/json ContentType.
+type CreateResourceGroupJSONRequestBody CreateResourceGroupJSONBody
+
+// UpdateResourceGroupJSONRequestBody defines body for UpdateResourceGroup for application/json ContentType.
+type UpdateResourceGroupJSONRequestBody UpdateResourceGroupJSONBody
 
 // CreateSaleJSONRequestBody defines body for CreateSale for application/json ContentType.
 type CreateSaleJSONRequestBody CreateSaleJSONBody
@@ -9410,6 +9538,9 @@ type ClientInterface interface {
 	// ListCustomProperties request
 	ListCustomProperties(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListResourceGroups request
+	ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListSales request
 	ListSales(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -9842,6 +9973,22 @@ type ClientInterface interface {
 	UpdateCustomPropertyWithBody(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateCustomProperty(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, body UpdateCustomPropertyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateResourceGroup request with any body
+	CreateResourceGroupWithBody(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateResourceGroup(ctx context.Context, params *CreateResourceGroupParams, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteResourceGroup request
+	DeleteResourceGroup(ctx context.Context, resourceGroupId string, params *DeleteResourceGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetResourceGroup request
+	GetResourceGroup(ctx context.Context, resourceGroupId string, params *GetResourceGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateResourceGroup request with any body
+	UpdateResourceGroupWithBody(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateResourceGroup(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, body UpdateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSale request with any body
 	CreateSaleWithBody(ctx context.Context, params *CreateSaleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -10626,6 +10773,18 @@ func (c *Client) ListPayments(ctx context.Context, companyId string, params *Lis
 
 func (c *Client) ListCustomProperties(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCustomPropertiesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListResourceGroupsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -12522,6 +12681,78 @@ func (c *Client) UpdateCustomPropertyWithBody(ctx context.Context, propertyId st
 
 func (c *Client) UpdateCustomProperty(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, body UpdateCustomPropertyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateCustomPropertyRequest(c.Server, propertyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateResourceGroupWithBody(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateResourceGroupRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateResourceGroup(ctx context.Context, params *CreateResourceGroupParams, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateResourceGroupRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteResourceGroup(ctx context.Context, resourceGroupId string, params *DeleteResourceGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteResourceGroupRequest(c.Server, resourceGroupId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetResourceGroup(ctx context.Context, resourceGroupId string, params *GetResourceGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetResourceGroupRequest(c.Server, resourceGroupId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateResourceGroupWithBody(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateResourceGroupRequestWithBody(c.Server, resourceGroupId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateResourceGroup(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, body UpdateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateResourceGroupRequest(c.Server, resourceGroupId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -17063,6 +17294,86 @@ func NewListCustomPropertiesRequest(server string, companyId string, params *Lis
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListResourceGroupsRequest generates requests for ListResourceGroups
+func NewListResourceGroupsRequest(server string, companyId string, params *ListResourceGroupsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/resource_groups", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
 		}
 
 	}
@@ -26092,6 +26403,305 @@ func NewUpdateCustomPropertyRequestWithBody(server string, propertyId string, pa
 	return req, nil
 }
 
+// NewCreateResourceGroupRequest calls the generic CreateResourceGroup builder with application/json body
+func NewCreateResourceGroupRequest(server string, params *CreateResourceGroupParams, body CreateResourceGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateResourceGroupRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateResourceGroupRequestWithBody generates requests for CreateResourceGroup with any type of body
+func NewCreateResourceGroupRequestWithBody(server string, params *CreateResourceGroupParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/resource_groups")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteResourceGroupRequest generates requests for DeleteResourceGroup
+func NewDeleteResourceGroupRequest(server string, resourceGroupId string, params *DeleteResourceGroupParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "resource_group_id", runtime.ParamLocationPath, resourceGroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/resource_groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetResourceGroupRequest generates requests for GetResourceGroup
+func NewGetResourceGroupRequest(server string, resourceGroupId string, params *GetResourceGroupParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "resource_group_id", runtime.ParamLocationPath, resourceGroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/resource_groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateResourceGroupRequest calls the generic UpdateResourceGroup builder with application/json body
+func NewUpdateResourceGroupRequest(server string, resourceGroupId string, params *UpdateResourceGroupParams, body UpdateResourceGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateResourceGroupRequestWithBody(server, resourceGroupId, params, "application/json", bodyReader)
+}
+
+// NewUpdateResourceGroupRequestWithBody generates requests for UpdateResourceGroup with any type of body
+func NewUpdateResourceGroupRequestWithBody(server string, resourceGroupId string, params *UpdateResourceGroupParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "resource_group_id", runtime.ParamLocationPath, resourceGroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/resource_groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateSaleRequest calls the generic CreateSale builder with application/json body
 func NewCreateSaleRequest(server string, params *CreateSaleParams, body CreateSaleJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -31358,6 +31968,9 @@ type ClientWithResponsesInterface interface {
 	// ListCustomProperties request
 	ListCustomPropertiesWithResponse(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*ListCustomPropertiesResponse, error)
 
+	// ListResourceGroups request
+	ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error)
+
 	// ListSales request
 	ListSalesWithResponse(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*ListSalesResponse, error)
 
@@ -31790,6 +32403,22 @@ type ClientWithResponsesInterface interface {
 	UpdateCustomPropertyWithBodyWithResponse(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCustomPropertyResponse, error)
 
 	UpdateCustomPropertyWithResponse(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, body UpdateCustomPropertyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomPropertyResponse, error)
+
+	// CreateResourceGroup request with any body
+	CreateResourceGroupWithBodyWithResponse(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
+
+	CreateResourceGroupWithResponse(ctx context.Context, params *CreateResourceGroupParams, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
+
+	// DeleteResourceGroup request
+	DeleteResourceGroupWithResponse(ctx context.Context, resourceGroupId string, params *DeleteResourceGroupParams, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error)
+
+	// GetResourceGroup request
+	GetResourceGroupWithResponse(ctx context.Context, resourceGroupId string, params *GetResourceGroupParams, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error)
+
+	// UpdateResourceGroup request with any body
+	UpdateResourceGroupWithBodyWithResponse(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateResourceGroupResponse, error)
+
+	UpdateResourceGroupWithResponse(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, body UpdateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateResourceGroupResponse, error)
 
 	// CreateSale request with any body
 	CreateSaleWithBodyWithResponse(ctx context.Context, params *CreateSaleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSaleResponse, error)
@@ -32909,6 +33538,29 @@ func (r ListCustomPropertiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListCustomPropertiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListResourceGroupsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ResourceGroupsResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListResourceGroupsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListResourceGroupsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -35471,6 +36123,97 @@ func (r UpdateCustomPropertyResponse) StatusCode() int {
 	return 0
 }
 
+type CreateResourceGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ResourceGroupResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateResourceGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateResourceGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteResourceGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteResourceGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteResourceGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetResourceGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ResourceGroupResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetResourceGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetResourceGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateResourceGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ResourceGroupResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateResourceGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateResourceGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSaleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -37463,6 +38206,15 @@ func (c *ClientWithResponses) ListCustomPropertiesWithResponse(ctx context.Conte
 	return ParseListCustomPropertiesResponse(rsp)
 }
 
+// ListResourceGroupsWithResponse request returning *ListResourceGroupsResponse
+func (c *ClientWithResponses) ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error) {
+	rsp, err := c.ListResourceGroups(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListResourceGroupsResponse(rsp)
+}
+
 // ListSalesWithResponse request returning *ListSalesResponse
 func (c *ClientWithResponses) ListSalesWithResponse(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*ListSalesResponse, error) {
 	rsp, err := c.ListSales(ctx, companyId, params, reqEditors...)
@@ -38842,6 +39594,58 @@ func (c *ClientWithResponses) UpdateCustomPropertyWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseUpdateCustomPropertyResponse(rsp)
+}
+
+// CreateResourceGroupWithBodyWithResponse request with arbitrary body returning *CreateResourceGroupResponse
+func (c *ClientWithResponses) CreateResourceGroupWithBodyWithResponse(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error) {
+	rsp, err := c.CreateResourceGroupWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateResourceGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateResourceGroupWithResponse(ctx context.Context, params *CreateResourceGroupParams, body CreateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error) {
+	rsp, err := c.CreateResourceGroup(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateResourceGroupResponse(rsp)
+}
+
+// DeleteResourceGroupWithResponse request returning *DeleteResourceGroupResponse
+func (c *ClientWithResponses) DeleteResourceGroupWithResponse(ctx context.Context, resourceGroupId string, params *DeleteResourceGroupParams, reqEditors ...RequestEditorFn) (*DeleteResourceGroupResponse, error) {
+	rsp, err := c.DeleteResourceGroup(ctx, resourceGroupId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteResourceGroupResponse(rsp)
+}
+
+// GetResourceGroupWithResponse request returning *GetResourceGroupResponse
+func (c *ClientWithResponses) GetResourceGroupWithResponse(ctx context.Context, resourceGroupId string, params *GetResourceGroupParams, reqEditors ...RequestEditorFn) (*GetResourceGroupResponse, error) {
+	rsp, err := c.GetResourceGroup(ctx, resourceGroupId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetResourceGroupResponse(rsp)
+}
+
+// UpdateResourceGroupWithBodyWithResponse request with arbitrary body returning *UpdateResourceGroupResponse
+func (c *ClientWithResponses) UpdateResourceGroupWithBodyWithResponse(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateResourceGroupResponse, error) {
+	rsp, err := c.UpdateResourceGroupWithBody(ctx, resourceGroupId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateResourceGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateResourceGroupWithResponse(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, body UpdateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateResourceGroupResponse, error) {
+	rsp, err := c.UpdateResourceGroup(ctx, resourceGroupId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateResourceGroupResponse(rsp)
 }
 
 // CreateSaleWithBodyWithResponse request with arbitrary body returning *CreateSaleResponse
@@ -40687,6 +41491,39 @@ func ParseListCustomPropertiesResponse(rsp *http.Response) (*ListCustomPropertie
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListResourceGroupsResponse parses an HTTP response from a ListResourceGroupsWithResponse call
+func ParseListResourceGroupsResponse(rsp *http.Response) (*ListResourceGroupsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListResourceGroupsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ResourceGroupsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
@@ -43546,6 +44383,131 @@ func ParseUpdateCustomPropertyResponse(rsp *http.Response) (*UpdateCustomPropert
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateResourceGroupResponse parses an HTTP response from a CreateResourceGroupWithResponse call
+func ParseCreateResourceGroupResponse(rsp *http.Response) (*CreateResourceGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateResourceGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ResourceGroupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteResourceGroupResponse parses an HTTP response from a DeleteResourceGroupWithResponse call
+func ParseDeleteResourceGroupResponse(rsp *http.Response) (*DeleteResourceGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteResourceGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetResourceGroupResponse parses an HTTP response from a GetResourceGroupWithResponse call
+func ParseGetResourceGroupResponse(rsp *http.Response) (*GetResourceGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetResourceGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ResourceGroupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateResourceGroupResponse parses an HTTP response from a UpdateResourceGroupWithResponse call
+func ParseUpdateResourceGroupResponse(rsp *http.Response) (*UpdateResourceGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateResourceGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ResourceGroupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
