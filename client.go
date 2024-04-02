@@ -479,12 +479,12 @@ const (
 	ProductsWrite         OAuthScope = "products:write"
 	PropertiesRead        OAuthScope = "properties:read"
 	PropertiesWrite       OAuthScope = "properties:write"
+	ResourcesRead         OAuthScope = "resources:read"
+	ResourcesWrite        OAuthScope = "resources:write"
 	SalesRead             OAuthScope = "sales:read"
 	SalesWrite            OAuthScope = "sales:write"
 	SettlementsRead       OAuthScope = "settlements:read"
 	SmsMessagesRead       OAuthScope = "sms_messages:read"
-	SpacesRead            OAuthScope = "spaces:read"
-	SpacesWrite           OAuthScope = "spaces:write"
 	TerminalsRead         OAuthScope = "terminals:read"
 	TerminalsWrite        OAuthScope = "terminals:write"
 	TimeSlotsRead         OAuthScope = "time_slots:read"
@@ -578,6 +578,13 @@ const (
 	AlreadyRefunded       RefundMarketplaceSaleErrorCode = "already_refunded"
 	PaymentHasBeenSettled RefundMarketplaceSaleErrorCode = "payment_has_been_settled"
 	SaleHasBeenMutated    RefundMarketplaceSaleErrorCode = "sale_has_been_mutated"
+)
+
+// Defines values for ResourceType.
+const (
+	ResourceTypeSpace            ResourceType = "space"
+	ResourceTypeTable            ResourceType = "table"
+	ResourceTypeTableCombination ResourceType = "table_combination"
 )
 
 // Defines values for RoleType.
@@ -1079,6 +1086,9 @@ type BlockedTime struct {
 	EndsAt *time.Time `json:"ends_at,omitempty"`
 	Id     *string    `json:"id,omitempty"`
 
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource *ExpandableResource `json:"resource,omitempty"`
+
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 	//
 	// The dtstart property is ignored, and the start time of the event/blocked time is used instead.
@@ -1124,6 +1134,9 @@ type BlockedTimeCreate struct {
 	// End time of blocked time
 	EndsAt time.Time `json:"ends_at"`
 	Id     *string   `json:"id,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource *ExpandableResource `json:"resource,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 	//
@@ -1184,6 +1197,9 @@ type BlockedTimeFilter struct {
 	// Only return blocked times where starts_at is after this timestamp.
 	From *time.Time `json:"from,omitempty"`
 
+	// Filter by resource IDs
+	Resources *[]string `json:"resources,omitempty"`
+
 	// Filter by space IDs
 	Spaces *[]string `json:"spaces,omitempty"`
 
@@ -1212,6 +1228,9 @@ type BlockedTimeResponse struct {
 	// End time of blocked time
 	EndsAt time.Time `json:"ends_at"`
 	Id     *string   `json:"id,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource *ExpandableResource `json:"resource,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 	//
@@ -1259,6 +1278,9 @@ type BlockedTimeResponseOverrides struct {
 	EndsAt time.Time `json:"ends_at"`
 	Id     *string   `json:"id,omitempty"`
 
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource *ExpandableResource `json:"resource,omitempty"`
+
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 	//
 	// The dtstart property is ignored, and the start time of the event/blocked time is used instead.
@@ -1302,10 +1324,11 @@ type BlockedTimeUpdate struct {
 	Employee *interface{} `json:"employee,omitempty"`
 
 	// End time of blocked time
-	EndsAt *time.Time   `json:"ends_at,omitempty"`
-	Id     *string      `json:"id,omitempty"`
-	Rrule  *interface{} `json:"rrule,omitempty"`
-	Space  *interface{} `json:"space,omitempty"`
+	EndsAt   *time.Time   `json:"ends_at,omitempty"`
+	Id       *string      `json:"id,omitempty"`
+	Resource *interface{} `json:"resource,omitempty"`
+	Rrule    *interface{} `json:"rrule,omitempty"`
+	Space    *interface{} `json:"space,omitempty"`
 
 	// Start time of blocked time
 	StartsAt  *time.Time        `json:"starts_at,omitempty"`
@@ -1338,9 +1361,10 @@ type BlockedTimeUpdateOverrides struct {
 	Employee *interface{} `json:"employee,omitempty"`
 
 	// End time of blocked time
-	EndsAt *time.Time   `json:"ends_at,omitempty"`
-	Rrule  *interface{} `json:"rrule,omitempty"`
-	Space  *interface{} `json:"space,omitempty"`
+	EndsAt   *time.Time   `json:"ends_at,omitempty"`
+	Resource *interface{} `json:"resource,omitempty"`
+	Rrule    *interface{} `json:"rrule,omitempty"`
+	Space    *interface{} `json:"space,omitempty"`
 
 	// Start time of blocked time
 	StartsAt *time.Time `json:"starts_at,omitempty"`
@@ -1354,11 +1378,11 @@ type BlockedTimesResponse []BlockedTimeResponse
 
 // Booking interval in minutes.
 //
-// Dictates how often customers can book events with employee or space.
+// Dictates how often customers can book events with employee or resource.
 //
 // A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
 //
-// A booking interval is set on the company level but can be overridden on the space/employee level.
+// A booking interval is set on the company level but can be overridden on the resource/employee level.
 type BookingInterval int32
 
 // BookingQuestion defines model for BookingQuestion.
@@ -1385,6 +1409,9 @@ type CalculatedPrice struct {
 type CalendarSlotFilter struct {
 	// Filter by employee IDs
 	Employees *[]string `json:"employees,omitempty"`
+
+	// Filter by resource IDs
+	Resources *[]string `json:"resources,omitempty"`
 
 	// Filter by space IDs
 	Spaces *[]string `json:"spaces,omitempty"`
@@ -1867,11 +1894,11 @@ type EmployeeMarketplaceSettings struct {
 
 	// Booking interval in minutes.
 	//
-	// Dictates how often customers can book events with employee or space.
+	// Dictates how often customers can book events with employee or resource.
 	//
 	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
 	//
-	// A booking interval is set on the company level but can be overridden on the space/employee level.
+	// A booking interval is set on the company level but can be overridden on the resource/employee level.
 	BookingInterval *BookingInterval `json:"booking_interval,omitempty"`
 
 	// Whether the employee is enabled on the marketplace
@@ -2027,6 +2054,7 @@ type Event struct {
 	// On an event this is the aggregated price of all event types in the event and represents the total price of the event.
 	Price          *CalculatedPrice      `json:"price,omitempty"`
 	RecurringEvent *Event_RecurringEvent `json:"recurring_event,omitempty"`
+	Resources      *ExpandableResources  `json:"resources,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 	//
@@ -2042,10 +2070,10 @@ type Event struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Sale *ExpandableSale `json:"sale,omitempty"`
 
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	// Use resource instead
 	Space *Event_Space `json:"space,omitempty"`
 
-	// Deprecated, expand space property instead
+	// Deprecated, expand resource property instead
 	SpaceName *string `json:"space_name,omitempty"`
 
 	// A property that users can use to mark events as special. Has no affect on system behavior.
@@ -2102,7 +2130,7 @@ type Event_RecurringEvent struct {
 	union json.RawMessage
 }
 
-// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+// Use resource instead
 type Event_Space struct {
 	union json.RawMessage
 }
@@ -2199,6 +2227,7 @@ type EventCheckinResult struct {
 	// On an event this is the aggregated price of all event types in the event and represents the total price of the event.
 	Price          *CalculatedPrice                   `json:"price,omitempty"`
 	RecurringEvent *EventCheckinResult_RecurringEvent `json:"recurring_event,omitempty"`
+	Resources      *ExpandableResources               `json:"resources,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 	//
@@ -2215,10 +2244,10 @@ type EventCheckinResult struct {
 	Sale   *ExpandableSale `json:"sale,omitempty"`
 	SaleId *string         `json:"sale_id,omitempty"`
 
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	// Use resource instead
 	Space *EventCheckinResult_Space `json:"space,omitempty"`
 
-	// Deprecated, expand space property instead
+	// Deprecated, expand resource property instead
 	SpaceName *string `json:"space_name,omitempty"`
 
 	// A property that users can use to mark events as special. Has no affect on system behavior.
@@ -2281,7 +2310,7 @@ type EventCheckinResult_RecurringEvent struct {
 	union json.RawMessage
 }
 
-// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+// Use resource instead
 type EventCheckinResult_Space struct {
 	union json.RawMessage
 }
@@ -2346,6 +2375,9 @@ type EventFilter struct {
 
 	// Filter by phone number of customer
 	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// Filter by resource IDs
+	Resources *[]string `json:"resources,omitempty"`
 
 	// Filter by space IDs
 	Spaces *[]string `json:"spaces,omitempty"`
@@ -2567,10 +2599,10 @@ type EventTypePreference struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType *ExpandableEventType `json:"event_type,omitempty"`
 
-	// If true, space can set custom duration for this event type.
+	// If true, resource can set custom duration for this event type.
 	HasCustomDuration *bool `json:"has_custom_duration,omitempty"`
 
-	// If true, space can not service this event type.
+	// If true, resource can not service this event type.
 	Skip *bool `json:"skip,omitempty"`
 }
 
@@ -2736,6 +2768,14 @@ type ExpandablePayment struct {
 type ExpandableProduct struct {
 	union json.RawMessage
 }
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableResource struct {
+	union json.RawMessage
+}
+
+// ExpandableResources defines model for ExpandableResources.
+type ExpandableResources []ExpandableResource
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableRole struct {
@@ -3235,8 +3275,14 @@ type NotificationEvent struct {
 
 	// The original date and time of the event
 	RescheduledFrom *time.Time `json:"rescheduled_from,omitempty"`
-	Space           *string    `json:"space,omitempty"`
-	SpaceName       *string    `json:"space_name,omitempty"`
+
+	// The names of the resources that are booked for the event
+	ResourceNames *[]string `json:"resource_names,omitempty"`
+
+	// The resources that are booked for the event
+	Resources *[]string `json:"resources,omitempty"`
+	Space     *string   `json:"space,omitempty"`
+	SpaceName *string   `json:"space_name,omitempty"`
 
 	// Start time of event
 	StartsAt  *time.Time              `json:"starts_at,omitempty"`
@@ -3859,6 +3905,45 @@ type RequiredFields struct {
 	Kennitala *bool `json:"kennitala,omitempty"`
 }
 
+// Resource defines model for Resource.
+type Resource struct {
+	// Whether the resource is visible on the calendar
+	AvailableForBookings *bool `json:"available_for_bookings,omitempty"`
+
+	// Booking interval in minutes.
+	//
+	// Dictates how often customers can book events with employee or resource.
+	//
+	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
+	//
+	// A booking interval is set on the company level but can be overridden on the resource/employee level.
+	BookingInterval *BookingInterval `json:"booking_interval,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company              *ExpandableCompany    `json:"company,omitempty"`
+	CreatedAt            *time.Time            `json:"created_at,omitempty"`
+	Description          *string               `json:"description,omitempty"`
+	EventTypePreferences *EventTypePreferences `json:"event_type_preferences,omitempty"`
+	Id                   *string               `json:"id,omitempty"`
+	Image                *Image                `json:"image,omitempty"`
+
+	// If true, resource is visible on the marketplace.
+	Marketplace *bool `json:"marketplace,omitempty"`
+
+	// The maximum capacity of the resource, for example how many people can occupy a table at maximum.
+	MaxCapacity *int32 `json:"max_capacity,omitempty"`
+
+	// The mininum capacity of the resource, for example how many people can occupy a table at minimum.
+	MinCapacity *int32  `json:"min_capacity,omitempty"`
+	Name        *string `json:"name,omitempty"`
+
+	// The order of the resource in the list of resources on the marketplace.
+	Order        *int32        `json:"order,omitempty"`
+	SubResources *[]string     `json:"sub_resources,omitempty"`
+	Type         *ResourceType `json:"type,omitempty"`
+	UpdatedAt    *time.Time    `json:"updated_at,omitempty"`
+}
+
 // ResourceGroup defines model for ResourceGroup.
 type ResourceGroup struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -3926,6 +4011,18 @@ type ResourceGroups []ResourceGroup
 
 // ResourceGroupsResponse defines model for ResourceGroupsResponse.
 type ResourceGroupsResponse []ResourceGroupResponse
+
+// ResourceType defines model for ResourceType.
+type ResourceType string
+
+// Resources defines model for Resources.
+type Resources []Resource
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type ResourcesFilter struct {
+	// Filter by resource IDs
+	Types *[]ResourceType `json:"types,omitempty"`
+}
 
 // Role defines model for Role.
 type Role struct {
@@ -4133,11 +4230,11 @@ type Space struct {
 
 	// Booking interval in minutes.
 	//
-	// Dictates how often customers can book events with employee or space.
+	// Dictates how often customers can book events with employee or resource.
 	//
 	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
 	//
-	// A booking interval is set on the company level but can be overridden on the space/employee level.
+	// A booking interval is set on the company level but can be overridden on the resource/employee level.
 	BookingInterval *BookingInterval `json:"booking_interval,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -4176,7 +4273,7 @@ type Spaces []Space
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SpacesFilter struct {
-	// Filter by employee IDs
+	// Filter by space IDs
 	Types *[]SpaceType `json:"types,omitempty"`
 }
 
@@ -4366,11 +4463,11 @@ type TimeSlot struct {
 	// The IDs of the employees that are available for this time slot
 	EmployeeIds *[]string `json:"employeeIds,omitempty"`
 
+	// The IDs of the resources that are available for this time slot
+	ResourceIds *[]string `json:"resourceIds,omitempty"`
+
 	// The start time of the time slot
 	Slot *time.Time `json:"slot,omitempty"`
-
-	// The IDs of the spaces that are available for this time slot
-	SpaceIds *[]string `json:"spaceIds,omitempty"`
 }
 
 // TimeSlotReservation defines model for TimeSlotReservation.
@@ -4389,6 +4486,7 @@ type TimeSlotReservation struct {
 	EventTypes *[]ExpandableEventType `json:"event_types,omitempty"`
 	ExpiresAt  *time.Time             `json:"expires_at,omitempty"`
 	Id         *string                `json:"id,omitempty"`
+	Resources  *ExpandableResources   `json:"resources,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Space     *ExpandableSpace `json:"space,omitempty"`
@@ -4403,6 +4501,9 @@ type TimeSlotReservationFilter struct {
 
 	// Only return reservations where starts_at is after this timestamp.
 	From *time.Time `json:"from,omitempty"`
+
+	// Filter by resource IDs
+	Resources *[]string `json:"resources,omitempty"`
 
 	// Filter by space IDs
 	Spaces *[]string `json:"spaces,omitempty"`
@@ -5567,6 +5668,25 @@ type ListResourceGroupsParams struct {
 	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
 }
 
+// ListResourcesParams defines parameters for ListResources.
+type ListResourcesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Search](https://api.noona.is/docs/working-with-the-apis/search)
+	Search *Search `form:"search,omitempty" json:"search,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination      `form:"pagination,omitempty" json:"pagination,omitempty"`
+	Filter     *ResourcesFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
 // ListSalesParams defines parameters for ListSales.
 type ListSalesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -5716,7 +5836,7 @@ type ListTimeSlotsParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand       *Expand   `form:"expand,omitempty" json:"expand,omitempty"`
 	EmployeeId   *string   `form:"employee_id,omitempty" json:"employee_id,omitempty"`
-	SpaceId      *string   `form:"space_id,omitempty" json:"space_id,omitempty"`
+	ResourceId   *string   `form:"resource_id,omitempty" json:"resource_id,omitempty"`
 	EventTypeIds *[]string `form:"event_type_ids,omitempty" json:"event_type_ids,omitempty"`
 	EventId      *string   `form:"event_id,omitempty" json:"event_id,omitempty"`
 	StartDate    string    `form:"start_date" json:"start_date"`
@@ -6875,6 +6995,48 @@ type UpdateResourceGroupParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateResourceJSONBody defines parameters for CreateResource.
+type CreateResourceJSONBody Resource
+
+// CreateResourceParams defines parameters for CreateResource.
+type CreateResourceParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteResourceParams defines parameters for DeleteResource.
+type DeleteResourceParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetResourceParams defines parameters for GetResource.
+type GetResourceParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateResourceJSONBody defines parameters for UpdateResource.
+type UpdateResourceJSONBody Resource
+
+// UpdateResourceParams defines parameters for UpdateResource.
+type UpdateResourceParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateSaleJSONBody defines parameters for CreateSale.
 type CreateSaleJSONBody Sale
 
@@ -7071,6 +7233,15 @@ type StreamProductGroupsParams struct {
 
 // StreamProductsParams defines parameters for StreamProducts.
 type StreamProductsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// StreamResourcesParams defines parameters for StreamResources.
+type StreamResourcesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -7684,6 +7855,12 @@ type CreateResourceGroupJSONRequestBody CreateResourceGroupJSONBody
 
 // UpdateResourceGroupJSONRequestBody defines body for UpdateResourceGroup for application/json ContentType.
 type UpdateResourceGroupJSONRequestBody UpdateResourceGroupJSONBody
+
+// CreateResourceJSONRequestBody defines body for CreateResource for application/json ContentType.
+type CreateResourceJSONRequestBody CreateResourceJSONBody
+
+// UpdateResourceJSONRequestBody defines body for UpdateResource for application/json ContentType.
+type UpdateResourceJSONRequestBody UpdateResourceJSONBody
 
 // CreateSaleJSONRequestBody defines body for CreateSale for application/json ContentType.
 type CreateSaleJSONRequestBody CreateSaleJSONBody
@@ -8642,6 +8819,40 @@ func (t *ExpandableProduct) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+func (t ExpandableResource) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableResource) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableResource) AsResource() (Resource, error) {
+	var body Resource
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableResource) FromResource(v Resource) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableResource) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableResource) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 func (t ExpandableRole) AsID() (ID, error) {
 	var body ID
 	err := json.Unmarshal(t.union, &body)
@@ -9541,6 +9752,9 @@ type ClientInterface interface {
 	// ListResourceGroups request
 	ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListResources request
+	ListResources(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListSales request
 	ListSales(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -9990,6 +10204,22 @@ type ClientInterface interface {
 
 	UpdateResourceGroup(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, body UpdateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateResource request with any body
+	CreateResourceWithBody(ctx context.Context, params *CreateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateResource(ctx context.Context, params *CreateResourceParams, body CreateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteResource request
+	DeleteResource(ctx context.Context, resourceId string, params *DeleteResourceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetResource request
+	GetResource(ctx context.Context, resourceId string, params *GetResourceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateResource request with any body
+	UpdateResourceWithBody(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateSale request with any body
 	CreateSaleWithBody(ctx context.Context, params *CreateSaleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -10062,6 +10292,9 @@ type ClientInterface interface {
 
 	// StreamProducts request
 	StreamProducts(ctx context.Context, companyId string, params *StreamProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// StreamResources request
+	StreamResources(ctx context.Context, companyId string, params *StreamResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// StreamSpaces request
 	StreamSpaces(ctx context.Context, companyId string, params *StreamSpacesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -10785,6 +11018,18 @@ func (c *Client) ListCustomProperties(ctx context.Context, companyId string, par
 
 func (c *Client) ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListResourceGroupsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListResources(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListResourcesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -12763,6 +13008,78 @@ func (c *Client) UpdateResourceGroup(ctx context.Context, resourceGroupId string
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateResourceWithBody(ctx context.Context, params *CreateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateResourceRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateResource(ctx context.Context, params *CreateResourceParams, body CreateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateResourceRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteResource(ctx context.Context, resourceId string, params *DeleteResourceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteResourceRequest(c.Server, resourceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetResource(ctx context.Context, resourceId string, params *GetResourceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetResourceRequest(c.Server, resourceId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateResourceWithBody(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateResourceRequestWithBody(c.Server, resourceId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateResourceRequest(c.Server, resourceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateSaleWithBody(ctx context.Context, params *CreateSaleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSaleRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
@@ -13065,6 +13382,18 @@ func (c *Client) StreamProductGroups(ctx context.Context, companyId string, para
 
 func (c *Client) StreamProducts(ctx context.Context, companyId string, params *StreamProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewStreamProductsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) StreamResources(ctx context.Context, companyId string, params *StreamResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStreamResourcesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -17388,6 +17717,122 @@ func NewListResourceGroupsRequest(server string, companyId string, params *ListR
 	return req, nil
 }
 
+// NewListResourcesRequest generates requests for ListResources
+func NewListResourcesRequest(server string, companyId string, params *ListResourcesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/resources", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Search != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "search", runtime.ParamLocationQuery, *params.Search); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListSalesRequest generates requests for ListSales
 func NewListSalesRequest(server string, companyId string, params *ListSalesParams) (*http.Request, error) {
 	var err error
@@ -18426,9 +18871,9 @@ func NewListTimeSlotsRequest(server string, companyId string, params *ListTimeSl
 
 	}
 
-	if params.SpaceId != nil {
+	if params.ResourceId != nil {
 
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "space_id", runtime.ParamLocationQuery, *params.SpaceId); err != nil {
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "resource_id", runtime.ParamLocationQuery, *params.ResourceId); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
@@ -26702,6 +27147,305 @@ func NewUpdateResourceGroupRequestWithBody(server string, resourceGroupId string
 	return req, nil
 }
 
+// NewCreateResourceRequest calls the generic CreateResource builder with application/json body
+func NewCreateResourceRequest(server string, params *CreateResourceParams, body CreateResourceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateResourceRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateResourceRequestWithBody generates requests for CreateResource with any type of body
+func NewCreateResourceRequestWithBody(server string, params *CreateResourceParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/resources")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteResourceRequest generates requests for DeleteResource
+func NewDeleteResourceRequest(server string, resourceId string, params *DeleteResourceParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "resource_id", runtime.ParamLocationPath, resourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/resources/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetResourceRequest generates requests for GetResource
+func NewGetResourceRequest(server string, resourceId string, params *GetResourceParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "resource_id", runtime.ParamLocationPath, resourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/resources/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateResourceRequest calls the generic UpdateResource builder with application/json body
+func NewUpdateResourceRequest(server string, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateResourceRequestWithBody(server, resourceId, params, "application/json", bodyReader)
+}
+
+// NewUpdateResourceRequestWithBody generates requests for UpdateResource with any type of body
+func NewUpdateResourceRequestWithBody(server string, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "resource_id", runtime.ParamLocationPath, resourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/resources/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateSaleRequest calls the generic CreateSale builder with application/json body
 func NewCreateSaleRequest(server string, params *CreateSaleParams, body CreateSaleJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -28182,6 +28926,76 @@ func NewStreamProductsRequest(server string, companyId string, params *StreamPro
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/stream/companies/%s/products", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewStreamResourcesRequest generates requests for StreamResources
+func NewStreamResourcesRequest(server string, companyId string, params *StreamResourcesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/stream/companies/%s/resource", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -31971,6 +32785,9 @@ type ClientWithResponsesInterface interface {
 	// ListResourceGroups request
 	ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error)
 
+	// ListResources request
+	ListResourcesWithResponse(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*ListResourcesResponse, error)
+
 	// ListSales request
 	ListSalesWithResponse(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*ListSalesResponse, error)
 
@@ -32420,6 +33237,22 @@ type ClientWithResponsesInterface interface {
 
 	UpdateResourceGroupWithResponse(ctx context.Context, resourceGroupId string, params *UpdateResourceGroupParams, body UpdateResourceGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateResourceGroupResponse, error)
 
+	// CreateResource request with any body
+	CreateResourceWithBodyWithResponse(ctx context.Context, params *CreateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceResponse, error)
+
+	CreateResourceWithResponse(ctx context.Context, params *CreateResourceParams, body CreateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourceResponse, error)
+
+	// DeleteResource request
+	DeleteResourceWithResponse(ctx context.Context, resourceId string, params *DeleteResourceParams, reqEditors ...RequestEditorFn) (*DeleteResourceResponse, error)
+
+	// GetResource request
+	GetResourceWithResponse(ctx context.Context, resourceId string, params *GetResourceParams, reqEditors ...RequestEditorFn) (*GetResourceResponse, error)
+
+	// UpdateResource request with any body
+	UpdateResourceWithBodyWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error)
+
+	UpdateResourceWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error)
+
 	// CreateSale request with any body
 	CreateSaleWithBodyWithResponse(ctx context.Context, params *CreateSaleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSaleResponse, error)
 
@@ -32492,6 +33325,9 @@ type ClientWithResponsesInterface interface {
 
 	// StreamProducts request
 	StreamProductsWithResponse(ctx context.Context, companyId string, params *StreamProductsParams, reqEditors ...RequestEditorFn) (*StreamProductsResponse, error)
+
+	// StreamResources request
+	StreamResourcesWithResponse(ctx context.Context, companyId string, params *StreamResourcesParams, reqEditors ...RequestEditorFn) (*StreamResourcesResponse, error)
 
 	// StreamSpaces request
 	StreamSpacesWithResponse(ctx context.Context, companyId string, params *StreamSpacesParams, reqEditors ...RequestEditorFn) (*StreamSpacesResponse, error)
@@ -33561,6 +34397,28 @@ func (r ListResourceGroupsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListResourceGroupsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListResourcesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Resources
+}
+
+// Status returns HTTPResponse.Status
+func (r ListResourcesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListResourcesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -36214,6 +37072,93 @@ func (r UpdateResourceGroupResponse) StatusCode() int {
 	return 0
 }
 
+type CreateResourceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Resource
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateResourceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateResourceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteResourceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteResourceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteResourceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetResourceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Resource
+}
+
+// Status returns HTTPResponse.Status
+func (r GetResourceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetResourceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateResourceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Resource
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateResourceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateResourceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSaleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -36658,6 +37603,27 @@ func (r StreamProductsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r StreamProductsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type StreamResourcesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r StreamResourcesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StreamResourcesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -38215,6 +39181,15 @@ func (c *ClientWithResponses) ListResourceGroupsWithResponse(ctx context.Context
 	return ParseListResourceGroupsResponse(rsp)
 }
 
+// ListResourcesWithResponse request returning *ListResourcesResponse
+func (c *ClientWithResponses) ListResourcesWithResponse(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*ListResourcesResponse, error) {
+	rsp, err := c.ListResources(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListResourcesResponse(rsp)
+}
+
 // ListSalesWithResponse request returning *ListSalesResponse
 func (c *ClientWithResponses) ListSalesWithResponse(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*ListSalesResponse, error) {
 	rsp, err := c.ListSales(ctx, companyId, params, reqEditors...)
@@ -39648,6 +40623,58 @@ func (c *ClientWithResponses) UpdateResourceGroupWithResponse(ctx context.Contex
 	return ParseUpdateResourceGroupResponse(rsp)
 }
 
+// CreateResourceWithBodyWithResponse request with arbitrary body returning *CreateResourceResponse
+func (c *ClientWithResponses) CreateResourceWithBodyWithResponse(ctx context.Context, params *CreateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceResponse, error) {
+	rsp, err := c.CreateResourceWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateResourceResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateResourceWithResponse(ctx context.Context, params *CreateResourceParams, body CreateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateResourceResponse, error) {
+	rsp, err := c.CreateResource(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateResourceResponse(rsp)
+}
+
+// DeleteResourceWithResponse request returning *DeleteResourceResponse
+func (c *ClientWithResponses) DeleteResourceWithResponse(ctx context.Context, resourceId string, params *DeleteResourceParams, reqEditors ...RequestEditorFn) (*DeleteResourceResponse, error) {
+	rsp, err := c.DeleteResource(ctx, resourceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteResourceResponse(rsp)
+}
+
+// GetResourceWithResponse request returning *GetResourceResponse
+func (c *ClientWithResponses) GetResourceWithResponse(ctx context.Context, resourceId string, params *GetResourceParams, reqEditors ...RequestEditorFn) (*GetResourceResponse, error) {
+	rsp, err := c.GetResource(ctx, resourceId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetResourceResponse(rsp)
+}
+
+// UpdateResourceWithBodyWithResponse request with arbitrary body returning *UpdateResourceResponse
+func (c *ClientWithResponses) UpdateResourceWithBodyWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error) {
+	rsp, err := c.UpdateResourceWithBody(ctx, resourceId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateResourceResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateResourceWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error) {
+	rsp, err := c.UpdateResource(ctx, resourceId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateResourceResponse(rsp)
+}
+
 // CreateSaleWithBodyWithResponse request with arbitrary body returning *CreateSaleResponse
 func (c *ClientWithResponses) CreateSaleWithBodyWithResponse(ctx context.Context, params *CreateSaleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSaleResponse, error) {
 	rsp, err := c.CreateSaleWithBody(ctx, params, contentType, body, reqEditors...)
@@ -39875,6 +40902,15 @@ func (c *ClientWithResponses) StreamProductsWithResponse(ctx context.Context, co
 		return nil, err
 	}
 	return ParseStreamProductsResponse(rsp)
+}
+
+// StreamResourcesWithResponse request returning *StreamResourcesResponse
+func (c *ClientWithResponses) StreamResourcesWithResponse(ctx context.Context, companyId string, params *StreamResourcesParams, reqEditors ...RequestEditorFn) (*StreamResourcesResponse, error) {
+	rsp, err := c.StreamResources(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStreamResourcesResponse(rsp)
 }
 
 // StreamSpacesWithResponse request returning *StreamSpacesResponse
@@ -41524,6 +42560,32 @@ func ParseListResourceGroupsResponse(rsp *http.Response) (*ListResourceGroupsRes
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListResourcesResponse parses an HTTP response from a ListResourcesWithResponse call
+func ParseListResourcesResponse(rsp *http.Response) (*ListResourcesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListResourcesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Resources
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
@@ -44514,6 +45576,100 @@ func ParseUpdateResourceGroupResponse(rsp *http.Response) (*UpdateResourceGroupR
 	return response, nil
 }
 
+// ParseCreateResourceResponse parses an HTTP response from a CreateResourceWithResponse call
+func ParseCreateResourceResponse(rsp *http.Response) (*CreateResourceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateResourceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Resource
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteResourceResponse parses an HTTP response from a DeleteResourceWithResponse call
+func ParseDeleteResourceResponse(rsp *http.Response) (*DeleteResourceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteResourceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetResourceResponse parses an HTTP response from a GetResourceWithResponse call
+func ParseGetResourceResponse(rsp *http.Response) (*GetResourceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetResourceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Resource
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateResourceResponse parses an HTTP response from a UpdateResourceWithResponse call
+func ParseUpdateResourceResponse(rsp *http.Response) (*UpdateResourceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateResourceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Resource
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateSaleResponse parses an HTTP response from a CreateSaleWithResponse call
 func ParseCreateSaleResponse(rsp *http.Response) (*CreateSaleResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -44933,6 +46089,22 @@ func ParseStreamProductsResponse(rsp *http.Response) (*StreamProductsResponse, e
 	}
 
 	response := &StreamProductsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseStreamResourcesResponse parses an HTTP response from a StreamResourcesWithResponse call
+func ParseStreamResourcesResponse(rsp *http.Response) (*StreamResourcesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StreamResourcesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
