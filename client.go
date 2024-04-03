@@ -2047,6 +2047,9 @@ type Event struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Payment *ExpandablePayment `json:"payment,omitempty"`
 
+	// A property that users can use to pin events.
+	Pinned *bool `json:"pinned,omitempty"`
+
 	// The calculated price of an event type or event for a customer.
 	//
 	// This is calculated from the event type's price ranges, variations and possible discounts related to customer groups.
@@ -2219,6 +2222,9 @@ type EventCheckinResult struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Payment *ExpandablePayment `json:"payment,omitempty"`
+
+	// A property that users can use to pin events.
+	Pinned *bool `json:"pinned,omitempty"`
 
 	// The calculated price of an event type or event for a customer.
 	//
