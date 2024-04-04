@@ -4987,7 +4987,10 @@ type WaitlistEntry struct {
 	ExpiresAt  *time.Time             `json:"expires_at,omitempty"`
 	Id         *string                `json:"id,omitempty"`
 	Notes      *string                `json:"notes,omitempty"`
-	UpdatedAt  *time.Time             `json:"updated_at,omitempty"`
+
+	// Number of guests for the event.
+	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
 }
 
 // WaitlistEntryCreate defines model for WaitlistEntryCreate.
@@ -5005,7 +5008,10 @@ type WaitlistEntryCreate struct {
 	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
 	Id         *string               `json:"id,omitempty"`
 	Notes      *string               `json:"notes,omitempty"`
-	UpdatedAt  *time.Time            `json:"updated_at,omitempty"`
+
+	// Number of guests for the event.
+	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
 }
 
 // WaitlistEntryCreateOverrides defines model for WaitlistEntryCreateOverrides.
@@ -5021,6 +5027,9 @@ type WaitlistEntryCreateOverrides struct {
 	EventTypes []ExpandableEventType `json:"event_types"`
 	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
 	Notes      *string               `json:"notes,omitempty"`
+
+	// Number of guests for the event.
+	NumberOfGuests *int32 `json:"number_of_guests,omitempty"`
 }
 
 // WaitlistEntryField defines model for WaitlistEntryField.
@@ -5044,7 +5053,10 @@ type WaitlistEntryResponse struct {
 	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
 	Id         string                `json:"id"`
 	Notes      *string               `json:"notes,omitempty"`
-	UpdatedAt  time.Time             `json:"updated_at"`
+
+	// Number of guests for the event.
+	NumberOfGuests *int32    `json:"number_of_guests,omitempty"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 // WaitlistEntryResponseOverrides defines model for WaitlistEntryResponseOverrides.
@@ -5062,7 +5074,10 @@ type WaitlistEntryResponseOverrides struct {
 	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
 	Id         string                `json:"id"`
 	Notes      *string               `json:"notes,omitempty"`
-	UpdatedAt  time.Time             `json:"updated_at"`
+
+	// Number of guests for the event.
+	NumberOfGuests *int32    `json:"number_of_guests,omitempty"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 // WaitlistEntryUpdate defines model for WaitlistEntryUpdate.
@@ -5079,7 +5094,10 @@ type WaitlistEntryUpdate struct {
 	ExpiresAt  *time.Time             `json:"expires_at,omitempty"`
 	Id         *string                `json:"id,omitempty"`
 	Notes      *string                `json:"notes,omitempty"`
-	UpdatedAt  *time.Time             `json:"updated_at,omitempty"`
+
+	// Number of guests for the event.
+	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
 }
 
 // WaitlistEntryUpdateOverrides defines model for WaitlistEntryUpdateOverrides.
@@ -5094,6 +5112,9 @@ type WaitlistEntryUpdateOverrides struct {
 	EventTypes *[]ExpandableEventType `json:"event_types,omitempty"`
 	ExpiresAt  *time.Time             `json:"expires_at,omitempty"`
 	Notes      *string                `json:"notes,omitempty"`
+
+	// Number of guests for the event.
+	NumberOfGuests *int32 `json:"number_of_guests,omitempty"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
