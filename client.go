@@ -2042,7 +2042,10 @@ type Event struct {
 	// License plate for the vehicle associated with this event
 	LicensePlate            *string                  `json:"license_plate,omitempty"`
 	NotificationPreferences *NotificationPreferences `json:"notification_preferences,omitempty"`
-	Origin                  *EventOrigin             `json:"origin,omitempty"`
+
+	// Number of guests for the event.
+	NumberOfGuests *int32       `json:"number_of_guests,omitempty"`
+	Origin         *EventOrigin `json:"origin,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Payment *ExpandablePayment `json:"payment,omitempty"`
@@ -2216,9 +2219,12 @@ type EventCheckinResult struct {
 	InvoiceStatus *EventCheckinResultInvoiceStatus `json:"invoice_status,omitempty"`
 
 	// License plate for the vehicle associated with this event
-	LicensePlate            *string                   `json:"license_plate,omitempty"`
-	NotificationPreferences *NotificationPreferences  `json:"notification_preferences,omitempty"`
-	Origin                  *EventCheckinResultOrigin `json:"origin,omitempty"`
+	LicensePlate            *string                  `json:"license_plate,omitempty"`
+	NotificationPreferences *NotificationPreferences `json:"notification_preferences,omitempty"`
+
+	// Number of guests for the event.
+	NumberOfGuests *int32                    `json:"number_of_guests,omitempty"`
+	Origin         *EventCheckinResultOrigin `json:"origin,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Payment *ExpandablePayment `json:"payment,omitempty"`
