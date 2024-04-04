@@ -4001,7 +4001,7 @@ type ResourceGroupResponse struct {
 	CreatedAt *time.Time          `json:"created_at,omitempty"`
 	Id        *string             `json:"id,omitempty"`
 	Resources ExpandableResources `json:"resources"`
-	Title     *string             `json:"title,omitempty"`
+	Title     string              `json:"title"`
 	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
 }
 
@@ -4012,7 +4012,7 @@ type ResourceGroupResponseOverrides struct {
 	CreatedAt *time.Time          `json:"created_at,omitempty"`
 	Id        *string             `json:"id,omitempty"`
 	Resources ExpandableResources `json:"resources"`
-	Title     *string             `json:"title,omitempty"`
+	Title     string              `json:"title"`
 	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
 }
 
