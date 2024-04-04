@@ -2780,6 +2780,11 @@ type ExpandableResource struct {
 	union json.RawMessage
 }
 
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableResourceGroup struct {
+	union json.RawMessage
+}
+
 // ExpandableResources defines model for ExpandableResources.
 type ExpandableResources []ExpandableResource
 
@@ -3944,72 +3949,82 @@ type Resource struct {
 	Name        *string `json:"name,omitempty"`
 
 	// The order of the resource in the list of resources on the marketplace.
-	Order        *int32        `json:"order,omitempty"`
-	SubResources *[]string     `json:"sub_resources,omitempty"`
-	Type         *ResourceType `json:"type,omitempty"`
-	UpdatedAt    *time.Time    `json:"updated_at,omitempty"`
+	Order *int32 `json:"order,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	ResourceGroup *ExpandableResourceGroup `json:"resource_group,omitempty"`
+	SubResources  *[]string                `json:"sub_resources,omitempty"`
+	Type          *ResourceType            `json:"type,omitempty"`
+	UpdatedAt     *time.Time               `json:"updated_at,omitempty"`
 }
 
 // ResourceGroup defines model for ResourceGroup.
 type ResourceGroup struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company   *ExpandableCompany `json:"company,omitempty"`
-	CreatedAt *time.Time         `json:"created_at,omitempty"`
-	Id        *string            `json:"id,omitempty"`
-	Title     *string            `json:"title,omitempty"`
-	UpdatedAt *time.Time         `json:"updated_at,omitempty"`
+	Company   *ExpandableCompany   `json:"company,omitempty"`
+	CreatedAt *time.Time           `json:"created_at,omitempty"`
+	Id        *string              `json:"id,omitempty"`
+	Resources *ExpandableResources `json:"resources,omitempty"`
+	Title     *string              `json:"title,omitempty"`
+	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
 }
 
 // ResourceGroupCreate defines model for ResourceGroupCreate.
 type ResourceGroupCreate struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company   ExpandableCompany `json:"company"`
-	CreatedAt *time.Time        `json:"created_at,omitempty"`
-	Id        *string           `json:"id,omitempty"`
-	Title     string            `json:"title"`
-	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+	Company   ExpandableCompany   `json:"company"`
+	CreatedAt *time.Time          `json:"created_at,omitempty"`
+	Id        *string             `json:"id,omitempty"`
+	Resources ExpandableResources `json:"resources"`
+	Title     string              `json:"title"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
 }
 
 // ResourceGroupCreateOverrides defines model for ResourceGroupCreateOverrides.
 type ResourceGroupCreateOverrides struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company ExpandableCompany `json:"company"`
-	Title   string            `json:"title"`
+	Company   ExpandableCompany   `json:"company"`
+	Resources ExpandableResources `json:"resources"`
+	Title     string              `json:"title"`
 }
 
 // ResourceGroupResponse defines model for ResourceGroupResponse.
 type ResourceGroupResponse struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company   ExpandableCompany `json:"company"`
-	CreatedAt *time.Time        `json:"created_at,omitempty"`
-	Id        *string           `json:"id,omitempty"`
-	Title     *string           `json:"title,omitempty"`
-	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+	Company   ExpandableCompany   `json:"company"`
+	CreatedAt *time.Time          `json:"created_at,omitempty"`
+	Id        *string             `json:"id,omitempty"`
+	Resources ExpandableResources `json:"resources"`
+	Title     *string             `json:"title,omitempty"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
 }
 
 // ResourceGroupResponseOverrides defines model for ResourceGroupResponseOverrides.
 type ResourceGroupResponseOverrides struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company   ExpandableCompany `json:"company"`
-	CreatedAt *time.Time        `json:"created_at,omitempty"`
-	Id        *string           `json:"id,omitempty"`
-	Title     *string           `json:"title,omitempty"`
-	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+	Company   ExpandableCompany   `json:"company"`
+	CreatedAt *time.Time          `json:"created_at,omitempty"`
+	Id        *string             `json:"id,omitempty"`
+	Resources ExpandableResources `json:"resources"`
+	Title     *string             `json:"title,omitempty"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
 }
 
 // ResourceGroupUpdate defines model for ResourceGroupUpdate.
 type ResourceGroupUpdate struct {
-	Company   *interface{} `json:"company,omitempty"`
-	CreatedAt *time.Time   `json:"created_at,omitempty"`
-	Id        *string      `json:"id,omitempty"`
-	Title     *string      `json:"title,omitempty"`
-	UpdatedAt *time.Time   `json:"updated_at,omitempty"`
+	Company   *interface{}         `json:"company,omitempty"`
+	CreatedAt *time.Time           `json:"created_at,omitempty"`
+	Id        *string              `json:"id,omitempty"`
+	Resources *ExpandableResources `json:"resources,omitempty"`
+	Title     *string              `json:"title,omitempty"`
+	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
 }
 
 // ResourceGroupUpdateOverrides defines model for ResourceGroupUpdateOverrides.
 type ResourceGroupUpdateOverrides struct {
-	Company *interface{} `json:"company,omitempty"`
-	Title   *string      `json:"title,omitempty"`
+	Company   *interface{}         `json:"company,omitempty"`
+	Resources *ExpandableResources `json:"resources,omitempty"`
+	Title     *string              `json:"title,omitempty"`
 }
 
 // ResourceGroups defines model for ResourceGroups.
@@ -8855,6 +8870,40 @@ func (t ExpandableResource) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ExpandableResource) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableResourceGroup) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableResourceGroup) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableResourceGroup) AsResourceGroup() (ResourceGroup, error) {
+	var body ResourceGroup
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableResourceGroup) FromResourceGroup(v ResourceGroup) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableResourceGroup) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableResourceGroup) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
