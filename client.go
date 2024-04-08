@@ -481,6 +481,8 @@ const (
 	PropertiesWrite       OAuthScope = "properties:write"
 	ResourcesRead         OAuthScope = "resources:read"
 	ResourcesWrite        OAuthScope = "resources:write"
+	RuleSetsRead          OAuthScope = "rule_sets:read"
+	RuleSetsWrite         OAuthScope = "rule_sets:write"
 	SalesRead             OAuthScope = "sales:read"
 	SalesWrite            OAuthScope = "sales:write"
 	SettlementsRead       OAuthScope = "settlements:read"
@@ -1743,6 +1745,7 @@ type Customer struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	PreviousEvent *ExpandableEvent `json:"previous_event,omitempty"`
+	Tags          *CustomerTags    `json:"tags,omitempty"`
 	UpdateOrigin  *string          `json:"update_origin,omitempty"`
 	UpdatedAt     *time.Time       `json:"updated_at,omitempty"`
 	UpdatedBy     *string          `json:"updated_by,omitempty"`
@@ -1798,6 +1801,11 @@ type CustomerGroup struct {
 
 // CustomerGroups defines model for CustomerGroups.
 type CustomerGroups []CustomerGroup
+
+// CustomerTags defines model for CustomerTags.
+type CustomerTags struct {
+	Vip *bool `json:"vip,omitempty"`
+}
 
 // Customers defines model for Customers.
 type Customers []Customer
@@ -4061,6 +4069,72 @@ type Role struct {
 // RoleType defines model for Role.Type.
 type RoleType string
 
+// RuleSet defines model for RuleSet.
+type RuleSet struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Id        *string            `json:"id,omitempty"`
+	UpdatedAt *time.Time         `json:"updated_at,omitempty"`
+}
+
+// RuleSetCreate defines model for RuleSetCreate.
+type RuleSetCreate struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Id        *string           `json:"id,omitempty"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+}
+
+// RuleSetCreateOverrides defines model for RuleSetCreateOverrides.
+type RuleSetCreateOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company ExpandableCompany `json:"company"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type RuleSetFilter struct {
+	Dates *DateFilter `json:"dates,omitempty"`
+}
+
+// RuleSetResponse defines model for RuleSetResponse.
+type RuleSetResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Id        *string           `json:"id,omitempty"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+}
+
+// RuleSetResponseOverrides defines model for RuleSetResponseOverrides.
+type RuleSetResponseOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Id        *string           `json:"id,omitempty"`
+	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+}
+
+// RuleSetUpdate defines model for RuleSetUpdate.
+type RuleSetUpdate struct {
+	Company   *interface{} `json:"company,omitempty"`
+	CreatedAt *time.Time   `json:"created_at,omitempty"`
+	Id        *string      `json:"id,omitempty"`
+	UpdatedAt *time.Time   `json:"updated_at,omitempty"`
+}
+
+// RuleSetUpdateOverrides defines model for RuleSetUpdateOverrides.
+type RuleSetUpdateOverrides struct {
+	Company *interface{} `json:"company,omitempty"`
+}
+
+// RuleSets defines model for RuleSets.
+type RuleSets []RuleSet
+
+// RuleSetsResponse defines model for RuleSetsResponse.
+type RuleSetsResponse []RuleSetResponse
+
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SMSFilter struct {
 	// Filter by recipient phone number
@@ -5735,6 +5809,22 @@ type ListResourcesParams struct {
 	Filter     *ResourcesFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
+// ListRuleSetsParams defines parameters for ListRuleSets.
+type ListRuleSetsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand        `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *RuleSetFilter `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
 // ListSalesParams defines parameters for ListSales.
 type ListSalesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -7085,6 +7175,48 @@ type UpdateResourceParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateRuleSetJSONBody defines parameters for CreateRuleSet.
+type CreateRuleSetJSONBody RuleSetCreate
+
+// CreateRuleSetParams defines parameters for CreateRuleSet.
+type CreateRuleSetParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteRuleSetParams defines parameters for DeleteRuleSet.
+type DeleteRuleSetParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetRuleSetParams defines parameters for GetRuleSet.
+type GetRuleSetParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateRuleSetJSONBody defines parameters for UpdateRuleSet.
+type UpdateRuleSetJSONBody RuleSetUpdate
+
+// UpdateRuleSetParams defines parameters for UpdateRuleSet.
+type UpdateRuleSetParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateSaleJSONBody defines parameters for CreateSale.
 type CreateSaleJSONBody Sale
 
@@ -7909,6 +8041,12 @@ type CreateResourceJSONRequestBody CreateResourceJSONBody
 
 // UpdateResourceJSONRequestBody defines body for UpdateResource for application/json ContentType.
 type UpdateResourceJSONRequestBody UpdateResourceJSONBody
+
+// CreateRuleSetJSONRequestBody defines body for CreateRuleSet for application/json ContentType.
+type CreateRuleSetJSONRequestBody CreateRuleSetJSONBody
+
+// UpdateRuleSetJSONRequestBody defines body for UpdateRuleSet for application/json ContentType.
+type UpdateRuleSetJSONRequestBody UpdateRuleSetJSONBody
 
 // CreateSaleJSONRequestBody defines body for CreateSale for application/json ContentType.
 type CreateSaleJSONRequestBody CreateSaleJSONBody
@@ -9837,6 +9975,9 @@ type ClientInterface interface {
 	// ListResources request
 	ListResources(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListRuleSets request
+	ListRuleSets(ctx context.Context, companyId string, params *ListRuleSetsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListSales request
 	ListSales(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -10301,6 +10442,22 @@ type ClientInterface interface {
 	UpdateResourceWithBody(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRuleSet request with any body
+	CreateRuleSetWithBody(ctx context.Context, params *CreateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateRuleSet(ctx context.Context, params *CreateRuleSetParams, body CreateRuleSetJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRuleSet request
+	DeleteRuleSet(ctx context.Context, ruleSetId string, params *DeleteRuleSetParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRuleSet request
+	GetRuleSet(ctx context.Context, ruleSetId string, params *GetRuleSetParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRuleSet request with any body
+	UpdateRuleSetWithBody(ctx context.Context, ruleSetId string, params *UpdateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateRuleSet(ctx context.Context, ruleSetId string, params *UpdateRuleSetParams, body UpdateRuleSetJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSale request with any body
 	CreateSaleWithBody(ctx context.Context, params *CreateSaleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11112,6 +11269,18 @@ func (c *Client) ListResourceGroups(ctx context.Context, companyId string, param
 
 func (c *Client) ListResources(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListResourcesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListRuleSets(ctx context.Context, companyId string, params *ListRuleSetsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRuleSetsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -13152,6 +13321,78 @@ func (c *Client) UpdateResourceWithBody(ctx context.Context, resourceId string, 
 
 func (c *Client) UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateResourceRequest(c.Server, resourceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRuleSetWithBody(ctx context.Context, params *CreateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRuleSetRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRuleSet(ctx context.Context, params *CreateRuleSetParams, body CreateRuleSetJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRuleSetRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteRuleSet(ctx context.Context, ruleSetId string, params *DeleteRuleSetParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRuleSetRequest(c.Server, ruleSetId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetRuleSet(ctx context.Context, ruleSetId string, params *GetRuleSetParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRuleSetRequest(c.Server, ruleSetId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRuleSetWithBody(ctx context.Context, ruleSetId string, params *UpdateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRuleSetRequestWithBody(c.Server, ruleSetId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRuleSet(ctx context.Context, ruleSetId string, params *UpdateRuleSetParams, body UpdateRuleSetJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRuleSetRequest(c.Server, ruleSetId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -17901,6 +18142,106 @@ func NewListResourcesRequest(server string, companyId string, params *ListResour
 			return nil, err
 		} else {
 			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListRuleSetsRequest generates requests for ListRuleSets
+func NewListRuleSetsRequest(server string, companyId string, params *ListRuleSetsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/rule_sets", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
 		}
 
 	}
@@ -27528,6 +27869,305 @@ func NewUpdateResourceRequestWithBody(server string, resourceId string, params *
 	return req, nil
 }
 
+// NewCreateRuleSetRequest calls the generic CreateRuleSet builder with application/json body
+func NewCreateRuleSetRequest(server string, params *CreateRuleSetParams, body CreateRuleSetJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRuleSetRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateRuleSetRequestWithBody generates requests for CreateRuleSet with any type of body
+func NewCreateRuleSetRequestWithBody(server string, params *CreateRuleSetParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/rule_sets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteRuleSetRequest generates requests for DeleteRuleSet
+func NewDeleteRuleSetRequest(server string, ruleSetId string, params *DeleteRuleSetParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "rule_set_id", runtime.ParamLocationPath, ruleSetId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/rule_sets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRuleSetRequest generates requests for GetRuleSet
+func NewGetRuleSetRequest(server string, ruleSetId string, params *GetRuleSetParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "rule_set_id", runtime.ParamLocationPath, ruleSetId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/rule_sets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateRuleSetRequest calls the generic UpdateRuleSet builder with application/json body
+func NewUpdateRuleSetRequest(server string, ruleSetId string, params *UpdateRuleSetParams, body UpdateRuleSetJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateRuleSetRequestWithBody(server, ruleSetId, params, "application/json", bodyReader)
+}
+
+// NewUpdateRuleSetRequestWithBody generates requests for UpdateRuleSet with any type of body
+func NewUpdateRuleSetRequestWithBody(server string, ruleSetId string, params *UpdateRuleSetParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "rule_set_id", runtime.ParamLocationPath, ruleSetId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/rule_sets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateSaleRequest calls the generic CreateSale builder with application/json body
 func NewCreateSaleRequest(server string, params *CreateSaleParams, body CreateSaleJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -32870,6 +33510,9 @@ type ClientWithResponsesInterface interface {
 	// ListResources request
 	ListResourcesWithResponse(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*ListResourcesResponse, error)
 
+	// ListRuleSets request
+	ListRuleSetsWithResponse(ctx context.Context, companyId string, params *ListRuleSetsParams, reqEditors ...RequestEditorFn) (*ListRuleSetsResponse, error)
+
 	// ListSales request
 	ListSalesWithResponse(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*ListSalesResponse, error)
 
@@ -33334,6 +33977,22 @@ type ClientWithResponsesInterface interface {
 	UpdateResourceWithBodyWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error)
 
 	UpdateResourceWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error)
+
+	// CreateRuleSet request with any body
+	CreateRuleSetWithBodyWithResponse(ctx context.Context, params *CreateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRuleSetResponse, error)
+
+	CreateRuleSetWithResponse(ctx context.Context, params *CreateRuleSetParams, body CreateRuleSetJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRuleSetResponse, error)
+
+	// DeleteRuleSet request
+	DeleteRuleSetWithResponse(ctx context.Context, ruleSetId string, params *DeleteRuleSetParams, reqEditors ...RequestEditorFn) (*DeleteRuleSetResponse, error)
+
+	// GetRuleSet request
+	GetRuleSetWithResponse(ctx context.Context, ruleSetId string, params *GetRuleSetParams, reqEditors ...RequestEditorFn) (*GetRuleSetResponse, error)
+
+	// UpdateRuleSet request with any body
+	UpdateRuleSetWithBodyWithResponse(ctx context.Context, ruleSetId string, params *UpdateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRuleSetResponse, error)
+
+	UpdateRuleSetWithResponse(ctx context.Context, ruleSetId string, params *UpdateRuleSetParams, body UpdateRuleSetJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRuleSetResponse, error)
 
 	// CreateSale request with any body
 	CreateSaleWithBodyWithResponse(ctx context.Context, params *CreateSaleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSaleResponse, error)
@@ -34501,6 +35160,28 @@ func (r ListResourcesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListResourcesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListRuleSetsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RuleSetsResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListRuleSetsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListRuleSetsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -37241,6 +37922,93 @@ func (r UpdateResourceResponse) StatusCode() int {
 	return 0
 }
 
+type CreateRuleSetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RuleSetResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRuleSetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRuleSetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteRuleSetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRuleSetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRuleSetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetRuleSetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RuleSetResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRuleSetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRuleSetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateRuleSetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RuleSetResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateRuleSetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateRuleSetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSaleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -39272,6 +40040,15 @@ func (c *ClientWithResponses) ListResourcesWithResponse(ctx context.Context, com
 	return ParseListResourcesResponse(rsp)
 }
 
+// ListRuleSetsWithResponse request returning *ListRuleSetsResponse
+func (c *ClientWithResponses) ListRuleSetsWithResponse(ctx context.Context, companyId string, params *ListRuleSetsParams, reqEditors ...RequestEditorFn) (*ListRuleSetsResponse, error) {
+	rsp, err := c.ListRuleSets(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRuleSetsResponse(rsp)
+}
+
 // ListSalesWithResponse request returning *ListSalesResponse
 func (c *ClientWithResponses) ListSalesWithResponse(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*ListSalesResponse, error) {
 	rsp, err := c.ListSales(ctx, companyId, params, reqEditors...)
@@ -40755,6 +41532,58 @@ func (c *ClientWithResponses) UpdateResourceWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseUpdateResourceResponse(rsp)
+}
+
+// CreateRuleSetWithBodyWithResponse request with arbitrary body returning *CreateRuleSetResponse
+func (c *ClientWithResponses) CreateRuleSetWithBodyWithResponse(ctx context.Context, params *CreateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRuleSetResponse, error) {
+	rsp, err := c.CreateRuleSetWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRuleSetResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateRuleSetWithResponse(ctx context.Context, params *CreateRuleSetParams, body CreateRuleSetJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRuleSetResponse, error) {
+	rsp, err := c.CreateRuleSet(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRuleSetResponse(rsp)
+}
+
+// DeleteRuleSetWithResponse request returning *DeleteRuleSetResponse
+func (c *ClientWithResponses) DeleteRuleSetWithResponse(ctx context.Context, ruleSetId string, params *DeleteRuleSetParams, reqEditors ...RequestEditorFn) (*DeleteRuleSetResponse, error) {
+	rsp, err := c.DeleteRuleSet(ctx, ruleSetId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRuleSetResponse(rsp)
+}
+
+// GetRuleSetWithResponse request returning *GetRuleSetResponse
+func (c *ClientWithResponses) GetRuleSetWithResponse(ctx context.Context, ruleSetId string, params *GetRuleSetParams, reqEditors ...RequestEditorFn) (*GetRuleSetResponse, error) {
+	rsp, err := c.GetRuleSet(ctx, ruleSetId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRuleSetResponse(rsp)
+}
+
+// UpdateRuleSetWithBodyWithResponse request with arbitrary body returning *UpdateRuleSetResponse
+func (c *ClientWithResponses) UpdateRuleSetWithBodyWithResponse(ctx context.Context, ruleSetId string, params *UpdateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRuleSetResponse, error) {
+	rsp, err := c.UpdateRuleSetWithBody(ctx, ruleSetId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRuleSetResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateRuleSetWithResponse(ctx context.Context, ruleSetId string, params *UpdateRuleSetParams, body UpdateRuleSetJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRuleSetResponse, error) {
+	rsp, err := c.UpdateRuleSet(ctx, ruleSetId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRuleSetResponse(rsp)
 }
 
 // CreateSaleWithBodyWithResponse request with arbitrary body returning *CreateSaleResponse
@@ -42664,6 +43493,32 @@ func ParseListResourcesResponse(rsp *http.Response) (*ListResourcesResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Resources
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListRuleSetsResponse parses an HTTP response from a ListRuleSetsWithResponse call
+func ParseListRuleSetsResponse(rsp *http.Response) (*ListRuleSetsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListRuleSetsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RuleSetsResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -45742,6 +46597,100 @@ func ParseUpdateResourceResponse(rsp *http.Response) (*UpdateResourceResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Resource
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateRuleSetResponse parses an HTTP response from a CreateRuleSetWithResponse call
+func ParseCreateRuleSetResponse(rsp *http.Response) (*CreateRuleSetResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRuleSetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RuleSetResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRuleSetResponse parses an HTTP response from a DeleteRuleSetWithResponse call
+func ParseDeleteRuleSetResponse(rsp *http.Response) (*DeleteRuleSetResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRuleSetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetRuleSetResponse parses an HTTP response from a GetRuleSetWithResponse call
+func ParseGetRuleSetResponse(rsp *http.Response) (*GetRuleSetResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRuleSetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RuleSetResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateRuleSetResponse parses an HTTP response from a UpdateRuleSetWithResponse call
+func ParseUpdateRuleSetResponse(rsp *http.Response) (*UpdateRuleSetResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateRuleSetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RuleSetResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
