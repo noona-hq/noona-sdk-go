@@ -165,6 +165,11 @@ const (
 	ClaimStatusUnpaid              ClaimStatus = "Unpaid"
 )
 
+// Defines values for ClosedRuleType.
+const (
+	ClosedRuleTypeClosed ClosedRuleType = "closed"
+)
+
 // Defines values for CommissionRatesType.
 const (
 	Rates CommissionRatesType = "rates"
@@ -505,6 +510,11 @@ const (
 	RefreshToken      OAuthTokenRequestGrantType = "refresh_token"
 )
 
+// Defines values for OpenRuleType.
+const (
+	Open OpenRuleType = "open"
+)
+
 // Defines values for POSSettingsCheckoutFirstTab.
 const (
 	POSSettingsCheckoutFirstTabProducts POSSettingsCheckoutFirstTab = "products"
@@ -594,6 +604,30 @@ const (
 	RoleTypeDefault RoleType = "default"
 	RoleTypeOther   RoleType = "other"
 	RoleTypeRoot    RoleType = "root"
+)
+
+// Defines values for RuleEntitiesEmployeesAssociation.
+const (
+	RuleEntitiesEmployeesAssociationExcludes RuleEntitiesEmployeesAssociation = "excludes"
+	RuleEntitiesEmployeesAssociationIncludes RuleEntitiesEmployeesAssociation = "includes"
+)
+
+// Defines values for RuleEntitiesEventTypesAssociation.
+const (
+	RuleEntitiesEventTypesAssociationExcludes RuleEntitiesEventTypesAssociation = "excludes"
+	RuleEntitiesEventTypesAssociationIncludes RuleEntitiesEventTypesAssociation = "includes"
+)
+
+// Defines values for RuleEntitiesResourcesAssociation.
+const (
+	Excludes RuleEntitiesResourcesAssociation = "excludes"
+	Includes RuleEntitiesResourcesAssociation = "includes"
+)
+
+// Defines values for RuleType.
+const (
+	RuleTypeClosed RuleType = "closed"
+	RuleTypeOpen   RuleType = "open"
 )
 
 // Defines values for SMSMessageStatus.
@@ -1509,6 +1543,14 @@ type Claims []Claim
 type ClaimsFilter struct {
 	CreatedAt *DateFilter `json:"created_at,omitempty"`
 }
+
+// ClosedRule defines model for ClosedRule.
+type ClosedRule struct {
+	Type ClosedRuleType `json:"type"`
+}
+
+// ClosedRuleType defines model for ClosedRule.Type.
+type ClosedRuleType string
 
 // CommissionConfig defines model for CommissionConfig.
 type CommissionConfig struct {
@@ -2726,6 +2768,9 @@ type ExpandableEmployee struct {
 	union json.RawMessage
 }
 
+// ExpandableEmployees defines model for ExpandableEmployees.
+type ExpandableEmployees []ExpandableEmployee
+
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableEnterprise struct {
 	union json.RawMessage
@@ -2755,6 +2800,9 @@ type ExpandableEventTypeCategoryGroup struct {
 type ExpandableEventTypeGroup struct {
 	union json.RawMessage
 }
+
+// ExpandableEventTypes defines model for ExpandableEventTypes.
+type ExpandableEventTypes []ExpandableEventType
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableGoogleCalendarConnection struct {
@@ -3484,6 +3532,14 @@ type OAuthTokenRequest struct {
 // OAuthTokenRequestGrantType defines model for OAuthTokenRequest.GrantType.
 type OAuthTokenRequestGrantType string
 
+// OpenRule defines model for OpenRule.
+type OpenRule struct {
+	Type OpenRuleType `json:"type"`
+}
+
+// OpenRuleType defines model for OpenRule.Type.
+type OpenRuleType string
+
 // OpeningHour defines model for OpeningHour.
 type OpeningHour struct {
 	ClosesAt *string `json:"closes_at,omitempty"`
@@ -4074,28 +4130,62 @@ type Role struct {
 // RoleType defines model for Role.Type.
 type RoleType string
 
+// Rule defines model for Rule.
+type Rule struct {
+	union json.RawMessage
+}
+
+// RuleEntities defines model for RuleEntities.
+type RuleEntities struct {
+	Employees             *[]string                          `json:"employees,omitempty"`
+	EmployeesAssociation  *RuleEntitiesEmployeesAssociation  `json:"employees_association,omitempty"`
+	EventTypes            *[]string                          `json:"event_types,omitempty"`
+	EventTypesAssociation *RuleEntitiesEventTypesAssociation `json:"event_types_association,omitempty"`
+	Resources             *[]string                          `json:"resources,omitempty"`
+	ResourcesAssociation  *RuleEntitiesResourcesAssociation  `json:"resources_association,omitempty"`
+}
+
+// RuleEntitiesEmployeesAssociation defines model for RuleEntities.EmployeesAssociation.
+type RuleEntitiesEmployeesAssociation string
+
+// RuleEntitiesEventTypesAssociation defines model for RuleEntities.EventTypesAssociation.
+type RuleEntitiesEventTypesAssociation string
+
+// RuleEntitiesResourcesAssociation defines model for RuleEntities.ResourcesAssociation.
+type RuleEntitiesResourcesAssociation string
+
 // RuleSet defines model for RuleSet.
 type RuleSet struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   *ExpandableCompany `json:"company,omitempty"`
 	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	EndsAt    *time.Time         `json:"ends_at,omitempty"`
 	Id        *string            `json:"id,omitempty"`
+	Rrule     *string            `json:"rrule,omitempty"`
+	Rules     *Rules             `json:"rules,omitempty"`
+	StartsAt  *time.Time         `json:"starts_at,omitempty"`
+	Title     *string            `json:"title,omitempty"`
 	UpdatedAt *time.Time         `json:"updated_at,omitempty"`
 }
 
 // RuleSetCreate defines model for RuleSetCreate.
 type RuleSetCreate struct {
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company   ExpandableCompany `json:"company"`
-	CreatedAt *time.Time        `json:"created_at,omitempty"`
-	Id        *string           `json:"id,omitempty"`
-	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+	Company   string     `json:"company"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	EndsAt    time.Time  `json:"ends_at"`
+	Id        *string    `json:"id,omitempty"`
+	Rrule     *string    `json:"rrule,omitempty"`
+	Rules     *Rules     `json:"rules,omitempty"`
+	StartsAt  time.Time  `json:"starts_at"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 // RuleSetCreateOverrides defines model for RuleSetCreateOverrides.
 type RuleSetCreateOverrides struct {
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company ExpandableCompany `json:"company"`
+	Company  string    `json:"company"`
+	EndsAt   time.Time `json:"ends_at"`
+	StartsAt time.Time `json:"starts_at"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
@@ -4108,7 +4198,12 @@ type RuleSetResponse struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   ExpandableCompany `json:"company"`
 	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	EndsAt    time.Time         `json:"ends_at"`
 	Id        *string           `json:"id,omitempty"`
+	Rrule     *string           `json:"rrule,omitempty"`
+	Rules     Rules             `json:"rules"`
+	StartsAt  time.Time         `json:"starts_at"`
+	Title     *string           `json:"title,omitempty"`
 	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
 }
 
@@ -4117,7 +4212,10 @@ type RuleSetResponseOverrides struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   ExpandableCompany `json:"company"`
 	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	EndsAt    time.Time         `json:"ends_at"`
 	Id        *string           `json:"id,omitempty"`
+	Rules     Rules             `json:"rules"`
+	StartsAt  time.Time         `json:"starts_at"`
 	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
 }
 
@@ -4125,7 +4223,12 @@ type RuleSetResponseOverrides struct {
 type RuleSetUpdate struct {
 	Company   *interface{} `json:"company,omitempty"`
 	CreatedAt *time.Time   `json:"created_at,omitempty"`
+	EndsAt    *time.Time   `json:"ends_at,omitempty"`
 	Id        *string      `json:"id,omitempty"`
+	Rrule     *string      `json:"rrule,omitempty"`
+	Rules     *Rules       `json:"rules,omitempty"`
+	StartsAt  *time.Time   `json:"starts_at,omitempty"`
+	Title     *string      `json:"title,omitempty"`
 	UpdatedAt *time.Time   `json:"updated_at,omitempty"`
 }
 
@@ -4139,6 +4242,12 @@ type RuleSets []RuleSet
 
 // RuleSetsResponse defines model for RuleSetsResponse.
 type RuleSetsResponse []RuleSetResponse
+
+// RuleType defines model for RuleType.
+type RuleType string
+
+// Rules defines model for Rules.
+type Rules []Rule
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SMSFilter struct {
@@ -9562,6 +9671,40 @@ func (t Notification) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Notification) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t Rule) AsOpenRule() (OpenRule, error) {
+	var body OpenRule
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Rule) FromOpenRule(v OpenRule) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Rule) AsClosedRule() (ClosedRule, error) {
+	var body ClosedRule
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Rule) FromClosedRule(v ClosedRule) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Rule) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Rule) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
