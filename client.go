@@ -4159,13 +4159,21 @@ type RuleSet struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   *ExpandableCompany `json:"company,omitempty"`
 	CreatedAt *time.Time         `json:"created_at,omitempty"`
-	EndsAt    *time.Time         `json:"ends_at,omitempty"`
-	Id        *string            `json:"id,omitempty"`
-	Rrule     *string            `json:"rrule,omitempty"`
-	Rules     *Rules             `json:"rules,omitempty"`
-	StartsAt  *time.Time         `json:"starts_at,omitempty"`
-	Title     *string            `json:"title,omitempty"`
-	UpdatedAt *time.Time         `json:"updated_at,omitempty"`
+
+	// End time within the day
+	EndsAt *time.Time `json:"ends_at,omitempty"`
+	Id     *string    `json:"id,omitempty"`
+
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
+	//
+	// The dtstart property is ignored, and the starts_at is used to define the beginnin of the reccurence.
+	Rrule *string `json:"rrule,omitempty"`
+	Rules *Rules  `json:"rules,omitempty"`
+
+	// Start time within the day
+	StartsAt  *time.Time `json:"starts_at,omitempty"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 // RuleSetCreate defines model for RuleSetCreate.
@@ -4174,6 +4182,10 @@ type RuleSetCreate struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	EndsAt    time.Time  `json:"ends_at"`
 	Id        *string    `json:"id,omitempty"`
+
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
+	//
+	// The dtstart property is ignored, and the starts_at is used to define the beginnin of the reccurence.
 	Rrule     *string    `json:"rrule,omitempty"`
 	Rules     *Rules     `json:"rules,omitempty"`
 	StartsAt  time.Time  `json:"starts_at"`
@@ -4200,11 +4212,15 @@ type RuleSetResponse struct {
 	CreatedAt *time.Time        `json:"created_at,omitempty"`
 	EndsAt    time.Time         `json:"ends_at"`
 	Id        *string           `json:"id,omitempty"`
-	Rrule     *string           `json:"rrule,omitempty"`
-	Rules     Rules             `json:"rules"`
-	StartsAt  time.Time         `json:"starts_at"`
-	Title     *string           `json:"title,omitempty"`
-	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
+	//
+	// The dtstart property is ignored, and the starts_at is used to define the beginnin of the reccurence.
+	Rrule     *string    `json:"rrule,omitempty"`
+	Rules     Rules      `json:"rules"`
+	StartsAt  time.Time  `json:"starts_at"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 // RuleSetResponseOverrides defines model for RuleSetResponseOverrides.
@@ -4223,13 +4239,21 @@ type RuleSetResponseOverrides struct {
 type RuleSetUpdate struct {
 	Company   *interface{} `json:"company,omitempty"`
 	CreatedAt *time.Time   `json:"created_at,omitempty"`
-	EndsAt    *time.Time   `json:"ends_at,omitempty"`
-	Id        *string      `json:"id,omitempty"`
-	Rrule     *string      `json:"rrule,omitempty"`
-	Rules     *Rules       `json:"rules,omitempty"`
-	StartsAt  *time.Time   `json:"starts_at,omitempty"`
-	Title     *string      `json:"title,omitempty"`
-	UpdatedAt *time.Time   `json:"updated_at,omitempty"`
+
+	// End time within the day
+	EndsAt *time.Time `json:"ends_at,omitempty"`
+	Id     *string    `json:"id,omitempty"`
+
+	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
+	//
+	// The dtstart property is ignored, and the starts_at is used to define the beginnin of the reccurence.
+	Rrule *string `json:"rrule,omitempty"`
+	Rules *Rules  `json:"rules,omitempty"`
+
+	// Start time within the day
+	StartsAt  *time.Time `json:"starts_at,omitempty"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 // RuleSetUpdateOverrides defines model for RuleSetUpdateOverrides.
