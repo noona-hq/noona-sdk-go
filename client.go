@@ -3978,6 +3978,7 @@ type ResourceGroup struct {
 	Company   *ExpandableCompany   `json:"company,omitempty"`
 	CreatedAt *time.Time           `json:"created_at,omitempty"`
 	Id        *string              `json:"id,omitempty"`
+	Order     *int32               `json:"order,omitempty"`
 	Resources *ExpandableResources `json:"resources,omitempty"`
 	Title     *string              `json:"title,omitempty"`
 	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
@@ -3989,6 +3990,7 @@ type ResourceGroupCreate struct {
 	Company   ExpandableCompany   `json:"company"`
 	CreatedAt *time.Time          `json:"created_at,omitempty"`
 	Id        *string             `json:"id,omitempty"`
+	Order     *int32              `json:"order,omitempty"`
 	Resources ExpandableResources `json:"resources"`
 	Title     string              `json:"title"`
 	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
@@ -4008,6 +4010,7 @@ type ResourceGroupResponse struct {
 	Company   ExpandableCompany   `json:"company"`
 	CreatedAt *time.Time          `json:"created_at,omitempty"`
 	Id        *string             `json:"id,omitempty"`
+	Order     *int32              `json:"order,omitempty"`
 	Resources ExpandableResources `json:"resources"`
 	Title     string              `json:"title"`
 	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
@@ -4019,6 +4022,7 @@ type ResourceGroupResponseOverrides struct {
 	Company   ExpandableCompany   `json:"company"`
 	CreatedAt *time.Time          `json:"created_at,omitempty"`
 	Id        *string             `json:"id,omitempty"`
+	Order     *int32              `json:"order,omitempty"`
 	Resources ExpandableResources `json:"resources"`
 	Title     string              `json:"title"`
 	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
@@ -4029,6 +4033,7 @@ type ResourceGroupUpdate struct {
 	Company   *interface{}         `json:"company,omitempty"`
 	CreatedAt *time.Time           `json:"created_at,omitempty"`
 	Id        *string              `json:"id,omitempty"`
+	Order     *int32               `json:"order,omitempty"`
 	Resources *ExpandableResources `json:"resources,omitempty"`
 	Title     *string              `json:"title,omitempty"`
 	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
