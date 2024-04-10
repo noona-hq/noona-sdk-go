@@ -395,6 +395,11 @@ const (
 	LineItemVoucherDataServiceTypeService LineItemVoucherDataServiceType = "service"
 )
 
+// Defines values for MaxTotalPaxRuleType.
+const (
+	MaxTotalPax MaxTotalPaxRuleType = "max_total_pax"
+)
+
 // Defines values for NoticeVariant.
 const (
 	NoticeVariantError   NoticeVariant = "error"
@@ -645,6 +650,7 @@ const (
 // Defines values for RuleType.
 const (
 	RuleTypeAvailability   RuleType = "availability"
+	RuleTypeMaxTotalPax    RuleType = "max_total_pax"
 	RuleTypeOnlineBookings RuleType = "online_bookings"
 )
 
@@ -3183,6 +3189,15 @@ type MarketplaceUser struct {
 
 // MarketplaceUsers defines model for MarketplaceUsers.
 type MarketplaceUsers []MarketplaceUser
+
+// MaxTotalPaxRule defines model for MaxTotalPaxRule.
+type MaxTotalPaxRule struct {
+	MaxTotalPax int32               `json:"max_total_pax"`
+	Type        MaxTotalPaxRuleType `json:"type"`
+}
+
+// MaxTotalPaxRuleType defines model for MaxTotalPaxRule.Type.
+type MaxTotalPaxRuleType string
 
 // Memo defines model for Memo.
 type Memo struct {
@@ -9761,6 +9776,18 @@ func (t Rule) AsOnlineBookingsRule() (OnlineBookingsRule, error) {
 }
 
 func (t *Rule) FromOnlineBookingsRule(v OnlineBookingsRule) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Rule) AsMaxTotalPaxRule() (MaxTotalPaxRule, error) {
+	var body MaxTotalPaxRule
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Rule) FromMaxTotalPaxRule(v MaxTotalPaxRule) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
