@@ -55,6 +55,11 @@ const (
 	AdyenOnboardingStatusValid      AdyenOnboardingStatus = "valid"
 )
 
+// Defines values for AvailabilityRuleType.
+const (
+	AvailabilityRuleTypeAvailability AvailabilityRuleType = "availability"
+)
+
 // Defines values for BillingCustomerBillingMethod.
 const (
 	BillingCustomerBillingMethodCard    BillingCustomerBillingMethod = "card"
@@ -163,11 +168,6 @@ const (
 	ClaimStatusPaid                ClaimStatus = "Paid"
 	ClaimStatusSecondaryCollection ClaimStatus = "SecondaryCollection"
 	ClaimStatusUnpaid              ClaimStatus = "Unpaid"
-)
-
-// Defines values for ClosedRuleType.
-const (
-	ClosedRuleTypeClosed ClosedRuleType = "closed"
 )
 
 // Defines values for CommissionRatesType.
@@ -510,9 +510,27 @@ const (
 	RefreshToken      OAuthTokenRequestGrantType = "refresh_token"
 )
 
-// Defines values for OpenRuleType.
+// Defines values for OnlineBookingsRuleEmployeesAssociation.
 const (
-	Open OpenRuleType = "open"
+	OnlineBookingsRuleEmployeesAssociationExcludes OnlineBookingsRuleEmployeesAssociation = "excludes"
+	OnlineBookingsRuleEmployeesAssociationIncludes OnlineBookingsRuleEmployeesAssociation = "includes"
+)
+
+// Defines values for OnlineBookingsRuleEventTypesAssociation.
+const (
+	OnlineBookingsRuleEventTypesAssociationExcludes OnlineBookingsRuleEventTypesAssociation = "excludes"
+	OnlineBookingsRuleEventTypesAssociationIncludes OnlineBookingsRuleEventTypesAssociation = "includes"
+)
+
+// Defines values for OnlineBookingsRuleResourcesAssociation.
+const (
+	OnlineBookingsRuleResourcesAssociationExcludes OnlineBookingsRuleResourcesAssociation = "excludes"
+	OnlineBookingsRuleResourcesAssociationIncludes OnlineBookingsRuleResourcesAssociation = "includes"
+)
+
+// Defines values for OnlineBookingsRuleType.
+const (
+	OnlineBookings OnlineBookingsRuleType = "online_bookings"
 )
 
 // Defines values for POSSettingsCheckoutFirstTab.
@@ -606,28 +624,28 @@ const (
 	RoleTypeRoot    RoleType = "root"
 )
 
-// Defines values for RuleEntitiesEmployeesAssociation.
+// Defines values for RuleEntitiesEmployeesEmployeesAssociation.
 const (
-	RuleEntitiesEmployeesAssociationExcludes RuleEntitiesEmployeesAssociation = "excludes"
-	RuleEntitiesEmployeesAssociationIncludes RuleEntitiesEmployeesAssociation = "includes"
+	RuleEntitiesEmployeesEmployeesAssociationExcludes RuleEntitiesEmployeesEmployeesAssociation = "excludes"
+	RuleEntitiesEmployeesEmployeesAssociationIncludes RuleEntitiesEmployeesEmployeesAssociation = "includes"
 )
 
-// Defines values for RuleEntitiesEventTypesAssociation.
+// Defines values for RuleEntitiesEventTypesEventTypesAssociation.
 const (
-	RuleEntitiesEventTypesAssociationExcludes RuleEntitiesEventTypesAssociation = "excludes"
-	RuleEntitiesEventTypesAssociationIncludes RuleEntitiesEventTypesAssociation = "includes"
+	RuleEntitiesEventTypesEventTypesAssociationExcludes RuleEntitiesEventTypesEventTypesAssociation = "excludes"
+	RuleEntitiesEventTypesEventTypesAssociationIncludes RuleEntitiesEventTypesEventTypesAssociation = "includes"
 )
 
-// Defines values for RuleEntitiesResourcesAssociation.
+// Defines values for RuleEntitiesResourcesResourcesAssociation.
 const (
-	Excludes RuleEntitiesResourcesAssociation = "excludes"
-	Includes RuleEntitiesResourcesAssociation = "includes"
+	RuleEntitiesResourcesResourcesAssociationExcludes RuleEntitiesResourcesResourcesAssociation = "excludes"
+	RuleEntitiesResourcesResourcesAssociationIncludes RuleEntitiesResourcesResourcesAssociation = "includes"
 )
 
 // Defines values for RuleType.
 const (
-	RuleTypeClosed RuleType = "closed"
-	RuleTypeOpen   RuleType = "open"
+	RuleTypeAvailability   RuleType = "availability"
+	RuleTypeOnlineBookings RuleType = "online_bookings"
 )
 
 // Defines values for SMSMessageStatus.
@@ -1046,6 +1064,15 @@ type Attachment struct {
 
 // Attachments defines model for Attachments.
 type Attachments []Attachment
+
+// AvailabilityRule defines model for AvailabilityRule.
+type AvailabilityRule struct {
+	Open bool                 `json:"open"`
+	Type AvailabilityRuleType `json:"type"`
+}
+
+// AvailabilityRuleType defines model for AvailabilityRule.Type.
+type AvailabilityRuleType string
 
 // BillingAddress defines model for BillingAddress.
 type BillingAddress struct {
@@ -1543,14 +1570,6 @@ type Claims []Claim
 type ClaimsFilter struct {
 	CreatedAt *DateFilter `json:"created_at,omitempty"`
 }
-
-// ClosedRule defines model for ClosedRule.
-type ClosedRule struct {
-	Type ClosedRuleType `json:"type"`
-}
-
-// ClosedRuleType defines model for ClosedRule.Type.
-type ClosedRuleType string
 
 // CommissionConfig defines model for CommissionConfig.
 type CommissionConfig struct {
@@ -3532,13 +3551,29 @@ type OAuthTokenRequest struct {
 // OAuthTokenRequestGrantType defines model for OAuthTokenRequest.GrantType.
 type OAuthTokenRequestGrantType string
 
-// OpenRule defines model for OpenRule.
-type OpenRule struct {
-	Type OpenRuleType `json:"type"`
+// OnlineBookingsRule defines model for OnlineBookingsRule.
+type OnlineBookingsRule struct {
+	Employees             *[]string                                `json:"employees,omitempty"`
+	EmployeesAssociation  *OnlineBookingsRuleEmployeesAssociation  `json:"employees_association,omitempty"`
+	Enabled               bool                                     `json:"enabled"`
+	EventTypes            *[]string                                `json:"event_types,omitempty"`
+	EventTypesAssociation *OnlineBookingsRuleEventTypesAssociation `json:"event_types_association,omitempty"`
+	Resources             *[]string                                `json:"resources,omitempty"`
+	ResourcesAssociation  *OnlineBookingsRuleResourcesAssociation  `json:"resources_association,omitempty"`
+	Type                  OnlineBookingsRuleType                   `json:"type"`
 }
 
-// OpenRuleType defines model for OpenRule.Type.
-type OpenRuleType string
+// OnlineBookingsRuleEmployeesAssociation defines model for OnlineBookingsRule.EmployeesAssociation.
+type OnlineBookingsRuleEmployeesAssociation string
+
+// OnlineBookingsRuleEventTypesAssociation defines model for OnlineBookingsRule.EventTypesAssociation.
+type OnlineBookingsRuleEventTypesAssociation string
+
+// OnlineBookingsRuleResourcesAssociation defines model for OnlineBookingsRule.ResourcesAssociation.
+type OnlineBookingsRuleResourcesAssociation string
+
+// OnlineBookingsRuleType defines model for OnlineBookingsRule.Type.
+type OnlineBookingsRuleType string
 
 // OpeningHour defines model for OpeningHour.
 type OpeningHour struct {
@@ -4135,24 +4170,32 @@ type Rule struct {
 	union json.RawMessage
 }
 
-// RuleEntities defines model for RuleEntities.
-type RuleEntities struct {
-	Employees             *[]string                          `json:"employees,omitempty"`
-	EmployeesAssociation  *RuleEntitiesEmployeesAssociation  `json:"employees_association,omitempty"`
-	EventTypes            *[]string                          `json:"event_types,omitempty"`
-	EventTypesAssociation *RuleEntitiesEventTypesAssociation `json:"event_types_association,omitempty"`
-	Resources             *[]string                          `json:"resources,omitempty"`
-	ResourcesAssociation  *RuleEntitiesResourcesAssociation  `json:"resources_association,omitempty"`
+// RuleEntitiesEmployees defines model for RuleEntitiesEmployees.
+type RuleEntitiesEmployees struct {
+	Employees            *[]string                                  `json:"employees,omitempty"`
+	EmployeesAssociation *RuleEntitiesEmployeesEmployeesAssociation `json:"employees_association,omitempty"`
 }
 
-// RuleEntitiesEmployeesAssociation defines model for RuleEntities.EmployeesAssociation.
-type RuleEntitiesEmployeesAssociation string
+// RuleEntitiesEmployeesEmployeesAssociation defines model for RuleEntitiesEmployees.EmployeesAssociation.
+type RuleEntitiesEmployeesEmployeesAssociation string
 
-// RuleEntitiesEventTypesAssociation defines model for RuleEntities.EventTypesAssociation.
-type RuleEntitiesEventTypesAssociation string
+// RuleEntitiesEventTypes defines model for RuleEntitiesEventTypes.
+type RuleEntitiesEventTypes struct {
+	EventTypes            *[]string                                    `json:"event_types,omitempty"`
+	EventTypesAssociation *RuleEntitiesEventTypesEventTypesAssociation `json:"event_types_association,omitempty"`
+}
 
-// RuleEntitiesResourcesAssociation defines model for RuleEntities.ResourcesAssociation.
-type RuleEntitiesResourcesAssociation string
+// RuleEntitiesEventTypesEventTypesAssociation defines model for RuleEntitiesEventTypes.EventTypesAssociation.
+type RuleEntitiesEventTypesEventTypesAssociation string
+
+// RuleEntitiesResources defines model for RuleEntitiesResources.
+type RuleEntitiesResources struct {
+	Resources            *[]string                                  `json:"resources,omitempty"`
+	ResourcesAssociation *RuleEntitiesResourcesResourcesAssociation `json:"resources_association,omitempty"`
+}
+
+// RuleEntitiesResourcesResourcesAssociation defines model for RuleEntitiesResources.ResourcesAssociation.
+type RuleEntitiesResourcesResourcesAssociation string
 
 // RuleSet defines model for RuleSet.
 type RuleSet struct {
@@ -9699,25 +9742,25 @@ func (t *Notification) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-func (t Rule) AsOpenRule() (OpenRule, error) {
-	var body OpenRule
+func (t Rule) AsAvailabilityRule() (AvailabilityRule, error) {
+	var body AvailabilityRule
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-func (t *Rule) FromOpenRule(v OpenRule) error {
+func (t *Rule) FromAvailabilityRule(v AvailabilityRule) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-func (t Rule) AsClosedRule() (ClosedRule, error) {
-	var body ClosedRule
+func (t Rule) AsOnlineBookingsRule() (OnlineBookingsRule, error) {
+	var body OnlineBookingsRule
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-func (t *Rule) FromClosedRule(v ClosedRule) error {
+func (t *Rule) FromOnlineBookingsRule(v OnlineBookingsRule) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
