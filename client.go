@@ -491,6 +491,8 @@ const (
 	PropertiesWrite       OAuthScope = "properties:write"
 	ResourcesRead         OAuthScope = "resources:read"
 	ResourcesWrite        OAuthScope = "resources:write"
+	RuleSetTemplatesRead  OAuthScope = "rule_set_templates:read"
+	RuleSetTemplatesWrite OAuthScope = "rule_set_templates:write"
 	RuleSetsRead          OAuthScope = "rule_sets:read"
 	RuleSetsWrite         OAuthScope = "rule_sets:write"
 	SalesRead             OAuthScope = "sales:read"
@@ -1074,11 +1076,11 @@ type Attachments []Attachment
 // AvailabilityRule defines model for AvailabilityRule.
 type AvailabilityRule struct {
 	// End time within the day
-	EndsAt *time.Time `json:"ends_at,omitempty"`
-	Open   bool       `json:"open"`
+	EndsAt *string `json:"ends_at,omitempty"`
+	Open   bool    `json:"open"`
 
 	// Start time within the day
-	StartsAt *time.Time           `json:"starts_at,omitempty"`
+	StartsAt *string              `json:"starts_at,omitempty"`
 	Type     AvailabilityRuleType `json:"type"`
 }
 
@@ -3198,11 +3200,11 @@ type MarketplaceUsers []MarketplaceUser
 // MaxTotalPaxRule defines model for MaxTotalPaxRule.
 type MaxTotalPaxRule struct {
 	// End time within the day
-	EndsAt      *time.Time `json:"ends_at,omitempty"`
-	MaxTotalPax int32      `json:"max_total_pax"`
+	EndsAt      *string `json:"ends_at,omitempty"`
+	MaxTotalPax int32   `json:"max_total_pax"`
 
 	// Start time within the day
-	StartsAt *time.Time          `json:"starts_at,omitempty"`
+	StartsAt *string             `json:"starts_at,omitempty"`
 	Type     MaxTotalPaxRuleType `json:"type"`
 }
 
@@ -3583,14 +3585,14 @@ type OnlineBookingsRule struct {
 	Enabled              bool                                    `json:"enabled"`
 
 	// End time within the day
-	EndsAt                *time.Time                               `json:"ends_at,omitempty"`
+	EndsAt                *string                                  `json:"ends_at,omitempty"`
 	EventTypes            *[]string                                `json:"event_types,omitempty"`
 	EventTypesAssociation *OnlineBookingsRuleEventTypesAssociation `json:"event_types_association,omitempty"`
 	Resources             *[]string                                `json:"resources,omitempty"`
 	ResourcesAssociation  *OnlineBookingsRuleResourcesAssociation  `json:"resources_association,omitempty"`
 
 	// Start time within the day
-	StartsAt *time.Time             `json:"starts_at,omitempty"`
+	StartsAt *string                `json:"starts_at,omitempty"`
 	Type     OnlineBookingsRuleType `json:"type"`
 }
 
@@ -4231,10 +4233,10 @@ type RuleEntitiesResourcesResourcesAssociation string
 // RuleInterval defines model for RuleInterval.
 type RuleInterval struct {
 	// End time within the day
-	EndsAt *time.Time `json:"ends_at,omitempty"`
+	EndsAt *string `json:"ends_at,omitempty"`
 
 	// Start time within the day
-	StartsAt *time.Time `json:"starts_at,omitempty"`
+	StartsAt *string `json:"starts_at,omitempty"`
 }
 
 // RuleSet defines model for RuleSet.
@@ -4243,18 +4245,23 @@ type RuleSet struct {
 	Company   *ExpandableCompany `json:"company,omitempty"`
 	CreatedAt *time.Time         `json:"created_at,omitempty"`
 
-	// End time within the day
-	EndsAt *time.Time `json:"ends_at,omitempty"`
-	Id     *string    `json:"id,omitempty"`
+	// The date of the rule set.
+	//
+	// For recurring rule sets, this is the date where the recurrance rule starts.
+	Date *string `json:"date,omitempty"`
+
+	// End time
+	EndsAt *string `json:"ends_at,omitempty"`
+	Id     *string `json:"id,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
 	//
-	// The dtstart property is ignored, and the starts_at is used to define the beginnin of the reccurence.
+	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
 	Rrule *string `json:"rrule,omitempty"`
 	Rules *Rules  `json:"rules,omitempty"`
 
-	// Start time within the day
-	StartsAt  *time.Time `json:"starts_at,omitempty"`
+	// Start time
+	StartsAt  *string    `json:"starts_at,omitempty"`
 	Title     *string    `json:"title,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
@@ -4263,24 +4270,42 @@ type RuleSet struct {
 type RuleSetCreate struct {
 	Company   string     `json:"company"`
 	CreatedAt *time.Time `json:"created_at,omitempty"`
-	EndsAt    time.Time  `json:"ends_at"`
-	Id        *string    `json:"id,omitempty"`
+
+	// The date of the rule set.
+	//
+	// For recurring rule sets, this is the date where the recurrance rule starts.
+	Date string `json:"date"`
+
+	// End time
+	EndsAt string  `json:"ends_at"`
+	Id     *string `json:"id,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
 	//
-	// The dtstart property is ignored, and the starts_at is used to define the beginnin of the reccurence.
-	Rrule     *string    `json:"rrule,omitempty"`
-	Rules     *Rules     `json:"rules,omitempty"`
-	StartsAt  time.Time  `json:"starts_at"`
+	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
+	Rrule *string `json:"rrule,omitempty"`
+	Rules *Rules  `json:"rules,omitempty"`
+
+	// Start time
+	StartsAt  string     `json:"starts_at"`
 	Title     *string    `json:"title,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
 // RuleSetCreateOverrides defines model for RuleSetCreateOverrides.
 type RuleSetCreateOverrides struct {
-	Company  string    `json:"company"`
-	EndsAt   time.Time `json:"ends_at"`
-	StartsAt time.Time `json:"starts_at"`
+	Company string `json:"company"`
+
+	// The date of the rule set.
+	//
+	// For recurring rule sets, this is the date where the recurrance rule starts.
+	Date string `json:"date"`
+
+	// End time
+	EndsAt string `json:"ends_at"`
+
+	// Start time
+	StartsAt string `json:"starts_at"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
@@ -4293,15 +4318,24 @@ type RuleSetResponse struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   ExpandableCompany `json:"company"`
 	CreatedAt *time.Time        `json:"created_at,omitempty"`
-	EndsAt    time.Time         `json:"ends_at"`
-	Id        *string           `json:"id,omitempty"`
+
+	// The date of the rule set.
+	//
+	// For recurring rule sets, this is the date where the recurrance rule starts.
+	Date string `json:"date"`
+
+	// End time
+	EndsAt string  `json:"ends_at"`
+	Id     *string `json:"id,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
 	//
-	// The dtstart property is ignored, and the starts_at is used to define the beginnin of the reccurence.
-	Rrule     *string    `json:"rrule,omitempty"`
-	Rules     Rules      `json:"rules"`
-	StartsAt  time.Time  `json:"starts_at"`
+	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
+	Rrule *string `json:"rrule,omitempty"`
+	Rules Rules   `json:"rules"`
+
+	// Start time
+	StartsAt  string     `json:"starts_at"`
 	Title     *string    `json:"title,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
@@ -4311,30 +4345,149 @@ type RuleSetResponseOverrides struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   ExpandableCompany `json:"company"`
 	CreatedAt *time.Time        `json:"created_at,omitempty"`
-	EndsAt    time.Time         `json:"ends_at"`
-	Id        *string           `json:"id,omitempty"`
-	Rules     Rules             `json:"rules"`
-	StartsAt  time.Time         `json:"starts_at"`
-	UpdatedAt *time.Time        `json:"updated_at,omitempty"`
+
+	// The date of the rule set.
+	//
+	// For recurring rule sets, this is the date where the recurrance rule starts.
+	Date string `json:"date"`
+
+	// End time
+	EndsAt string  `json:"ends_at"`
+	Id     *string `json:"id,omitempty"`
+	Rules  Rules   `json:"rules"`
+
+	// Start time
+	StartsAt  string     `json:"starts_at"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
+
+// RuleSetTemplate defines model for RuleSetTemplate.
+type RuleSetTemplate struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+
+	// End time
+	EndsAt *string `json:"ends_at,omitempty"`
+	Id     *string `json:"id,omitempty"`
+	Rules  *Rules  `json:"rules,omitempty"`
+
+	// Start time
+	StartsAt  *string    `json:"starts_at,omitempty"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// RuleSetTemplateCreate defines model for RuleSetTemplateCreate.
+type RuleSetTemplateCreate struct {
+	Company   string     `json:"company"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// End time
+	EndsAt string  `json:"ends_at"`
+	Id     *string `json:"id,omitempty"`
+	Rules  *Rules  `json:"rules,omitempty"`
+
+	// Start time
+	StartsAt  string     `json:"starts_at"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// RuleSetTemplateCreateOverrides defines model for RuleSetTemplateCreateOverrides.
+type RuleSetTemplateCreateOverrides struct {
+	Company string `json:"company"`
+
+	// End time
+	EndsAt string `json:"ends_at"`
+
+	// Start time
+	StartsAt string `json:"starts_at"`
+}
+
+// RuleSetTemplateResponse defines model for RuleSetTemplateResponse.
+type RuleSetTemplateResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+
+	// End time
+	EndsAt string  `json:"ends_at"`
+	Id     *string `json:"id,omitempty"`
+	Rules  Rules   `json:"rules"`
+
+	// Start time
+	StartsAt  string     `json:"starts_at"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// RuleSetTemplateResponseOverrides defines model for RuleSetTemplateResponseOverrides.
+type RuleSetTemplateResponseOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+
+	// End time
+	EndsAt string  `json:"ends_at"`
+	Id     *string `json:"id,omitempty"`
+	Rules  Rules   `json:"rules"`
+
+	// Start time
+	StartsAt  string     `json:"starts_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// RuleSetTemplateUpdate defines model for RuleSetTemplateUpdate.
+type RuleSetTemplateUpdate struct {
+	Company   *interface{} `json:"company,omitempty"`
+	CreatedAt *time.Time   `json:"created_at,omitempty"`
+
+	// End time
+	EndsAt *string `json:"ends_at,omitempty"`
+	Id     *string `json:"id,omitempty"`
+	Rules  *Rules  `json:"rules,omitempty"`
+
+	// Start time
+	StartsAt  *string    `json:"starts_at,omitempty"`
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// RuleSetTemplateUpdateOverrides defines model for RuleSetTemplateUpdateOverrides.
+type RuleSetTemplateUpdateOverrides struct {
+	Company *interface{} `json:"company,omitempty"`
+}
+
+// RuleSetTemplates defines model for RuleSetTemplates.
+type RuleSetTemplates []RuleSetTemplate
+
+// RuleSetTemplatesResponse defines model for RuleSetTemplatesResponse.
+type RuleSetTemplatesResponse []RuleSetTemplateResponse
 
 // RuleSetUpdate defines model for RuleSetUpdate.
 type RuleSetUpdate struct {
 	Company   *interface{} `json:"company,omitempty"`
 	CreatedAt *time.Time   `json:"created_at,omitempty"`
 
-	// End time within the day
-	EndsAt *time.Time `json:"ends_at,omitempty"`
-	Id     *string    `json:"id,omitempty"`
+	// The date of the rule set.
+	//
+	// For recurring rule sets, this is the date where the recurrance rule starts.
+	Date *string `json:"date,omitempty"`
+
+	// End time
+	EndsAt *string `json:"ends_at,omitempty"`
+	Id     *string `json:"id,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
 	//
-	// The dtstart property is ignored, and the starts_at is used to define the beginnin of the reccurence.
+	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
 	Rrule *string `json:"rrule,omitempty"`
 	Rules *Rules  `json:"rules,omitempty"`
 
-	// Start time within the day
-	StartsAt  *time.Time `json:"starts_at,omitempty"`
+	// Start time
+	StartsAt  *string    `json:"starts_at,omitempty"`
 	Title     *string    `json:"title,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
@@ -6030,6 +6183,21 @@ type ListResourcesParams struct {
 	Filter     *ResourcesFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
+// ListRuleSetTemplatesParams defines parameters for ListRuleSetTemplates.
+type ListRuleSetTemplatesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
 // ListRuleSetsParams defines parameters for ListRuleSets.
 type ListRuleSetsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -7396,6 +7564,48 @@ type UpdateResourceParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateRuleSetTemplateJSONBody defines parameters for CreateRuleSetTemplate.
+type CreateRuleSetTemplateJSONBody RuleSetTemplateCreate
+
+// CreateRuleSetTemplateParams defines parameters for CreateRuleSetTemplate.
+type CreateRuleSetTemplateParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteRuleSetTemplateParams defines parameters for DeleteRuleSetTemplate.
+type DeleteRuleSetTemplateParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetRuleSetTemplateParams defines parameters for GetRuleSetTemplate.
+type GetRuleSetTemplateParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateRuleSetTemplateJSONBody defines parameters for UpdateRuleSetTemplate.
+type UpdateRuleSetTemplateJSONBody RuleSetTemplateUpdate
+
+// UpdateRuleSetTemplateParams defines parameters for UpdateRuleSetTemplate.
+type UpdateRuleSetTemplateParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateRuleSetJSONBody defines parameters for CreateRuleSet.
 type CreateRuleSetJSONBody RuleSetCreate
 
@@ -8262,6 +8472,12 @@ type CreateResourceJSONRequestBody CreateResourceJSONBody
 
 // UpdateResourceJSONRequestBody defines body for UpdateResource for application/json ContentType.
 type UpdateResourceJSONRequestBody UpdateResourceJSONBody
+
+// CreateRuleSetTemplateJSONRequestBody defines body for CreateRuleSetTemplate for application/json ContentType.
+type CreateRuleSetTemplateJSONRequestBody CreateRuleSetTemplateJSONBody
+
+// UpdateRuleSetTemplateJSONRequestBody defines body for UpdateRuleSetTemplate for application/json ContentType.
+type UpdateRuleSetTemplateJSONRequestBody UpdateRuleSetTemplateJSONBody
 
 // CreateRuleSetJSONRequestBody defines body for CreateRuleSet for application/json ContentType.
 type CreateRuleSetJSONRequestBody CreateRuleSetJSONBody
@@ -10242,6 +10458,9 @@ type ClientInterface interface {
 	// ListResources request
 	ListResources(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListRuleSetTemplates request
+	ListRuleSetTemplates(ctx context.Context, companyId string, params *ListRuleSetTemplatesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListRuleSets request
 	ListRuleSets(ctx context.Context, companyId string, params *ListRuleSetsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -10709,6 +10928,22 @@ type ClientInterface interface {
 	UpdateResourceWithBody(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRuleSetTemplate request with any body
+	CreateRuleSetTemplateWithBody(ctx context.Context, params *CreateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateRuleSetTemplate(ctx context.Context, params *CreateRuleSetTemplateParams, body CreateRuleSetTemplateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRuleSetTemplate request
+	DeleteRuleSetTemplate(ctx context.Context, ruleSetTemplateId string, params *DeleteRuleSetTemplateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRuleSetTemplate request
+	GetRuleSetTemplate(ctx context.Context, ruleSetTemplateId string, params *GetRuleSetTemplateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRuleSetTemplate request with any body
+	UpdateRuleSetTemplateWithBody(ctx context.Context, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateRuleSetTemplate(ctx context.Context, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, body UpdateRuleSetTemplateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateRuleSet request with any body
 	CreateRuleSetWithBody(ctx context.Context, params *CreateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11536,6 +11771,18 @@ func (c *Client) ListResourceGroups(ctx context.Context, companyId string, param
 
 func (c *Client) ListResources(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListResourcesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListRuleSetTemplates(ctx context.Context, companyId string, params *ListRuleSetTemplatesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRuleSetTemplatesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -13588,6 +13835,78 @@ func (c *Client) UpdateResourceWithBody(ctx context.Context, resourceId string, 
 
 func (c *Client) UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateResourceRequest(c.Server, resourceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRuleSetTemplateWithBody(ctx context.Context, params *CreateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRuleSetTemplateRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRuleSetTemplate(ctx context.Context, params *CreateRuleSetTemplateParams, body CreateRuleSetTemplateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRuleSetTemplateRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteRuleSetTemplate(ctx context.Context, ruleSetTemplateId string, params *DeleteRuleSetTemplateParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRuleSetTemplateRequest(c.Server, ruleSetTemplateId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetRuleSetTemplate(ctx context.Context, ruleSetTemplateId string, params *GetRuleSetTemplateParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRuleSetTemplateRequest(c.Server, ruleSetTemplateId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRuleSetTemplateWithBody(ctx context.Context, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRuleSetTemplateRequestWithBody(c.Server, ruleSetTemplateId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRuleSetTemplate(ctx context.Context, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, body UpdateRuleSetTemplateJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRuleSetTemplateRequest(c.Server, ruleSetTemplateId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -18409,6 +18728,96 @@ func NewListResourcesRequest(server string, companyId string, params *ListResour
 			return nil, err
 		} else {
 			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListRuleSetTemplatesRequest generates requests for ListRuleSetTemplates
+func NewListRuleSetTemplatesRequest(server string, companyId string, params *ListRuleSetTemplatesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/rule_set_templates", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
 		}
 
 	}
@@ -28136,6 +28545,305 @@ func NewUpdateResourceRequestWithBody(server string, resourceId string, params *
 	return req, nil
 }
 
+// NewCreateRuleSetTemplateRequest calls the generic CreateRuleSetTemplate builder with application/json body
+func NewCreateRuleSetTemplateRequest(server string, params *CreateRuleSetTemplateParams, body CreateRuleSetTemplateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRuleSetTemplateRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateRuleSetTemplateRequestWithBody generates requests for CreateRuleSetTemplate with any type of body
+func NewCreateRuleSetTemplateRequestWithBody(server string, params *CreateRuleSetTemplateParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/rule_set_templates")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteRuleSetTemplateRequest generates requests for DeleteRuleSetTemplate
+func NewDeleteRuleSetTemplateRequest(server string, ruleSetTemplateId string, params *DeleteRuleSetTemplateParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "rule_set_template_id", runtime.ParamLocationPath, ruleSetTemplateId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/rule_set_templates/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRuleSetTemplateRequest generates requests for GetRuleSetTemplate
+func NewGetRuleSetTemplateRequest(server string, ruleSetTemplateId string, params *GetRuleSetTemplateParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "rule_set_template_id", runtime.ParamLocationPath, ruleSetTemplateId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/rule_set_templates/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateRuleSetTemplateRequest calls the generic UpdateRuleSetTemplate builder with application/json body
+func NewUpdateRuleSetTemplateRequest(server string, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, body UpdateRuleSetTemplateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateRuleSetTemplateRequestWithBody(server, ruleSetTemplateId, params, "application/json", bodyReader)
+}
+
+// NewUpdateRuleSetTemplateRequestWithBody generates requests for UpdateRuleSetTemplate with any type of body
+func NewUpdateRuleSetTemplateRequestWithBody(server string, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "rule_set_template_id", runtime.ParamLocationPath, ruleSetTemplateId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/rule_set_templates/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateRuleSetRequest calls the generic CreateRuleSet builder with application/json body
 func NewCreateRuleSetRequest(server string, params *CreateRuleSetParams, body CreateRuleSetJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -33777,6 +34485,9 @@ type ClientWithResponsesInterface interface {
 	// ListResources request
 	ListResourcesWithResponse(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*ListResourcesResponse, error)
 
+	// ListRuleSetTemplates request
+	ListRuleSetTemplatesWithResponse(ctx context.Context, companyId string, params *ListRuleSetTemplatesParams, reqEditors ...RequestEditorFn) (*ListRuleSetTemplatesResponse, error)
+
 	// ListRuleSets request
 	ListRuleSetsWithResponse(ctx context.Context, companyId string, params *ListRuleSetsParams, reqEditors ...RequestEditorFn) (*ListRuleSetsResponse, error)
 
@@ -34244,6 +34955,22 @@ type ClientWithResponsesInterface interface {
 	UpdateResourceWithBodyWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error)
 
 	UpdateResourceWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error)
+
+	// CreateRuleSetTemplate request with any body
+	CreateRuleSetTemplateWithBodyWithResponse(ctx context.Context, params *CreateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRuleSetTemplateResponse, error)
+
+	CreateRuleSetTemplateWithResponse(ctx context.Context, params *CreateRuleSetTemplateParams, body CreateRuleSetTemplateJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRuleSetTemplateResponse, error)
+
+	// DeleteRuleSetTemplate request
+	DeleteRuleSetTemplateWithResponse(ctx context.Context, ruleSetTemplateId string, params *DeleteRuleSetTemplateParams, reqEditors ...RequestEditorFn) (*DeleteRuleSetTemplateResponse, error)
+
+	// GetRuleSetTemplate request
+	GetRuleSetTemplateWithResponse(ctx context.Context, ruleSetTemplateId string, params *GetRuleSetTemplateParams, reqEditors ...RequestEditorFn) (*GetRuleSetTemplateResponse, error)
+
+	// UpdateRuleSetTemplate request with any body
+	UpdateRuleSetTemplateWithBodyWithResponse(ctx context.Context, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRuleSetTemplateResponse, error)
+
+	UpdateRuleSetTemplateWithResponse(ctx context.Context, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, body UpdateRuleSetTemplateJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRuleSetTemplateResponse, error)
 
 	// CreateRuleSet request with any body
 	CreateRuleSetWithBodyWithResponse(ctx context.Context, params *CreateRuleSetParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRuleSetResponse, error)
@@ -35427,6 +36154,28 @@ func (r ListResourcesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListResourcesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListRuleSetTemplatesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RuleSetTemplatesResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListRuleSetTemplatesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListRuleSetTemplatesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -38189,6 +38938,93 @@ func (r UpdateResourceResponse) StatusCode() int {
 	return 0
 }
 
+type CreateRuleSetTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RuleSetTemplateResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRuleSetTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRuleSetTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteRuleSetTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRuleSetTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRuleSetTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetRuleSetTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RuleSetTemplateResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRuleSetTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRuleSetTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateRuleSetTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RuleSetTemplateResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateRuleSetTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateRuleSetTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateRuleSetResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -40307,6 +41143,15 @@ func (c *ClientWithResponses) ListResourcesWithResponse(ctx context.Context, com
 	return ParseListResourcesResponse(rsp)
 }
 
+// ListRuleSetTemplatesWithResponse request returning *ListRuleSetTemplatesResponse
+func (c *ClientWithResponses) ListRuleSetTemplatesWithResponse(ctx context.Context, companyId string, params *ListRuleSetTemplatesParams, reqEditors ...RequestEditorFn) (*ListRuleSetTemplatesResponse, error) {
+	rsp, err := c.ListRuleSetTemplates(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRuleSetTemplatesResponse(rsp)
+}
+
 // ListRuleSetsWithResponse request returning *ListRuleSetsResponse
 func (c *ClientWithResponses) ListRuleSetsWithResponse(ctx context.Context, companyId string, params *ListRuleSetsParams, reqEditors ...RequestEditorFn) (*ListRuleSetsResponse, error) {
 	rsp, err := c.ListRuleSets(ctx, companyId, params, reqEditors...)
@@ -41799,6 +42644,58 @@ func (c *ClientWithResponses) UpdateResourceWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseUpdateResourceResponse(rsp)
+}
+
+// CreateRuleSetTemplateWithBodyWithResponse request with arbitrary body returning *CreateRuleSetTemplateResponse
+func (c *ClientWithResponses) CreateRuleSetTemplateWithBodyWithResponse(ctx context.Context, params *CreateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRuleSetTemplateResponse, error) {
+	rsp, err := c.CreateRuleSetTemplateWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRuleSetTemplateResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateRuleSetTemplateWithResponse(ctx context.Context, params *CreateRuleSetTemplateParams, body CreateRuleSetTemplateJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRuleSetTemplateResponse, error) {
+	rsp, err := c.CreateRuleSetTemplate(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRuleSetTemplateResponse(rsp)
+}
+
+// DeleteRuleSetTemplateWithResponse request returning *DeleteRuleSetTemplateResponse
+func (c *ClientWithResponses) DeleteRuleSetTemplateWithResponse(ctx context.Context, ruleSetTemplateId string, params *DeleteRuleSetTemplateParams, reqEditors ...RequestEditorFn) (*DeleteRuleSetTemplateResponse, error) {
+	rsp, err := c.DeleteRuleSetTemplate(ctx, ruleSetTemplateId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRuleSetTemplateResponse(rsp)
+}
+
+// GetRuleSetTemplateWithResponse request returning *GetRuleSetTemplateResponse
+func (c *ClientWithResponses) GetRuleSetTemplateWithResponse(ctx context.Context, ruleSetTemplateId string, params *GetRuleSetTemplateParams, reqEditors ...RequestEditorFn) (*GetRuleSetTemplateResponse, error) {
+	rsp, err := c.GetRuleSetTemplate(ctx, ruleSetTemplateId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRuleSetTemplateResponse(rsp)
+}
+
+// UpdateRuleSetTemplateWithBodyWithResponse request with arbitrary body returning *UpdateRuleSetTemplateResponse
+func (c *ClientWithResponses) UpdateRuleSetTemplateWithBodyWithResponse(ctx context.Context, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRuleSetTemplateResponse, error) {
+	rsp, err := c.UpdateRuleSetTemplateWithBody(ctx, ruleSetTemplateId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRuleSetTemplateResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateRuleSetTemplateWithResponse(ctx context.Context, ruleSetTemplateId string, params *UpdateRuleSetTemplateParams, body UpdateRuleSetTemplateJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRuleSetTemplateResponse, error) {
+	rsp, err := c.UpdateRuleSetTemplate(ctx, ruleSetTemplateId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRuleSetTemplateResponse(rsp)
 }
 
 // CreateRuleSetWithBodyWithResponse request with arbitrary body returning *CreateRuleSetResponse
@@ -43760,6 +44657,32 @@ func ParseListResourcesResponse(rsp *http.Response) (*ListResourcesResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Resources
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListRuleSetTemplatesResponse parses an HTTP response from a ListRuleSetTemplatesWithResponse call
+func ParseListRuleSetTemplatesResponse(rsp *http.Response) (*ListRuleSetTemplatesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListRuleSetTemplatesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RuleSetTemplatesResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -46864,6 +47787,100 @@ func ParseUpdateResourceResponse(rsp *http.Response) (*UpdateResourceResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Resource
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateRuleSetTemplateResponse parses an HTTP response from a CreateRuleSetTemplateWithResponse call
+func ParseCreateRuleSetTemplateResponse(rsp *http.Response) (*CreateRuleSetTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRuleSetTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RuleSetTemplateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRuleSetTemplateResponse parses an HTTP response from a DeleteRuleSetTemplateWithResponse call
+func ParseDeleteRuleSetTemplateResponse(rsp *http.Response) (*DeleteRuleSetTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRuleSetTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetRuleSetTemplateResponse parses an HTTP response from a GetRuleSetTemplateWithResponse call
+func ParseGetRuleSetTemplateResponse(rsp *http.Response) (*GetRuleSetTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRuleSetTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RuleSetTemplateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateRuleSetTemplateResponse parses an HTTP response from a UpdateRuleSetTemplateWithResponse call
+func ParseUpdateRuleSetTemplateResponse(rsp *http.Response) (*UpdateRuleSetTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateRuleSetTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RuleSetTemplateResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
