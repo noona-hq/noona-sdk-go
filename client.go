@@ -1073,8 +1073,13 @@ type Attachments []Attachment
 
 // AvailabilityRule defines model for AvailabilityRule.
 type AvailabilityRule struct {
-	Open bool                 `json:"open"`
-	Type AvailabilityRuleType `json:"type"`
+	// End time within the day
+	EndsAt *time.Time `json:"ends_at,omitempty"`
+	Open   bool       `json:"open"`
+
+	// Start time within the day
+	StartsAt *time.Time           `json:"starts_at,omitempty"`
+	Type     AvailabilityRuleType `json:"type"`
 }
 
 // AvailabilityRuleType defines model for AvailabilityRule.Type.
@@ -3192,8 +3197,13 @@ type MarketplaceUsers []MarketplaceUser
 
 // MaxTotalPaxRule defines model for MaxTotalPaxRule.
 type MaxTotalPaxRule struct {
-	MaxTotalPax int32               `json:"max_total_pax"`
-	Type        MaxTotalPaxRuleType `json:"type"`
+	// End time within the day
+	EndsAt      *time.Time `json:"ends_at,omitempty"`
+	MaxTotalPax int32      `json:"max_total_pax"`
+
+	// Start time within the day
+	StartsAt *time.Time          `json:"starts_at,omitempty"`
+	Type     MaxTotalPaxRuleType `json:"type"`
 }
 
 // MaxTotalPaxRuleType defines model for MaxTotalPaxRule.Type.
@@ -3568,14 +3578,20 @@ type OAuthTokenRequestGrantType string
 
 // OnlineBookingsRule defines model for OnlineBookingsRule.
 type OnlineBookingsRule struct {
-	Employees             *[]string                                `json:"employees,omitempty"`
-	EmployeesAssociation  *OnlineBookingsRuleEmployeesAssociation  `json:"employees_association,omitempty"`
-	Enabled               bool                                     `json:"enabled"`
+	Employees            *[]string                               `json:"employees,omitempty"`
+	EmployeesAssociation *OnlineBookingsRuleEmployeesAssociation `json:"employees_association,omitempty"`
+	Enabled              bool                                    `json:"enabled"`
+
+	// End time within the day
+	EndsAt                *time.Time                               `json:"ends_at,omitempty"`
 	EventTypes            *[]string                                `json:"event_types,omitempty"`
 	EventTypesAssociation *OnlineBookingsRuleEventTypesAssociation `json:"event_types_association,omitempty"`
 	Resources             *[]string                                `json:"resources,omitempty"`
 	ResourcesAssociation  *OnlineBookingsRuleResourcesAssociation  `json:"resources_association,omitempty"`
-	Type                  OnlineBookingsRuleType                   `json:"type"`
+
+	// Start time within the day
+	StartsAt *time.Time             `json:"starts_at,omitempty"`
+	Type     OnlineBookingsRuleType `json:"type"`
 }
 
 // OnlineBookingsRuleEmployeesAssociation defines model for OnlineBookingsRule.EmployeesAssociation.
@@ -4211,6 +4227,15 @@ type RuleEntitiesResources struct {
 
 // RuleEntitiesResourcesResourcesAssociation defines model for RuleEntitiesResources.ResourcesAssociation.
 type RuleEntitiesResourcesResourcesAssociation string
+
+// RuleInterval defines model for RuleInterval.
+type RuleInterval struct {
+	// End time within the day
+	EndsAt *time.Time `json:"ends_at,omitempty"`
+
+	// Start time within the day
+	StartsAt *time.Time `json:"starts_at,omitempty"`
+}
 
 // RuleSet defines model for RuleSet.
 type RuleSet struct {
