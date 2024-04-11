@@ -4310,7 +4310,12 @@ type RuleSetCreateOverrides struct {
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type RuleSetFilter struct {
-	Dates *DateFilter `json:"dates,omitempty"`
+	// Expand recurring rule sets into individual rule sets.
+	//
+	// From/To must also be set for expansions to take place.
+	ExpandRecurring *bool   `json:"expand_recurring,omitempty"`
+	From            *string `json:"from,omitempty"`
+	To              *string `json:"to,omitempty"`
 }
 
 // RuleSetResponse defines model for RuleSetResponse.
