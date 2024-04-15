@@ -4269,7 +4269,10 @@ type RuleSet struct {
 	//
 	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
 	Rrule *string `json:"rrule,omitempty"`
-	Rules *Rules  `json:"rules,omitempty"`
+
+	// The template that was used to create this rule set
+	RuleSetTemplateId *string `json:"rule_set_template_id,omitempty"`
+	Rules             *Rules  `json:"rules,omitempty"`
 
 	// Start time
 	StartsAt  *string    `json:"starts_at,omitempty"`
@@ -4295,7 +4298,10 @@ type RuleSetCreate struct {
 	//
 	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
 	Rrule *string `json:"rrule,omitempty"`
-	Rules *Rules  `json:"rules,omitempty"`
+
+	// The template that was used to create this rule set
+	RuleSetTemplateId *string `json:"rule_set_template_id,omitempty"`
+	Rules             *Rules  `json:"rules,omitempty"`
 
 	// Start time
 	StartsAt  string     `json:"starts_at"`
@@ -4326,7 +4332,10 @@ type RuleSetFilter struct {
 	// From/To must also be set for expansions to take place.
 	ExpandRecurring *bool   `json:"expand_recurring,omitempty"`
 	From            *string `json:"from,omitempty"`
-	To              *string `json:"to,omitempty"`
+
+	// Only created from template with this ID.
+	TemplateId *string `json:"template_id,omitempty"`
+	To         *string `json:"to,omitempty"`
 }
 
 // RuleSetResponse defines model for RuleSetResponse.
@@ -4348,7 +4357,10 @@ type RuleSetResponse struct {
 	//
 	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
 	Rrule *string `json:"rrule,omitempty"`
-	Rules Rules   `json:"rules"`
+
+	// The template that was used to create this rule set
+	RuleSetTemplateId *string `json:"rule_set_template_id,omitempty"`
+	Rules             Rules   `json:"rules"`
 
 	// Start time
 	StartsAt  string     `json:"starts_at"`
@@ -4499,8 +4511,9 @@ type RuleSetUpdate struct {
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
 	//
 	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
-	Rrule *string `json:"rrule,omitempty"`
-	Rules *Rules  `json:"rules,omitempty"`
+	Rrule             *string      `json:"rrule,omitempty"`
+	RuleSetTemplateId *interface{} `json:"rule_set_template_id,omitempty"`
+	Rules             *Rules       `json:"rules,omitempty"`
 
 	// Start time
 	StartsAt  *string    `json:"starts_at,omitempty"`
@@ -4510,7 +4523,8 @@ type RuleSetUpdate struct {
 
 // RuleSetUpdateOverrides defines model for RuleSetUpdateOverrides.
 type RuleSetUpdateOverrides struct {
-	Company *interface{} `json:"company,omitempty"`
+	Company           *interface{} `json:"company,omitempty"`
+	RuleSetTemplateId *interface{} `json:"rule_set_template_id,omitempty"`
 }
 
 // RuleSets defines model for RuleSets.
