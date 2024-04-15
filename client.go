@@ -3615,8 +3615,19 @@ type OpeningHour struct {
 	OpensAt  *string `json:"opens_at,omitempty"`
 }
 
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+//
+// Date range must be less than a year.
+type OpeningHourFilter struct {
+	From *string `json:"from,omitempty"`
+	To   *string `json:"to,omitempty"`
+}
+
 // Opening hours for the company. Array of seven (7) items, 0 being Monday and 6 Sunday. Or 0 being Sunday. Nobody really knows.
 type OpeningHours []OpeningHour
+
+// OpeningHoursResponse defines model for OpeningHoursResponse.
+type OpeningHoursResponse map[string][]TimeRange
 
 // Used to control order in list hierarchy.
 type Order int32
@@ -4938,6 +4949,15 @@ type TerminalsFilter struct {
 	CompanyOnly *bool `json:"company_only,omitempty"`
 }
 
+// TimeRange defines model for TimeRange.
+type TimeRange struct {
+	// End time within the day
+	EndsAt *string `json:"ends_at,omitempty"`
+
+	// Start time within the day
+	StartsAt *string `json:"starts_at,omitempty"`
+}
+
 // TimeSlot defines model for TimeSlot.
 type TimeSlot struct {
 	// The IDs of the employees that are available for this time slot
@@ -6121,6 +6141,22 @@ type ListNotificationsParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// ListOpeningHoursParams defines parameters for ListOpeningHours.
+type ListOpeningHoursParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand            `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *OpeningHourFilter `form:"filter,omitempty" json:"filter,omitempty"`
 
 	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
 	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
@@ -10451,6 +10487,9 @@ type ClientInterface interface {
 	// ListNotifications request
 	ListNotifications(ctx context.Context, companyId string, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListOpeningHours request
+	ListOpeningHours(ctx context.Context, companyId string, params *ListOpeningHoursParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListPayments request
 	ListPayments(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -11728,6 +11767,18 @@ func (c *Client) DeleteNotifications(ctx context.Context, companyId string, para
 
 func (c *Client) ListNotifications(ctx context.Context, companyId string, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListNotificationsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOpeningHours(ctx context.Context, companyId string, params *ListOpeningHoursParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOpeningHoursRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18331,6 +18382,106 @@ func NewListNotificationsRequest(server string, companyId string, params *ListNo
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListOpeningHoursRequest generates requests for ListOpeningHours
+func NewListOpeningHoursRequest(server string, companyId string, params *ListOpeningHoursParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/opening_hours", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
@@ -34478,6 +34629,9 @@ type ClientWithResponsesInterface interface {
 	// ListNotifications request
 	ListNotificationsWithResponse(ctx context.Context, companyId string, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*ListNotificationsResponse, error)
 
+	// ListOpeningHours request
+	ListOpeningHoursWithResponse(ctx context.Context, companyId string, params *ListOpeningHoursParams, reqEditors ...RequestEditorFn) (*ListOpeningHoursResponse, error)
+
 	// ListPayments request
 	ListPaymentsWithResponse(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*ListPaymentsResponse, error)
 
@@ -36070,6 +36224,28 @@ func (r ListNotificationsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListNotificationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOpeningHoursResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OpeningHoursResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOpeningHoursResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOpeningHoursResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -41112,6 +41288,15 @@ func (c *ClientWithResponses) ListNotificationsWithResponse(ctx context.Context,
 	return ParseListNotificationsResponse(rsp)
 }
 
+// ListOpeningHoursWithResponse request returning *ListOpeningHoursResponse
+func (c *ClientWithResponses) ListOpeningHoursWithResponse(ctx context.Context, companyId string, params *ListOpeningHoursParams, reqEditors ...RequestEditorFn) (*ListOpeningHoursResponse, error) {
+	rsp, err := c.ListOpeningHours(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOpeningHoursResponse(rsp)
+}
+
 // ListPaymentsWithResponse request returning *ListPaymentsResponse
 func (c *ClientWithResponses) ListPaymentsWithResponse(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*ListPaymentsResponse, error) {
 	rsp, err := c.ListPayments(ctx, companyId, params, reqEditors...)
@@ -44551,6 +44736,32 @@ func ParseListNotificationsResponse(rsp *http.Response) (*ListNotificationsRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Notifications
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListOpeningHoursResponse parses an HTTP response from a ListOpeningHoursWithResponse call
+func ParseListOpeningHoursResponse(rsp *http.Response) (*ListOpeningHoursResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOpeningHoursResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OpeningHoursResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
