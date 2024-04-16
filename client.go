@@ -1890,7 +1890,14 @@ type CustomerGroups []CustomerGroup
 
 // CustomerTags defines model for CustomerTags.
 type CustomerTags struct {
-	Vip *bool `json:"vip,omitempty"`
+	GlutenFree             *bool `json:"gluten_free,omitempty"`
+	LactoseIntolerant      *bool `json:"lactose_intolerant,omitempty"`
+	SevereNutAllergy       *bool `json:"severe_nut_allergy,omitempty"`
+	SevereShellfishAllergy *bool `json:"severe_shellfish_allergy,omitempty"`
+	Vegan                  *bool `json:"vegan,omitempty"`
+	Vegetarian             *bool `json:"vegetarian,omitempty"`
+	Vip                    *bool `json:"vip,omitempty"`
+	Wheelchair             *bool `json:"wheelchair,omitempty"`
 }
 
 // Customers defines model for Customers.
