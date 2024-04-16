@@ -345,6 +345,11 @@ const (
 	EventTypeConnectionsServiceNeedsSpace    EventTypeConnectionsServiceNeeds = "space"
 )
 
+// Defines values for EventTypeDurationRuleType.
+const (
+	EventTypeDuration EventTypeDurationRuleType = "event_type_duration"
+)
+
 // Defines values for EventTypeField.
 const (
 	EventTypeFieldBufferAfterService EventTypeField = "buffer_after_service"
@@ -651,9 +656,10 @@ const (
 
 // Defines values for RuleType.
 const (
-	RuleTypeAvailability   RuleType = "availability"
-	RuleTypeMaxTotalPax    RuleType = "max_total_pax"
-	RuleTypeOnlineBookings RuleType = "online_bookings"
+	RuleTypeAvailability      RuleType = "availability"
+	RuleTypeEventTypeDuration RuleType = "event_type_duration"
+	RuleTypeMaxTotalPax       RuleType = "max_total_pax"
+	RuleTypeOnlineBookings    RuleType = "online_bookings"
 )
 
 // Defines values for SMSMessageStatus.
@@ -2658,6 +2664,33 @@ type EventTypeConnectionsCustomerSelects string
 
 // Does this service need an employee, space, both or neither?
 type EventTypeConnectionsServiceNeeds string
+
+// EventTypeDurationOverride defines model for EventTypeDurationOverride.
+type EventTypeDurationOverride struct {
+	// Duration in minutes
+	Duration int32 `json:"duration"`
+
+	// Event type ID
+	EventType string `json:"event_type"`
+}
+
+// EventTypeDurationOverrides defines model for EventTypeDurationOverrides.
+type EventTypeDurationOverrides []EventTypeDurationOverride
+
+// EventTypeDurationRule defines model for EventTypeDurationRule.
+type EventTypeDurationRule struct {
+	DurationOverrides EventTypeDurationOverrides `json:"duration_overrides"`
+
+	// End time within the day
+	EndsAt *string `json:"ends_at,omitempty"`
+
+	// Start time within the day
+	StartsAt *string                   `json:"starts_at,omitempty"`
+	Type     EventTypeDurationRuleType `json:"type"`
+}
+
+// EventTypeDurationRuleType defines model for EventTypeDurationRule.Type.
+type EventTypeDurationRuleType string
 
 // EventTypeField defines model for EventTypeField.
 type EventTypeField string
@@ -10084,6 +10117,18 @@ func (t Rule) AsMaxTotalPaxRule() (MaxTotalPaxRule, error) {
 }
 
 func (t *Rule) FromMaxTotalPaxRule(v MaxTotalPaxRule) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Rule) AsEventTypeDurationRule() (EventTypeDurationRule, error) {
+	var body EventTypeDurationRule
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Rule) FromEventTypeDurationRule(v EventTypeDurationRule) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
