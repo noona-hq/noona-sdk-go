@@ -622,6 +622,12 @@ const (
 	SaleHasBeenMutated    RefundMarketplaceSaleErrorCode = "sale_has_been_mutated"
 )
 
+// Defines values for ResourcePriority.
+const (
+	High   ResourcePriority = "high"
+	Normal ResourcePriority = "normal"
+)
+
 // Defines values for ResourceType.
 const (
 	ResourceTypeSpace            ResourceType = "space"
@@ -4130,8 +4136,11 @@ type Resource struct {
 	MinCapacity *int32  `json:"min_capacity,omitempty"`
 	Name        *string `json:"name,omitempty"`
 
-	// The order of the resource in the list of resources on the marketplace.
+	// The order of the resource in the list of resources on the marketplace and in the HQ UI.
 	Order *int32 `json:"order,omitempty"`
+
+	// Controls the priority of the resource when being randomly selected in the booking process.
+	Priority *ResourcePriority `json:"priority,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	ResourceGroup *ExpandableResourceGroup `json:"resource_group,omitempty"`
@@ -4219,6 +4228,9 @@ type ResourceGroups []ResourceGroup
 
 // ResourceGroupsResponse defines model for ResourceGroupsResponse.
 type ResourceGroupsResponse []ResourceGroupResponse
+
+// Controls the priority of the resource when being randomly selected in the booking process.
+type ResourcePriority string
 
 // ResourceType defines model for ResourceType.
 type ResourceType string
