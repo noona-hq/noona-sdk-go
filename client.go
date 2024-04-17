@@ -2162,12 +2162,12 @@ type Event struct {
 	CustomProperties *CustomPropertyValues `json:"custom_properties,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Customer *Event_Customer `json:"customer,omitempty"`
+	Customer *ExpandableCustomer `json:"customer,omitempty"`
 
 	// A comment that the customer included during a marketplace booking.
 	CustomerComment *string `json:"customer_comment,omitempty"`
 
-	// Deprecated, expand customer property instead
+	// It is recommended to expand the customer property instead of using this property. However, in the case of deleted or walkin customers, this property can be used as fallback since the customer property will be null.
 	CustomerName *string    `json:"customer_name,omitempty"`
 	DeclinedAt   *time.Time `json:"declined_at,omitempty"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
@@ -2272,11 +2272,6 @@ type Event struct {
 	WaitlistEntry *string `json:"waitlist_entry,omitempty"`
 }
 
-// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-type Event_Customer struct {
-	union json.RawMessage
-}
-
 // EventInvoiceStatus defines model for Event.InvoiceStatus.
 type EventInvoiceStatus string
 
@@ -2341,12 +2336,12 @@ type EventCheckinResult struct {
 	CustomProperties *CustomPropertyValues `json:"custom_properties,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Customer *EventCheckinResult_Customer `json:"customer,omitempty"`
+	Customer *ExpandableCustomer `json:"customer,omitempty"`
 
 	// A comment that the customer included during a marketplace booking.
 	CustomerComment *string `json:"customer_comment,omitempty"`
 
-	// Deprecated, expand customer property instead
+	// It is recommended to expand the customer property instead of using this property. However, in the case of deleted or walkin customers, this property can be used as fallback since the customer property will be null.
 	CustomerName *string    `json:"customer_name,omitempty"`
 	DeclinedAt   *time.Time `json:"declined_at,omitempty"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
@@ -2456,11 +2451,6 @@ type EventCheckinResult struct {
 	//
 	// Waitlist entries are automatically deleted when the event is created.
 	WaitlistEntry *string `json:"waitlist_entry,omitempty"`
-}
-
-// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-type EventCheckinResult_Customer struct {
-	union json.RawMessage
 }
 
 // EventCheckinResultInvoiceStatus defines model for EventCheckinResult.InvoiceStatus.
@@ -8808,40 +8798,6 @@ func (t *CommissionConfig) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-func (t Event_Customer) AsID() (ID, error) {
-	var body ID
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *Event_Customer) FromID(v ID) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t Event_Customer) AsCustomer() (Customer, error) {
-	var body Customer
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *Event_Customer) FromCustomer(v Customer) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t Event_Customer) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *Event_Customer) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
 func (t Event_RecurringEvent) AsID() (ID, error) {
 	var body ID
 	err := json.Unmarshal(t.union, &body)
@@ -8906,40 +8862,6 @@ func (t Event_Space) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Event_Space) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-func (t EventCheckinResult_Customer) AsID() (ID, error) {
-	var body ID
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *EventCheckinResult_Customer) FromID(v ID) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t EventCheckinResult_Customer) AsCustomer() (Customer, error) {
-	var body Customer
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *EventCheckinResult_Customer) FromCustomer(v Customer) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t EventCheckinResult_Customer) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *EventCheckinResult_Customer) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
