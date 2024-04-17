@@ -181,6 +181,11 @@ const (
 	Restaurant  CompanyVertical = "restaurant"
 )
 
+// Defines values for CustomMessageRuleType.
+const (
+	CustomMessage CustomMessageRuleType = "custom_message"
+)
+
 // Defines values for CustomPropertyScope.
 const (
 	CustomPropertyScopeCustomer CustomPropertyScope = "customer"
@@ -615,6 +620,11 @@ const (
 	PowerupSubscriptionStatusPaused      PowerupSubscriptionStatus = "paused"
 )
 
+// Defines values for PrePaymentRuleType.
+const (
+	PrePaymentRuleTypePrePayment PrePaymentRuleType = "pre_payment"
+)
+
 // Defines values for RefundMarketplaceSaleErrorCode.
 const (
 	AlreadyRefunded       RefundMarketplaceSaleErrorCode = "already_refunded"
@@ -663,9 +673,11 @@ const (
 // Defines values for RuleType.
 const (
 	RuleTypeAvailability      RuleType = "availability"
+	RuleTypeCustomMessage     RuleType = "custom_message"
 	RuleTypeEventTypeDuration RuleType = "event_type_duration"
 	RuleTypeMaxTotalPax       RuleType = "max_total_pax"
 	RuleTypeOnlineBookings    RuleType = "online_bookings"
+	RuleTypePrePayment        RuleType = "pre_payment"
 )
 
 // Defines values for SMSMessageStatus.
@@ -773,7 +785,7 @@ const (
 
 // Defines values for SubtransactionDataPrePaymentType.
 const (
-	PrePayment SubtransactionDataPrePaymentType = "pre_payment"
+	SubtransactionDataPrePaymentTypePrePayment SubtransactionDataPrePaymentType = "pre_payment"
 )
 
 // Defines values for SubtransactionDataTerminalType.
@@ -1767,6 +1779,20 @@ type CustomDuration struct {
 	Duration    *int32 `json:"duration,omitempty"`
 	Pause       *int32 `json:"pause,omitempty"`
 }
+
+// CustomMessageRule defines model for CustomMessageRule.
+type CustomMessageRule struct {
+	// End time within the day
+	EndsAt  *string `json:"ends_at,omitempty"`
+	Message string  `json:"message"`
+
+	// Start time within the day
+	StartsAt *string               `json:"starts_at,omitempty"`
+	Type     CustomMessageRuleType `json:"type"`
+}
+
+// CustomMessageRuleType defines model for CustomMessageRule.Type.
+type CustomMessageRuleType string
 
 // CustomProperties defines model for CustomProperties.
 type CustomProperties []CustomProperty
@@ -3972,6 +3998,29 @@ type PowerupSubscriptionCancelReason string
 
 // PowerupSubscriptionStatus defines model for PowerupSubscription.Status.
 type PowerupSubscriptionStatus string
+
+// PrePaymentRule defines model for PrePaymentRule.
+type PrePaymentRule struct {
+	// How much must be paid on booking.
+	Amount float64 `json:"amount"`
+
+	// End time within the day
+	EndsAt *string `json:"ends_at,omitempty"`
+
+	// Is any upfront payment required?
+	//
+	// `true` - pre_payment_ratio is used to indicate how much.
+	//
+	// `false` - pre_payment_ratio is ignored.
+	Required bool `json:"required"`
+
+	// Start time within the day
+	StartsAt *string            `json:"starts_at,omitempty"`
+	Type     PrePaymentRuleType `json:"type"`
+}
+
+// PrePaymentRuleType defines model for PrePaymentRule.Type.
+type PrePaymentRuleType string
 
 // Price defines model for Price.
 type Price struct {
@@ -10167,6 +10216,30 @@ func (t Rule) AsEventTypeDurationRule() (EventTypeDurationRule, error) {
 }
 
 func (t *Rule) FromEventTypeDurationRule(v EventTypeDurationRule) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Rule) AsPrePaymentRule() (PrePaymentRule, error) {
+	var body PrePaymentRule
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Rule) FromPrePaymentRule(v PrePaymentRule) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Rule) AsCustomMessageRule() (CustomMessageRule, error) {
+	var body CustomMessageRule
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Rule) FromCustomMessageRule(v CustomMessageRule) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
