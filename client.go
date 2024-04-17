@@ -1627,6 +1627,7 @@ type Company struct {
 	Locale      *Locale               `json:"locale,omitempty"`
 	Location    *Location             `json:"location,omitempty"`
 	Marketplace *CompanyMarketplace   `json:"marketplace,omitempty"`
+	Messaging   *CompanyMessaging     `json:"messaging,omitempty"`
 	Name        *string               `json:"name,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
@@ -1700,12 +1701,26 @@ type CompanyMarketplace struct {
 	WaitlistEnabled *bool `json:"waitlist_enabled,omitempty"`
 }
 
+// CompanyMessaging defines model for CompanyMessaging.
+type CompanyMessaging struct {
+	// Whether the company wants to show the booking end time/duration in booking confirmation messages and reminders.
+	ShowBookingEndsAt *bool `json:"show_booking_ends_at,omitempty"`
+}
+
 // CompanyProfile defines model for CompanyProfile.
 type CompanyProfile struct {
-	BookingRedirectUrl    *string   `json:"booking_redirect_url,omitempty"`
-	BookingSuccessMessage *string   `json:"booking_success_message,omitempty"`
-	CompanyTypes          *[]string `json:"company_types,omitempty"`
-	ContactEmail          *string   `json:"contact_email,omitempty"`
+	// Booking interval in minutes.
+	//
+	// Dictates how often customers can book events with employee or resource.
+	//
+	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
+	//
+	// A booking interval is set on the company level but can be overridden on the resource/employee level.
+	BookingInterval       *BookingInterval `json:"booking_interval,omitempty"`
+	BookingRedirectUrl    *string          `json:"booking_redirect_url,omitempty"`
+	BookingSuccessMessage *string          `json:"booking_success_message,omitempty"`
+	CompanyTypes          *[]string        `json:"company_types,omitempty"`
+	ContactEmail          *string          `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
 	CoverImages *[]Image `json:"cover_images,omitempty"`
@@ -1716,6 +1731,9 @@ type CompanyProfile struct {
 	Image                    *Image `json:"image,omitempty"`
 	LicensePlate             *bool  `json:"license_plate,omitempty"`
 	MaxBookableFutureDays    *int32 `json:"max_bookable_future_days,omitempty"`
+	MaxGuestsPerBooking      *int32 `json:"max_guests_per_booking,omitempty"`
+	MaxGuestsPerInterval     *int32 `json:"max_guests_per_interval,omitempty"`
+	MaxSameTimeArrival       *int32 `json:"max_same_time_arrival,omitempty"`
 	MinBookingNoticeMinutes  *int32 `json:"min_booking_notice_minutes,omitempty"`
 	MinCancelNoticeHours     *int32 `json:"min_cancel_notice_hours,omitempty"`
 	MinRescheduleNoticeHours *int32 `json:"min_reschedule_notice_hours,omitempty"`
@@ -1731,6 +1749,7 @@ type CompanyProfile struct {
 	// The price category of the company.
 	PriceCategory  *int32          `json:"price_category,omitempty"`
 	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
+	ServiceBuffer  *int32          `json:"service_buffer,omitempty"`
 	StoreName      *string         `json:"store_name,omitempty"`
 	WebAuthOptOut  *bool           `json:"web_auth_opt_out,omitempty"`
 }
