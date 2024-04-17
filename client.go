@@ -3297,8 +3297,9 @@ type MarketplaceUsers []MarketplaceUser
 // MaxTotalPaxRule defines model for MaxTotalPaxRule.
 type MaxTotalPaxRule struct {
 	// End time within the day
-	EndsAt      *string `json:"ends_at,omitempty"`
-	MaxTotalPax int32   `json:"max_total_pax"`
+	EndsAt               *string `json:"ends_at,omitempty"`
+	MaxGuestsPerInterval int32   `json:"max_guests_per_interval"`
+	MaxSameTimeArrival   int32   `json:"max_same_time_arrival"`
 
 	// Start time within the day
 	StartsAt *string             `json:"starts_at,omitempty"`
