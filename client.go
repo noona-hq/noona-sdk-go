@@ -259,13 +259,19 @@ const (
 
 // Defines values for EventActivityField.
 const (
-	EventActivityFieldDuration    EventActivityField = "duration"
-	EventActivityFieldEmployee    EventActivityField = "employee"
-	EventActivityFieldEventTypes  EventActivityField = "event_types"
-	EventActivityFieldSpace       EventActivityField = "space"
-	EventActivityFieldStartsAt    EventActivityField = "starts_at"
-	EventActivityFieldStatus      EventActivityField = "status"
-	EventActivityFieldUnconfirmed EventActivityField = "unconfirmed"
+	EventActivityFieldDuration                 EventActivityField = "duration"
+	EventActivityFieldEmailBookingConfirmation EventActivityField = "email_booking_confirmation"
+	EventActivityFieldEmployee                 EventActivityField = "employee"
+	EventActivityFieldEventTypes               EventActivityField = "event_types"
+	EventActivityFieldPushBookingReminder      EventActivityField = "push_booking_reminder"
+	EventActivityFieldPushBookingUpdated       EventActivityField = "push_booking_updated"
+	EventActivityFieldSmsBookingConfirmation   EventActivityField = "sms_booking_confirmation"
+	EventActivityFieldSmsBookingReminder       EventActivityField = "sms_booking_reminder"
+	EventActivityFieldSmsExtra                 EventActivityField = "sms_extra"
+	EventActivityFieldSpace                    EventActivityField = "space"
+	EventActivityFieldStartsAt                 EventActivityField = "starts_at"
+	EventActivityFieldStatus                   EventActivityField = "status"
+	EventActivityFieldUnconfirmed              EventActivityField = "unconfirmed"
 )
 
 // Defines values for EventActivityType.
