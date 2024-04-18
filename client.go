@@ -6568,6 +6568,9 @@ type ListTimeSlotsParams struct {
 	StartDate    string    `form:"start_date" json:"start_date"`
 	EndDate      string    `form:"end_date" json:"end_date"`
 	Capacity     *int32    `form:"capacity,omitempty" json:"capacity,omitempty"`
+
+	// Duration is by default inferred from event type(s) but can be overwritten with this parameter.
+	Duration *int32 `form:"duration,omitempty" json:"duration,omitempty"`
 }
 
 // ListTransactionsParams defines parameters for ListTransactions.
@@ -20423,6 +20426,22 @@ func NewListTimeSlotsRequest(server string, companyId string, params *ListTimeSl
 	if params.Capacity != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "capacity", runtime.ParamLocationQuery, *params.Capacity); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Duration != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "duration", runtime.ParamLocationQuery, *params.Duration); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
