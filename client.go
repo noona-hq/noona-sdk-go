@@ -6567,6 +6567,7 @@ type ListTimeSlotsParams struct {
 	EventId      *string   `form:"event_id,omitempty" json:"event_id,omitempty"`
 	StartDate    string    `form:"start_date" json:"start_date"`
 	EndDate      string    `form:"end_date" json:"end_date"`
+	Capacity     *int32    `form:"capacity,omitempty" json:"capacity,omitempty"`
 }
 
 // ListTransactionsParams defines parameters for ListTransactions.
@@ -20417,6 +20418,22 @@ func NewListTimeSlotsRequest(server string, companyId string, params *ListTimeSl
 				queryValues.Add(k, v2)
 			}
 		}
+	}
+
+	if params.Capacity != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "capacity", runtime.ParamLocationQuery, *params.Capacity); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
