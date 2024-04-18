@@ -4399,6 +4399,11 @@ type RuleSet struct {
 	EndsAt *string `json:"ends_at,omitempty"`
 	Id     *string `json:"id,omitempty"`
 
+	// Lower numbers have higher priority.
+	//
+	// This can be used to explicitly overwrite certain rules on dates where multiple rules apply.
+	Priority *int32 `json:"priority,omitempty"`
+
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
 	//
 	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
@@ -4427,6 +4432,11 @@ type RuleSetCreate struct {
 	// End time
 	EndsAt string  `json:"ends_at"`
 	Id     *string `json:"id,omitempty"`
+
+	// Lower numbers have higher priority.
+	//
+	// This can be used to explicitly overwrite certain rules on dates where multiple rules apply.
+	Priority *int32 `json:"priority,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
 	//
@@ -4487,6 +4497,11 @@ type RuleSetResponse struct {
 	EndsAt string  `json:"ends_at"`
 	Id     *string `json:"id,omitempty"`
 
+	// Lower numbers have higher priority.
+	//
+	// This can be used to explicitly overwrite certain rules on dates where multiple rules apply.
+	Priority *int32 `json:"priority,omitempty"`
+
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
 	//
 	// The dtstart property is ignored, and the date attribute of the rule set is used to define the beginnin of the reccurence.
@@ -4516,7 +4531,12 @@ type RuleSetResponseOverrides struct {
 	// End time
 	EndsAt string  `json:"ends_at"`
 	Id     *string `json:"id,omitempty"`
-	Rules  Rules   `json:"rules"`
+
+	// Lower numbers have higher priority.
+	//
+	// This can be used to explicitly overwrite certain rules on dates where multiple rules apply.
+	Priority *int32 `json:"priority,omitempty"`
+	Rules    Rules  `json:"rules"`
 
 	// Start time
 	StartsAt  string     `json:"starts_at"`
@@ -4533,7 +4553,12 @@ type RuleSetTemplate struct {
 	// End time
 	EndsAt *string `json:"ends_at,omitempty"`
 	Id     *string `json:"id,omitempty"`
-	Rules  *Rules  `json:"rules,omitempty"`
+
+	// Lower numbers have higher priority.
+	//
+	// This can be used to explicitly overwrite certain rules on dates where multiple rules apply.
+	Priority *int32 `json:"priority,omitempty"`
+	Rules    *Rules `json:"rules,omitempty"`
 
 	// Start time
 	StartsAt  *string    `json:"starts_at,omitempty"`
@@ -4549,7 +4574,12 @@ type RuleSetTemplateCreate struct {
 	// End time
 	EndsAt string  `json:"ends_at"`
 	Id     *string `json:"id,omitempty"`
-	Rules  *Rules  `json:"rules,omitempty"`
+
+	// Lower numbers have higher priority.
+	//
+	// This can be used to explicitly overwrite certain rules on dates where multiple rules apply.
+	Priority *int32 `json:"priority,omitempty"`
+	Rules    *Rules `json:"rules,omitempty"`
 
 	// Start time
 	StartsAt  string     `json:"starts_at"`
@@ -4577,7 +4607,12 @@ type RuleSetTemplateResponse struct {
 	// End time
 	EndsAt string  `json:"ends_at"`
 	Id     *string `json:"id,omitempty"`
-	Rules  Rules   `json:"rules"`
+
+	// Lower numbers have higher priority.
+	//
+	// This can be used to explicitly overwrite certain rules on dates where multiple rules apply.
+	Priority *int32 `json:"priority,omitempty"`
+	Rules    Rules  `json:"rules"`
 
 	// Start time
 	StartsAt  string     `json:"starts_at"`
@@ -4609,7 +4644,12 @@ type RuleSetTemplateUpdate struct {
 	// End time
 	EndsAt *string `json:"ends_at,omitempty"`
 	Id     *string `json:"id,omitempty"`
-	Rules  *Rules  `json:"rules,omitempty"`
+
+	// Lower numbers have higher priority.
+	//
+	// This can be used to explicitly overwrite certain rules on dates where multiple rules apply.
+	Priority *int32 `json:"priority,omitempty"`
+	Rules    *Rules `json:"rules,omitempty"`
 
 	// Start time
 	StartsAt  *string    `json:"starts_at,omitempty"`
@@ -4641,6 +4681,11 @@ type RuleSetUpdate struct {
 	// End time
 	EndsAt *string `json:"ends_at,omitempty"`
 	Id     *string `json:"id,omitempty"`
+
+	// Lower numbers have higher priority.
+	//
+	// This can be used to explicitly overwrite certain rules on dates where multiple rules apply.
+	Priority *int32 `json:"priority,omitempty"`
 
 	// [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string.
 	//
