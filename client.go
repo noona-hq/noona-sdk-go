@@ -1772,6 +1772,14 @@ type CompanyProfile struct {
 	WebAuthOptOut  *bool           `json:"web_auth_opt_out,omitempty"`
 }
 
+// CountMetricsByTimeFrame defines model for CountMetricsByTimeFrame.
+type CountMetricsByTimeFrame struct {
+	// Change in count from previous period in percent (75 = 75%)
+	PercentChange       *int32 `json:"percent_change,omitempty"`
+	Timeframe           *int32 `json:"timeframe,omitempty"`
+	TimeframeWeekBefore *int32 `json:"timeframe_week_before,omitempty"`
+}
+
 // Country defines model for Country.
 type Country struct {
 	LongName  *string `json:"long_name,omitempty"`
@@ -2847,6 +2855,20 @@ type EventUpdateBehaviorType string
 
 // Events defines model for Events.
 type Events []Event
+
+// EventsMetrics defines model for EventsMetrics.
+type EventsMetrics struct {
+	Events            CountMetricsByTimeFrame `json:"events"`
+	Guests            CountMetricsByTimeFrame `json:"guests"`
+	MarketplaceEvents CountMetricsByTimeFrame `json:"marketplace_events"`
+	Occupancy         CountMetricsByTimeFrame `json:"occupancy"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type EventsMetricsFilter struct {
+	From time.Time `json:"from"`
+	To   time.Time `json:"to"`
+}
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableActor struct {
@@ -6307,6 +6329,16 @@ type ListMemosParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// GetEventsMetricsParams defines parameters for GetEventsMetrics.
+type GetEventsMetricsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand              `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *EventsMetricsFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // GetSalesMetricsParams defines parameters for GetSalesMetrics.
@@ -10653,6 +10685,9 @@ type ClientInterface interface {
 	// ListMemos request
 	ListMemos(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetEventsMetrics request
+	GetEventsMetrics(ctx context.Context, companyId string, params *GetEventsMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetSalesMetrics request
 	GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -11909,6 +11944,18 @@ func (c *Client) ListIssuers(ctx context.Context, companyId string, params *List
 
 func (c *Client) ListMemos(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListMemosRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetEventsMetrics(ctx context.Context, companyId string, params *GetEventsMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEventsMetricsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18362,6 +18409,86 @@ func NewListMemosRequest(server string, companyId string, params *ListMemosParam
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetEventsMetricsRequest generates requests for GetEventsMetrics
+func NewGetEventsMetricsRequest(server string, companyId string, params *GetEventsMetricsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/metrics/events", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
@@ -34922,6 +35049,9 @@ type ClientWithResponsesInterface interface {
 	// ListMemos request
 	ListMemosWithResponse(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*ListMemosResponse, error)
 
+	// GetEventsMetrics request
+	GetEventsMetricsWithResponse(ctx context.Context, companyId string, params *GetEventsMetricsParams, reqEditors ...RequestEditorFn) (*GetEventsMetricsResponse, error)
+
 	// GetSalesMetrics request
 	GetSalesMetricsWithResponse(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*GetSalesMetricsResponse, error)
 
@@ -36463,6 +36593,28 @@ func (r ListMemosResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListMemosResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetEventsMetricsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventsMetrics
+}
+
+// Status returns HTTPResponse.Status
+func (r GetEventsMetricsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetEventsMetricsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -41588,6 +41740,15 @@ func (c *ClientWithResponses) ListMemosWithResponse(ctx context.Context, company
 	return ParseListMemosResponse(rsp)
 }
 
+// GetEventsMetricsWithResponse request returning *GetEventsMetricsResponse
+func (c *ClientWithResponses) GetEventsMetricsWithResponse(ctx context.Context, companyId string, params *GetEventsMetricsParams, reqEditors ...RequestEditorFn) (*GetEventsMetricsResponse, error) {
+	rsp, err := c.GetEventsMetrics(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetEventsMetricsResponse(rsp)
+}
+
 // GetSalesMetricsWithResponse request returning *GetSalesMetricsResponse
 func (c *ClientWithResponses) GetSalesMetricsWithResponse(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*GetSalesMetricsResponse, error) {
 	rsp, err := c.GetSalesMetrics(ctx, companyId, params, reqEditors...)
@@ -44994,6 +45155,32 @@ func ParseListMemosResponse(rsp *http.Response) (*ListMemosResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest MemosResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetEventsMetricsResponse parses an HTTP response from a GetEventsMetricsWithResponse call
+func ParseGetEventsMetricsResponse(rsp *http.Response) (*GetEventsMetricsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetEventsMetricsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventsMetrics
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
