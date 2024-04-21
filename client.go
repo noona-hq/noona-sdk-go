@@ -263,6 +263,7 @@ const (
 	EventActivityFieldEmailBookingConfirmation EventActivityField = "email_booking_confirmation"
 	EventActivityFieldEmployee                 EventActivityField = "employee"
 	EventActivityFieldEventTypes               EventActivityField = "event_types"
+	EventActivityFieldPushBookingConfirmation  EventActivityField = "push_booking_confirmation"
 	EventActivityFieldPushBookingReminder      EventActivityField = "push_booking_reminder"
 	EventActivityFieldPushBookingUpdated       EventActivityField = "push_booking_updated"
 	EventActivityFieldSmsBookingConfirmation   EventActivityField = "sms_booking_confirmation"
