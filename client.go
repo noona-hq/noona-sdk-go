@@ -3495,6 +3495,9 @@ type NotificationEvent struct {
 	// True if the customer is new
 	NewCustomer *bool `json:"new_customer,omitempty"`
 
+	// Number of guests for the event.
+	NumberOfGuests *int32 `json:"number_of_guests,omitempty"`
+
 	// The amount of the payment if the event has a payment associated with it.
 	PaymentAmount *float64 `json:"payment_amount,omitempty"`
 
