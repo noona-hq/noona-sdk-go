@@ -4279,21 +4279,20 @@ type ResourceGroup struct {
 // ResourceGroupCreate defines model for ResourceGroupCreate.
 type ResourceGroupCreate struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company   ExpandableCompany   `json:"company"`
-	CreatedAt *time.Time          `json:"created_at,omitempty"`
-	Id        *string             `json:"id,omitempty"`
-	Order     *int32              `json:"order,omitempty"`
-	Resources ExpandableResources `json:"resources"`
-	Title     string              `json:"title"`
-	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
+	Company   ExpandableCompany    `json:"company"`
+	CreatedAt *time.Time           `json:"created_at,omitempty"`
+	Id        *string              `json:"id,omitempty"`
+	Order     *int32               `json:"order,omitempty"`
+	Resources *ExpandableResources `json:"resources,omitempty"`
+	Title     string               `json:"title"`
+	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
 }
 
 // ResourceGroupCreateOverrides defines model for ResourceGroupCreateOverrides.
 type ResourceGroupCreateOverrides struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company   ExpandableCompany   `json:"company"`
-	Resources ExpandableResources `json:"resources"`
-	Title     string              `json:"title"`
+	Company ExpandableCompany `json:"company"`
+	Title   string            `json:"title"`
 }
 
 // ResourceGroupResponse defines model for ResourceGroupResponse.
