@@ -4422,7 +4422,17 @@ type RuleSet struct {
 
 	// End time
 	EndsAt *string `json:"ends_at,omitempty"`
-	Id     *string `json:"id,omitempty"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+
+	// The date of the next instance of this template.
+	//
+	// **Only set on rule set templates.**
+	NextInstance *string `json:"next_instance,omitempty"`
 
 	// Lower numbers have higher priority.
 	//
@@ -4455,8 +4465,18 @@ type RuleSetCreate struct {
 	Date string `json:"date"`
 
 	// End time
-	EndsAt string  `json:"ends_at"`
-	Id     *string `json:"id,omitempty"`
+	EndsAt string `json:"ends_at"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+
+	// The date of the next instance of this template.
+	//
+	// **Only set on rule set templates.**
+	NextInstance *string `json:"next_instance,omitempty"`
 
 	// Lower numbers have higher priority.
 	//
@@ -4519,8 +4539,18 @@ type RuleSetResponse struct {
 	Date string `json:"date"`
 
 	// End time
-	EndsAt string  `json:"ends_at"`
-	Id     *string `json:"id,omitempty"`
+	EndsAt string `json:"ends_at"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+
+	// The date of the next instance of this template.
+	//
+	// **Only set on rule set templates.**
+	NextInstance *string `json:"next_instance,omitempty"`
 
 	// Lower numbers have higher priority.
 	//
@@ -4554,8 +4584,18 @@ type RuleSetResponseOverrides struct {
 	Date string `json:"date"`
 
 	// End time
-	EndsAt string  `json:"ends_at"`
-	Id     *string `json:"id,omitempty"`
+	EndsAt string `json:"ends_at"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+
+	// The date of the next instance of this template.
+	//
+	// **Only set on rule set templates.**
+	NextInstance *string `json:"next_instance,omitempty"`
 
 	// Lower numbers have higher priority.
 	//
@@ -4577,7 +4617,17 @@ type RuleSetTemplate struct {
 
 	// End time
 	EndsAt *string `json:"ends_at,omitempty"`
-	Id     *string `json:"id,omitempty"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+
+	// The date of the next instance of this template.
+	//
+	// **Only set on rule set templates.**
+	NextInstance *string `json:"next_instance,omitempty"`
 
 	// Lower numbers have higher priority.
 	//
@@ -4597,8 +4647,18 @@ type RuleSetTemplateCreate struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	// End time
-	EndsAt string  `json:"ends_at"`
-	Id     *string `json:"id,omitempty"`
+	EndsAt string `json:"ends_at"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+
+	// The date of the next instance of this template.
+	//
+	// **Only set on rule set templates.**
+	NextInstance *string `json:"next_instance,omitempty"`
 
 	// Lower numbers have higher priority.
 	//
@@ -4630,8 +4690,18 @@ type RuleSetTemplateResponse struct {
 	CreatedAt *time.Time        `json:"created_at,omitempty"`
 
 	// End time
-	EndsAt string  `json:"ends_at"`
-	Id     *string `json:"id,omitempty"`
+	EndsAt string `json:"ends_at"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+
+	// The date of the next instance of this template.
+	//
+	// **Only set on rule set templates.**
+	NextInstance *string `json:"next_instance,omitempty"`
 
 	// Lower numbers have higher priority.
 	//
@@ -4652,9 +4722,14 @@ type RuleSetTemplateResponseOverrides struct {
 	CreatedAt *time.Time        `json:"created_at,omitempty"`
 
 	// End time
-	EndsAt string  `json:"ends_at"`
-	Id     *string `json:"id,omitempty"`
-	Rules  Rules   `json:"rules"`
+	EndsAt string `json:"ends_at"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+	Rules               Rules   `json:"rules"`
 
 	// Start time
 	StartsAt  string     `json:"starts_at"`
@@ -4668,7 +4743,17 @@ type RuleSetTemplateUpdate struct {
 
 	// End time
 	EndsAt *string `json:"ends_at,omitempty"`
-	Id     *string `json:"id,omitempty"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+
+	// The date of the next instance of this template.
+	//
+	// **Only set on rule set templates.**
+	NextInstance *string `json:"next_instance,omitempty"`
 
 	// Lower numbers have higher priority.
 	//
@@ -4705,7 +4790,17 @@ type RuleSetUpdate struct {
 
 	// End time
 	EndsAt *string `json:"ends_at,omitempty"`
-	Id     *string `json:"id,omitempty"`
+
+	// The number of future instances that exist from this template.
+	//
+	// **Only set on rule set templates.**
+	FutureInstanceCount *int32  `json:"future_instance_count,omitempty"`
+	Id                  *string `json:"id,omitempty"`
+
+	// The date of the next instance of this template.
+	//
+	// **Only set on rule set templates.**
+	NextInstance *string `json:"next_instance,omitempty"`
 
 	// Lower numbers have higher priority.
 	//
