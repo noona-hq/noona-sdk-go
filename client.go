@@ -364,8 +364,10 @@ const (
 
 // Defines values for EventTypeField.
 const (
-	EventTypeFieldBufferAfterService EventTypeField = "buffer_after_service"
-	EventTypeFieldPayments           EventTypeField = "payments"
+	EventTypeFieldBufferAfterService  EventTypeField = "buffer_after_service"
+	EventTypeFieldMaxGuestsPerBooking EventTypeField = "max_guests_per_booking"
+	EventTypeFieldMinGuestsPerBooking EventTypeField = "min_guests_per_booking"
+	EventTypeFieldPayments            EventTypeField = "payments"
 )
 
 // Defines values for EventUpdateBehaviorType.
@@ -1755,6 +1757,7 @@ type CompanyProfile struct {
 	MaxSameTimeArrival       *int32 `json:"max_same_time_arrival,omitempty"`
 	MinBookingNoticeMinutes  *int32 `json:"min_booking_notice_minutes,omitempty"`
 	MinCancelNoticeHours     *int32 `json:"min_cancel_notice_hours,omitempty"`
+	MinGuestsPerBooking      *int32 `json:"min_guests_per_booking,omitempty"`
 	MinRescheduleNoticeHours *int32 `json:"min_reschedule_notice_hours,omitempty"`
 
 	// Opening hours for the company. Array of seven (7) items, 0 being Monday and 6 Sunday. Or 0 being Sunday. Nobody really knows.
@@ -2624,7 +2627,9 @@ type EventType struct {
 	Id                     *string                           `json:"id,omitempty"`
 
 	// The event type's image URL in the original size
-	Image *string `json:"image,omitempty"`
+	Image               *string `json:"image,omitempty"`
+	MaxGuestsPerBooking *int32  `json:"max_guests_per_booking,omitempty"`
+	MinGuestsPerBooking *int32  `json:"min_guests_per_booking,omitempty"`
 
 	// Deprecated, please use duration instead
 	Minutes *int32 `json:"minutes,omitempty"`
