@@ -1822,6 +1822,7 @@ type CustomProperty struct {
 	Id        *string                `json:"id,omitempty"`
 	Name      *string                `json:"name,omitempty"`
 	Options   *CustomPropertyOptions `json:"options,omitempty"`
+	Order     *int32                 `json:"order,omitempty"`
 	Scope     *CustomPropertyScope   `json:"scope,omitempty"`
 	Type      *CustomPropertyType    `json:"type,omitempty"`
 	UpdatedAt *time.Time             `json:"updated_at,omitempty"`
