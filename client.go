@@ -5442,7 +5442,10 @@ type TransactionsFilter struct {
 	// Filter by customer IDs
 	Customers *[]string `json:"customers,omitempty"`
 	Employees *[]string `json:"employees,omitempty"`
-	Issuers   *[]string `json:"issuers,omitempty"`
+
+	// Filter by specific transaction IDs
+	Ids     *[]string `json:"ids,omitempty"`
+	Issuers *[]string `json:"issuers,omitempty"`
 
 	// Filter by sale ID
 	Sale *string `json:"sale,omitempty"`
