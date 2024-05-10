@@ -839,6 +839,14 @@ const (
 	PartialRefund TransactionCreationBehaviorRefund = "partial_refund"
 )
 
+// Defines values for UnavailableResourceReason.
+const (
+	Booked                UnavailableResourceReason = "booked"
+	Capacity              UnavailableResourceReason = "capacity"
+	CustomBookingInterval UnavailableResourceReason = "custom_booking_interval"
+	OutsideOpeningHours   UnavailableResourceReason = "outside_opening_hours"
+)
+
 // Defines values for VoucherStatus.
 const (
 	VoucherStatusExpired    VoucherStatus = "expired"
@@ -5287,6 +5295,9 @@ type TimeSlot struct {
 
 	// The start time of the time slot
 	Slot *time.Time `json:"slot,omitempty"`
+
+	// Details of the resources that are unavailable for this time slot, including the reason
+	UnavailableResources *[]UnavailableResource `json:"unavailable_resources,omitempty"`
 }
 
 // TimeSlotReservation defines model for TimeSlotReservation.
@@ -5450,6 +5461,36 @@ type TransactionsFilter struct {
 	// Filter by sale ID
 	Sale *string `json:"sale,omitempty"`
 }
+
+// UnavailableResource defines model for UnavailableResource.
+type UnavailableResource struct {
+	// The reason why the resource is unavailable.
+	//
+	// Possible values:
+	// - `booked` - The resource is booked during this time slot
+	// - `outside_opening_hours` - The reservation extends outside the opening hours of the company
+	// - `custom_booking_interval` - The reservation start time does not match the custom booking interval of the resource
+	// - `capacity` - The capacity of the resource does not match number of guests (Too big or too small)
+	//
+	// The above list of reasons is priority ordered. Meaning that if a table does not support number of guests due to
+	// capacity and is also booked, the reason will be `booked`.
+	Reason *UnavailableResourceReason `json:"reason,omitempty"`
+
+	// The ID of the unavailable resource
+	Resource *string `json:"resource,omitempty"`
+}
+
+// The reason why the resource is unavailable.
+//
+// Possible values:
+// - `booked` - The resource is booked during this time slot
+// - `outside_opening_hours` - The reservation extends outside the opening hours of the company
+// - `custom_booking_interval` - The reservation start time does not match the custom booking interval of the resource
+// - `capacity` - The capacity of the resource does not match number of guests (Too big or too small)
+//
+// The above list of reasons is priority ordered. Meaning that if a table does not support number of guests due to
+// capacity and is also booked, the reason will be `booked`.
+type UnavailableResourceReason string
 
 // UnifiedActivities defines model for UnifiedActivities.
 type UnifiedActivities []UnifiedActivity
