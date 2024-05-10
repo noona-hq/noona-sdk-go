@@ -5459,7 +5459,8 @@ type TransactionsFilter struct {
 	Issuers *[]string `json:"issuers,omitempty"`
 
 	// Filter by sale ID
-	Sale *string `json:"sale,omitempty"`
+	Sale                    *string     `json:"sale,omitempty"`
+	SubtransactionCreatedAt *DateFilter `json:"subtransaction_created_at,omitempty"`
 }
 
 // UnavailableResource defines model for UnavailableResource.
