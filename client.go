@@ -2876,6 +2876,7 @@ type EventsMetrics struct {
 	Events            CountMetricsByTimeFrame `json:"events"`
 	Guests            CountMetricsByTimeFrame `json:"guests"`
 	MarketplaceEvents CountMetricsByTimeFrame `json:"marketplace_events"`
+	NewCustomers      CountMetricsByTimeFrame `json:"new_customers"`
 	Occupancy         CountMetricsByTimeFrame `json:"occupancy"`
 }
 
