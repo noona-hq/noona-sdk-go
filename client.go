@@ -3451,6 +3451,45 @@ type Memos []Memo
 // MemosResponse defines model for MemosResponse.
 type MemosResponse []MemoResponse
 
+// MozrestBookingChannel defines model for MozrestBookingChannel.
+type MozrestBookingChannel struct {
+	Enabled *bool   `json:"enabled,omitempty"`
+	Id      *string `json:"id,omitempty"`
+	Name    *string `json:"name,omitempty"`
+}
+
+// MozrestBookingChannelResponse defines model for MozrestBookingChannelResponse.
+type MozrestBookingChannelResponse struct {
+	Enabled bool    `json:"enabled"`
+	Id      *string `json:"id,omitempty"`
+	Name    *string `json:"name,omitempty"`
+}
+
+// MozrestBookingChannelResponseOverrides defines model for MozrestBookingChannelResponseOverrides.
+type MozrestBookingChannelResponseOverrides struct {
+	Enabled bool    `json:"enabled"`
+	Id      *string `json:"id,omitempty"`
+	Name    *string `json:"name,omitempty"`
+}
+
+// MozrestBookingChannelUpdate defines model for MozrestBookingChannelUpdate.
+type MozrestBookingChannelUpdate struct {
+	Enabled bool    `json:"enabled"`
+	Id      *string `json:"id,omitempty"`
+	Name    *string `json:"name,omitempty"`
+}
+
+// MozrestBookingChannelUpdateOverrides defines model for MozrestBookingChannelUpdateOverrides.
+type MozrestBookingChannelUpdateOverrides struct {
+	Enabled bool `json:"enabled"`
+}
+
+// MozrestBookingChannels defines model for MozrestBookingChannels.
+type MozrestBookingChannels []MozrestBookingChannel
+
+// MozrestBookingChannelsResponse defines model for MozrestBookingChannelsResponse.
+type MozrestBookingChannelsResponse []MozrestBookingChannelResponse
+
 // Notice defines model for Notice.
 type Notice struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
@@ -7404,6 +7443,27 @@ type AdyenUserOnboardingParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// ListMozrestBookingChannelsParams defines parameters for ListMozrestBookingChannels.
+type ListMozrestBookingChannelsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateMozrestBookingChannelJSONBody defines parameters for UpdateMozrestBookingChannel.
+type UpdateMozrestBookingChannelJSONBody MozrestBookingChannelUpdate
+
+// UpdateMozrestBookingChannelParams defines parameters for UpdateMozrestBookingChannel.
+type UpdateMozrestBookingChannelParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListSaltpayCompaniesParams defines parameters for ListSaltpayCompanies.
 type ListSaltpayCompaniesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -8835,6 +8895,9 @@ type AdyenCompanyOnboardingJSONRequestBody AdyenCompanyOnboardingJSONBody
 
 // AdyenUserOnboardingJSONRequestBody defines body for AdyenUserOnboarding for application/json ContentType.
 type AdyenUserOnboardingJSONRequestBody AdyenUserOnboardingJSONBody
+
+// UpdateMozrestBookingChannelJSONRequestBody defines body for UpdateMozrestBookingChannel for application/json ContentType.
+type UpdateMozrestBookingChannelJSONRequestBody UpdateMozrestBookingChannelJSONBody
 
 // LinkSaltpayBankAccountJSONRequestBody defines body for LinkSaltpayBankAccount for application/json ContentType.
 type LinkSaltpayBankAccountJSONRequestBody LinkSaltpayBankAccountJSONBody
@@ -11119,6 +11182,14 @@ type ClientInterface interface {
 
 	AdyenUserOnboarding(ctx context.Context, userId string, params *AdyenUserOnboardingParams, body AdyenUserOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListMozrestBookingChannels request
+	ListMozrestBookingChannels(ctx context.Context, companyId string, params *ListMozrestBookingChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateMozrestBookingChannel request with any body
+	UpdateMozrestBookingChannelWithBody(ctx context.Context, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateMozrestBookingChannel(ctx context.Context, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, body UpdateMozrestBookingChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListSaltpayCompanies request
 	ListSaltpayCompanies(ctx context.Context, params *ListSaltpayCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13299,6 +13370,42 @@ func (c *Client) AdyenUserOnboardingWithBody(ctx context.Context, userId string,
 
 func (c *Client) AdyenUserOnboarding(ctx context.Context, userId string, params *AdyenUserOnboardingParams, body AdyenUserOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdyenUserOnboardingRequest(c.Server, userId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListMozrestBookingChannels(ctx context.Context, companyId string, params *ListMozrestBookingChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListMozrestBookingChannelsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateMozrestBookingChannelWithBody(ctx context.Context, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateMozrestBookingChannelRequestWithBody(c.Server, companyId, bookingChannelId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateMozrestBookingChannel(ctx context.Context, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, body UpdateMozrestBookingChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateMozrestBookingChannelRequest(c.Server, companyId, bookingChannelId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -25033,6 +25140,166 @@ func NewAdyenUserOnboardingRequestWithBody(server string, userId string, params 
 	return req, nil
 }
 
+// NewListMozrestBookingChannelsRequest generates requests for ListMozrestBookingChannels
+func NewListMozrestBookingChannelsRequest(server string, companyId string, params *ListMozrestBookingChannelsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/integrations/mozrest/companies/%s/booking_channels", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateMozrestBookingChannelRequest calls the generic UpdateMozrestBookingChannel builder with application/json body
+func NewUpdateMozrestBookingChannelRequest(server string, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, body UpdateMozrestBookingChannelJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateMozrestBookingChannelRequestWithBody(server, companyId, bookingChannelId, params, "application/json", bodyReader)
+}
+
+// NewUpdateMozrestBookingChannelRequestWithBody generates requests for UpdateMozrestBookingChannel with any type of body
+func NewUpdateMozrestBookingChannelRequestWithBody(server string, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "booking_channel_id", runtime.ParamLocationPath, bookingChannelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/integrations/mozrest/companies/%s/booking_channels/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListSaltpayCompaniesRequest generates requests for ListSaltpayCompanies
 func NewListSaltpayCompaniesRequest(server string, params *ListSaltpayCompaniesParams) (*http.Request, error) {
 	var err error
@@ -35483,6 +35750,14 @@ type ClientWithResponsesInterface interface {
 
 	AdyenUserOnboardingWithResponse(ctx context.Context, userId string, params *AdyenUserOnboardingParams, body AdyenUserOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*AdyenUserOnboardingResponse, error)
 
+	// ListMozrestBookingChannels request
+	ListMozrestBookingChannelsWithResponse(ctx context.Context, companyId string, params *ListMozrestBookingChannelsParams, reqEditors ...RequestEditorFn) (*ListMozrestBookingChannelsResponse, error)
+
+	// UpdateMozrestBookingChannel request with any body
+	UpdateMozrestBookingChannelWithBodyWithResponse(ctx context.Context, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMozrestBookingChannelResponse, error)
+
+	UpdateMozrestBookingChannelWithResponse(ctx context.Context, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, body UpdateMozrestBookingChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateMozrestBookingChannelResponse, error)
+
 	// ListSaltpayCompanies request
 	ListSaltpayCompaniesWithResponse(ctx context.Context, params *ListSaltpayCompaniesParams, reqEditors ...RequestEditorFn) (*ListSaltpayCompaniesResponse, error)
 
@@ -38479,6 +38754,50 @@ func (r AdyenUserOnboardingResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdyenUserOnboardingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListMozrestBookingChannelsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MozrestBookingChannelsResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListMozrestBookingChannelsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListMozrestBookingChannelsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateMozrestBookingChannelResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MozrestBookingChannelResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateMozrestBookingChannelResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateMozrestBookingChannelResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -42772,6 +43091,32 @@ func (c *ClientWithResponses) AdyenUserOnboardingWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParseAdyenUserOnboardingResponse(rsp)
+}
+
+// ListMozrestBookingChannelsWithResponse request returning *ListMozrestBookingChannelsResponse
+func (c *ClientWithResponses) ListMozrestBookingChannelsWithResponse(ctx context.Context, companyId string, params *ListMozrestBookingChannelsParams, reqEditors ...RequestEditorFn) (*ListMozrestBookingChannelsResponse, error) {
+	rsp, err := c.ListMozrestBookingChannels(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListMozrestBookingChannelsResponse(rsp)
+}
+
+// UpdateMozrestBookingChannelWithBodyWithResponse request with arbitrary body returning *UpdateMozrestBookingChannelResponse
+func (c *ClientWithResponses) UpdateMozrestBookingChannelWithBodyWithResponse(ctx context.Context, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateMozrestBookingChannelResponse, error) {
+	rsp, err := c.UpdateMozrestBookingChannelWithBody(ctx, companyId, bookingChannelId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateMozrestBookingChannelResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateMozrestBookingChannelWithResponse(ctx context.Context, companyId string, bookingChannelId string, params *UpdateMozrestBookingChannelParams, body UpdateMozrestBookingChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateMozrestBookingChannelResponse, error) {
+	rsp, err := c.UpdateMozrestBookingChannel(ctx, companyId, bookingChannelId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateMozrestBookingChannelResponse(rsp)
 }
 
 // ListSaltpayCompaniesWithResponse request returning *ListSaltpayCompaniesResponse
@@ -47288,6 +47633,58 @@ func ParseAdyenUserOnboardingResponse(rsp *http.Response) (*AdyenUserOnboardingR
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdyenOnboardingInfo
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListMozrestBookingChannelsResponse parses an HTTP response from a ListMozrestBookingChannelsWithResponse call
+func ParseListMozrestBookingChannelsResponse(rsp *http.Response) (*ListMozrestBookingChannelsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListMozrestBookingChannelsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MozrestBookingChannelsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateMozrestBookingChannelResponse parses an HTTP response from a UpdateMozrestBookingChannelWithResponse call
+func ParseUpdateMozrestBookingChannelResponse(rsp *http.Response) (*UpdateMozrestBookingChannelResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateMozrestBookingChannelResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MozrestBookingChannelResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
