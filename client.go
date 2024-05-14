@@ -2882,8 +2882,10 @@ type EventsMetrics struct {
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type EventsMetricsFilter struct {
-	From time.Time `json:"from"`
-	To   time.Time `json:"to"`
+	// Filter by employee ID
+	Employee *string   `json:"employee,omitempty"`
+	From     time.Time `json:"from"`
+	To       time.Time `json:"to"`
 }
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
