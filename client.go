@@ -2885,6 +2885,9 @@ type EventsMetricsFilter struct {
 	// Filter by employee ID
 	Employee *string   `json:"employee,omitempty"`
 	From     time.Time `json:"from"`
+
+	// Filter by resource ID
+	Resource *string   `json:"resource,omitempty"`
 	To       time.Time `json:"to"`
 }
 
