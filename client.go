@@ -126,13 +126,6 @@ const (
 	N90  BookingInterval = 90
 )
 
-// Defines values for CallbackDataType.
-const (
-	CallbackDataTypeEventCreated CallbackDataType = "event.created"
-	CallbackDataTypeEventDeleted CallbackDataType = "event.deleted"
-	CallbackDataTypeEventUpdated CallbackDataType = "event.updated"
-)
-
 // Defines values for CardCardType.
 const (
 	CardCardTypeAmericanExpress CardCardType = "american_express"
@@ -891,13 +884,13 @@ const (
 
 // Defines values for WebhookEvent.
 const (
-	WebhookEventCustomerCreated    WebhookEvent = "customer.created"
-	WebhookEventCustomerUpdated    WebhookEvent = "customer.updated"
-	WebhookEventEventCreated       WebhookEvent = "event.created"
-	WebhookEventEventDeleted       WebhookEvent = "event.deleted"
-	WebhookEventEventUpdated       WebhookEvent = "event.updated"
-	WebhookEventTransactionCreated WebhookEvent = "transaction.created"
-	WebhookEventTransactionUpdated WebhookEvent = "transaction.updated"
+	CustomerCreated    WebhookEvent = "customer.created"
+	CustomerUpdated    WebhookEvent = "customer.updated"
+	EventCreated       WebhookEvent = "event.created"
+	EventDeleted       WebhookEvent = "event.deleted"
+	EventUpdated       WebhookEvent = "event.updated"
+	TransactionCreated WebhookEvent = "transaction.created"
+	TransactionUpdated WebhookEvent = "transaction.updated"
 )
 
 // Defines values for GetPricingByCountryCodeParamsProduct.
@@ -1540,17 +1533,14 @@ type CallbackData struct {
 	Data      *CallbackData_Data `json:"data,omitempty"`
 
 	// The unique ID of each callback. Can be treated as an idempotency key.
-	Id   *string           `json:"id,omitempty"`
-	Type *CallbackDataType `json:"type,omitempty"`
+	Id   *string       `json:"id,omitempty"`
+	Type *WebhookEvent `json:"type,omitempty"`
 }
 
 // CallbackData_Data defines model for CallbackData.Data.
 type CallbackData_Data struct {
 	union json.RawMessage
 }
-
-// CallbackDataType defines model for CallbackData.Type.
-type CallbackDataType string
 
 // Card defines model for Card.
 type Card struct {
@@ -9087,6 +9077,18 @@ func (t CallbackData_Data) AsTransaction() (Transaction, error) {
 }
 
 func (t *CallbackData_Data) FromTransaction(v Transaction) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t CallbackData_Data) AsCustomer() (Customer, error) {
+	var body Customer
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *CallbackData_Data) FromCustomer(v Customer) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
