@@ -2625,8 +2625,9 @@ type EventType struct {
 	EventTypeCategoryGroup *ExpandableEventTypeCategoryGroup `json:"event_type_category_group,omitempty"`
 	Id                     *string                           `json:"id,omitempty"`
 
-	// The event type's image URL in the original size
+	// Use images instead.
 	Image               *string `json:"image,omitempty"`
+	Images              *Images `json:"images,omitempty"`
 	MaxGuestsPerBooking *int32  `json:"max_guests_per_booking,omitempty"`
 	MinGuestsPerBooking *int32  `json:"min_guests_per_booking,omitempty"`
 
@@ -2656,7 +2657,7 @@ type EventType struct {
 	// If the event type is not tax exempt, this field is ignored.
 	TaxExemptionReason *string `json:"tax_exemption_reason,omitempty"`
 
-	// The event type's image URL as thumb (low res)
+	// Use images instead.
 	Thumb      *string              `json:"thumb,omitempty"`
 	Title      *string              `json:"title,omitempty"`
 	UpdatedAt  *time.Time           `json:"updated_at,omitempty"`
@@ -3160,6 +3161,9 @@ type Image struct {
 	PublicId *string `json:"public_id,omitempty"`
 	Thumb    *string `json:"thumb,omitempty"`
 }
+
+// Images defines model for Images.
+type Images []Image
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type InvoicesFilter struct {
