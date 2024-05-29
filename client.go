@@ -412,6 +412,19 @@ const (
 	MaxTotalPax MaxTotalPaxRuleType = "max_total_pax"
 )
 
+// Defines values for MozrestBookingChannelStatus.
+const (
+	MozrestBookingChannelStatusActive     MozrestBookingChannelStatus = "active"
+	MozrestBookingChannelStatusNotEnabled MozrestBookingChannelStatus = "not_enabled"
+	MozrestBookingChannelStatusPending    MozrestBookingChannelStatus = "pending"
+)
+
+// Defines values for MozrestQueryBehaviorType.
+const (
+	Local   MozrestQueryBehaviorType = "local"
+	Mozrest MozrestQueryBehaviorType = "mozrest"
+)
+
 // Defines values for NoticeVariant.
 const (
 	NoticeVariantError   NoticeVariant = "error"
@@ -684,11 +697,11 @@ const (
 
 // Defines values for SMSMessageStatus.
 const (
-	SMSMessageStatusCreated     SMSMessageStatus = "created"
-	SMSMessageStatusDelivered   SMSMessageStatus = "delivered"
-	SMSMessageStatusFailed      SMSMessageStatus = "failed"
-	SMSMessageStatusProcessing  SMSMessageStatus = "processing"
-	SMSMessageStatusUndelivered SMSMessageStatus = "undelivered"
+	Created     SMSMessageStatus = "created"
+	Delivered   SMSMessageStatus = "delivered"
+	Failed      SMSMessageStatus = "failed"
+	Processing  SMSMessageStatus = "processing"
+	Undelivered SMSMessageStatus = "undelivered"
 )
 
 // Defines values for SMSMessageType.
@@ -3449,28 +3462,83 @@ type MemosResponse []MemoResponse
 type MozrestBookingChannel struct {
 	Enabled *bool   `json:"enabled,omitempty"`
 	Id      *string `json:"id,omitempty"`
-	Name    *string `json:"name,omitempty"`
+
+	// If the channel has an install link, it is provided here.
+	//
+	// The Facebook booking channel, as an example, will be populated with a link that allows people to navigate to Facebook and confirm the installation of the booking channel.
+	InstallLink *string `json:"install_link,omitempty"`
+	Name        *string `json:"name,omitempty"`
+
+	// The status of the specific booking channel.
+	//
+	// - `not_enabled` - The booking channel is not enabled.
+	// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+	// - `active` - The booking channel is active.
+	Status *MozrestBookingChannelStatus `json:"status,omitempty"`
 }
 
 // MozrestBookingChannelResponse defines model for MozrestBookingChannelResponse.
 type MozrestBookingChannelResponse struct {
 	Enabled bool    `json:"enabled"`
 	Id      *string `json:"id,omitempty"`
-	Name    *string `json:"name,omitempty"`
+
+	// If the channel has an install link, it is provided here.
+	//
+	// The Facebook booking channel, as an example, will be populated with a link that allows people to navigate to Facebook and confirm the installation of the booking channel.
+	InstallLink *string `json:"install_link,omitempty"`
+	Name        *string `json:"name,omitempty"`
+
+	// The status of the specific booking channel.
+	//
+	// - `not_enabled` - The booking channel is not enabled.
+	// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+	// - `active` - The booking channel is active.
+	Status *MozrestBookingChannelStatus `json:"status,omitempty"`
 }
 
 // MozrestBookingChannelResponseOverrides defines model for MozrestBookingChannelResponseOverrides.
 type MozrestBookingChannelResponseOverrides struct {
 	Enabled bool    `json:"enabled"`
 	Id      *string `json:"id,omitempty"`
-	Name    *string `json:"name,omitempty"`
+
+	// If the channel has an install link, it is provided here.
+	//
+	// The Facebook booking channel, as an example, will be populated with a link that allows people to navigate to Facebook and confirm the installation of the booking channel.
+	InstallLink *string `json:"install_link,omitempty"`
+	Name        *string `json:"name,omitempty"`
+
+	// The status of the specific booking channel.
+	//
+	// - `not_enabled` - The booking channel is not enabled.
+	// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+	// - `active` - The booking channel is active.
+	Status *MozrestBookingChannelStatus `json:"status,omitempty"`
 }
+
+// The status of the specific booking channel.
+//
+// - `not_enabled` - The booking channel is not enabled.
+// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+// - `active` - The booking channel is active.
+type MozrestBookingChannelStatus string
 
 // MozrestBookingChannelUpdate defines model for MozrestBookingChannelUpdate.
 type MozrestBookingChannelUpdate struct {
 	Enabled bool    `json:"enabled"`
 	Id      *string `json:"id,omitempty"`
-	Name    *string `json:"name,omitempty"`
+
+	// If the channel has an install link, it is provided here.
+	//
+	// The Facebook booking channel, as an example, will be populated with a link that allows people to navigate to Facebook and confirm the installation of the booking channel.
+	InstallLink *string `json:"install_link,omitempty"`
+	Name        *string `json:"name,omitempty"`
+
+	// The status of the specific booking channel.
+	//
+	// - `not_enabled` - The booking channel is not enabled.
+	// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+	// - `active` - The booking channel is active.
+	Status *MozrestBookingChannelStatus `json:"status,omitempty"`
 }
 
 // MozrestBookingChannelUpdateOverrides defines model for MozrestBookingChannelUpdateOverrides.
@@ -3483,6 +3551,19 @@ type MozrestBookingChannels []MozrestBookingChannel
 
 // MozrestBookingChannelsResponse defines model for MozrestBookingChannelsResponse.
 type MozrestBookingChannelsResponse []MozrestBookingChannelResponse
+
+// [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
+type MozrestQueryBehavior struct {
+	// Whether to only use the cached data within Noona or to fetch the data from Mozrest.
+	//
+	// When `local` is used. The **status** and **install_link** attributes are not populated.
+	Type *MozrestQueryBehaviorType `json:"type,omitempty"`
+}
+
+// Whether to only use the cached data within Noona or to fetch the data from Mozrest.
+//
+// When `local` is used. The **status** and **install_link** attributes are not populated.
+type MozrestQueryBehaviorType string
 
 // Notice defines model for Notice.
 type Notice struct {
@@ -7444,7 +7525,8 @@ type ListMozrestBookingChannelsParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand   *Expand               `form:"expand,omitempty" json:"expand,omitempty"`
+	Behavior *MozrestQueryBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
 }
 
 // UpdateMozrestBookingChannelJSONBody defines parameters for UpdateMozrestBookingChannel.
@@ -7456,7 +7538,8 @@ type UpdateMozrestBookingChannelParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand   *Expand               `form:"expand,omitempty" json:"expand,omitempty"`
+	Behavior *MozrestQueryBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
 }
 
 // ListSaltpayCompaniesParams defines parameters for ListSaltpayCompanies.
@@ -25207,6 +25290,16 @@ func NewListMozrestBookingChannelsRequest(server string, companyId string, param
 
 	}
 
+	if params.Behavior != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Behavior); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("behavior", string(queryParamBuf))
+		}
+
+	}
+
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -25291,6 +25384,16 @@ func NewUpdateMozrestBookingChannelRequestWithBody(server string, companyId stri
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	if params.Behavior != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Behavior); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("behavior", string(queryParamBuf))
 		}
 
 	}
