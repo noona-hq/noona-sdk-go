@@ -3465,14 +3465,14 @@ type MozrestBookingChannel struct {
 
 	// If the channel has an install link, it is provided here.
 	//
-	// The Meta booking channel, as an example, will be populated with a link that allows people to navigate to Meta and confirm the installation of the booking channel.
+	// The Facebook booking channel, as an example, will be populated with a link that allows people to navigate to Facebook and confirm the installation of the booking channel.
 	InstallLink *string `json:"install_link,omitempty"`
 	Name        *string `json:"name,omitempty"`
 
 	// The status of the specific booking channel.
 	//
 	// - `not_enabled` - The booking channel is not enabled.
-	// - `pending` - The booking channel is pending activation. [Meta flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+	// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
 	// - `active` - The booking channel is active.
 	Status *MozrestBookingChannelStatus `json:"status,omitempty"`
 }
@@ -3484,14 +3484,14 @@ type MozrestBookingChannelResponse struct {
 
 	// If the channel has an install link, it is provided here.
 	//
-	// The Meta booking channel, as an example, will be populated with a link that allows people to navigate to Meta and confirm the installation of the booking channel.
+	// The Facebook booking channel, as an example, will be populated with a link that allows people to navigate to Facebook and confirm the installation of the booking channel.
 	InstallLink *string `json:"install_link,omitempty"`
 	Name        *string `json:"name,omitempty"`
 
 	// The status of the specific booking channel.
 	//
 	// - `not_enabled` - The booking channel is not enabled.
-	// - `pending` - The booking channel is pending activation. [Meta flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+	// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
 	// - `active` - The booking channel is active.
 	Status *MozrestBookingChannelStatus `json:"status,omitempty"`
 }
@@ -3503,14 +3503,14 @@ type MozrestBookingChannelResponseOverrides struct {
 
 	// If the channel has an install link, it is provided here.
 	//
-	// The Meta booking channel, as an example, will be populated with a link that allows people to navigate to Meta and confirm the installation of the booking channel.
+	// The Facebook booking channel, as an example, will be populated with a link that allows people to navigate to Facebook and confirm the installation of the booking channel.
 	InstallLink *string `json:"install_link,omitempty"`
 	Name        *string `json:"name,omitempty"`
 
 	// The status of the specific booking channel.
 	//
 	// - `not_enabled` - The booking channel is not enabled.
-	// - `pending` - The booking channel is pending activation. [Meta flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+	// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
 	// - `active` - The booking channel is active.
 	Status *MozrestBookingChannelStatus `json:"status,omitempty"`
 }
@@ -3518,7 +3518,7 @@ type MozrestBookingChannelResponseOverrides struct {
 // The status of the specific booking channel.
 //
 // - `not_enabled` - The booking channel is not enabled.
-// - `pending` - The booking channel is pending activation. [Meta flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
 // - `active` - The booking channel is active.
 type MozrestBookingChannelStatus string
 
@@ -3529,14 +3529,14 @@ type MozrestBookingChannelUpdate struct {
 
 	// If the channel has an install link, it is provided here.
 	//
-	// The Meta booking channel, as an example, will be populated with a link that allows people to navigate to Meta and confirm the installation of the booking channel.
+	// The Facebook booking channel, as an example, will be populated with a link that allows people to navigate to Facebook and confirm the installation of the booking channel.
 	InstallLink *string `json:"install_link,omitempty"`
 	Name        *string `json:"name,omitempty"`
 
 	// The status of the specific booking channel.
 	//
 	// - `not_enabled` - The booking channel is not enabled.
-	// - `pending` - The booking channel is pending activation. [Meta flow has not been completed by user - Michelin Guide auto-match is pending etc.]
+	// - `pending` - The booking channel is pending activation. [Facebook/IG flow has not been completed by user - Michelin Guide auto-match is pending etc.]
 	// - `active` - The booking channel is active.
 	Status *MozrestBookingChannelStatus `json:"status,omitempty"`
 }
