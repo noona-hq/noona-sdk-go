@@ -232,24 +232,6 @@ const (
 	EventInvoiceStatusRefund              EventInvoiceStatus = "refund"
 )
 
-// Defines values for EventOrigin.
-const (
-	EventOriginApp       EventOrigin = "app"
-	EventOriginCalendar  EventOrigin = "calendar"
-	EventOriginImport    EventOrigin = "import"
-	EventOriginOnline    EventOrigin = "online"
-	EventOriginSecretary EventOrigin = "secretary"
-)
-
-// Defines values for EventUpdateOrigin.
-const (
-	EventUpdateOriginApp       EventUpdateOrigin = "app"
-	EventUpdateOriginCalendar  EventUpdateOrigin = "calendar"
-	EventUpdateOriginImport    EventUpdateOrigin = "import"
-	EventUpdateOriginOnline    EventUpdateOrigin = "online"
-	EventUpdateOriginSecretary EventUpdateOrigin = "secretary"
-)
-
 // Defines values for EventActivityField.
 const (
 	EventActivityFieldDuration                 EventActivityField = "duration"
@@ -285,28 +267,23 @@ const (
 	EventCheckinResultInvoiceStatusRefund              EventCheckinResultInvoiceStatus = "refund"
 )
 
-// Defines values for EventCheckinResultOrigin.
-const (
-	EventCheckinResultOriginApp       EventCheckinResultOrigin = "app"
-	EventCheckinResultOriginCalendar  EventCheckinResultOrigin = "calendar"
-	EventCheckinResultOriginImport    EventCheckinResultOrigin = "import"
-	EventCheckinResultOriginOnline    EventCheckinResultOrigin = "online"
-	EventCheckinResultOriginSecretary EventCheckinResultOrigin = "secretary"
-)
-
-// Defines values for EventCheckinResultUpdateOrigin.
-const (
-	EventCheckinResultUpdateOriginApp       EventCheckinResultUpdateOrigin = "app"
-	EventCheckinResultUpdateOriginCalendar  EventCheckinResultUpdateOrigin = "calendar"
-	EventCheckinResultUpdateOriginImport    EventCheckinResultUpdateOrigin = "import"
-	EventCheckinResultUpdateOriginOnline    EventCheckinResultUpdateOrigin = "online"
-	EventCheckinResultUpdateOriginSecretary EventCheckinResultUpdateOrigin = "secretary"
-)
-
 // Defines values for EventDeletionBehaviorType.
 const (
 	EventDeletionBehaviorTypeFuture EventDeletionBehaviorType = "future"
 	EventDeletionBehaviorTypeSingle EventDeletionBehaviorType = "single"
+)
+
+// Defines values for EventOrigin.
+const (
+	EventOriginApp              EventOrigin = "app"
+	EventOriginCalendar         EventOrigin = "calendar"
+	EventOriginFacebook         EventOrigin = "facebook"
+	EventOriginImport           EventOrigin = "import"
+	EventOriginInstagram        EventOrigin = "instagram"
+	EventOriginOnline           EventOrigin = "online"
+	EventOriginSecretary        EventOrigin = "secretary"
+	EventOriginTheMichelinGuide EventOrigin = "the_michelin_guide"
+	EventOriginTripadvisor      EventOrigin = "tripadvisor"
 )
 
 // Defines values for EventTypeOverbookable.
@@ -2274,11 +2251,9 @@ type Event struct {
 
 	// Event is unconfirmed if the employee has not yet confirmed the booking.
 	// This is only relevant for companies that have the "Require employee confirmation" setting enabled.
-	Unconfirmed *bool `json:"unconfirmed,omitempty"`
-
-	// What system last updated the event
-	UpdateOrigin *EventUpdateOrigin `json:"update_origin,omitempty"`
-	UpdatedAt    *time.Time         `json:"updated_at,omitempty"`
+	Unconfirmed  *bool        `json:"unconfirmed,omitempty"`
+	UpdateOrigin *EventOrigin `json:"update_origin,omitempty"`
+	UpdatedAt    *time.Time   `json:"updated_at,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	UpdatedBy *ExpandableActor `json:"updated_by,omitempty"`
@@ -2299,9 +2274,6 @@ type Event struct {
 // EventInvoiceStatus defines model for Event.InvoiceStatus.
 type EventInvoiceStatus string
 
-// EventOrigin defines model for Event.Origin.
-type EventOrigin string
-
 // Event_RecurringEvent defines model for Event.RecurringEvent.
 type Event_RecurringEvent struct {
 	union json.RawMessage
@@ -2311,9 +2283,6 @@ type Event_RecurringEvent struct {
 type Event_Space struct {
 	union json.RawMessage
 }
-
-// What system last updated the event
-type EventUpdateOrigin string
 
 // EventActivities defines model for EventActivities.
 type EventActivities []EventActivity
@@ -2394,8 +2363,8 @@ type EventCheckinResult struct {
 	NotificationPreferences *NotificationPreferences `json:"notification_preferences,omitempty"`
 
 	// Number of guests for the event.
-	NumberOfGuests *int32                    `json:"number_of_guests,omitempty"`
-	Origin         *EventCheckinResultOrigin `json:"origin,omitempty"`
+	NumberOfGuests *int32       `json:"number_of_guests,omitempty"`
+	Origin         *EventOrigin `json:"origin,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Payment *ExpandablePayment `json:"payment,omitempty"`
@@ -2455,11 +2424,9 @@ type EventCheckinResult struct {
 
 	// Event is unconfirmed if the employee has not yet confirmed the booking.
 	// This is only relevant for companies that have the "Require employee confirmation" setting enabled.
-	Unconfirmed *bool `json:"unconfirmed,omitempty"`
-
-	// What system last updated the event
-	UpdateOrigin *EventCheckinResultUpdateOrigin `json:"update_origin,omitempty"`
-	UpdatedAt    *time.Time                      `json:"updated_at,omitempty"`
+	Unconfirmed  *bool        `json:"unconfirmed,omitempty"`
+	UpdateOrigin *EventOrigin `json:"update_origin,omitempty"`
+	UpdatedAt    *time.Time   `json:"updated_at,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	UpdatedBy *ExpandableActor `json:"updated_by,omitempty"`
@@ -2480,9 +2447,6 @@ type EventCheckinResult struct {
 // EventCheckinResultInvoiceStatus defines model for EventCheckinResult.InvoiceStatus.
 type EventCheckinResultInvoiceStatus string
 
-// EventCheckinResultOrigin defines model for EventCheckinResult.Origin.
-type EventCheckinResultOrigin string
-
 // EventCheckinResult_RecurringEvent defines model for EventCheckinResult.RecurringEvent.
 type EventCheckinResult_RecurringEvent struct {
 	union json.RawMessage
@@ -2492,9 +2456,6 @@ type EventCheckinResult_RecurringEvent struct {
 type EventCheckinResult_Space struct {
 	union json.RawMessage
 }
-
-// What system last updated the event
-type EventCheckinResultUpdateOrigin string
 
 // [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
 type EventCreationBehavior struct {
@@ -2566,6 +2527,9 @@ type EventFilter struct {
 	// Only return events where updated_at is after this timestamp.
 	UpdatedFrom *time.Time `json:"updated_from,omitempty"`
 }
+
+// EventOrigin defines model for EventOrigin.
+type EventOrigin string
 
 // EventStatus defines model for EventStatus.
 type EventStatus struct {
