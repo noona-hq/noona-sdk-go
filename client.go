@@ -589,6 +589,7 @@ const (
 const (
 	PowerupPostBodyProductAppointmentsPro PowerupPostBodyProduct = "appointments_pro"
 	PowerupPostBodyProductPos             PowerupPostBodyProduct = "pos"
+	PowerupPostBodyProductRestaurantsPro  PowerupPostBodyProduct = "restaurants_pro"
 )
 
 // Defines values for PowerupSubscriptionCancelReason.
