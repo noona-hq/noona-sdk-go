@@ -1550,6 +1550,42 @@ type CardCardType string
 // CardStatus defines model for Card.Status.
 type CardStatus string
 
+// CategorizationType defines model for CategorizationType.
+type CategorizationType struct {
+	CreatedAt  *time.Time `json:"created_at,omitempty"`
+	Id         *string    `json:"id,omitempty"`
+	Name       *string    `json:"name,omitempty"`
+	Order      *int32     `json:"order,omitempty"`
+	ReadableId *string    `json:"readable_id,omitempty"`
+	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
+}
+
+// CategorizationTypeResponse defines model for CategorizationTypeResponse.
+type CategorizationTypeResponse struct {
+	CreatedAt  *time.Time `json:"created_at,omitempty"`
+	Id         string     `json:"id"`
+	Name       string     `json:"name"`
+	Order      int32      `json:"order"`
+	ReadableId *string    `json:"readable_id,omitempty"`
+	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
+}
+
+// CategorizationTypeResponseOverrides defines model for CategorizationTypeResponseOverrides.
+type CategorizationTypeResponseOverrides struct {
+	CreatedAt  *time.Time `json:"created_at,omitempty"`
+	Id         string     `json:"id"`
+	Name       string     `json:"name"`
+	Order      int32      `json:"order"`
+	ReadableId *string    `json:"readable_id,omitempty"`
+	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
+}
+
+// CategorizationTypes defines model for CategorizationTypes.
+type CategorizationTypes []CategorizationType
+
+// CategorizationTypesResponse defines model for CategorizationTypesResponse.
+type CategorizationTypesResponse []CategorizationTypeResponse
+
 // ChargedBillingItem defines model for ChargedBillingItem.
 type ChargedBillingItem struct {
 	ItemPriceId   *string    `json:"item_price_id,omitempty"`
@@ -1719,6 +1755,8 @@ type CompanyMessaging struct {
 
 // CompanyProfile defines model for CompanyProfile.
 type CompanyProfile struct {
+	Ambiences *CategorizationTypes `json:"ambiences,omitempty"`
+
 	// Booking interval in minutes.
 	//
 	// Dictates how often customers can book events with employee or resource.
@@ -1733,8 +1771,10 @@ type CompanyProfile struct {
 	ContactEmail          *string          `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
-	CoverImages *[]Image `json:"cover_images,omitempty"`
-	Description *string  `json:"description,omitempty"`
+	CoverImages *[]Image             `json:"cover_images,omitempty"`
+	Cuisines    *CategorizationTypes `json:"cuisines,omitempty"`
+	Description *string              `json:"description,omitempty"`
+	Dietaries   *CategorizationTypes `json:"dietaries,omitempty"`
 
 	// The number of favorites/likes on the company.
 	Favorites                *int32 `json:"favorites,omitempty"`
@@ -6176,6 +6216,30 @@ type ListPaymentActivitiesParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// ListAmbienceTypesParams defines parameters for ListAmbienceTypes.
+type ListAmbienceTypesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// GetAmbienceTypeParams defines parameters for GetAmbienceType.
+type GetAmbienceTypeParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateBlockedTimeJSONBody defines parameters for CreateBlockedTime.
 type CreateBlockedTimeJSONBody BlockedTimeCreate
 
@@ -6988,6 +7052,30 @@ type ListWebhooksParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// ListCuisineTypesParams defines parameters for ListCuisineTypes.
+type ListCuisineTypesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// GetCuisineTypeParams defines parameters for GetCuisineType.
+type GetCuisineTypeParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateCustomerGroupJSONBody defines parameters for CreateCustomerGroup.
 type CreateCustomerGroupJSONBody CustomerGroup
 
@@ -7065,6 +7153,30 @@ type UpdateCustomerJSONBody Customer
 
 // UpdateCustomerParams defines parameters for UpdateCustomer.
 type UpdateCustomerParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListDietaryTypesParams defines parameters for ListDietaryTypes.
+type ListDietaryTypesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// GetDietaryTypeParams defines parameters for GetDietaryType.
+type GetDietaryTypeParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -10858,6 +10970,12 @@ type ClientInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListAmbienceTypes request
+	ListAmbienceTypes(ctx context.Context, params *ListAmbienceTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAmbienceType request
+	GetAmbienceType(ctx context.Context, ambienceTypeId string, params *GetAmbienceTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateBlockedTime request with any body
 	CreateBlockedTimeWithBody(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -11055,6 +11173,12 @@ type ClientInterface interface {
 	// ListWebhooks request
 	ListWebhooks(ctx context.Context, companyId string, params *ListWebhooksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListCuisineTypes request
+	ListCuisineTypes(ctx context.Context, params *ListCuisineTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCuisineType request
+	GetCuisineType(ctx context.Context, cuisineTypeId string, params *GetCuisineTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateCustomerGroup request with any body
 	CreateCustomerGroupWithBody(ctx context.Context, params *CreateCustomerGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -11086,6 +11210,12 @@ type ClientInterface interface {
 	UpdateCustomerWithBody(ctx context.Context, customerId string, params *UpdateCustomerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateCustomer(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListDietaryTypes request
+	ListDietaryTypes(ctx context.Context, params *ListDietaryTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetDietaryType request
+	GetDietaryType(ctx context.Context, dietaryTypeId string, params *GetDietaryTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateEmployee request with any body
 	CreateEmployeeWithBody(ctx context.Context, params *CreateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11805,6 +11935,30 @@ func (c *Client) ListEventActivities(ctx context.Context, eventId string, params
 
 func (c *Client) ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPaymentActivitiesRequest(c.Server, paymentId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAmbienceTypes(ctx context.Context, params *ListAmbienceTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAmbienceTypesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAmbienceType(ctx context.Context, ambienceTypeId string, params *GetAmbienceTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAmbienceTypeRequest(c.Server, ambienceTypeId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -12631,6 +12785,30 @@ func (c *Client) ListWebhooks(ctx context.Context, companyId string, params *Lis
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListCuisineTypes(ctx context.Context, params *ListCuisineTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCuisineTypesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCuisineType(ctx context.Context, cuisineTypeId string, params *GetCuisineTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCuisineTypeRequest(c.Server, cuisineTypeId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateCustomerGroupWithBody(ctx context.Context, params *CreateCustomerGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateCustomerGroupRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
@@ -12765,6 +12943,30 @@ func (c *Client) UpdateCustomerWithBody(ctx context.Context, customerId string, 
 
 func (c *Client) UpdateCustomer(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateCustomerRequest(c.Server, customerId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListDietaryTypes(ctx context.Context, params *ListDietaryTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDietaryTypesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDietaryType(ctx context.Context, dietaryTypeId string, params *GetDietaryTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDietaryTypeRequest(c.Server, dietaryTypeId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -15978,6 +16180,159 @@ func NewListPaymentActivitiesRequest(server string, paymentId string, params *Li
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/activities/payments/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListAmbienceTypesRequest generates requests for ListAmbienceTypes
+func NewListAmbienceTypesRequest(server string, params *ListAmbienceTypesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/ambience_types")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAmbienceTypeRequest generates requests for GetAmbienceType
+func NewGetAmbienceTypeRequest(server string, ambienceTypeId string, params *GetAmbienceTypeParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ambience_type_id", runtime.ParamLocationPath, ambienceTypeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/ambience_types/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -21604,6 +21959,159 @@ func NewListWebhooksRequest(server string, companyId string, params *ListWebhook
 	return req, nil
 }
 
+// NewListCuisineTypesRequest generates requests for ListCuisineTypes
+func NewListCuisineTypesRequest(server string, params *ListCuisineTypesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/cuisine_types")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetCuisineTypeRequest generates requests for GetCuisineType
+func NewGetCuisineTypeRequest(server string, cuisineTypeId string, params *GetCuisineTypeParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "cuisine_type_id", runtime.ParamLocationPath, cuisineTypeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/cuisine_types/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateCustomerGroupRequest calls the generic CreateCustomerGroup builder with application/json body
 func NewCreateCustomerGroupRequest(server string, params *CreateCustomerGroupParams, body CreateCustomerGroupJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -22198,6 +22706,159 @@ func NewUpdateCustomerRequestWithBody(server string, customerId string, params *
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListDietaryTypesRequest generates requests for ListDietaryTypes
+func NewListDietaryTypesRequest(server string, params *ListDietaryTypesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/dietary_types")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetDietaryTypeRequest generates requests for GetDietaryType
+func NewGetDietaryTypeRequest(server string, dietaryTypeId string, params *GetDietaryTypeParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "dietary_type_id", runtime.ParamLocationPath, dietaryTypeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/dietary_types/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -35446,6 +36107,12 @@ type ClientWithResponsesInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivitiesWithResponse(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*ListPaymentActivitiesResponse, error)
 
+	// ListAmbienceTypes request
+	ListAmbienceTypesWithResponse(ctx context.Context, params *ListAmbienceTypesParams, reqEditors ...RequestEditorFn) (*ListAmbienceTypesResponse, error)
+
+	// GetAmbienceType request
+	GetAmbienceTypeWithResponse(ctx context.Context, ambienceTypeId string, params *GetAmbienceTypeParams, reqEditors ...RequestEditorFn) (*GetAmbienceTypeResponse, error)
+
 	// CreateBlockedTime request with any body
 	CreateBlockedTimeWithBodyWithResponse(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error)
 
@@ -35643,6 +36310,12 @@ type ClientWithResponsesInterface interface {
 	// ListWebhooks request
 	ListWebhooksWithResponse(ctx context.Context, companyId string, params *ListWebhooksParams, reqEditors ...RequestEditorFn) (*ListWebhooksResponse, error)
 
+	// ListCuisineTypes request
+	ListCuisineTypesWithResponse(ctx context.Context, params *ListCuisineTypesParams, reqEditors ...RequestEditorFn) (*ListCuisineTypesResponse, error)
+
+	// GetCuisineType request
+	GetCuisineTypeWithResponse(ctx context.Context, cuisineTypeId string, params *GetCuisineTypeParams, reqEditors ...RequestEditorFn) (*GetCuisineTypeResponse, error)
+
 	// CreateCustomerGroup request with any body
 	CreateCustomerGroupWithBodyWithResponse(ctx context.Context, params *CreateCustomerGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCustomerGroupResponse, error)
 
@@ -35674,6 +36347,12 @@ type ClientWithResponsesInterface interface {
 	UpdateCustomerWithBodyWithResponse(ctx context.Context, customerId string, params *UpdateCustomerParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCustomerResponse, error)
 
 	UpdateCustomerWithResponse(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomerResponse, error)
+
+	// ListDietaryTypes request
+	ListDietaryTypesWithResponse(ctx context.Context, params *ListDietaryTypesParams, reqEditors ...RequestEditorFn) (*ListDietaryTypesResponse, error)
+
+	// GetDietaryType request
+	GetDietaryTypeWithResponse(ctx context.Context, dietaryTypeId string, params *GetDietaryTypeParams, reqEditors ...RequestEditorFn) (*GetDietaryTypeResponse, error)
 
 	// CreateEmployee request with any body
 	CreateEmployeeWithBodyWithResponse(ctx context.Context, params *CreateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEmployeeResponse, error)
@@ -36437,6 +37116,50 @@ func (r ListPaymentActivitiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPaymentActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListAmbienceTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CategorizationTypesResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAmbienceTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAmbienceTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAmbienceTypeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CategorizationTypeResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAmbienceTypeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAmbienceTypeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -37787,6 +38510,50 @@ func (r ListWebhooksResponse) StatusCode() int {
 	return 0
 }
 
+type ListCuisineTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CategorizationTypesResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCuisineTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCuisineTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCuisineTypeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CategorizationTypeResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCuisineTypeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCuisineTypeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateCustomerGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -37955,6 +38722,50 @@ func (r UpdateCustomerResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateCustomerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListDietaryTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CategorizationTypesResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListDietaryTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListDietaryTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetDietaryTypeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CategorizationTypeResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDietaryTypeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDietaryTypeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -41979,6 +42790,24 @@ func (c *ClientWithResponses) ListPaymentActivitiesWithResponse(ctx context.Cont
 	return ParseListPaymentActivitiesResponse(rsp)
 }
 
+// ListAmbienceTypesWithResponse request returning *ListAmbienceTypesResponse
+func (c *ClientWithResponses) ListAmbienceTypesWithResponse(ctx context.Context, params *ListAmbienceTypesParams, reqEditors ...RequestEditorFn) (*ListAmbienceTypesResponse, error) {
+	rsp, err := c.ListAmbienceTypes(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAmbienceTypesResponse(rsp)
+}
+
+// GetAmbienceTypeWithResponse request returning *GetAmbienceTypeResponse
+func (c *ClientWithResponses) GetAmbienceTypeWithResponse(ctx context.Context, ambienceTypeId string, params *GetAmbienceTypeParams, reqEditors ...RequestEditorFn) (*GetAmbienceTypeResponse, error) {
+	rsp, err := c.GetAmbienceType(ctx, ambienceTypeId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAmbienceTypeResponse(rsp)
+}
+
 // CreateBlockedTimeWithBodyWithResponse request with arbitrary body returning *CreateBlockedTimeResponse
 func (c *ClientWithResponses) CreateBlockedTimeWithBodyWithResponse(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error) {
 	rsp, err := c.CreateBlockedTimeWithBody(ctx, params, contentType, body, reqEditors...)
@@ -42584,6 +43413,24 @@ func (c *ClientWithResponses) ListWebhooksWithResponse(ctx context.Context, comp
 	return ParseListWebhooksResponse(rsp)
 }
 
+// ListCuisineTypesWithResponse request returning *ListCuisineTypesResponse
+func (c *ClientWithResponses) ListCuisineTypesWithResponse(ctx context.Context, params *ListCuisineTypesParams, reqEditors ...RequestEditorFn) (*ListCuisineTypesResponse, error) {
+	rsp, err := c.ListCuisineTypes(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCuisineTypesResponse(rsp)
+}
+
+// GetCuisineTypeWithResponse request returning *GetCuisineTypeResponse
+func (c *ClientWithResponses) GetCuisineTypeWithResponse(ctx context.Context, cuisineTypeId string, params *GetCuisineTypeParams, reqEditors ...RequestEditorFn) (*GetCuisineTypeResponse, error) {
+	rsp, err := c.GetCuisineType(ctx, cuisineTypeId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCuisineTypeResponse(rsp)
+}
+
 // CreateCustomerGroupWithBodyWithResponse request with arbitrary body returning *CreateCustomerGroupResponse
 func (c *ClientWithResponses) CreateCustomerGroupWithBodyWithResponse(ctx context.Context, params *CreateCustomerGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCustomerGroupResponse, error) {
 	rsp, err := c.CreateCustomerGroupWithBody(ctx, params, contentType, body, reqEditors...)
@@ -42686,6 +43533,24 @@ func (c *ClientWithResponses) UpdateCustomerWithResponse(ctx context.Context, cu
 		return nil, err
 	}
 	return ParseUpdateCustomerResponse(rsp)
+}
+
+// ListDietaryTypesWithResponse request returning *ListDietaryTypesResponse
+func (c *ClientWithResponses) ListDietaryTypesWithResponse(ctx context.Context, params *ListDietaryTypesParams, reqEditors ...RequestEditorFn) (*ListDietaryTypesResponse, error) {
+	rsp, err := c.ListDietaryTypes(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListDietaryTypesResponse(rsp)
+}
+
+// GetDietaryTypeWithResponse request returning *GetDietaryTypeResponse
+func (c *ClientWithResponses) GetDietaryTypeWithResponse(ctx context.Context, dietaryTypeId string, params *GetDietaryTypeParams, reqEditors ...RequestEditorFn) (*GetDietaryTypeResponse, error) {
+	rsp, err := c.GetDietaryType(ctx, dietaryTypeId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDietaryTypeResponse(rsp)
 }
 
 // CreateEmployeeWithBodyWithResponse request with arbitrary body returning *CreateEmployeeResponse
@@ -44959,6 +45824,58 @@ func ParseListPaymentActivitiesResponse(rsp *http.Response) (*ListPaymentActivit
 	return response, nil
 }
 
+// ParseListAmbienceTypesResponse parses an HTTP response from a ListAmbienceTypesWithResponse call
+func ParseListAmbienceTypesResponse(rsp *http.Response) (*ListAmbienceTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAmbienceTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CategorizationTypesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAmbienceTypeResponse parses an HTTP response from a GetAmbienceTypeWithResponse call
+func ParseGetAmbienceTypeResponse(rsp *http.Response) (*GetAmbienceTypeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAmbienceTypeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CategorizationTypeResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateBlockedTimeResponse parses an HTTP response from a CreateBlockedTimeWithResponse call
 func ParseCreateBlockedTimeResponse(rsp *http.Response) (*CreateBlockedTimeResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -46553,6 +47470,58 @@ func ParseListWebhooksResponse(rsp *http.Response) (*ListWebhooksResponse, error
 	return response, nil
 }
 
+// ParseListCuisineTypesResponse parses an HTTP response from a ListCuisineTypesWithResponse call
+func ParseListCuisineTypesResponse(rsp *http.Response) (*ListCuisineTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCuisineTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CategorizationTypesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCuisineTypeResponse parses an HTTP response from a GetCuisineTypeWithResponse call
+func ParseGetCuisineTypeResponse(rsp *http.Response) (*GetCuisineTypeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCuisineTypeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CategorizationTypeResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateCustomerGroupResponse parses an HTTP response from a CreateCustomerGroupWithResponse call
 func ParseCreateCustomerGroupResponse(rsp *http.Response) (*CreateCustomerGroupResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -46731,6 +47700,58 @@ func ParseUpdateCustomerResponse(rsp *http.Response) (*UpdateCustomerResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Customer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListDietaryTypesResponse parses an HTTP response from a ListDietaryTypesWithResponse call
+func ParseListDietaryTypesResponse(rsp *http.Response) (*ListDietaryTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListDietaryTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CategorizationTypesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetDietaryTypeResponse parses an HTTP response from a GetDietaryTypeWithResponse call
+func ParseGetDietaryTypeResponse(rsp *http.Response) (*GetDietaryTypeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDietaryTypeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CategorizationTypeResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
