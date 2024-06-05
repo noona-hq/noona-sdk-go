@@ -1566,7 +1566,7 @@ type CategorizationTypeResponse struct {
 	Id         string     `json:"id"`
 	Name       string     `json:"name"`
 	Order      int32      `json:"order"`
-	ReadableId *string    `json:"readable_id,omitempty"`
+	ReadableId string     `json:"readable_id"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 }
 
@@ -1576,7 +1576,7 @@ type CategorizationTypeResponseOverrides struct {
 	Id         string     `json:"id"`
 	Name       string     `json:"name"`
 	Order      int32      `json:"order"`
-	ReadableId *string    `json:"readable_id,omitempty"`
+	ReadableId string     `json:"readable_id"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 }
 
