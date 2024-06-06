@@ -1550,8 +1550,14 @@ type CardCardType string
 // CardStatus defines model for Card.Status.
 type CardStatus string
 
-// CategorizationType defines model for CategorizationType.
-type CategorizationType struct {
+// Categories defines model for Categories.
+type Categories []Category
+
+// CategoriesResponse defines model for CategoriesResponse.
+type CategoriesResponse []CategoryResponse
+
+// Category defines model for Category.
+type Category struct {
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
 	Id         *string    `json:"id,omitempty"`
 	Name       *string    `json:"name,omitempty"`
@@ -1560,8 +1566,8 @@ type CategorizationType struct {
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 }
 
-// CategorizationTypeResponse defines model for CategorizationTypeResponse.
-type CategorizationTypeResponse struct {
+// CategoryResponse defines model for CategoryResponse.
+type CategoryResponse struct {
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
 	Id         string     `json:"id"`
 	Name       string     `json:"name"`
@@ -1570,8 +1576,8 @@ type CategorizationTypeResponse struct {
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 }
 
-// CategorizationTypeResponseOverrides defines model for CategorizationTypeResponseOverrides.
-type CategorizationTypeResponseOverrides struct {
+// CategoryResponseOverrides defines model for CategoryResponseOverrides.
+type CategoryResponseOverrides struct {
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
 	Id         string     `json:"id"`
 	Name       string     `json:"name"`
@@ -1579,12 +1585,6 @@ type CategorizationTypeResponseOverrides struct {
 	ReadableId string     `json:"readable_id"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 }
-
-// CategorizationTypes defines model for CategorizationTypes.
-type CategorizationTypes []CategorizationType
-
-// CategorizationTypesResponse defines model for CategorizationTypesResponse.
-type CategorizationTypesResponse []CategorizationTypeResponse
 
 // ChargedBillingItem defines model for ChargedBillingItem.
 type ChargedBillingItem struct {
@@ -1755,7 +1755,7 @@ type CompanyMessaging struct {
 
 // CompanyProfile defines model for CompanyProfile.
 type CompanyProfile struct {
-	Ambiences *CategorizationTypes `json:"ambiences,omitempty"`
+	Ambiences *Categories `json:"ambiences,omitempty"`
 
 	// Booking interval in minutes.
 	//
@@ -1771,10 +1771,10 @@ type CompanyProfile struct {
 	ContactEmail          *string          `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
-	CoverImages *[]Image             `json:"cover_images,omitempty"`
-	Cuisines    *CategorizationTypes `json:"cuisines,omitempty"`
-	Description *string              `json:"description,omitempty"`
-	Dietaries   *CategorizationTypes `json:"dietaries,omitempty"`
+	CoverImages *[]Image    `json:"cover_images,omitempty"`
+	Cuisines    *Categories `json:"cuisines,omitempty"`
+	Description *string     `json:"description,omitempty"`
+	Dietaries   *Categories `json:"dietaries,omitempty"`
 
 	// The number of favorites/likes on the company.
 	Favorites                *int32 `json:"favorites,omitempty"`
@@ -6216,8 +6216,8 @@ type ListPaymentActivitiesParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// ListAmbienceTypesParams defines parameters for ListAmbienceTypes.
-type ListAmbienceTypesParams struct {
+// ListAmbiencesParams defines parameters for ListAmbiences.
+type ListAmbiencesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -6231,8 +6231,8 @@ type ListAmbienceTypesParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
-// GetAmbienceTypeParams defines parameters for GetAmbienceType.
-type GetAmbienceTypeParams struct {
+// GetAmbienceParams defines parameters for GetAmbience.
+type GetAmbienceParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -7052,8 +7052,8 @@ type ListWebhooksParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
-// ListCuisineTypesParams defines parameters for ListCuisineTypes.
-type ListCuisineTypesParams struct {
+// ListCuisinesParams defines parameters for ListCuisines.
+type ListCuisinesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -7067,8 +7067,8 @@ type ListCuisineTypesParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
-// GetCuisineTypeParams defines parameters for GetCuisineType.
-type GetCuisineTypeParams struct {
+// GetCuisineParams defines parameters for GetCuisine.
+type GetCuisineParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -7160,8 +7160,8 @@ type UpdateCustomerParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// ListDietaryTypesParams defines parameters for ListDietaryTypes.
-type ListDietaryTypesParams struct {
+// ListDietariesParams defines parameters for ListDietaries.
+type ListDietariesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -7175,8 +7175,8 @@ type ListDietaryTypesParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
-// GetDietaryTypeParams defines parameters for GetDietaryType.
-type GetDietaryTypeParams struct {
+// GetDietaryParams defines parameters for GetDietary.
+type GetDietaryParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -10970,11 +10970,11 @@ type ClientInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListAmbienceTypes request
-	ListAmbienceTypes(ctx context.Context, params *ListAmbienceTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListAmbiences request
+	ListAmbiences(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetAmbienceType request
-	GetAmbienceType(ctx context.Context, ambienceTypeId string, params *GetAmbienceTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetAmbience request
+	GetAmbience(ctx context.Context, ambienceId string, params *GetAmbienceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateBlockedTime request with any body
 	CreateBlockedTimeWithBody(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11173,11 +11173,11 @@ type ClientInterface interface {
 	// ListWebhooks request
 	ListWebhooks(ctx context.Context, companyId string, params *ListWebhooksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListCuisineTypes request
-	ListCuisineTypes(ctx context.Context, params *ListCuisineTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListCuisines request
+	ListCuisines(ctx context.Context, params *ListCuisinesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetCuisineType request
-	GetCuisineType(ctx context.Context, cuisineTypeId string, params *GetCuisineTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetCuisine request
+	GetCuisine(ctx context.Context, cuisineId string, params *GetCuisineParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateCustomerGroup request with any body
 	CreateCustomerGroupWithBody(ctx context.Context, params *CreateCustomerGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11211,11 +11211,11 @@ type ClientInterface interface {
 
 	UpdateCustomer(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListDietaryTypes request
-	ListDietaryTypes(ctx context.Context, params *ListDietaryTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListDietaries request
+	ListDietaries(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetDietaryType request
-	GetDietaryType(ctx context.Context, dietaryTypeId string, params *GetDietaryTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetDietary request
+	GetDietary(ctx context.Context, dietaryId string, params *GetDietaryParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateEmployee request with any body
 	CreateEmployeeWithBody(ctx context.Context, params *CreateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11945,8 +11945,8 @@ func (c *Client) ListPaymentActivities(ctx context.Context, paymentId string, pa
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListAmbienceTypes(ctx context.Context, params *ListAmbienceTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListAmbienceTypesRequest(c.Server, params)
+func (c *Client) ListAmbiences(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAmbiencesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -11957,8 +11957,8 @@ func (c *Client) ListAmbienceTypes(ctx context.Context, params *ListAmbienceType
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetAmbienceType(ctx context.Context, ambienceTypeId string, params *GetAmbienceTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetAmbienceTypeRequest(c.Server, ambienceTypeId, params)
+func (c *Client) GetAmbience(ctx context.Context, ambienceId string, params *GetAmbienceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAmbienceRequest(c.Server, ambienceId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -12785,8 +12785,8 @@ func (c *Client) ListWebhooks(ctx context.Context, companyId string, params *Lis
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListCuisineTypes(ctx context.Context, params *ListCuisineTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListCuisineTypesRequest(c.Server, params)
+func (c *Client) ListCuisines(ctx context.Context, params *ListCuisinesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCuisinesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -12797,8 +12797,8 @@ func (c *Client) ListCuisineTypes(ctx context.Context, params *ListCuisineTypesP
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetCuisineType(ctx context.Context, cuisineTypeId string, params *GetCuisineTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetCuisineTypeRequest(c.Server, cuisineTypeId, params)
+func (c *Client) GetCuisine(ctx context.Context, cuisineId string, params *GetCuisineParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCuisineRequest(c.Server, cuisineId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -12953,8 +12953,8 @@ func (c *Client) UpdateCustomer(ctx context.Context, customerId string, params *
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListDietaryTypes(ctx context.Context, params *ListDietaryTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListDietaryTypesRequest(c.Server, params)
+func (c *Client) ListDietaries(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDietariesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -12965,8 +12965,8 @@ func (c *Client) ListDietaryTypes(ctx context.Context, params *ListDietaryTypesP
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetDietaryType(ctx context.Context, dietaryTypeId string, params *GetDietaryTypeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetDietaryTypeRequest(c.Server, dietaryTypeId, params)
+func (c *Client) GetDietary(ctx context.Context, dietaryId string, params *GetDietaryParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDietaryRequest(c.Server, dietaryId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16233,8 +16233,8 @@ func NewListPaymentActivitiesRequest(server string, paymentId string, params *Li
 	return req, nil
 }
 
-// NewListAmbienceTypesRequest generates requests for ListAmbienceTypes
-func NewListAmbienceTypesRequest(server string, params *ListAmbienceTypesParams) (*http.Request, error) {
+// NewListAmbiencesRequest generates requests for ListAmbiences
+func NewListAmbiencesRequest(server string, params *ListAmbiencesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -16242,7 +16242,7 @@ func NewListAmbienceTypesRequest(server string, params *ListAmbienceTypesParams)
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/hq/ambience_types")
+	operationPath := fmt.Sprintf("/v1/hq/ambiences")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -16316,13 +16316,13 @@ func NewListAmbienceTypesRequest(server string, params *ListAmbienceTypesParams)
 	return req, nil
 }
 
-// NewGetAmbienceTypeRequest generates requests for GetAmbienceType
-func NewGetAmbienceTypeRequest(server string, ambienceTypeId string, params *GetAmbienceTypeParams) (*http.Request, error) {
+// NewGetAmbienceRequest generates requests for GetAmbience
+func NewGetAmbienceRequest(server string, ambienceId string, params *GetAmbienceParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ambience_type_id", runtime.ParamLocationPath, ambienceTypeId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ambience_id", runtime.ParamLocationPath, ambienceId)
 	if err != nil {
 		return nil, err
 	}
@@ -16332,7 +16332,7 @@ func NewGetAmbienceTypeRequest(server string, ambienceTypeId string, params *Get
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/hq/ambience_types/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/hq/ambiences/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -21959,8 +21959,8 @@ func NewListWebhooksRequest(server string, companyId string, params *ListWebhook
 	return req, nil
 }
 
-// NewListCuisineTypesRequest generates requests for ListCuisineTypes
-func NewListCuisineTypesRequest(server string, params *ListCuisineTypesParams) (*http.Request, error) {
+// NewListCuisinesRequest generates requests for ListCuisines
+func NewListCuisinesRequest(server string, params *ListCuisinesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -21968,7 +21968,7 @@ func NewListCuisineTypesRequest(server string, params *ListCuisineTypesParams) (
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/hq/cuisine_types")
+	operationPath := fmt.Sprintf("/v1/hq/cuisines")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -22042,13 +22042,13 @@ func NewListCuisineTypesRequest(server string, params *ListCuisineTypesParams) (
 	return req, nil
 }
 
-// NewGetCuisineTypeRequest generates requests for GetCuisineType
-func NewGetCuisineTypeRequest(server string, cuisineTypeId string, params *GetCuisineTypeParams) (*http.Request, error) {
+// NewGetCuisineRequest generates requests for GetCuisine
+func NewGetCuisineRequest(server string, cuisineId string, params *GetCuisineParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "cuisine_type_id", runtime.ParamLocationPath, cuisineTypeId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "cuisine_id", runtime.ParamLocationPath, cuisineId)
 	if err != nil {
 		return nil, err
 	}
@@ -22058,7 +22058,7 @@ func NewGetCuisineTypeRequest(server string, cuisineTypeId string, params *GetCu
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/hq/cuisine_types/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/hq/cuisines/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -22710,8 +22710,8 @@ func NewUpdateCustomerRequestWithBody(server string, customerId string, params *
 	return req, nil
 }
 
-// NewListDietaryTypesRequest generates requests for ListDietaryTypes
-func NewListDietaryTypesRequest(server string, params *ListDietaryTypesParams) (*http.Request, error) {
+// NewListDietariesRequest generates requests for ListDietaries
+func NewListDietariesRequest(server string, params *ListDietariesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -22719,7 +22719,7 @@ func NewListDietaryTypesRequest(server string, params *ListDietaryTypesParams) (
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/hq/dietary_types")
+	operationPath := fmt.Sprintf("/v1/hq/dietaries")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -22793,13 +22793,13 @@ func NewListDietaryTypesRequest(server string, params *ListDietaryTypesParams) (
 	return req, nil
 }
 
-// NewGetDietaryTypeRequest generates requests for GetDietaryType
-func NewGetDietaryTypeRequest(server string, dietaryTypeId string, params *GetDietaryTypeParams) (*http.Request, error) {
+// NewGetDietaryRequest generates requests for GetDietary
+func NewGetDietaryRequest(server string, dietaryId string, params *GetDietaryParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "dietary_type_id", runtime.ParamLocationPath, dietaryTypeId)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "dietary_id", runtime.ParamLocationPath, dietaryId)
 	if err != nil {
 		return nil, err
 	}
@@ -22809,7 +22809,7 @@ func NewGetDietaryTypeRequest(server string, dietaryTypeId string, params *GetDi
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/hq/dietary_types/%s", pathParam0)
+	operationPath := fmt.Sprintf("/v1/hq/dietaries/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -36107,11 +36107,11 @@ type ClientWithResponsesInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivitiesWithResponse(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*ListPaymentActivitiesResponse, error)
 
-	// ListAmbienceTypes request
-	ListAmbienceTypesWithResponse(ctx context.Context, params *ListAmbienceTypesParams, reqEditors ...RequestEditorFn) (*ListAmbienceTypesResponse, error)
+	// ListAmbiences request
+	ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error)
 
-	// GetAmbienceType request
-	GetAmbienceTypeWithResponse(ctx context.Context, ambienceTypeId string, params *GetAmbienceTypeParams, reqEditors ...RequestEditorFn) (*GetAmbienceTypeResponse, error)
+	// GetAmbience request
+	GetAmbienceWithResponse(ctx context.Context, ambienceId string, params *GetAmbienceParams, reqEditors ...RequestEditorFn) (*GetAmbienceResponse, error)
 
 	// CreateBlockedTime request with any body
 	CreateBlockedTimeWithBodyWithResponse(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error)
@@ -36310,11 +36310,11 @@ type ClientWithResponsesInterface interface {
 	// ListWebhooks request
 	ListWebhooksWithResponse(ctx context.Context, companyId string, params *ListWebhooksParams, reqEditors ...RequestEditorFn) (*ListWebhooksResponse, error)
 
-	// ListCuisineTypes request
-	ListCuisineTypesWithResponse(ctx context.Context, params *ListCuisineTypesParams, reqEditors ...RequestEditorFn) (*ListCuisineTypesResponse, error)
+	// ListCuisines request
+	ListCuisinesWithResponse(ctx context.Context, params *ListCuisinesParams, reqEditors ...RequestEditorFn) (*ListCuisinesResponse, error)
 
-	// GetCuisineType request
-	GetCuisineTypeWithResponse(ctx context.Context, cuisineTypeId string, params *GetCuisineTypeParams, reqEditors ...RequestEditorFn) (*GetCuisineTypeResponse, error)
+	// GetCuisine request
+	GetCuisineWithResponse(ctx context.Context, cuisineId string, params *GetCuisineParams, reqEditors ...RequestEditorFn) (*GetCuisineResponse, error)
 
 	// CreateCustomerGroup request with any body
 	CreateCustomerGroupWithBodyWithResponse(ctx context.Context, params *CreateCustomerGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCustomerGroupResponse, error)
@@ -36348,11 +36348,11 @@ type ClientWithResponsesInterface interface {
 
 	UpdateCustomerWithResponse(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomerResponse, error)
 
-	// ListDietaryTypes request
-	ListDietaryTypesWithResponse(ctx context.Context, params *ListDietaryTypesParams, reqEditors ...RequestEditorFn) (*ListDietaryTypesResponse, error)
+	// ListDietaries request
+	ListDietariesWithResponse(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*ListDietariesResponse, error)
 
-	// GetDietaryType request
-	GetDietaryTypeWithResponse(ctx context.Context, dietaryTypeId string, params *GetDietaryTypeParams, reqEditors ...RequestEditorFn) (*GetDietaryTypeResponse, error)
+	// GetDietary request
+	GetDietaryWithResponse(ctx context.Context, dietaryId string, params *GetDietaryParams, reqEditors ...RequestEditorFn) (*GetDietaryResponse, error)
 
 	// CreateEmployee request with any body
 	CreateEmployeeWithBodyWithResponse(ctx context.Context, params *CreateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEmployeeResponse, error)
@@ -37122,14 +37122,14 @@ func (r ListPaymentActivitiesResponse) StatusCode() int {
 	return 0
 }
 
-type ListAmbienceTypesResponse struct {
+type ListAmbiencesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CategorizationTypesResponse
+	JSON200      *CategoriesResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r ListAmbienceTypesResponse) Status() string {
+func (r ListAmbiencesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -37137,21 +37137,21 @@ func (r ListAmbienceTypesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListAmbienceTypesResponse) StatusCode() int {
+func (r ListAmbiencesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetAmbienceTypeResponse struct {
+type GetAmbienceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CategorizationTypeResponse
+	JSON200      *CategoryResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r GetAmbienceTypeResponse) Status() string {
+func (r GetAmbienceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -37159,7 +37159,7 @@ func (r GetAmbienceTypeResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetAmbienceTypeResponse) StatusCode() int {
+func (r GetAmbienceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -38510,14 +38510,14 @@ func (r ListWebhooksResponse) StatusCode() int {
 	return 0
 }
 
-type ListCuisineTypesResponse struct {
+type ListCuisinesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CategorizationTypesResponse
+	JSON200      *CategoriesResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r ListCuisineTypesResponse) Status() string {
+func (r ListCuisinesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -38525,21 +38525,21 @@ func (r ListCuisineTypesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListCuisineTypesResponse) StatusCode() int {
+func (r ListCuisinesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetCuisineTypeResponse struct {
+type GetCuisineResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CategorizationTypeResponse
+	JSON200      *CategoryResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r GetCuisineTypeResponse) Status() string {
+func (r GetCuisineResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -38547,7 +38547,7 @@ func (r GetCuisineTypeResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetCuisineTypeResponse) StatusCode() int {
+func (r GetCuisineResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -38728,14 +38728,14 @@ func (r UpdateCustomerResponse) StatusCode() int {
 	return 0
 }
 
-type ListDietaryTypesResponse struct {
+type ListDietariesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CategorizationTypesResponse
+	JSON200      *CategoriesResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r ListDietaryTypesResponse) Status() string {
+func (r ListDietariesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -38743,21 +38743,21 @@ func (r ListDietaryTypesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListDietaryTypesResponse) StatusCode() int {
+func (r ListDietariesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetDietaryTypeResponse struct {
+type GetDietaryResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CategorizationTypeResponse
+	JSON200      *CategoryResponse
 }
 
 // Status returns HTTPResponse.Status
-func (r GetDietaryTypeResponse) Status() string {
+func (r GetDietaryResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -38765,7 +38765,7 @@ func (r GetDietaryTypeResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetDietaryTypeResponse) StatusCode() int {
+func (r GetDietaryResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -42790,22 +42790,22 @@ func (c *ClientWithResponses) ListPaymentActivitiesWithResponse(ctx context.Cont
 	return ParseListPaymentActivitiesResponse(rsp)
 }
 
-// ListAmbienceTypesWithResponse request returning *ListAmbienceTypesResponse
-func (c *ClientWithResponses) ListAmbienceTypesWithResponse(ctx context.Context, params *ListAmbienceTypesParams, reqEditors ...RequestEditorFn) (*ListAmbienceTypesResponse, error) {
-	rsp, err := c.ListAmbienceTypes(ctx, params, reqEditors...)
+// ListAmbiencesWithResponse request returning *ListAmbiencesResponse
+func (c *ClientWithResponses) ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error) {
+	rsp, err := c.ListAmbiences(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListAmbienceTypesResponse(rsp)
+	return ParseListAmbiencesResponse(rsp)
 }
 
-// GetAmbienceTypeWithResponse request returning *GetAmbienceTypeResponse
-func (c *ClientWithResponses) GetAmbienceTypeWithResponse(ctx context.Context, ambienceTypeId string, params *GetAmbienceTypeParams, reqEditors ...RequestEditorFn) (*GetAmbienceTypeResponse, error) {
-	rsp, err := c.GetAmbienceType(ctx, ambienceTypeId, params, reqEditors...)
+// GetAmbienceWithResponse request returning *GetAmbienceResponse
+func (c *ClientWithResponses) GetAmbienceWithResponse(ctx context.Context, ambienceId string, params *GetAmbienceParams, reqEditors ...RequestEditorFn) (*GetAmbienceResponse, error) {
+	rsp, err := c.GetAmbience(ctx, ambienceId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetAmbienceTypeResponse(rsp)
+	return ParseGetAmbienceResponse(rsp)
 }
 
 // CreateBlockedTimeWithBodyWithResponse request with arbitrary body returning *CreateBlockedTimeResponse
@@ -43413,22 +43413,22 @@ func (c *ClientWithResponses) ListWebhooksWithResponse(ctx context.Context, comp
 	return ParseListWebhooksResponse(rsp)
 }
 
-// ListCuisineTypesWithResponse request returning *ListCuisineTypesResponse
-func (c *ClientWithResponses) ListCuisineTypesWithResponse(ctx context.Context, params *ListCuisineTypesParams, reqEditors ...RequestEditorFn) (*ListCuisineTypesResponse, error) {
-	rsp, err := c.ListCuisineTypes(ctx, params, reqEditors...)
+// ListCuisinesWithResponse request returning *ListCuisinesResponse
+func (c *ClientWithResponses) ListCuisinesWithResponse(ctx context.Context, params *ListCuisinesParams, reqEditors ...RequestEditorFn) (*ListCuisinesResponse, error) {
+	rsp, err := c.ListCuisines(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListCuisineTypesResponse(rsp)
+	return ParseListCuisinesResponse(rsp)
 }
 
-// GetCuisineTypeWithResponse request returning *GetCuisineTypeResponse
-func (c *ClientWithResponses) GetCuisineTypeWithResponse(ctx context.Context, cuisineTypeId string, params *GetCuisineTypeParams, reqEditors ...RequestEditorFn) (*GetCuisineTypeResponse, error) {
-	rsp, err := c.GetCuisineType(ctx, cuisineTypeId, params, reqEditors...)
+// GetCuisineWithResponse request returning *GetCuisineResponse
+func (c *ClientWithResponses) GetCuisineWithResponse(ctx context.Context, cuisineId string, params *GetCuisineParams, reqEditors ...RequestEditorFn) (*GetCuisineResponse, error) {
+	rsp, err := c.GetCuisine(ctx, cuisineId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetCuisineTypeResponse(rsp)
+	return ParseGetCuisineResponse(rsp)
 }
 
 // CreateCustomerGroupWithBodyWithResponse request with arbitrary body returning *CreateCustomerGroupResponse
@@ -43535,22 +43535,22 @@ func (c *ClientWithResponses) UpdateCustomerWithResponse(ctx context.Context, cu
 	return ParseUpdateCustomerResponse(rsp)
 }
 
-// ListDietaryTypesWithResponse request returning *ListDietaryTypesResponse
-func (c *ClientWithResponses) ListDietaryTypesWithResponse(ctx context.Context, params *ListDietaryTypesParams, reqEditors ...RequestEditorFn) (*ListDietaryTypesResponse, error) {
-	rsp, err := c.ListDietaryTypes(ctx, params, reqEditors...)
+// ListDietariesWithResponse request returning *ListDietariesResponse
+func (c *ClientWithResponses) ListDietariesWithResponse(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*ListDietariesResponse, error) {
+	rsp, err := c.ListDietaries(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListDietaryTypesResponse(rsp)
+	return ParseListDietariesResponse(rsp)
 }
 
-// GetDietaryTypeWithResponse request returning *GetDietaryTypeResponse
-func (c *ClientWithResponses) GetDietaryTypeWithResponse(ctx context.Context, dietaryTypeId string, params *GetDietaryTypeParams, reqEditors ...RequestEditorFn) (*GetDietaryTypeResponse, error) {
-	rsp, err := c.GetDietaryType(ctx, dietaryTypeId, params, reqEditors...)
+// GetDietaryWithResponse request returning *GetDietaryResponse
+func (c *ClientWithResponses) GetDietaryWithResponse(ctx context.Context, dietaryId string, params *GetDietaryParams, reqEditors ...RequestEditorFn) (*GetDietaryResponse, error) {
+	rsp, err := c.GetDietary(ctx, dietaryId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetDietaryTypeResponse(rsp)
+	return ParseGetDietaryResponse(rsp)
 }
 
 // CreateEmployeeWithBodyWithResponse request with arbitrary body returning *CreateEmployeeResponse
@@ -45824,22 +45824,22 @@ func ParseListPaymentActivitiesResponse(rsp *http.Response) (*ListPaymentActivit
 	return response, nil
 }
 
-// ParseListAmbienceTypesResponse parses an HTTP response from a ListAmbienceTypesWithResponse call
-func ParseListAmbienceTypesResponse(rsp *http.Response) (*ListAmbienceTypesResponse, error) {
+// ParseListAmbiencesResponse parses an HTTP response from a ListAmbiencesWithResponse call
+func ParseListAmbiencesResponse(rsp *http.Response) (*ListAmbiencesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListAmbienceTypesResponse{
+	response := &ListAmbiencesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CategorizationTypesResponse
+		var dest CategoriesResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -45850,22 +45850,22 @@ func ParseListAmbienceTypesResponse(rsp *http.Response) (*ListAmbienceTypesRespo
 	return response, nil
 }
 
-// ParseGetAmbienceTypeResponse parses an HTTP response from a GetAmbienceTypeWithResponse call
-func ParseGetAmbienceTypeResponse(rsp *http.Response) (*GetAmbienceTypeResponse, error) {
+// ParseGetAmbienceResponse parses an HTTP response from a GetAmbienceWithResponse call
+func ParseGetAmbienceResponse(rsp *http.Response) (*GetAmbienceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetAmbienceTypeResponse{
+	response := &GetAmbienceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CategorizationTypeResponse
+		var dest CategoryResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -47470,22 +47470,22 @@ func ParseListWebhooksResponse(rsp *http.Response) (*ListWebhooksResponse, error
 	return response, nil
 }
 
-// ParseListCuisineTypesResponse parses an HTTP response from a ListCuisineTypesWithResponse call
-func ParseListCuisineTypesResponse(rsp *http.Response) (*ListCuisineTypesResponse, error) {
+// ParseListCuisinesResponse parses an HTTP response from a ListCuisinesWithResponse call
+func ParseListCuisinesResponse(rsp *http.Response) (*ListCuisinesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListCuisineTypesResponse{
+	response := &ListCuisinesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CategorizationTypesResponse
+		var dest CategoriesResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -47496,22 +47496,22 @@ func ParseListCuisineTypesResponse(rsp *http.Response) (*ListCuisineTypesRespons
 	return response, nil
 }
 
-// ParseGetCuisineTypeResponse parses an HTTP response from a GetCuisineTypeWithResponse call
-func ParseGetCuisineTypeResponse(rsp *http.Response) (*GetCuisineTypeResponse, error) {
+// ParseGetCuisineResponse parses an HTTP response from a GetCuisineWithResponse call
+func ParseGetCuisineResponse(rsp *http.Response) (*GetCuisineResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetCuisineTypeResponse{
+	response := &GetCuisineResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CategorizationTypeResponse
+		var dest CategoryResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -47710,22 +47710,22 @@ func ParseUpdateCustomerResponse(rsp *http.Response) (*UpdateCustomerResponse, e
 	return response, nil
 }
 
-// ParseListDietaryTypesResponse parses an HTTP response from a ListDietaryTypesWithResponse call
-func ParseListDietaryTypesResponse(rsp *http.Response) (*ListDietaryTypesResponse, error) {
+// ParseListDietariesResponse parses an HTTP response from a ListDietariesWithResponse call
+func ParseListDietariesResponse(rsp *http.Response) (*ListDietariesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListDietaryTypesResponse{
+	response := &ListDietariesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CategorizationTypesResponse
+		var dest CategoriesResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -47736,22 +47736,22 @@ func ParseListDietaryTypesResponse(rsp *http.Response) (*ListDietaryTypesRespons
 	return response, nil
 }
 
-// ParseGetDietaryTypeResponse parses an HTTP response from a GetDietaryTypeWithResponse call
-func ParseGetDietaryTypeResponse(rsp *http.Response) (*GetDietaryTypeResponse, error) {
+// ParseGetDietaryResponse parses an HTTP response from a GetDietaryWithResponse call
+func ParseGetDietaryResponse(rsp *http.Response) (*GetDietaryResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetDietaryTypeResponse{
+	response := &GetDietaryResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CategorizationTypeResponse
+		var dest CategoryResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
