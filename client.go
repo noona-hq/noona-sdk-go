@@ -55,6 +55,26 @@ const (
 	AdyenOnboardingStatusValid      AdyenOnboardingStatus = "valid"
 )
 
+// Defines values for ApplicationPaymentType.
+const (
+	ApplicationPaymentTypeFree         ApplicationPaymentType = "free"
+	ApplicationPaymentTypeOneTime      ApplicationPaymentType = "one-time"
+	ApplicationPaymentTypeSubscription ApplicationPaymentType = "subscription"
+)
+
+// Defines values for ApplicationEventEvent.
+const (
+	Installed   ApplicationEventEvent = "installed"
+	Uninstalled ApplicationEventEvent = "uninstalled"
+)
+
+// Defines values for ApplicationPayoutStatus.
+const (
+	ApplicationPayoutStatusFailed  ApplicationPayoutStatus = "failed"
+	ApplicationPayoutStatusPaid    ApplicationPayoutStatus = "paid"
+	ApplicationPayoutStatusPending ApplicationPayoutStatus = "pending"
+)
+
 // Defines values for AvailabilityRuleType.
 const (
 	AvailabilityRuleTypeAvailability AvailabilityRuleType = "availability"
@@ -716,9 +736,9 @@ const (
 
 // Defines values for SubscriptionDiscountDurationType.
 const (
-	Forever       SubscriptionDiscountDurationType = "forever"
-	LimitedPeriod SubscriptionDiscountDurationType = "limited_period"
-	OneTime       SubscriptionDiscountDurationType = "one_time"
+	SubscriptionDiscountDurationTypeForever       SubscriptionDiscountDurationType = "forever"
+	SubscriptionDiscountDurationTypeLimitedPeriod SubscriptionDiscountDurationType = "limited_period"
+	SubscriptionDiscountDurationTypeOneTime       SubscriptionDiscountDurationType = "one_time"
 )
 
 // Defines values for SubscriptionDiscountPeriodUnit.
@@ -856,10 +876,10 @@ const (
 
 // Defines values for VoucherFilterStatus.
 const (
-	VoucherFilterStatusExpired    VoucherFilterStatus = "expired"
-	VoucherFilterStatusFullyUsed  VoucherFilterStatus = "fully_used"
-	VoucherFilterStatusNeverUsed  VoucherFilterStatus = "never_used"
-	VoucherFilterStatusPartlyUsed VoucherFilterStatus = "partly_used"
+	Expired    VoucherFilterStatus = "expired"
+	FullyUsed  VoucherFilterStatus = "fully_used"
+	NeverUsed  VoucherFilterStatus = "never_used"
+	PartlyUsed VoucherFilterStatus = "partly_used"
 )
 
 // Defines values for VoucherFilterType.
@@ -1047,14 +1067,20 @@ type AppFilter struct {
 
 // Application defines model for Application.
 type Application struct {
+	// A longer description of the application which opens in a modal and support HTML.
+	About *string `json:"about,omitempty"`
+
 	// If true, the application will be listed in the Noona App Store.
-	AppStore      *bool      `json:"app_store,omitempty"`
-	Approved      *bool      `json:"approved,omitempty"`
-	ClientId      *string    `json:"client_id,omitempty"`
-	ClientSecret  *string    `json:"client_secret,omitempty"`
-	CreatedAt     *time.Time `json:"created_at,omitempty"`
-	Description   *string    `json:"description,omitempty"`
-	DeveloperName *string    `json:"developer_name,omitempty"`
+	AppStore     *bool      `json:"app_store,omitempty"`
+	Approved     *bool      `json:"approved,omitempty"`
+	ClientId     *string    `json:"client_id,omitempty"`
+	ClientSecret *string    `json:"client_secret,omitempty"`
+	CreatedAt    *time.Time `json:"created_at,omitempty"`
+	Currency     *string    `json:"currency,omitempty"`
+
+	// Short text about the functionality of the app that appears next to the icon in the list.
+	Description   *string `json:"description,omitempty"`
+	DeveloperName *string `json:"developer_name,omitempty"`
 
 	// Home page or documentation for your application.
 	DeveloperUrl *string `json:"developer_url,omitempty"`
@@ -1062,7 +1088,11 @@ type Application struct {
 	Logo         *string `json:"logo,omitempty"`
 
 	// Shown to the user when they are asked to give consent.
-	Name *string `json:"name,omitempty"`
+	Name        *string                 `json:"name,omitempty"`
+	PaymentType *ApplicationPaymentType `json:"payment_type,omitempty"`
+
+	// Price in x100 format. (100 is 1.00)
+	Price *int32 `json:"price,omitempty"`
 
 	// If true, the application will be usable from outside of the company.
 	Public       *bool        `json:"public,omitempty"`
@@ -1074,6 +1104,65 @@ type Application struct {
 	// When clicked, the application's main redirect_uri will be displayed in an iFrame.
 	ShowInNavigation *bool      `json:"show_in_navigation,omitempty"`
 	UpdatedAt        *time.Time `json:"updated_at,omitempty"`
+}
+
+// ApplicationPaymentType defines model for Application.PaymentType.
+type ApplicationPaymentType string
+
+// ApplicationEvent defines model for ApplicationEvent.
+type ApplicationEvent struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Application *ExpandableApplication `json:"application,omitempty"`
+	CreatedAt   time.Time              `json:"created_at"`
+	Event       ApplicationEventEvent  `json:"event"`
+	Id          string                 `json:"id"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	PublicCompany *ExpandablePublicCompany `json:"public_company,omitempty"`
+}
+
+// ApplicationEventEvent defines model for ApplicationEvent.Event.
+type ApplicationEventEvent string
+
+// ApplicationEvents defines model for ApplicationEvents.
+type ApplicationEvents []ApplicationEvent
+
+// ApplicationMetrics defines model for ApplicationMetrics.
+type ApplicationMetrics struct {
+	Approved bool                       `json:"approved"`
+	Revenue  *ApplicationRevenueMetrics `json:"revenue,omitempty"`
+	Users    CountMetricsByTimeFrame    `json:"users"`
+}
+
+// ApplicationPayout defines model for ApplicationPayout.
+type ApplicationPayout struct {
+	// The amount of the payout in x100 format. (100 is 1.00)
+	Amount    int32                   `json:"amount"`
+	CreatedAt time.Time               `json:"created_at"`
+	Currency  string                  `json:"currency"`
+	Id        string                  `json:"id"`
+	Status    ApplicationPayoutStatus `json:"status"`
+	UpdatedAt time.Time               `json:"updated_at"`
+}
+
+// ApplicationPayoutStatus defines model for ApplicationPayout.Status.
+type ApplicationPayoutStatus string
+
+// ApplicationPayouts defines model for ApplicationPayouts.
+type ApplicationPayouts []ApplicationPayout
+
+// ApplicationRevenueMetrics defines model for ApplicationRevenueMetrics.
+type ApplicationRevenueMetrics struct {
+	Currency *string `json:"currency,omitempty"`
+
+	// Revenue for the last month. (x100 format)
+	LastMonth *int32 `json:"last_month,omitempty"`
+
+	// Change in revenue from last month in percent (75 = 75%)
+	PercentChange *int32 `json:"percent_change,omitempty"`
+
+	// Revenue for the current month. (x100 format)
+	ThisMonth *int32 `json:"this_month,omitempty"`
 }
 
 // Applications defines model for Applications.
@@ -2910,6 +2999,11 @@ type ExpandableApp struct {
 	union json.RawMessage
 }
 
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableApplication struct {
+	union json.RawMessage
+}
+
 // ExpandableCompanies defines model for ExpandableCompanies.
 type ExpandableCompanies []ExpandableCompany
 
@@ -3005,6 +3099,14 @@ type ExpandablePayment struct {
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableProduct struct {
+	union json.RawMessage
+}
+
+// ExpandablePublicCompanies defines model for ExpandablePublicCompanies.
+type ExpandablePublicCompanies []ExpandablePublicCompany
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandablePublicCompany struct {
 	union json.RawMessage
 }
 
@@ -4323,6 +4425,17 @@ type ProductImage struct {
 
 // Products defines model for Products.
 type Products []Product
+
+// PublicCompanies defines model for PublicCompanies.
+type PublicCompanies []PublicCompany
+
+// PublicCompany defines model for PublicCompany.
+type PublicCompany struct {
+	Country *string `json:"country,omitempty"`
+	Id      *string `json:"id,omitempty"`
+	Logo    *string `json:"logo,omitempty"`
+	Name    *string `json:"name,omitempty"`
+}
 
 // [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 //
@@ -5645,6 +5758,7 @@ type User struct {
 	Email       *string              `json:"email,omitempty"`
 	Employees   *Employees           `json:"employees,omitempty"`
 	Id          *string              `json:"id,omitempty"`
+	Image       *Image               `json:"image,omitempty"`
 }
 
 // UserConnections defines model for UserConnections.
@@ -7835,6 +7949,45 @@ type UpdateOAuthApplicationParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// ListOAuthApplicationEventsParams defines parameters for ListOAuthApplicationEvents.
+type ListOAuthApplicationEventsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// GetOAuthApplicationMetricsParams defines parameters for GetOAuthApplicationMetrics.
+type GetOAuthApplicationMetricsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListOAuthApplicationPayoutsParams defines parameters for ListOAuthApplicationPayouts.
+type ListOAuthApplicationPayoutsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
 // StartOAuthFlowParams defines parameters for StartOAuthFlow.
 type StartOAuthFlowParams struct {
 	ClientId     string      `form:"client_id" json:"client_id"`
@@ -9495,6 +9648,40 @@ func (t *ExpandableApp) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+func (t ExpandableApplication) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableApplication) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableApplication) AsApplication() (Application, error) {
+	var body Application
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableApplication) FromApplication(v Application) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableApplication) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableApplication) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 func (t ExpandableCompany) AsID() (ID, error) {
 	var body ID
 	err := json.Unmarshal(t.union, &body)
@@ -10035,6 +10222,40 @@ func (t ExpandableProduct) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ExpandableProduct) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandablePublicCompany) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandablePublicCompany) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandablePublicCompany) AsPublicCompany() (PublicCompany, error) {
+	var body PublicCompany
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandablePublicCompany) FromPublicCompany(v PublicCompany) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandablePublicCompany) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandablePublicCompany) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -11458,6 +11679,15 @@ type ClientInterface interface {
 	UpdateOAuthApplicationWithBody(ctx context.Context, applicationId string, params *UpdateOAuthApplicationParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateOAuthApplication(ctx context.Context, applicationId string, params *UpdateOAuthApplicationParams, body UpdateOAuthApplicationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListOAuthApplicationEvents request
+	ListOAuthApplicationEvents(ctx context.Context, applicationId string, params *ListOAuthApplicationEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOAuthApplicationMetrics request
+	GetOAuthApplicationMetrics(ctx context.Context, applicationId string, params *GetOAuthApplicationMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListOAuthApplicationPayouts request
+	ListOAuthApplicationPayouts(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// StartOAuthFlow request
 	StartOAuthFlow(ctx context.Context, params *StartOAuthFlowParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14035,6 +14265,42 @@ func (c *Client) UpdateOAuthApplicationWithBody(ctx context.Context, application
 
 func (c *Client) UpdateOAuthApplication(ctx context.Context, applicationId string, params *UpdateOAuthApplicationParams, body UpdateOAuthApplicationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateOAuthApplicationRequest(c.Server, applicationId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOAuthApplicationEvents(ctx context.Context, applicationId string, params *ListOAuthApplicationEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOAuthApplicationEventsRequest(c.Server, applicationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOAuthApplicationMetrics(ctx context.Context, applicationId string, params *GetOAuthApplicationMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOAuthApplicationMetricsRequest(c.Server, applicationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOAuthApplicationPayouts(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOAuthApplicationPayoutsRequest(c.Server, applicationId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -27622,6 +27888,256 @@ func NewUpdateOAuthApplicationRequestWithBody(server string, applicationId strin
 	return req, nil
 }
 
+// NewListOAuthApplicationEventsRequest generates requests for ListOAuthApplicationEvents
+func NewListOAuthApplicationEventsRequest(server string, applicationId string, params *ListOAuthApplicationEventsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "application_id", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/applications/%s/events", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetOAuthApplicationMetricsRequest generates requests for GetOAuthApplicationMetrics
+func NewGetOAuthApplicationMetricsRequest(server string, applicationId string, params *GetOAuthApplicationMetricsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "application_id", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/applications/%s/metrics", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListOAuthApplicationPayoutsRequest generates requests for ListOAuthApplicationPayouts
+func NewListOAuthApplicationPayoutsRequest(server string, applicationId string, params *ListOAuthApplicationPayoutsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "application_id", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/applications/%s/payouts", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewStartOAuthFlowRequest generates requests for StartOAuthFlow
 func NewStartOAuthFlowRequest(server string, params *StartOAuthFlowParams) (*http.Request, error) {
 	var err error
@@ -36596,6 +37112,15 @@ type ClientWithResponsesInterface interface {
 
 	UpdateOAuthApplicationWithResponse(ctx context.Context, applicationId string, params *UpdateOAuthApplicationParams, body UpdateOAuthApplicationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateOAuthApplicationResponse, error)
 
+	// ListOAuthApplicationEvents request
+	ListOAuthApplicationEventsWithResponse(ctx context.Context, applicationId string, params *ListOAuthApplicationEventsParams, reqEditors ...RequestEditorFn) (*ListOAuthApplicationEventsResponse, error)
+
+	// GetOAuthApplicationMetrics request
+	GetOAuthApplicationMetricsWithResponse(ctx context.Context, applicationId string, params *GetOAuthApplicationMetricsParams, reqEditors ...RequestEditorFn) (*GetOAuthApplicationMetricsResponse, error)
+
+	// ListOAuthApplicationPayouts request
+	ListOAuthApplicationPayoutsWithResponse(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*ListOAuthApplicationPayoutsResponse, error)
+
 	// StartOAuthFlow request
 	StartOAuthFlowWithResponse(ctx context.Context, params *StartOAuthFlowParams, reqEditors ...RequestEditorFn) (*StartOAuthFlowResponse, error)
 
@@ -40164,6 +40689,72 @@ func (r UpdateOAuthApplicationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateOAuthApplicationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOAuthApplicationEventsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApplicationEvents
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOAuthApplicationEventsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOAuthApplicationEventsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOAuthApplicationMetricsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApplicationMetrics
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOAuthApplicationMetricsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOAuthApplicationMetricsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOAuthApplicationPayoutsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApplicationPayouts
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOAuthApplicationPayoutsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOAuthApplicationPayoutsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -44327,6 +44918,33 @@ func (c *ClientWithResponses) UpdateOAuthApplicationWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseUpdateOAuthApplicationResponse(rsp)
+}
+
+// ListOAuthApplicationEventsWithResponse request returning *ListOAuthApplicationEventsResponse
+func (c *ClientWithResponses) ListOAuthApplicationEventsWithResponse(ctx context.Context, applicationId string, params *ListOAuthApplicationEventsParams, reqEditors ...RequestEditorFn) (*ListOAuthApplicationEventsResponse, error) {
+	rsp, err := c.ListOAuthApplicationEvents(ctx, applicationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOAuthApplicationEventsResponse(rsp)
+}
+
+// GetOAuthApplicationMetricsWithResponse request returning *GetOAuthApplicationMetricsResponse
+func (c *ClientWithResponses) GetOAuthApplicationMetricsWithResponse(ctx context.Context, applicationId string, params *GetOAuthApplicationMetricsParams, reqEditors ...RequestEditorFn) (*GetOAuthApplicationMetricsResponse, error) {
+	rsp, err := c.GetOAuthApplicationMetrics(ctx, applicationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOAuthApplicationMetricsResponse(rsp)
+}
+
+// ListOAuthApplicationPayoutsWithResponse request returning *ListOAuthApplicationPayoutsResponse
+func (c *ClientWithResponses) ListOAuthApplicationPayoutsWithResponse(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*ListOAuthApplicationPayoutsResponse, error) {
+	rsp, err := c.ListOAuthApplicationPayouts(ctx, applicationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOAuthApplicationPayoutsResponse(rsp)
 }
 
 // StartOAuthFlowWithResponse request returning *StartOAuthFlowResponse
@@ -49313,6 +49931,84 @@ func ParseUpdateOAuthApplicationResponse(rsp *http.Response) (*UpdateOAuthApplic
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Application
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListOAuthApplicationEventsResponse parses an HTTP response from a ListOAuthApplicationEventsWithResponse call
+func ParseListOAuthApplicationEventsResponse(rsp *http.Response) (*ListOAuthApplicationEventsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOAuthApplicationEventsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApplicationEvents
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOAuthApplicationMetricsResponse parses an HTTP response from a GetOAuthApplicationMetricsWithResponse call
+func ParseGetOAuthApplicationMetricsResponse(rsp *http.Response) (*GetOAuthApplicationMetricsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOAuthApplicationMetricsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApplicationMetrics
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListOAuthApplicationPayoutsResponse parses an HTTP response from a ListOAuthApplicationPayoutsWithResponse call
+func ParseListOAuthApplicationPayoutsResponse(rsp *http.Response) (*ListOAuthApplicationPayoutsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOAuthApplicationPayoutsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApplicationPayouts
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
