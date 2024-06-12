@@ -7988,6 +7988,21 @@ type ListOAuthApplicationPayoutsParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// ListOAuthApplicationUsersParams defines parameters for ListOAuthApplicationUsers.
+type ListOAuthApplicationUsersParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
 // StartOAuthFlowParams defines parameters for StartOAuthFlow.
 type StartOAuthFlowParams struct {
 	ClientId     string      `form:"client_id" json:"client_id"`
@@ -11689,6 +11704,9 @@ type ClientInterface interface {
 	// ListOAuthApplicationPayouts request
 	ListOAuthApplicationPayouts(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListOAuthApplicationUsers request
+	ListOAuthApplicationUsers(ctx context.Context, applicationId string, params *ListOAuthApplicationUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// StartOAuthFlow request
 	StartOAuthFlow(ctx context.Context, params *StartOAuthFlowParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -14301,6 +14319,18 @@ func (c *Client) GetOAuthApplicationMetrics(ctx context.Context, applicationId s
 
 func (c *Client) ListOAuthApplicationPayouts(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListOAuthApplicationPayoutsRequest(c.Server, applicationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListOAuthApplicationUsers(ctx context.Context, applicationId string, params *ListOAuthApplicationUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOAuthApplicationUsersRequest(c.Server, applicationId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -28138,6 +28168,96 @@ func NewListOAuthApplicationPayoutsRequest(server string, applicationId string, 
 	return req, nil
 }
 
+// NewListOAuthApplicationUsersRequest generates requests for ListOAuthApplicationUsers
+func NewListOAuthApplicationUsersRequest(server string, applicationId string, params *ListOAuthApplicationUsersParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "application_id", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/applications/%s/users", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewStartOAuthFlowRequest generates requests for StartOAuthFlow
 func NewStartOAuthFlowRequest(server string, params *StartOAuthFlowParams) (*http.Request, error) {
 	var err error
@@ -37121,6 +37241,9 @@ type ClientWithResponsesInterface interface {
 	// ListOAuthApplicationPayouts request
 	ListOAuthApplicationPayoutsWithResponse(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*ListOAuthApplicationPayoutsResponse, error)
 
+	// ListOAuthApplicationUsers request
+	ListOAuthApplicationUsersWithResponse(ctx context.Context, applicationId string, params *ListOAuthApplicationUsersParams, reqEditors ...RequestEditorFn) (*ListOAuthApplicationUsersResponse, error)
+
 	// StartOAuthFlow request
 	StartOAuthFlowWithResponse(ctx context.Context, params *StartOAuthFlowParams, reqEditors ...RequestEditorFn) (*StartOAuthFlowResponse, error)
 
@@ -40755,6 +40878,28 @@ func (r ListOAuthApplicationPayoutsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListOAuthApplicationPayoutsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListOAuthApplicationUsersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PublicCompanies
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOAuthApplicationUsersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOAuthApplicationUsersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -44945,6 +45090,15 @@ func (c *ClientWithResponses) ListOAuthApplicationPayoutsWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseListOAuthApplicationPayoutsResponse(rsp)
+}
+
+// ListOAuthApplicationUsersWithResponse request returning *ListOAuthApplicationUsersResponse
+func (c *ClientWithResponses) ListOAuthApplicationUsersWithResponse(ctx context.Context, applicationId string, params *ListOAuthApplicationUsersParams, reqEditors ...RequestEditorFn) (*ListOAuthApplicationUsersResponse, error) {
+	rsp, err := c.ListOAuthApplicationUsers(ctx, applicationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOAuthApplicationUsersResponse(rsp)
 }
 
 // StartOAuthFlowWithResponse request returning *StartOAuthFlowResponse
@@ -50009,6 +50163,32 @@ func ParseListOAuthApplicationPayoutsResponse(rsp *http.Response) (*ListOAuthApp
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ApplicationPayouts
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListOAuthApplicationUsersResponse parses an HTTP response from a ListOAuthApplicationUsersWithResponse call
+func ParseListOAuthApplicationUsersResponse(rsp *http.Response) (*ListOAuthApplicationUsersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOAuthApplicationUsersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PublicCompanies
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
