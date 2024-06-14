@@ -1124,6 +1124,12 @@ type ApplicationEvent struct {
 // ApplicationEventEvent defines model for ApplicationEvent.Event.
 type ApplicationEventEvent string
 
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type ApplicationEventFilter struct {
+	// Filter by company ID
+	Company *string `json:"company,omitempty"`
+}
+
 // ApplicationEvents defines model for ApplicationEvents.
 type ApplicationEvents []ApplicationEvent
 
@@ -7961,7 +7967,8 @@ type ListOAuthApplicationEventsParams struct {
 	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
-	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+	Pagination *Pagination             `form:"pagination,omitempty" json:"pagination,omitempty"`
+	Filter     *ApplicationEventFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // GetOAuthApplicationMetricsParams defines parameters for GetOAuthApplicationMetrics.
@@ -27994,6 +28001,16 @@ func NewListOAuthApplicationEventsRequest(server string, applicationId string, p
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
