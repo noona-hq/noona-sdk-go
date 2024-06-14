@@ -2852,11 +2852,27 @@ type EventTypeDurationOverride struct {
 	Duration int32 `json:"duration"`
 
 	// Event type ID
-	EventType string `json:"event_type"`
+	EventType    string                         `json:"event_type"`
+	PaxOverrides *EventTypeDurationPaxOverrides `json:"pax_overrides,omitempty"`
 }
 
 // EventTypeDurationOverrides defines model for EventTypeDurationOverrides.
 type EventTypeDurationOverrides []EventTypeDurationOverride
+
+// EventTypeDurationPaxOverride defines model for EventTypeDurationPaxOverride.
+type EventTypeDurationPaxOverride struct {
+	// Duration in minutes
+	Duration int32 `json:"duration"`
+
+	// Minimum number of guests for this override to apply
+	From int32 `json:"from"`
+
+	// Maximum number of guests for this override to apply
+	To int32 `json:"to"`
+}
+
+// EventTypeDurationPaxOverrides defines model for EventTypeDurationPaxOverrides.
+type EventTypeDurationPaxOverrides []EventTypeDurationPaxOverride
 
 // EventTypeDurationRule defines model for EventTypeDurationRule.
 type EventTypeDurationRule struct {
