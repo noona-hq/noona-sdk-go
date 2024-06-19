@@ -4212,6 +4212,7 @@ type PaymentMethod struct {
 	Id          *string `json:"id,omitempty"`
 	LocaleKey   *string `json:"locale_key,omitempty"`
 	Order       *int32  `json:"order,omitempty"`
+	ReadableId  *string `json:"readable_id,omitempty"`
 	Title       *string `json:"title,omitempty"`
 	UseTerminal *bool   `json:"use_terminal,omitempty"`
 }
