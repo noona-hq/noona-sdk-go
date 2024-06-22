@@ -2631,6 +2631,12 @@ type EventFilter struct {
 	// Filter by employee IDs
 	Employees *[]string `json:"employees,omitempty"`
 
+	// Only return events where ends_at is after this timestamp.
+	EndsAtFrom *time.Time `json:"ends_at_from,omitempty"`
+
+	// Only return events where ends_at is before this timestamp.
+	EndsAtTo *time.Time `json:"ends_at_to,omitempty"`
+
 	// Exclude specific event IDs from response
 	Exclude *[]string `json:"exclude,omitempty"`
 
