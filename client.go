@@ -2631,16 +2631,12 @@ type EventFilter struct {
 	// Filter by employee IDs
 	Employees *[]string `json:"employees,omitempty"`
 
-	// Only return events where ends_at is after this timestamp.
-	EndsAtFrom *time.Time `json:"ends_at_from,omitempty"`
-
-	// Only return events where ends_at is before this timestamp.
-	EndsAtTo *time.Time `json:"ends_at_to,omitempty"`
-
 	// Exclude specific event IDs from response
 	Exclude *[]string `json:"exclude,omitempty"`
 
 	// Only return events where starts_at is after this timestamp.
+	//
+	// _Mutually exclusive with overlap filter_
 	From *time.Time `json:"from,omitempty"`
 
 	// Filter by specific event IDs
@@ -2652,6 +2648,16 @@ type EventFilter struct {
 	//
 	// When false, deleted events will not be included in the response.
 	IncludeDeleted *bool `json:"include_deleted,omitempty"`
+
+	// Only return events that overlap with this timestamp or later.
+	//
+	// _Mutually exclusive with from/to filter_
+	OverlapsFrom *time.Time `json:"overlaps_from,omitempty"`
+
+	// Only return events that overlap with this timestamp or earlier.
+	//
+	// _Mutually exclusive with from/to filter_
+	OverlapsTo *time.Time `json:"overlaps_to,omitempty"`
 
 	// Filter by phone country code of customer
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
@@ -2666,6 +2672,8 @@ type EventFilter struct {
 	Spaces *[]string `json:"spaces,omitempty"`
 
 	// Only return events where starts_at is before this timestamp.
+	//
+	// _Mutually exclusive with overlap filter_
 	To *time.Time `json:"to,omitempty"`
 
 	// Only return events where updated_at is after this timestamp.
