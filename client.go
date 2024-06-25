@@ -42455,7 +42455,6 @@ func (r GetBillingInvoiceResponse) StatusCode() int {
 type DeleteSubscriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *PowerupSubscription
 }
 
 // Status returns HTTPResponse.Status
@@ -51825,16 +51824,6 @@ func ParseDeleteSubscriptionResponse(rsp *http.Response) (*DeleteSubscriptionRes
 	response := &DeleteSubscriptionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PowerupSubscription
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
 	}
 
 	return response, nil
