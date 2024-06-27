@@ -1056,9 +1056,6 @@ type App struct {
 	//
 	// When clicked, the application's open_uri will be displayed in an iFrame.
 	ShowInNavigation *bool `json:"show_in_navigation,omitempty"`
-
-	// The URL to uninstall the app.
-	UninstallUri *string `json:"uninstall_uri,omitempty"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
