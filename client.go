@@ -1870,6 +1870,9 @@ type CompanyProfile struct {
 	Description *string     `json:"description,omitempty"`
 	Dietaries   *Categories `json:"dietaries,omitempty"`
 
+	// The message that is shown to the customer when they try to book more guests than the maximum allowed.
+	ExceedMaxGuestsMessage *string `json:"exceed_max_guests_message,omitempty"`
+
 	// The number of favorites/likes on the company.
 	Favorites                *int32 `json:"favorites,omitempty"`
 	Image                    *Image `json:"image,omitempty"`
