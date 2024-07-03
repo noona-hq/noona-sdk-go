@@ -26,6 +26,36 @@ const (
 	OAuth_2_0Scopes         = "oAuth_2_0.Scopes"
 )
 
+// Defines values for ActivityField.
+const (
+	ActivityFieldAfterPause               ActivityField = "after_pause"
+	ActivityFieldBeforePause              ActivityField = "before_pause"
+	ActivityFieldBufferAfterService       ActivityField = "buffer_after_service"
+	ActivityFieldDuration                 ActivityField = "duration"
+	ActivityFieldEmail                    ActivityField = "email"
+	ActivityFieldEmailBookingConfirmation ActivityField = "email_booking_confirmation"
+	ActivityFieldEmployee                 ActivityField = "employee"
+	ActivityFieldEventTypes               ActivityField = "event_types"
+	ActivityFieldKennitala                ActivityField = "kennitala"
+	ActivityFieldLicensePlate             ActivityField = "license_plate"
+	ActivityFieldName                     ActivityField = "name"
+	ActivityFieldNotes                    ActivityField = "notes"
+	ActivityFieldPause                    ActivityField = "pause"
+	ActivityFieldPhoneCountryCode         ActivityField = "phone_country_code"
+	ActivityFieldPhoneNumber              ActivityField = "phone_number"
+	ActivityFieldPushBookingConfirmation  ActivityField = "push_booking_confirmation"
+	ActivityFieldPushBookingReminder      ActivityField = "push_booking_reminder"
+	ActivityFieldPushBookingUpdated       ActivityField = "push_booking_updated"
+	ActivityFieldSmsBookingConfirmation   ActivityField = "sms_booking_confirmation"
+	ActivityFieldSmsBookingReminder       ActivityField = "sms_booking_reminder"
+	ActivityFieldSmsExtra                 ActivityField = "sms_extra"
+	ActivityFieldSpace                    ActivityField = "space"
+	ActivityFieldStartsAt                 ActivityField = "starts_at"
+	ActivityFieldStatus                   ActivityField = "status"
+	ActivityFieldTitle                    ActivityField = "title"
+	ActivityFieldUnconfirmed              ActivityField = "unconfirmed"
+)
+
 // Defines values for ActivityType.
 const (
 	ActivityTypeCustomer  ActivityType = "customer"
@@ -215,25 +245,6 @@ const (
 	CustomPropertyTypeTextarea CustomPropertyType = "textarea"
 )
 
-// Defines values for CustomerActivityField.
-const (
-	Email            CustomerActivityField = "email"
-	Kennitala        CustomerActivityField = "kennitala"
-	LicensePlate     CustomerActivityField = "license_plate"
-	Name             CustomerActivityField = "name"
-	Notes            CustomerActivityField = "notes"
-	PhoneCountryCode CustomerActivityField = "phone_country_code"
-	PhoneNumber      CustomerActivityField = "phone_number"
-)
-
-// Defines values for CustomerActivityType.
-const (
-	CustomerActivityTypeCustomer  CustomerActivityType = "customer"
-	CustomerActivityTypeEvent     CustomerActivityType = "event"
-	CustomerActivityTypeEventType CustomerActivityType = "event_type"
-	CustomerActivityTypePayment   CustomerActivityType = "payment"
-)
-
 // Defines values for DuplicateStatus.
 const (
 	Approved DuplicateStatus = "approved"
@@ -252,32 +263,6 @@ const (
 	EventInvoiceStatusDraft               EventInvoiceStatus = "draft"
 	EventInvoiceStatusPaid                EventInvoiceStatus = "paid"
 	EventInvoiceStatusRefund              EventInvoiceStatus = "refund"
-)
-
-// Defines values for EventActivityField.
-const (
-	EventActivityFieldDuration                 EventActivityField = "duration"
-	EventActivityFieldEmailBookingConfirmation EventActivityField = "email_booking_confirmation"
-	EventActivityFieldEmployee                 EventActivityField = "employee"
-	EventActivityFieldEventTypes               EventActivityField = "event_types"
-	EventActivityFieldPushBookingConfirmation  EventActivityField = "push_booking_confirmation"
-	EventActivityFieldPushBookingReminder      EventActivityField = "push_booking_reminder"
-	EventActivityFieldPushBookingUpdated       EventActivityField = "push_booking_updated"
-	EventActivityFieldSmsBookingConfirmation   EventActivityField = "sms_booking_confirmation"
-	EventActivityFieldSmsBookingReminder       EventActivityField = "sms_booking_reminder"
-	EventActivityFieldSmsExtra                 EventActivityField = "sms_extra"
-	EventActivityFieldSpace                    EventActivityField = "space"
-	EventActivityFieldStartsAt                 EventActivityField = "starts_at"
-	EventActivityFieldStatus                   EventActivityField = "status"
-	EventActivityFieldUnconfirmed              EventActivityField = "unconfirmed"
-)
-
-// Defines values for EventActivityType.
-const (
-	EventActivityTypeCustomer  EventActivityType = "customer"
-	EventActivityTypeEvent     EventActivityType = "event"
-	EventActivityTypeEventType EventActivityType = "event_type"
-	EventActivityTypePayment   EventActivityType = "payment"
 )
 
 // Defines values for EventCheckinResultInvoiceStatus.
@@ -313,24 +298,6 @@ const (
 	FullyOverbookable     EventTypeOverbookable = "fully_overbookable"
 	NotOverbookable       EventTypeOverbookable = "not_overbookable"
 	PartiallyOverbookable EventTypeOverbookable = "partially_overbookable"
-)
-
-// Defines values for EventTypeActivityField.
-const (
-	EventTypeActivityFieldAfterPause         EventTypeActivityField = "after_pause"
-	EventTypeActivityFieldBeforePause        EventTypeActivityField = "before_pause"
-	EventTypeActivityFieldBufferAfterService EventTypeActivityField = "buffer_after_service"
-	EventTypeActivityFieldDuration           EventTypeActivityField = "duration"
-	EventTypeActivityFieldPause              EventTypeActivityField = "pause"
-	EventTypeActivityFieldTitle              EventTypeActivityField = "title"
-)
-
-// Defines values for EventTypeActivityType.
-const (
-	EventTypeActivityTypeCustomer  EventTypeActivityType = "customer"
-	EventTypeActivityTypeEvent     EventTypeActivityType = "event"
-	EventTypeActivityTypeEventType EventTypeActivityType = "event_type"
-	EventTypeActivityTypePayment   EventTypeActivityType = "payment"
 )
 
 // Defines values for EventTypeConnectionsCustomerSelects.
@@ -576,19 +543,6 @@ const (
 	PaymentReasonEvent   PaymentReason = "event"
 	PaymentReasonPaylink PaymentReason = "paylink"
 	PaymentReasonVoucher PaymentReason = "voucher"
-)
-
-// Defines values for PaymentActivityField.
-const (
-	Status PaymentActivityField = "status"
-)
-
-// Defines values for PaymentActivityType.
-const (
-	PaymentActivityTypeCustomer  PaymentActivityType = "customer"
-	PaymentActivityTypeEvent     PaymentActivityType = "event"
-	PaymentActivityTypeEventType PaymentActivityType = "event_type"
-	PaymentActivityTypePayment   PaymentActivityType = "payment"
 )
 
 // Defines values for PaymentIntentStatus.
@@ -936,16 +890,32 @@ type Activity struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	CreatedBy *ExpandableActor `json:"created_by,omitempty"`
-	Id        *string          `json:"id,omitempty"`
-	NewValue  *MultiValue      `json:"new_value,omitempty"`
-	OldValue  *MultiValue      `json:"old_value,omitempty"`
-	Type      *ActivityType    `json:"type,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Customer *ExpandableCustomer `json:"customer,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Event *ExpandableEvent `json:"event,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	EventType *ExpandableEventType `json:"event_type,omitempty"`
+	Field     ActivityField        `json:"field"`
+	Id        *string              `json:"id,omitempty"`
+	NewValue  *MultiValue          `json:"new_value,omitempty"`
+	OldValue  *MultiValue          `json:"old_value,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Payment *ExpandablePayment `json:"payment,omitempty"`
+	Type    *ActivityType      `json:"type,omitempty"`
 }
+
+// ActivityField defines model for Activity.Field.
+type ActivityField string
 
 // ActivityType defines model for Activity.Type.
 type ActivityType string
 
-// The actor that performed the activity. This can be a HQ user or a Marketplace user.
+// The actor that performed the activity. This can be an HQ user, a Marketplace user or an app.
 type Actor struct {
 	Id    *string   `json:"id,omitempty"`
 	Image *Image    `json:"image,omitempty"`
@@ -2028,28 +1998,6 @@ type Customer struct {
 	UpdatedBy     *string          `json:"updated_by,omitempty"`
 }
 
-// CustomerActivities defines model for CustomerActivities.
-type CustomerActivities []CustomerActivity
-
-// CustomerActivity defines model for CustomerActivity.
-type CustomerActivity struct {
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	CreatedBy *ExpandableActor      `json:"created_by,omitempty"`
-	Field     CustomerActivityField `json:"field"`
-	Id        *string               `json:"id,omitempty"`
-	NewValue  *MultiValue           `json:"new_value,omitempty"`
-	OldValue  *MultiValue           `json:"old_value,omitempty"`
-	Type      *CustomerActivityType `json:"type,omitempty"`
-}
-
-// CustomerActivityField defines model for CustomerActivity.Field.
-type CustomerActivityField string
-
-// CustomerActivityType defines model for CustomerActivity.Type.
-type CustomerActivityType string
-
 // CustomerFilter defines model for CustomerFilter.
 type CustomerFilter struct {
 	// The customers duplicate status.
@@ -2423,28 +2371,6 @@ type Event_Space struct {
 	union json.RawMessage
 }
 
-// EventActivities defines model for EventActivities.
-type EventActivities []EventActivity
-
-// EventActivity defines model for EventActivity.
-type EventActivity struct {
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	CreatedBy *ExpandableActor   `json:"created_by,omitempty"`
-	Field     EventActivityField `json:"field"`
-	Id        *string            `json:"id,omitempty"`
-	NewValue  *MultiValue        `json:"new_value,omitempty"`
-	OldValue  *MultiValue        `json:"old_value,omitempty"`
-	Type      *EventActivityType `json:"type,omitempty"`
-}
-
-// EventActivityField defines model for EventActivity.Field.
-type EventActivityField string
-
-// EventActivityType defines model for EventActivity.Type.
-type EventActivityType string
-
 // EventCheckinResult defines model for EventCheckinResult.
 type EventCheckinResult struct {
 	AcceptedAt       *time.Time        `json:"accepted_at,omitempty"`
@@ -2799,28 +2725,6 @@ type EventType struct {
 
 // How event is overbookable
 type EventTypeOverbookable string
-
-// EventTypeActivities defines model for EventTypeActivities.
-type EventTypeActivities []EventTypeActivity
-
-// EventTypeActivity defines model for EventTypeActivity.
-type EventTypeActivity struct {
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	CreatedBy *ExpandableActor       `json:"created_by,omitempty"`
-	Field     EventTypeActivityField `json:"field"`
-	Id        *string                `json:"id,omitempty"`
-	NewValue  *MultiValue            `json:"new_value,omitempty"`
-	OldValue  *MultiValue            `json:"old_value,omitempty"`
-	Type      *EventTypeActivityType `json:"type,omitempty"`
-}
-
-// EventTypeActivityField defines model for EventTypeActivity.Field.
-type EventTypeActivityField string
-
-// EventTypeActivityType defines model for EventTypeActivity.Type.
-type EventTypeActivityType string
 
 // EventTypeCategories defines model for EventTypeCategories.
 type EventTypeCategories []EventTypeCategory
@@ -4162,28 +4066,6 @@ type Payment struct {
 
 // PaymentReason defines model for Payment.Reason.
 type PaymentReason string
-
-// PaymentActivities defines model for PaymentActivities.
-type PaymentActivities []PaymentActivity
-
-// PaymentActivity defines model for PaymentActivity.
-type PaymentActivity struct {
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	CreatedBy *ExpandableActor     `json:"created_by,omitempty"`
-	Field     PaymentActivityField `json:"field"`
-	Id        *string              `json:"id,omitempty"`
-	NewValue  *MultiValue          `json:"new_value,omitempty"`
-	OldValue  *MultiValue          `json:"old_value,omitempty"`
-	Type      *PaymentActivityType `json:"type,omitempty"`
-}
-
-// PaymentActivityField defines model for PaymentActivity.Field.
-type PaymentActivityField string
-
-// PaymentActivityType defines model for PaymentActivity.Type.
-type PaymentActivityType string
 
 // Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 type PaymentFees map[string]float64
@@ -5771,14 +5653,6 @@ type UnavailableResource struct {
 // The above list of reasons is priority ordered. Meaning that if a table does not support number of guests due to
 // capacity and is also booked, the reason will be `booked`.
 type UnavailableResourceReason string
-
-// UnifiedActivities defines model for UnifiedActivities.
-type UnifiedActivities []UnifiedActivity
-
-// UnifiedActivity defines model for UnifiedActivity.
-type UnifiedActivity struct {
-	union json.RawMessage
-}
 
 // UnitPrice defines model for UnitPrice.
 type UnitPrice struct {
@@ -11008,64 +10882,6 @@ func (t SubtransactionData) MarshalJSON() ([]byte, error) {
 }
 
 func (t *SubtransactionData) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-func (t UnifiedActivity) AsPaymentActivity() (PaymentActivity, error) {
-	var body PaymentActivity
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *UnifiedActivity) FromPaymentActivity(v PaymentActivity) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t UnifiedActivity) AsCustomerActivity() (CustomerActivity, error) {
-	var body CustomerActivity
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *UnifiedActivity) FromCustomerActivity(v CustomerActivity) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t UnifiedActivity) AsEventTypeActivity() (EventTypeActivity, error) {
-	var body EventTypeActivity
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *UnifiedActivity) FromEventTypeActivity(v EventTypeActivity) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t UnifiedActivity) AsEventActivity() (EventActivity, error) {
-	var body EventActivity
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *UnifiedActivity) FromEventActivity(v EventActivity) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t UnifiedActivity) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *UnifiedActivity) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -37736,7 +37552,7 @@ type ClientWithResponsesInterface interface {
 type ListCustomerActivitiesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *CustomerActivities
+	JSON200      *Activities
 }
 
 // Status returns HTTPResponse.Status
@@ -37758,7 +37574,7 @@ func (r ListCustomerActivitiesResponse) StatusCode() int {
 type ListEventTypeActivitiesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *EventTypeActivities
+	JSON200      *Activities
 }
 
 // Status returns HTTPResponse.Status
@@ -37780,7 +37596,7 @@ func (r ListEventTypeActivitiesResponse) StatusCode() int {
 type ListEventActivitiesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *EventActivities
+	JSON200      *Activities
 }
 
 // Status returns HTTPResponse.Status
@@ -37802,7 +37618,7 @@ func (r ListEventActivitiesResponse) StatusCode() int {
 type ListPaymentActivitiesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *PaymentActivities
+	JSON200      *Activities
 }
 
 // Status returns HTTPResponse.Status
@@ -38047,7 +37863,7 @@ func (r UpdateCompanyResponse) StatusCode() int {
 type ListAllCompanyActivitiesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *UnifiedActivities
+	JSON200      *Activities
 }
 
 // Status returns HTTPResponse.Status
@@ -46557,7 +46373,7 @@ func ParseListCustomerActivitiesResponse(rsp *http.Response) (*ListCustomerActiv
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CustomerActivities
+		var dest Activities
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -46583,7 +46399,7 @@ func ParseListEventTypeActivitiesResponse(rsp *http.Response) (*ListEventTypeAct
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest EventTypeActivities
+		var dest Activities
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -46609,7 +46425,7 @@ func ParseListEventActivitiesResponse(rsp *http.Response) (*ListEventActivitiesR
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest EventActivities
+		var dest Activities
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -46635,7 +46451,7 @@ func ParseListPaymentActivitiesResponse(rsp *http.Response) (*ListPaymentActivit
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PaymentActivities
+		var dest Activities
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -46942,7 +46758,7 @@ func ParseListAllCompanyActivitiesResponse(rsp *http.Response) (*ListAllCompanyA
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest UnifiedActivities
+		var dest Activities
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
