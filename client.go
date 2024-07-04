@@ -2230,6 +2230,7 @@ type Error struct {
 
 // Event defines model for Event.
 type Event struct {
+	// It is only possible to 'accept' and event once.
 	AcceptedAt       *time.Time        `json:"accepted_at,omitempty"`
 	Attachments      *Attachments      `json:"attachments,omitempty"`
 	BookingQuestions *BookingQuestions `json:"booking_questions,omitempty"`
@@ -2373,6 +2374,7 @@ type Event_Space struct {
 
 // EventCheckinResult defines model for EventCheckinResult.
 type EventCheckinResult struct {
+	// It is only possible to 'accept' and event once.
 	AcceptedAt       *time.Time        `json:"accepted_at,omitempty"`
 	Attachments      *Attachments      `json:"attachments,omitempty"`
 	BookingQuestions *BookingQuestions `json:"booking_questions,omitempty"`
