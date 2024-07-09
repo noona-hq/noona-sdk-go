@@ -26,6 +26,13 @@ const (
 	OAuth_2_0Scopes         = "oAuth_2_0.Scopes"
 )
 
+// Defines values for ActivityAction.
+const (
+	ActivityActionCreated ActivityAction = "created"
+	ActivityActionDeleted ActivityAction = "deleted"
+	ActivityActionUpdated ActivityAction = "updated"
+)
+
 // Defines values for ActivityField.
 const (
 	ActivityFieldAfterPause               ActivityField = "after_pause"
@@ -66,6 +73,7 @@ const (
 
 // Defines values for ActorType.
 const (
+	ActorTypeApp             ActorType = "app"
 	ActorTypeHqUser          ActorType = "hq_user"
 	ActorTypeMarketplaceUser ActorType = "marketplace_user"
 	ActorTypeSecretary       ActorType = "secretary"
@@ -652,11 +660,11 @@ const (
 
 // Defines values for SMSMessageStatus.
 const (
-	Created     SMSMessageStatus = "created"
-	Delivered   SMSMessageStatus = "delivered"
-	Failed      SMSMessageStatus = "failed"
-	Processing  SMSMessageStatus = "processing"
-	Undelivered SMSMessageStatus = "undelivered"
+	SMSMessageStatusCreated     SMSMessageStatus = "created"
+	SMSMessageStatusDelivered   SMSMessageStatus = "delivered"
+	SMSMessageStatusFailed      SMSMessageStatus = "failed"
+	SMSMessageStatusProcessing  SMSMessageStatus = "processing"
+	SMSMessageStatusUndelivered SMSMessageStatus = "undelivered"
 )
 
 // Defines values for SMSMessageType.
@@ -886,7 +894,8 @@ type Activities []Activity
 
 // Activity defines model for Activity.
 type Activity struct {
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	Action    *ActivityAction `json:"action,omitempty"`
+	CreatedAt *time.Time      `json:"created_at,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	CreatedBy *ExpandableActor `json:"created_by,omitempty"`
@@ -899,7 +908,7 @@ type Activity struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType *ExpandableEventType `json:"event_type,omitempty"`
-	Field     ActivityField        `json:"field"`
+	Field     *ActivityField       `json:"field,omitempty"`
 	Id        *string              `json:"id,omitempty"`
 	NewValue  *MultiValue          `json:"new_value,omitempty"`
 	OldValue  *MultiValue          `json:"old_value,omitempty"`
@@ -908,6 +917,9 @@ type Activity struct {
 	Payment *ExpandablePayment `json:"payment,omitempty"`
 	Type    *ActivityType      `json:"type,omitempty"`
 }
+
+// ActivityAction defines model for Activity.Action.
+type ActivityAction string
 
 // ActivityField defines model for Activity.Field.
 type ActivityField string
