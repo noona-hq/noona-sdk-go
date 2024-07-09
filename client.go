@@ -26,13 +26,6 @@ const (
 	OAuth_2_0Scopes         = "oAuth_2_0.Scopes"
 )
 
-// Defines values for ActivityAction.
-const (
-	ActivityActionCreated ActivityAction = "created"
-	ActivityActionDeleted ActivityAction = "deleted"
-	ActivityActionUpdated ActivityAction = "updated"
-)
-
 // Defines values for ActivityField.
 const (
 	ActivityFieldAfterPause               ActivityField = "after_pause"
@@ -61,6 +54,13 @@ const (
 	ActivityFieldStatus                   ActivityField = "status"
 	ActivityFieldTitle                    ActivityField = "title"
 	ActivityFieldUnconfirmed              ActivityField = "unconfirmed"
+)
+
+// Defines values for ActivityAction.
+const (
+	ActivityActionCreated ActivityAction = "created"
+	ActivityActionDeleted ActivityAction = "deleted"
+	ActivityActionUpdated ActivityAction = "updated"
 )
 
 // Defines values for ActivityType.
@@ -918,13 +918,24 @@ type Activity struct {
 	Type    *ActivityType      `json:"type,omitempty"`
 }
 
-// ActivityAction defines model for Activity.Action.
-type ActivityAction string
-
 // ActivityField defines model for Activity.Field.
 type ActivityField string
 
-// ActivityType defines model for Activity.Type.
+// ActivityAction defines model for ActivityAction.
+type ActivityAction string
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type ActivityFilter struct {
+	Action *ActivityAction `json:"action,omitempty"`
+
+	// Filter by actor ID
+	Actor *string       `json:"actor,omitempty"`
+	From  *time.Time    `json:"from,omitempty"`
+	To    *time.Time    `json:"to,omitempty"`
+	Type  *ActivityType `json:"type,omitempty"`
+}
+
+// ActivityType defines model for ActivityType.
 type ActivityType string
 
 // The actor that performed the activity. This can be an HQ user, a Marketplace user or an app.
@@ -6382,7 +6393,11 @@ type ListAllCompanyActivitiesParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand         `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *ActivityFilter `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
 // ListAppsParams defines parameters for ListApps.
@@ -17264,6 +17279,26 @@ func NewListAllCompanyActivitiesRequest(server string, companyId string, params 
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
 		}
 
 	}
