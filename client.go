@@ -924,19 +924,25 @@ type ActivityField string
 // ActivityAction defines model for ActivityAction.
 type ActivityAction string
 
+// ActivityActions defines model for ActivityActions.
+type ActivityActions []ActivityAction
+
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type ActivityFilter struct {
-	Action *ActivityAction `json:"action,omitempty"`
+	Actions *ActivityActions `json:"actions,omitempty"`
 
-	// Filter by actor ID
-	Actor *string       `json:"actor,omitempty"`
-	From  *time.Time    `json:"from,omitempty"`
-	To    *time.Time    `json:"to,omitempty"`
-	Type  *ActivityType `json:"type,omitempty"`
+	// Filter by actor IDs
+	Actors *[]string      `json:"actors,omitempty"`
+	From   *time.Time     `json:"from,omitempty"`
+	To     *time.Time     `json:"to,omitempty"`
+	Types  *ActivityTypes `json:"types,omitempty"`
 }
 
 // ActivityType defines model for ActivityType.
 type ActivityType string
+
+// ActivityTypes defines model for ActivityTypes.
+type ActivityTypes []ActivityType
 
 // The actor that performed the activity. This can be an HQ user, a Marketplace user or an app.
 type Actor struct {
