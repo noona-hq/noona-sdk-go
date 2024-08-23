@@ -2364,7 +2364,8 @@ type Event struct {
 	// The status of the event.
 	//
 	// See [Event Statuses](#section/Event-Statuses) for more information.
-	Status *string `json:"status,omitempty"`
+	Status *string    `json:"status,omitempty"`
+	Tags   *EventTags `json:"tags,omitempty"`
 
 	// Event is unconfirmed if the employee has not yet confirmed the booking.
 	// This is only relevant for companies that have the "Require employee confirmation" setting enabled.
@@ -2515,8 +2516,9 @@ type EventCheckinResult struct {
 	// The ID of the subtransaction tied to this self-checkin.
 	//
 	// If the company does not have a terminal associated with their checkin, this ID will be empty.
-	SubtransactionId *string `json:"subtransaction_id,omitempty"`
-	TransactionId    *string `json:"transaction_id,omitempty"`
+	SubtransactionId *string    `json:"subtransaction_id,omitempty"`
+	Tags             *EventTags `json:"tags,omitempty"`
+	TransactionId    *string    `json:"transaction_id,omitempty"`
 
 	// Event is unconfirmed if the employee has not yet confirmed the booking.
 	// This is only relevant for companies that have the "Require employee confirmation" setting enabled.
@@ -2670,6 +2672,11 @@ type EventStatus struct {
 
 // EventStatuses defines model for EventStatuses.
 type EventStatuses []EventStatus
+
+// EventTags defines model for EventTags.
+type EventTags struct {
+	Birthday *bool `json:"birthday,omitempty"`
+}
 
 // EventType defines model for EventType.
 type EventType struct {
