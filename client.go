@@ -562,6 +562,12 @@ const (
 	PaymentIntentStatusInited     PaymentIntentStatus = "inited"
 )
 
+// Defines values for PaymentSettingsPrePaymentType.
+const (
+	PaymentSettingsPrePaymentTypePayment   PaymentSettingsPrePaymentType = "payment"
+	PaymentSettingsPrePaymentTypeSavedCard PaymentSettingsPrePaymentType = "saved_card"
+)
+
 // Defines values for PaymentStatus.
 const (
 	PaymentStatusPending   PaymentStatus = "pending"
@@ -4188,9 +4194,21 @@ type PaymentSettings struct {
 	// `false` - pre_payment_ratio is ignored.
 	PrePaymentRequired *bool `json:"pre_payment_required,omitempty"`
 
+	// The type of pre-payment.
+	//
+	// - `payment` - The customer pays the pre-payment amount.
+	// - `saved_card` - The customer's card details are stored and the pre-payment amount is charged in case of a no-show.
+	PrePaymentType *PaymentSettingsPrePaymentType `json:"pre_payment_type,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	SettlementAccount *ExpandableSettlementAccount `json:"settlement_account,omitempty"`
 }
+
+// The type of pre-payment.
+//
+// - `payment` - The customer pays the pre-payment amount.
+// - `saved_card` - The customer's card details are stored and the pre-payment amount is charged in case of a no-show.
+type PaymentSettingsPrePaymentType string
 
 // PaymentStatus defines model for PaymentStatus.
 type PaymentStatus string
