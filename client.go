@@ -4212,6 +4212,12 @@ type PaymentReceiptRecipient struct {
 
 // PaymentSettings defines model for PaymentSettings.
 type PaymentSettings struct {
+	// The amount that must be paid in advance.
+	//
+	// If flat_fee is greater than 0 and pre_payment_ratio is set, flat_fee takes precedence.
+	//
+	// In the x100 format.
+	FlatFee     *int32     `json:"flat_fee,omitempty"`
 	OnboardedAt *time.Time `json:"onboarded_at,omitempty"`
 
 	// Is full payment optional?
@@ -4220,11 +4226,6 @@ type PaymentSettings struct {
 	//
 	// `false` - no optional payment.
 	OptionalFullPayment *bool `json:"optional_full_payment,omitempty"`
-
-	// The amount that must be paid in advance.
-	//
-	// If pre_payment_amount is greater than 0 and pre_payment_ratio is set, pre_payment_amount takes precedence.
-	PrePaymentAmount *float64 `json:"pre_payment_amount,omitempty"`
 
 	// Is pre-payment enabled at all for the company?
 	//
@@ -4238,7 +4239,7 @@ type PaymentSettings struct {
 
 	// How much of the total price must be paid in advance in %.
 	//
-	// If pre_payment_amount is greater than 0 and pre_payment_ratio is set, pre_payment_amount takes precedence.
+	// If flat_fee is greater than 0 and pre_payment_ratio is set, flat_fee takes precedence.
 	PrePaymentRatio *int32 `json:"pre_payment_ratio,omitempty"`
 
 	// Is any upfront payment required?
