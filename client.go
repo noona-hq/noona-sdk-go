@@ -4221,6 +4221,11 @@ type PaymentSettings struct {
 	// `false` - no optional payment.
 	OptionalFullPayment *bool `json:"optional_full_payment,omitempty"`
 
+	// The amount that must be paid in advance.
+	//
+	// If pre_payment_amount is greater than 0 and pre_payment_ratio is set, pre_payment_amount takes precedence.
+	PrePaymentAmount *float64 `json:"pre_payment_amount,omitempty"`
+
 	// Is pre-payment enabled at all for the company?
 	//
 	// `true` - Other flags have meaning.
@@ -4228,7 +4233,12 @@ type PaymentSettings struct {
 	// `false` - Other flags are ignored.
 	PrePaymentEnabled *bool `json:"pre_payment_enabled,omitempty"`
 
+	// The minimum number of people that must be associated with reservation so that pre-payment is required.
+	PrePaymentMinPax *int32 `json:"pre_payment_min_pax,omitempty"`
+
 	// How much of the total price must be paid in advance in %.
+	//
+	// If pre_payment_amount is greater than 0 and pre_payment_ratio is set, pre_payment_amount takes precedence.
 	PrePaymentRatio *int32 `json:"pre_payment_ratio,omitempty"`
 
 	// Is any upfront payment required?
