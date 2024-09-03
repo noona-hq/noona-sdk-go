@@ -234,6 +234,12 @@ const (
 	Restaurant  CompanyVertical = "restaurant"
 )
 
+// Defines values for CompanySize.
+const (
+	Solo       CompanySize = "solo"
+	WithOthers CompanySize = "with_others"
+)
+
 // Defines values for CreatePaymentErrorCode.
 const (
 	UnableToProcessPayment CreatePaymentErrorCode = "unable_to_process_payment"
@@ -1798,6 +1804,7 @@ type Company struct {
 	PhoneNumber *string          `json:"phone_number,omitempty"`
 	Pos         *POSSettings     `json:"pos,omitempty"`
 	Profile     *CompanyProfile  `json:"profile,omitempty"`
+	Signup      *CompanySignup   `json:"signup,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Vertical    *CompanyVertical `json:"vertical,omitempty"`
 	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
@@ -1918,6 +1925,15 @@ type CompanyProfile struct {
 	StoreName      *string         `json:"store_name,omitempty"`
 	WebAuthOptOut  *bool           `json:"web_auth_opt_out,omitempty"`
 }
+
+// CompanySignup defines model for CompanySignup.
+type CompanySignup struct {
+	CompanySize *CompanySize `json:"company_size,omitempty"`
+	Completed   *bool        `json:"completed,omitempty"`
+}
+
+// CompanySize defines model for CompanySize.
+type CompanySize string
 
 // CountMetricsByTimeFrame defines model for CountMetricsByTimeFrame.
 type CountMetricsByTimeFrame struct {
