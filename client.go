@@ -274,6 +274,20 @@ const (
 	Possible DuplicateStatus = "possible"
 )
 
+// Defines values for EmailType.
+const (
+	EventConfirmationCustomer EmailType = "event_confirmation_customer"
+	EventMovedCustomer        EmailType = "event_moved_customer"
+)
+
+// Defines values for EmailEventStatus.
+const (
+	EmailEventStatusClicked   EmailEventStatus = "clicked"
+	EmailEventStatusDelivered EmailEventStatus = "delivered"
+	EmailEventStatusOpened    EmailEventStatus = "opened"
+	EmailEventStatusProcessed EmailEventStatus = "processed"
+)
+
 // Defines values for EmployeeField.
 const (
 	DisabledAt EmployeeField = "disabled_at"
@@ -765,10 +779,10 @@ const (
 
 // Defines values for SubtransactionState.
 const (
-	SubtransactionStateFailed      SubtransactionState = "failed"
-	SubtransactionStatePending     SubtransactionState = "pending"
-	SubtransactionStateSuccessful  SubtransactionState = "successful"
-	SubtransactionStateUnprocessed SubtransactionState = "unprocessed"
+	Failed      SubtransactionState = "failed"
+	Pending     SubtransactionState = "pending"
+	Successful  SubtransactionState = "successful"
+	Unprocessed SubtransactionState = "unprocessed"
 )
 
 // Defines values for SubtransactionCreationBehaviorType.
@@ -2140,6 +2154,46 @@ type DeletionResult struct {
 //
 // If `possible` the duplication has to be manually resolved.
 type DuplicateStatus string
+
+// Email defines model for Email.
+type Email struct {
+	CreatedAt *time.Time   `json:"created_at,omitempty"`
+	Email     *string      `json:"email,omitempty"`
+	Events    *EmailEvents `json:"events,omitempty"`
+	Id        *string      `json:"id,omitempty"`
+	Type      *EmailType   `json:"type,omitempty"`
+	UpdatedAt *time.Time   `json:"updated_at,omitempty"`
+}
+
+// EmailType defines model for Email.Type.
+type EmailType string
+
+// EmailEvent defines model for EmailEvent.
+type EmailEvent struct {
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Status    *EmailEventStatus `json:"status,omitempty"`
+}
+
+// EmailEventStatus defines model for EmailEvent.Status.
+type EmailEventStatus string
+
+// EmailEvents defines model for EmailEvents.
+type EmailEvents []EmailEvent
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type EmailFilter struct {
+	// Filter by customer ID
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Filter by email, supports partial matching
+	Email *string `json:"email,omitempty"`
+
+	// Filter by event ID
+	EventId *string `json:"event_id,omitempty"`
+}
+
+// Emails defines model for Emails.
+type Emails []Email
 
 // Employee defines model for Employee.
 type Employee struct {
@@ -6595,6 +6649,19 @@ type ListCustomersParams struct {
 
 	// [Search](https://api.noona.is/docs/working-with-the-apis/search)
 	Search *Search `form:"search,omitempty" json:"search,omitempty"`
+}
+
+// ListEmailsParams defines parameters for ListEmails.
+type ListEmailsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination  `form:"pagination,omitempty" json:"pagination,omitempty"`
+	Filter     *EmailFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // ListEmployeesParams defines parameters for ListEmployees.
@@ -11275,6 +11342,9 @@ type ClientInterface interface {
 	// ListCustomers request
 	ListCustomers(ctx context.Context, companyId string, params *ListCustomersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListEmails request
+	ListEmails(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListEmployees request
 	ListEmployees(ctx context.Context, companyId string, params *ListEmployeesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -12459,6 +12529,18 @@ func (c *Client) ListCustomerGroups(ctx context.Context, companyId string, param
 
 func (c *Client) ListCustomers(ctx context.Context, companyId string, params *ListCustomersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCustomersRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListEmails(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEmailsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18077,6 +18159,96 @@ func NewListCustomersRequest(server string, companyId string, params *ListCustom
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListEmailsRequest generates requests for ListEmails
+func NewListEmailsRequest(server string, companyId string, params *ListEmailsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/emails", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
@@ -36947,6 +37119,9 @@ type ClientWithResponsesInterface interface {
 	// ListCustomers request
 	ListCustomersWithResponse(ctx context.Context, companyId string, params *ListCustomersParams, reqEditors ...RequestEditorFn) (*ListCustomersResponse, error)
 
+	// ListEmails request
+	ListEmailsWithResponse(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*ListEmailsResponse, error)
+
 	// ListEmployees request
 	ListEmployeesWithResponse(ctx context.Context, companyId string, params *ListEmployeesParams, reqEditors ...RequestEditorFn) (*ListEmployeesResponse, error)
 
@@ -38309,6 +38484,28 @@ func (r ListCustomersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListCustomersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListEmailsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Emails
+}
+
+// Status returns HTTPResponse.Status
+func (r ListEmailsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListEmailsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -43889,6 +44086,15 @@ func (c *ClientWithResponses) ListCustomersWithResponse(ctx context.Context, com
 	return ParseListCustomersResponse(rsp)
 }
 
+// ListEmailsWithResponse request returning *ListEmailsResponse
+func (c *ClientWithResponses) ListEmailsWithResponse(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*ListEmailsResponse, error) {
+	rsp, err := c.ListEmails(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListEmailsResponse(rsp)
+}
+
 // ListEmployeesWithResponse request returning *ListEmployeesResponse
 func (c *ClientWithResponses) ListEmployeesWithResponse(ctx context.Context, companyId string, params *ListEmployeesParams, reqEditors ...RequestEditorFn) (*ListEmployeesResponse, error) {
 	rsp, err := c.ListEmployees(ctx, companyId, params, reqEditors...)
@@ -47251,6 +47457,32 @@ func ParseListCustomersResponse(rsp *http.Response) (*ListCustomersResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Customers
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListEmailsResponse parses an HTTP response from a ListEmailsWithResponse call
+func ParseListEmailsResponse(rsp *http.Response) (*ListEmailsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListEmailsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Emails
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
