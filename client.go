@@ -2725,8 +2725,8 @@ type EventFilter struct {
 	// When true, deleted events will be included in the response.
 	//
 	// When false, deleted events will not be included in the response.
-	IncludeDeleted *bool        `json:"include_deleted,omitempty"`
-	Origin         *EventOrigin `json:"origin,omitempty"`
+	IncludeDeleted *bool         `json:"include_deleted,omitempty"`
+	Origins        *EventOrigins `json:"origins,omitempty"`
 
 	// Only return events that overlap with this timestamp or later.
 	//
@@ -2753,7 +2753,7 @@ type EventFilter struct {
 	// The status of the event.
 	//
 	// See [Event Statuses](#tag/Event-Statuses) for more information.
-	Status *string `json:"status,omitempty"`
+	Statuses *[]string `json:"statuses,omitempty"`
 
 	// Only return events where starts_at is before this timestamp.
 	//
@@ -2766,6 +2766,9 @@ type EventFilter struct {
 
 // EventOrigin defines model for EventOrigin.
 type EventOrigin string
+
+// EventOrigins defines model for EventOrigins.
+type EventOrigins []EventOrigin
 
 // EventStatus defines model for EventStatus.
 type EventStatus struct {
