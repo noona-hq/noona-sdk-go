@@ -2706,6 +2706,9 @@ type EventFilter struct {
 	// Filter by employee IDs
 	Employees *[]string `json:"employees,omitempty"`
 
+	// Filter by event type IDs
+	EventTypeIds *[]string `json:"event_type_ids,omitempty"`
+
 	// Exclude specific event IDs from response
 	Exclude *[]string `json:"exclude,omitempty"`
 
@@ -2722,7 +2725,8 @@ type EventFilter struct {
 	// When true, deleted events will be included in the response.
 	//
 	// When false, deleted events will not be included in the response.
-	IncludeDeleted *bool `json:"include_deleted,omitempty"`
+	IncludeDeleted *bool        `json:"include_deleted,omitempty"`
+	Origin         *EventOrigin `json:"origin,omitempty"`
 
 	// Only return events that overlap with this timestamp or later.
 	//
@@ -2745,6 +2749,11 @@ type EventFilter struct {
 
 	// Filter by space IDs
 	Spaces *[]string `json:"spaces,omitempty"`
+
+	// The status of the event.
+	//
+	// See [Event Statuses](#tag/Event-Statuses) for more information.
+	Status *string `json:"status,omitempty"`
 
 	// Only return events where starts_at is before this timestamp.
 	//
@@ -6807,9 +6816,10 @@ type ListEventsParams struct {
 	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
-	Pagination       *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
-	PhoneNumber      *string     `form:"phone_number,omitempty" json:"phone_number,omitempty"`
-	PhoneCountryCode *string     `form:"phone_country_code,omitempty" json:"phone_country_code,omitempty"`
+	Pagination         *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+	PhoneNumber        *string     `form:"phone_number,omitempty" json:"phone_number,omitempty"`
+	PhoneCountryCode   *string     `form:"phone_country_code,omitempty" json:"phone_country_code,omitempty"`
+	IncludeCountHeader *bool       `form:"include_count_header,omitempty" json:"include_count_header,omitempty"`
 }
 
 // CheckinWithPaymentParams defines parameters for CheckinWithPayment.
@@ -19220,6 +19230,22 @@ func NewListEventsRequest(server string, companyId string, params *ListEventsPar
 	if params.PhoneCountryCode != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "phone_country_code", runtime.ParamLocationQuery, *params.PhoneCountryCode); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.IncludeCountHeader != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include_count_header", runtime.ParamLocationQuery, *params.IncludeCountHeader); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
