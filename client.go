@@ -2697,6 +2697,9 @@ type EventDeletionBehaviorType string
 
 // EventFilter defines model for EventFilter.
 type EventFilter struct {
+	// Filter by custom property IDs
+	CustomPropertyIds *[]string `json:"custom_property_ids,omitempty"`
+
 	// Use `customers` instead.
 	Customer *string `json:"customer,omitempty"`
 
