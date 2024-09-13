@@ -4214,6 +4214,7 @@ type Payment struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	MarketplaceUser *ExpandableMarketplaceUser `json:"marketplace_user,omitempty"`
 	Reason          *PaymentReason             `json:"reason,omitempty"`
+	RefundedAt      *time.Time                 `json:"refunded_at,omitempty"`
 	SettledAt       *time.Time                 `json:"settled_at,omitempty"`
 
 	// The name of the settlement recipient.
