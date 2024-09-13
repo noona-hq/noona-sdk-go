@@ -518,6 +518,7 @@ const (
 	ProductsWrite         OAuthScope = "products:write"
 	PropertiesRead        OAuthScope = "properties:read"
 	PropertiesWrite       OAuthScope = "properties:write"
+	PushNotificationsRead OAuthScope = "push_notifications:read"
 	ResourcesRead         OAuthScope = "resources:read"
 	ResourcesWrite        OAuthScope = "resources:write"
 	RuleSetTemplatesRead  OAuthScope = "rule_set_templates:read"
@@ -4560,6 +4561,33 @@ type PublicCompany struct {
 	Name    *string `json:"name,omitempty"`
 }
 
+// PushNotification defines model for PushNotification.
+type PushNotification struct {
+	Company   *string               `json:"company,omitempty"`
+	CreatedAt *time.Time            `json:"created_at,omitempty"`
+	Customer  *string               `json:"customer,omitempty"`
+	Data      *PushNotificationData `json:"data,omitempty"`
+	Event     *string               `json:"event,omitempty"`
+	Id        *string               `json:"id,omitempty"`
+	Type      *string               `json:"type,omitempty"`
+}
+
+// PushNotificationData defines model for PushNotificationData.
+type PushNotificationData struct {
+	Body  *string `json:"body,omitempty"`
+	Title *string `json:"title,omitempty"`
+	Topic *string `json:"topic,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type PushNotificationFilter struct {
+	CustomerId *string `json:"customer_id,omitempty"`
+	EventId    *string `json:"event_id,omitempty"`
+}
+
+// PushNotifications defines model for PushNotifications.
+type PushNotifications []PushNotification
+
 // [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 //
 // The dtstart property is ignored, and the start time of the event/blocked time is used instead.
@@ -6972,6 +7000,11 @@ type ListCustomPropertiesParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListPushNotificationsParams defines parameters for ListPushNotifications.
+type ListPushNotificationsParams struct {
+	Filter *PushNotificationFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // ListResourceGroupsParams defines parameters for ListResourceGroups.
@@ -11430,6 +11463,9 @@ type ClientInterface interface {
 	// ListCustomProperties request
 	ListCustomProperties(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListPushNotifications request
+	ListPushNotifications(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListResourceGroups request
 	ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -12834,6 +12870,18 @@ func (c *Client) ListPayments(ctx context.Context, companyId string, params *Lis
 
 func (c *Client) ListCustomProperties(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCustomPropertiesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListPushNotifications(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListPushNotificationsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -20314,6 +20362,54 @@ func NewListCustomPropertiesRequest(server string, companyId string, params *Lis
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListPushNotificationsRequest generates requests for ListPushNotifications
+func NewListPushNotificationsRequest(server string, companyId string, params *ListPushNotificationsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/push_notifications", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
@@ -37223,6 +37319,9 @@ type ClientWithResponsesInterface interface {
 	// ListCustomProperties request
 	ListCustomPropertiesWithResponse(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*ListCustomPropertiesResponse, error)
 
+	// ListPushNotifications request
+	ListPushNotificationsWithResponse(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*ListPushNotificationsResponse, error)
+
 	// ListResourceGroups request
 	ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error)
 
@@ -39022,6 +39121,28 @@ func (r ListCustomPropertiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListCustomPropertiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListPushNotificationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PushNotifications
+}
+
+// Status returns HTTPResponse.Status
+func (r ListPushNotificationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListPushNotificationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -44334,6 +44455,15 @@ func (c *ClientWithResponses) ListCustomPropertiesWithResponse(ctx context.Conte
 	return ParseListCustomPropertiesResponse(rsp)
 }
 
+// ListPushNotificationsWithResponse request returning *ListPushNotificationsResponse
+func (c *ClientWithResponses) ListPushNotificationsWithResponse(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*ListPushNotificationsResponse, error) {
+	rsp, err := c.ListPushNotifications(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListPushNotificationsResponse(rsp)
+}
+
 // ListResourceGroupsWithResponse request returning *ListResourceGroupsResponse
 func (c *ClientWithResponses) ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error) {
 	rsp, err := c.ListResourceGroups(ctx, companyId, params, reqEditors...)
@@ -48078,6 +48208,32 @@ func ParseListCustomPropertiesResponse(rsp *http.Response) (*ListCustomPropertie
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CustomProperties
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListPushNotificationsResponse parses an HTTP response from a ListPushNotificationsWithResponse call
+func ParseListPushNotificationsResponse(rsp *http.Response) (*ListPushNotificationsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListPushNotificationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PushNotifications
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
