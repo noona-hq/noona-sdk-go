@@ -2474,7 +2474,7 @@ type Event struct {
 
 	// The status of the event.
 	//
-	// See [Event Statuses](#section/Event-Statuses) for more information.
+	// See [Event Statuses](#tag/Event-Statuses) for more information.
 	Status *string    `json:"status,omitempty"`
 	Tags   *EventTags `json:"tags,omitempty"`
 
@@ -2626,7 +2626,7 @@ type EventCheckinResult struct {
 
 	// The status of the event.
 	//
-	// See [Event Statuses](#section/Event-Statuses) for more information.
+	// See [Event Statuses](#tag/Event-Statuses) for more information.
 	Status *string `json:"status,omitempty"`
 
 	// The ID of the subtransaction tied to this self-checkin.
