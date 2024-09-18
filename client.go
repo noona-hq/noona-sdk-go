@@ -3410,9 +3410,12 @@ type ID string
 
 // Image defines model for Image.
 type Image struct {
+	Bytes    *int32  `json:"bytes,omitempty"`
+	Height   *int32  `json:"height,omitempty"`
 	Image    *string `json:"image,omitempty"`
 	PublicId *string `json:"public_id,omitempty"`
 	Thumb    *string `json:"thumb,omitempty"`
+	Width    *int32  `json:"width,omitempty"`
 }
 
 // Images defines model for Images.
