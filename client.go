@@ -5974,7 +5974,7 @@ type Voucher struct {
 	// If an email is provided, it receives news of the newly created voucher.
 	Email *string `json:"email,omitempty"`
 
-	// Vouchers expire after 3 years
+	// Vouchers expire after 4 years, or derived from the voucher template configuration.
 	Expiration *time.Time `json:"expiration,omitempty"`
 	Id         *string    `json:"id,omitempty"`
 
@@ -6073,14 +6073,16 @@ type VoucherSettings struct {
 
 // VoucherTemplate defines model for VoucherTemplate.
 type VoucherTemplate struct {
-	Amount    *float64   `json:"amount,omitempty"`
-	Company   *string    `json:"company,omitempty"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	Currency  *string    `json:"currency,omitempty"`
+	Amount      *float64   `json:"amount,omitempty"`
+	Company     *string    `json:"company,omitempty"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	Currency    *string    `json:"currency,omitempty"`
+	Description *string    `json:"description,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType *ExpandableEventType `json:"event_type,omitempty"`
-	Id        *string              `json:"id,omitempty"`
+	EventType                    *ExpandableEventType `json:"event_type,omitempty"`
+	ExpirationYearsAfterPurchase *int32               `json:"expiration_years_after_purchase,omitempty"`
+	Id                           *string              `json:"id,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   *bool      `json:"marketplace,omitempty"`
@@ -6095,14 +6097,16 @@ type VoucherTemplate struct {
 
 // VoucherTemplateCreate defines model for VoucherTemplateCreate.
 type VoucherTemplateCreate struct {
-	Amount    float64    `json:"amount"`
-	Company   string     `json:"company"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	Currency  string     `json:"currency"`
+	Amount      float64    `json:"amount"`
+	Company     string     `json:"company"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	Currency    string     `json:"currency"`
+	Description *string    `json:"description,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType ExpandableEventType `json:"event_type"`
-	Id        *string             `json:"id,omitempty"`
+	EventType                    ExpandableEventType `json:"event_type"`
+	ExpirationYearsAfterPurchase *int32              `json:"expiration_years_after_purchase,omitempty"`
+	Id                           *string             `json:"id,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   *bool      `json:"marketplace,omitempty"`
@@ -6134,14 +6138,16 @@ type VoucherTemplateFilter struct {
 
 // VoucherTemplateResponse defines model for VoucherTemplateResponse.
 type VoucherTemplateResponse struct {
-	Amount    float64    `json:"amount"`
-	Company   string     `json:"company"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	Currency  string     `json:"currency"`
+	Amount      float64    `json:"amount"`
+	Company     string     `json:"company"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	Currency    string     `json:"currency"`
+	Description *string    `json:"description,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType ExpandableEventType `json:"event_type"`
-	Id        *string             `json:"id,omitempty"`
+	EventType                    ExpandableEventType `json:"event_type"`
+	ExpirationYearsAfterPurchase *int32              `json:"expiration_years_after_purchase,omitempty"`
+	Id                           *string             `json:"id,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   bool       `json:"marketplace"`
@@ -6174,12 +6180,14 @@ type VoucherTemplateResponseOverrides struct {
 
 // VoucherTemplateUpdate defines model for VoucherTemplateUpdate.
 type VoucherTemplateUpdate struct {
-	Amount    *float64     `json:"amount,omitempty"`
-	Company   *interface{} `json:"company,omitempty"`
-	CreatedAt *time.Time   `json:"created_at,omitempty"`
-	Currency  *interface{} `json:"currency,omitempty"`
-	EventType *interface{} `json:"event_type,omitempty"`
-	Id        *string      `json:"id,omitempty"`
+	Amount                       *float64     `json:"amount,omitempty"`
+	Company                      *interface{} `json:"company,omitempty"`
+	CreatedAt                    *time.Time   `json:"created_at,omitempty"`
+	Currency                     *interface{} `json:"currency,omitempty"`
+	Description                  *string      `json:"description,omitempty"`
+	EventType                    *interface{} `json:"event_type,omitempty"`
+	ExpirationYearsAfterPurchase *int32       `json:"expiration_years_after_purchase,omitempty"`
+	Id                           *string      `json:"id,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   *bool        `json:"marketplace,omitempty"`
