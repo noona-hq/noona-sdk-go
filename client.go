@@ -500,6 +500,7 @@ const (
 	CustomerGroupsWrite   OAuthScope = "customer_groups:write"
 	CustomersRead         OAuthScope = "customers:read"
 	CustomersWrite        OAuthScope = "customers:write"
+	EmailsRead            OAuthScope = "emails:read"
 	EmployeesRead         OAuthScope = "employees:read"
 	EmployeesWrite        OAuthScope = "employees:write"
 	EventStatusesRead     OAuthScope = "event_statuses:read"
