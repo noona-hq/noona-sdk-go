@@ -268,6 +268,12 @@ const (
 	CustomPropertyTypeTextarea CustomPropertyType = "textarea"
 )
 
+// Defines values for CustomerDeletionBehaviorType.
+const (
+	RemoveTraces CustomerDeletionBehaviorType = "remove_traces"
+	Soft         CustomerDeletionBehaviorType = "soft"
+)
+
 // Defines values for DuplicateStatus.
 const (
 	Approved DuplicateStatus = "approved"
@@ -2092,6 +2098,21 @@ type Customer struct {
 	UpdatedAt     *time.Time       `json:"updated_at,omitempty"`
 	UpdatedBy     *string          `json:"updated_by,omitempty"`
 }
+
+// [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
+type CustomerDeletionBehavior struct {
+	// Specifies the behavior when deleting a customer.
+	//
+	// - `soft`          - Updates the `deleted_at` property on the customer.
+	// - `remove_traces` - Removes all references of the customer from past events and the phone number from past SMS messages.
+	Type *CustomerDeletionBehaviorType `json:"type,omitempty"`
+}
+
+// Specifies the behavior when deleting a customer.
+//
+// - `soft`          - Updates the `deleted_at` property on the customer.
+// - `remove_traces` - Removes all references of the customer from past events and the phone number from past SMS messages.
+type CustomerDeletionBehaviorType string
 
 // CustomerFilter defines model for CustomerFilter.
 type CustomerFilter struct {
@@ -7416,7 +7437,8 @@ type DeleteCustomerParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand   *Expand                   `form:"expand,omitempty" json:"expand,omitempty"`
+	Behavior *CustomerDeletionBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
 }
 
 // GetCustomerParams defines parameters for GetCustomer.
@@ -23196,6 +23218,16 @@ func NewDeleteCustomerRequest(server string, customerId string, params *DeleteCu
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	if params.Behavior != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Behavior); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("behavior", string(queryParamBuf))
 		}
 
 	}
