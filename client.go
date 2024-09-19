@@ -3416,6 +3416,7 @@ type Image struct {
 	Image    *string `json:"image,omitempty"`
 	PublicId *string `json:"public_id,omitempty"`
 	Thumb    *string `json:"thumb,omitempty"`
+	Type     *string `json:"type,omitempty"`
 	Width    *int32  `json:"width,omitempty"`
 }
 
@@ -6087,6 +6088,7 @@ type VoucherTemplate struct {
 	EventType                    *ExpandableEventType `json:"event_type,omitempty"`
 	ExpirationYearsAfterPurchase *int32               `json:"expiration_years_after_purchase,omitempty"`
 	Id                           *string              `json:"id,omitempty"`
+	Images                       *Images              `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   *bool      `json:"marketplace,omitempty"`
@@ -6111,6 +6113,7 @@ type VoucherTemplateCreate struct {
 	EventType                    ExpandableEventType `json:"event_type"`
 	ExpirationYearsAfterPurchase *int32              `json:"expiration_years_after_purchase,omitempty"`
 	Id                           *string             `json:"id,omitempty"`
+	Images                       *Images             `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   *bool      `json:"marketplace,omitempty"`
@@ -6152,6 +6155,7 @@ type VoucherTemplateResponse struct {
 	EventType                    ExpandableEventType `json:"event_type"`
 	ExpirationYearsAfterPurchase *int32              `json:"expiration_years_after_purchase,omitempty"`
 	Id                           *string             `json:"id,omitempty"`
+	Images                       *Images             `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   bool       `json:"marketplace"`
@@ -6192,6 +6196,7 @@ type VoucherTemplateUpdate struct {
 	EventType                    *interface{} `json:"event_type,omitempty"`
 	ExpirationYearsAfterPurchase *int32       `json:"expiration_years_after_purchase,omitempty"`
 	Id                           *string      `json:"id,omitempty"`
+	Images                       *Images      `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   *bool        `json:"marketplace,omitempty"`
