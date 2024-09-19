@@ -4139,9 +4139,14 @@ type OrderedExpandableEventTypes []OrderedExpandableEventType
 
 // OrderedProduct defines model for OrderedProduct.
 type OrderedProduct struct {
-	Amount      *float64      `json:"amount,omitempty"`
-	Barcode     *string       `json:"barcode,omitempty"`
-	Company     *string       `json:"company,omitempty"`
+	Amount  *float64 `json:"amount,omitempty"`
+	Barcode *string  `json:"barcode,omitempty"`
+	Company *string  `json:"company,omitempty"`
+
+	// The cost of the product from a wholesaler.
+	//
+	// In the x100 format.
+	Cost        *int32        `json:"cost,omitempty"`
 	CreatedAt   *int32        `json:"created_at,omitempty"`
 	Description *string       `json:"description,omitempty"`
 	Id          *string       `json:"id,omitempty"`
@@ -4480,9 +4485,14 @@ type PricingCalculation struct {
 
 // Product defines model for Product.
 type Product struct {
-	Amount      *float64      `json:"amount,omitempty"`
-	Barcode     *string       `json:"barcode,omitempty"`
-	Company     *string       `json:"company,omitempty"`
+	Amount  *float64 `json:"amount,omitempty"`
+	Barcode *string  `json:"barcode,omitempty"`
+	Company *string  `json:"company,omitempty"`
+
+	// The cost of the product from a wholesaler.
+	//
+	// In the x100 format.
+	Cost        *int32        `json:"cost,omitempty"`
 	CreatedAt   *int32        `json:"created_at,omitempty"`
 	Description *string       `json:"description,omitempty"`
 	Id          *string       `json:"id,omitempty"`
