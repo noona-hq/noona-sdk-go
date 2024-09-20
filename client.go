@@ -6114,6 +6114,7 @@ type VoucherTemplate struct {
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   *bool      `json:"marketplace,omitempty"`
+	PrimaryColor  *string    `json:"primary_color,omitempty"`
 	SessionsTotal *int32     `json:"sessions_total,omitempty"`
 	Title         *string    `json:"title,omitempty"`
 	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
@@ -6139,6 +6140,7 @@ type VoucherTemplateCreate struct {
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   *bool      `json:"marketplace,omitempty"`
+	PrimaryColor  *string    `json:"primary_color,omitempty"`
 	SessionsTotal int32      `json:"sessions_total"`
 	Title         *string    `json:"title,omitempty"`
 	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
@@ -6181,6 +6183,7 @@ type VoucherTemplateResponse struct {
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   bool       `json:"marketplace"`
+	PrimaryColor  *string    `json:"primary_color,omitempty"`
 	SessionsTotal int32      `json:"sessions_total"`
 	Title         *string    `json:"title,omitempty"`
 	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
@@ -6222,6 +6225,7 @@ type VoucherTemplateUpdate struct {
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace   *bool        `json:"marketplace,omitempty"`
+	PrimaryColor  *string      `json:"primary_color,omitempty"`
 	SessionsTotal *int32       `json:"sessions_total,omitempty"`
 	Title         *string      `json:"title,omitempty"`
 	UpdatedAt     *time.Time   `json:"updated_at,omitempty"`
