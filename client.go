@@ -1007,6 +1007,16 @@ type ActorType string
 // Actors defines model for Actors.
 type Actors []Actor
 
+// Address defines model for Address.
+type Address struct {
+	City       *string `json:"city,omitempty"`
+	Country    *string `json:"country,omitempty"`
+	Locality   *string `json:"locality,omitempty"`
+	PostalCode *string `json:"postalCode,omitempty"`
+	Region     *string `json:"region,omitempty"`
+	Street     *string `json:"street,omitempty"`
+}
+
 // AdyenBankAccount defines model for AdyenBankAccount.
 type AdyenBankAccount struct {
 	// The IBAN of the bank account.
@@ -3557,8 +3567,10 @@ type Locale struct {
 
 // Location defines model for Location.
 type Location struct {
+	Address          *Address        `json:"address,omitempty"`
 	Country          *Country        `json:"country,omitempty"`
 	FormattedAddress *string         `json:"formatted_address,omitempty"`
+	GooglePlaceId    *string         `json:"google_place_id,omitempty"`
 	LatLng           *LocationLatLng `json:"lat_lng,omitempty"`
 	TimeZone         *string         `json:"time_zone,omitempty"`
 }
