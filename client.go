@@ -647,6 +647,18 @@ const (
 	PowerupSubscriptionStatusPaused      PowerupSubscriptionStatus = "paused"
 )
 
+// Defines values for PrePaymentRuleEventTypesAssociation.
+const (
+	PrePaymentRuleEventTypesAssociationExcludes PrePaymentRuleEventTypesAssociation = "excludes"
+	PrePaymentRuleEventTypesAssociationIncludes PrePaymentRuleEventTypesAssociation = "includes"
+)
+
+// Defines values for PrePaymentRulePrePaymentType.
+const (
+	PrePaymentRulePrePaymentTypePayment   PrePaymentRulePrePaymentType = "payment"
+	PrePaymentRulePrePaymentTypeSavedCard PrePaymentRulePrePaymentType = "saved_card"
+)
+
 // Defines values for PrePaymentRuleType.
 const (
 	PrePaymentRuleTypePrePayment PrePaymentRuleType = "pre_payment"
@@ -693,8 +705,8 @@ const (
 
 // Defines values for RuleEntitiesResourcesResourcesAssociation.
 const (
-	RuleEntitiesResourcesResourcesAssociationExcludes RuleEntitiesResourcesResourcesAssociation = "excludes"
-	RuleEntitiesResourcesResourcesAssociationIncludes RuleEntitiesResourcesResourcesAssociation = "includes"
+	Excludes RuleEntitiesResourcesResourcesAssociation = "excludes"
+	Includes RuleEntitiesResourcesResourcesAssociation = "includes"
 )
 
 // Defines values for RuleType.
@@ -4450,23 +4462,52 @@ type PowerupSubscriptionStatus string
 
 // PrePaymentRule defines model for PrePaymentRule.
 type PrePaymentRule struct {
-	// How much must be paid on booking.
-	Amount float64 `json:"amount"`
-
 	// End time within the day
-	EndsAt *string `json:"ends_at,omitempty"`
+	EndsAt                *string                              `json:"ends_at,omitempty"`
+	EventTypes            *[]string                            `json:"event_types,omitempty"`
+	EventTypesAssociation *PrePaymentRuleEventTypesAssociation `json:"event_types_association,omitempty"`
+
+	// The amount that must be paid in advance.
+	//
+	// If flat_fee is greater than 0 and pre_payment_ratio is set, flat_fee takes precedence.
+	//
+	// In the x100 format.
+	FlatFee int32 `json:"flat_fee"`
+
+	// The minimum number of people that must be associated with reservation so that pre-payment is required.
+	PrePaymentMinPax int32 `json:"pre_payment_min_pax"`
+
+	// How much of the total price must be paid in advance in %.
+	//
+	// If flat_fee is greater than 0 and pre_payment_ratio is set, flat_fee takes precedence.
+	PrePaymentRatio int32 `json:"pre_payment_ratio"`
 
 	// Is any upfront payment required?
 	//
 	// `true` - pre_payment_ratio is used to indicate how much.
 	//
 	// `false` - pre_payment_ratio is ignored.
-	Required bool `json:"required"`
+	PrePaymentRequired bool `json:"pre_payment_required"`
+
+	// The type of pre-payment.
+	//
+	// - `payment` - The customer pays the pre-payment amount.
+	// - `saved_card` - The customer's card details are stored and the pre-payment amount is charged in case of a no-show.
+	PrePaymentType PrePaymentRulePrePaymentType `json:"pre_payment_type"`
 
 	// Start time within the day
 	StartsAt *string            `json:"starts_at,omitempty"`
 	Type     PrePaymentRuleType `json:"type"`
 }
+
+// PrePaymentRuleEventTypesAssociation defines model for PrePaymentRule.EventTypesAssociation.
+type PrePaymentRuleEventTypesAssociation string
+
+// The type of pre-payment.
+//
+// - `payment` - The customer pays the pre-payment amount.
+// - `saved_card` - The customer's card details are stored and the pre-payment amount is charged in case of a no-show.
+type PrePaymentRulePrePaymentType string
 
 // PrePaymentRuleType defines model for PrePaymentRule.Type.
 type PrePaymentRuleType string
