@@ -20,10 +20,9 @@ import (
 )
 
 const (
-	BearerTokenAuthScopes   = "BearerTokenAuth.Scopes"
-	Email_PasswordScopes    = "Email_Password.Scopes"
-	HQ_AuthenticatoinScopes = "HQ_Authenticatoin.Scopes"
-	OAuth_2_0Scopes         = "oAuth_2_0.Scopes"
+	BearerTokenAuthScopes = "BearerTokenAuth.Scopes"
+	Email_PasswordScopes  = "Email_Password.Scopes"
+	OAuth_2_0Scopes       = "oAuth_2_0.Scopes"
 )
 
 // Defines values for ActivityField.
