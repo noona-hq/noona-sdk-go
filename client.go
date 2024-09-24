@@ -11565,6 +11565,9 @@ type ClientInterface interface {
 	// ListPayments request
 	ListPayments(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PreviewVoucherTemplate request
+	PreviewVoucherTemplate(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListCustomProperties request
 	ListCustomProperties(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -12963,6 +12966,18 @@ func (c *Client) ListPaxStatuses(ctx context.Context, companyId string, params *
 
 func (c *Client) ListPayments(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPaymentsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PreviewVoucherTemplate(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPreviewVoucherTemplateRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -20402,6 +20417,40 @@ func NewListPaymentsRequest(server string, companyId string, params *ListPayment
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPreviewVoucherTemplateRequest generates requests for PreviewVoucherTemplate
+func NewPreviewVoucherTemplateRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/pdf/voucher_templates", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -37431,6 +37480,9 @@ type ClientWithResponsesInterface interface {
 	// ListPayments request
 	ListPaymentsWithResponse(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*ListPaymentsResponse, error)
 
+	// PreviewVoucherTemplate request
+	PreviewVoucherTemplateWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*PreviewVoucherTemplateResponse, error)
+
 	// ListCustomProperties request
 	ListCustomPropertiesWithResponse(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*ListCustomPropertiesResponse, error)
 
@@ -39214,6 +39266,27 @@ func (r ListPaymentsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPaymentsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PreviewVoucherTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PreviewVoucherTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PreviewVoucherTemplateResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -44561,6 +44634,15 @@ func (c *ClientWithResponses) ListPaymentsWithResponse(ctx context.Context, comp
 	return ParseListPaymentsResponse(rsp)
 }
 
+// PreviewVoucherTemplateWithResponse request returning *PreviewVoucherTemplateResponse
+func (c *ClientWithResponses) PreviewVoucherTemplateWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*PreviewVoucherTemplateResponse, error) {
+	rsp, err := c.PreviewVoucherTemplate(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePreviewVoucherTemplateResponse(rsp)
+}
+
 // ListCustomPropertiesWithResponse request returning *ListCustomPropertiesResponse
 func (c *ClientWithResponses) ListCustomPropertiesWithResponse(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*ListCustomPropertiesResponse, error) {
 	rsp, err := c.ListCustomProperties(ctx, companyId, params, reqEditors...)
@@ -48302,6 +48384,22 @@ func ParseListPaymentsResponse(rsp *http.Response) (*ListPaymentsResponse, error
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParsePreviewVoucherTemplateResponse parses an HTTP response from a PreviewVoucherTemplateWithResponse call
+func ParsePreviewVoucherTemplateResponse(rsp *http.Response) (*PreviewVoucherTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PreviewVoucherTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
