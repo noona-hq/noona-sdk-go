@@ -80,6 +80,7 @@ const (
 	ActorTypeHqUser          ActorType = "hq_user"
 	ActorTypeMarketplaceUser ActorType = "marketplace_user"
 	ActorTypeSecretary       ActorType = "secretary"
+	ActorTypeSystem          ActorType = "system"
 )
 
 // Defines values for AdyenBankAccountType.
