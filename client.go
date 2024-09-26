@@ -9274,6 +9274,12 @@ type DeleteVoucherTemplateParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 }
 
+// GetVoucherTemplateParams defines parameters for GetVoucherTemplate.
+type GetVoucherTemplateParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+}
+
 // UpdateVoucherTemplateJSONBody defines parameters for UpdateVoucherTemplate.
 type UpdateVoucherTemplateJSONBody VoucherTemplateUpdate
 
@@ -12326,6 +12332,9 @@ type ClientInterface interface {
 
 	// DeleteVoucherTemplate request
 	DeleteVoucherTemplate(ctx context.Context, voucherTemplateId string, params *DeleteVoucherTemplateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVoucherTemplate request
+	GetVoucherTemplate(ctx context.Context, voucherTemplateId string, params *GetVoucherTemplateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateVoucherTemplate request with any body
 	UpdateVoucherTemplateWithBody(ctx context.Context, voucherTemplateId string, params *UpdateVoucherTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -16258,6 +16267,18 @@ func (c *Client) CreateVoucherTemplate(ctx context.Context, params *CreateVouche
 
 func (c *Client) DeleteVoucherTemplate(ctx context.Context, voucherTemplateId string, params *DeleteVoucherTemplateParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteVoucherTemplateRequest(c.Server, voucherTemplateId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetVoucherTemplate(ctx context.Context, voucherTemplateId string, params *GetVoucherTemplateParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVoucherTemplateRequest(c.Server, voucherTemplateId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -36144,6 +36165,60 @@ func NewDeleteVoucherTemplateRequest(server string, voucherTemplateId string, pa
 	return req, nil
 }
 
+// NewGetVoucherTemplateRequest generates requests for GetVoucherTemplate
+func NewGetVoucherTemplateRequest(server string, voucherTemplateId string, params *GetVoucherTemplateParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "voucher_template_id", runtime.ParamLocationPath, voucherTemplateId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/voucher_templates/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewUpdateVoucherTemplateRequest calls the generic UpdateVoucherTemplate builder with application/json body
 func NewUpdateVoucherTemplateRequest(server string, voucherTemplateId string, params *UpdateVoucherTemplateParams, body UpdateVoucherTemplateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -38241,6 +38316,9 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteVoucherTemplate request
 	DeleteVoucherTemplateWithResponse(ctx context.Context, voucherTemplateId string, params *DeleteVoucherTemplateParams, reqEditors ...RequestEditorFn) (*DeleteVoucherTemplateResponse, error)
+
+	// GetVoucherTemplate request
+	GetVoucherTemplateWithResponse(ctx context.Context, voucherTemplateId string, params *GetVoucherTemplateParams, reqEditors ...RequestEditorFn) (*GetVoucherTemplateResponse, error)
 
 	// UpdateVoucherTemplate request with any body
 	UpdateVoucherTemplateWithBodyWithResponse(ctx context.Context, voucherTemplateId string, params *UpdateVoucherTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateVoucherTemplateResponse, error)
@@ -43854,6 +43932,28 @@ func (r DeleteVoucherTemplateResponse) StatusCode() int {
 	return 0
 }
 
+type GetVoucherTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *VoucherTemplateResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVoucherTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVoucherTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type UpdateVoucherTemplateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -47038,6 +47138,15 @@ func (c *ClientWithResponses) DeleteVoucherTemplateWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseDeleteVoucherTemplateResponse(rsp)
+}
+
+// GetVoucherTemplateWithResponse request returning *GetVoucherTemplateResponse
+func (c *ClientWithResponses) GetVoucherTemplateWithResponse(ctx context.Context, voucherTemplateId string, params *GetVoucherTemplateParams, reqEditors ...RequestEditorFn) (*GetVoucherTemplateResponse, error) {
+	rsp, err := c.GetVoucherTemplate(ctx, voucherTemplateId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVoucherTemplateResponse(rsp)
 }
 
 // UpdateVoucherTemplateWithBodyWithResponse request with arbitrary body returning *UpdateVoucherTemplateResponse
@@ -53392,6 +53501,32 @@ func ParseDeleteVoucherTemplateResponse(rsp *http.Response) (*DeleteVoucherTempl
 	response := &DeleteVoucherTemplateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetVoucherTemplateResponse parses an HTTP response from a GetVoucherTemplateWithResponse call
+func ParseGetVoucherTemplateResponse(rsp *http.Response) (*GetVoucherTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVoucherTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VoucherTemplateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
