@@ -2745,6 +2745,9 @@ type EventFilter struct {
 	// Filter by custom property IDs
 	CustomPropertyIds *[]string `json:"custom_property_ids,omitempty"`
 
+	// Filter by custom property values
+	CustomPropertyValues *[]string `json:"custom_property_values,omitempty"`
+
 	// Use `customers` instead.
 	Customer *string `json:"customer,omitempty"`
 
