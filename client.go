@@ -5994,6 +5994,7 @@ type User struct {
 	Employees   *Employees           `json:"employees,omitempty"`
 	Id          *string              `json:"id,omitempty"`
 	Image       *Image               `json:"image,omitempty"`
+	Locale      *string              `json:"locale,omitempty"`
 }
 
 // UserConnections defines model for UserConnections.
