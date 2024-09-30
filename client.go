@@ -6083,8 +6083,11 @@ type VoucherDataAmountType string
 
 // VoucherDataService defines model for VoucherDataService.
 type VoucherDataService struct {
-	EventTypeId           *string                `json:"event_type_id,omitempty"`
-	EventTypeName         *string                `json:"event_type_name,omitempty"`
+	EventTypeId   *string `json:"event_type_id,omitempty"`
+	EventTypeName *string `json:"event_type_name,omitempty"`
+
+	// The number of people this voucher is valid for.
+	NumberOfGuests        *int32                 `json:"number_of_guests,omitempty"`
 	SessionsTotal         *int32                 `json:"sessions_total,omitempty"`
 	SessionsUsed          *int32                 `json:"sessions_used,omitempty"`
 	Type                  VoucherDataServiceType `json:"type"`
@@ -6158,12 +6161,15 @@ type VoucherTemplate struct {
 	Images                       *Images              `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
-	Marketplace   *bool      `json:"marketplace,omitempty"`
-	PrimaryColor  *string    `json:"primary_color,omitempty"`
-	SessionsTotal *int32     `json:"sessions_total,omitempty"`
-	Title         *string    `json:"title,omitempty"`
-	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
-	Value         *float64   `json:"value,omitempty"`
+	Marketplace *bool `json:"marketplace,omitempty"`
+
+	// The number of people this voucher is valid for.
+	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string    `json:"primary_color,omitempty"`
+	SessionsTotal  *int32     `json:"sessions_total,omitempty"`
+	Title          *string    `json:"title,omitempty"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+	Value          *float64   `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -6184,12 +6190,15 @@ type VoucherTemplateCreate struct {
 	Images                       *Images             `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
-	Marketplace   *bool      `json:"marketplace,omitempty"`
-	PrimaryColor  *string    `json:"primary_color,omitempty"`
-	SessionsTotal int32      `json:"sessions_total"`
-	Title         *string    `json:"title,omitempty"`
-	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
-	Value         *float64   `json:"value,omitempty"`
+	Marketplace *bool `json:"marketplace,omitempty"`
+
+	// The number of people this voucher is valid for.
+	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string    `json:"primary_color,omitempty"`
+	SessionsTotal  int32      `json:"sessions_total"`
+	Title          *string    `json:"title,omitempty"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+	Value          *float64   `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -6227,12 +6236,15 @@ type VoucherTemplateResponse struct {
 	Images                       *Images             `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
-	Marketplace   bool       `json:"marketplace"`
-	PrimaryColor  *string    `json:"primary_color,omitempty"`
-	SessionsTotal int32      `json:"sessions_total"`
-	Title         *string    `json:"title,omitempty"`
-	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
-	Value         *float64   `json:"value,omitempty"`
+	Marketplace bool `json:"marketplace"`
+
+	// The number of people this voucher is valid for.
+	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string    `json:"primary_color,omitempty"`
+	SessionsTotal  int32      `json:"sessions_total"`
+	Title          *string    `json:"title,omitempty"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+	Value          *float64   `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -6269,13 +6281,16 @@ type VoucherTemplateUpdate struct {
 	Images                       *Images      `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
-	Marketplace   *bool        `json:"marketplace,omitempty"`
-	PrimaryColor  *string      `json:"primary_color,omitempty"`
-	SessionsTotal *int32       `json:"sessions_total,omitempty"`
-	Title         *string      `json:"title,omitempty"`
-	UpdatedAt     *time.Time   `json:"updated_at,omitempty"`
-	Value         *float64     `json:"value,omitempty"`
-	VariationId   *interface{} `json:"variation_id,omitempty"`
+	Marketplace *bool `json:"marketplace,omitempty"`
+
+	// The number of people this voucher is valid for.
+	NumberOfGuests *int32       `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string      `json:"primary_color,omitempty"`
+	SessionsTotal  *int32       `json:"sessions_total,omitempty"`
+	Title          *string      `json:"title,omitempty"`
+	UpdatedAt      *time.Time   `json:"updated_at,omitempty"`
+	Value          *float64     `json:"value,omitempty"`
+	VariationId    *interface{} `json:"variation_id,omitempty"`
 }
 
 // VoucherTemplateUpdateOverrides defines model for VoucherTemplateUpdateOverrides.
