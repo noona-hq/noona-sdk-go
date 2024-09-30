@@ -232,16 +232,16 @@ const (
 	Rates CommissionRatesType = "rates"
 )
 
-// Defines values for CompanyVertical.
-const (
-	Appointment CompanyVertical = "appointment"
-	Restaurant  CompanyVertical = "restaurant"
-)
-
 // Defines values for CompanySize.
 const (
 	Solo       CompanySize = "solo"
 	WithOthers CompanySize = "with_others"
+)
+
+// Defines values for CompanyVertical.
+const (
+	Appointment CompanyVertical = "appointment"
+	Restaurant  CompanyVertical = "restaurant"
 )
 
 // Defines values for CreatePaymentErrorCode.
@@ -1825,6 +1825,9 @@ type CommissionRatesType string
 // Companies defines model for Companies.
 type Companies []Company
 
+// CompaniesResponse defines model for CompaniesResponse.
+type CompaniesResponse []CompanyResponse
+
 // Company defines model for Company.
 type Company struct {
 	Adyen     *AdyenConnection        `json:"adyen,omitempty"`
@@ -1833,13 +1836,14 @@ type Company struct {
 	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Enterprise  *ExpandableEnterprise `json:"enterprise,omitempty"`
-	Id          *string               `json:"id,omitempty"`
-	Locale      *Locale               `json:"locale,omitempty"`
-	Location    *Location             `json:"location,omitempty"`
-	Marketplace *CompanyMarketplace   `json:"marketplace,omitempty"`
-	Messaging   *CompanyMessaging     `json:"messaging,omitempty"`
-	Name        *string               `json:"name,omitempty"`
+	Enterprise   *ExpandableEnterprise `json:"enterprise,omitempty"`
+	Id           *string               `json:"id,omitempty"`
+	LastActiveAt *time.Time            `json:"last_active_at,omitempty"`
+	Locale       *Locale               `json:"locale,omitempty"`
+	Location     *Location             `json:"location,omitempty"`
+	Marketplace  *CompanyMarketplace   `json:"marketplace,omitempty"`
+	Messaging    *CompanyMessaging     `json:"messaging,omitempty"`
+	Name         *string               `json:"name,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -1858,12 +1862,51 @@ type Company struct {
 	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
 }
 
-// CompanyVertical defines model for Company.Vertical.
-type CompanyVertical string
-
 // CompanyCheckin defines model for CompanyCheckin.
 type CompanyCheckin struct {
 	SuccessMessage *string `json:"success_message,omitempty"`
+}
+
+// CompanyCreate defines model for CompanyCreate.
+type CompanyCreate struct {
+	Adyen     *AdyenConnection        `json:"adyen,omitempty"`
+	Checkin   *CompanyCheckin         `json:"checkin,omitempty"`
+	CreatedAt *time.Time              `json:"created_at,omitempty"`
+	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Enterprise   *ExpandableEnterprise `json:"enterprise,omitempty"`
+	Id           *string               `json:"id,omitempty"`
+	LastActiveAt *time.Time            `json:"last_active_at,omitempty"`
+	Locale       *Locale               `json:"locale,omitempty"`
+	Location     LocationCreate        `json:"location"`
+	Marketplace  *CompanyMarketplace   `json:"marketplace,omitempty"`
+	Messaging    *CompanyMessaging     `json:"messaging,omitempty"`
+	Name         string                `json:"name"`
+
+	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
+	Payments    *PaymentSettings `json:"payments,omitempty"`
+
+	// Deprecated, use profile.phone_country_code instead
+	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
+
+	// Deprecated, use profile.phone_number instead
+	PhoneNumber *string              `json:"phone_number,omitempty"`
+	Pos         *POSSettings         `json:"pos,omitempty"`
+	Profile     CompanyProfileCreate `json:"profile"`
+	Signup      *CompanySignup       `json:"signup,omitempty"`
+	UpdatedAt   *time.Time           `json:"updated_at,omitempty"`
+	Vertical    CompanyVertical      `json:"vertical"`
+	Vouchers    *VoucherSettings     `json:"vouchers,omitempty"`
+}
+
+// CompanyCreateOverrides defines model for CompanyCreateOverrides.
+type CompanyCreateOverrides struct {
+	Location LocationCreate       `json:"location"`
+	Name     string               `json:"name"`
+	Profile  CompanyProfileCreate `json:"profile"`
+	Vertical CompanyVertical      `json:"vertical"`
 }
 
 // CompanyDefaultCurrency defines model for CompanyDefaultCurrency.
@@ -1958,7 +2001,11 @@ type CompanyProfile struct {
 	MinGuestsPerBooking      *int32 `json:"min_guests_per_booking,omitempty"`
 	MinRescheduleNoticeHours *int32 `json:"min_reschedule_notice_hours,omitempty"`
 
-	// Opening hours for the company. Array of seven (7) items, 0 being Monday and 6 Sunday. Or 0 being Sunday. Nobody really knows.
+	// Opening hours to list on the company's profile on the marketplace.
+	//
+	// Has no effect on when the calendar is bookable.
+	//
+	// Array of seven (7) items, 0 being Monday and 6 Sunday. Or 0 being Sunday. Nobody really knows.
 	OpeningHours     *OpeningHours `json:"opening_hours,omitempty"`
 	PhoneCountryCode *string       `json:"phone_country_code,omitempty"`
 	PhoneNumber      *string       `json:"phone_number,omitempty"`
@@ -1970,8 +2017,141 @@ type CompanyProfile struct {
 	PriceCategory  *int32          `json:"price_category,omitempty"`
 	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
 	ServiceBuffer  *int32          `json:"service_buffer,omitempty"`
-	StoreName      *string         `json:"store_name,omitempty"`
-	WebAuthOptOut  *bool           `json:"web_auth_opt_out,omitempty"`
+
+	// Controls at what hour in the day the calendar stops to be bookable. Can be restriced with blocked times.
+	StoreClosesAt *int32  `json:"store_closes_at,omitempty"`
+	StoreName     *string `json:"store_name,omitempty"`
+
+	// Controls at what hour in the day the calendar starts to be bookable. Can be restriced with blocked times.
+	StoreOpensAt  *int32 `json:"store_opens_at,omitempty"`
+	WebAuthOptOut *bool  `json:"web_auth_opt_out,omitempty"`
+}
+
+// CompanyProfileCreate defines model for CompanyProfileCreate.
+type CompanyProfileCreate struct {
+	Ambiences *Categories `json:"ambiences,omitempty"`
+
+	// Booking interval in minutes.
+	//
+	// Dictates how often customers can book events with employee or resource.
+	//
+	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
+	//
+	// A booking interval is set on the company level but can be overridden on the resource/employee level.
+	BookingInterval       *BookingInterval `json:"booking_interval,omitempty"`
+	BookingRedirectUrl    *string          `json:"booking_redirect_url,omitempty"`
+	BookingSuccessMessage *string          `json:"booking_success_message,omitempty"`
+	CompanyTypes          *[]string        `json:"company_types,omitempty"`
+	ContactEmail          *string          `json:"contact_email,omitempty"`
+
+	// The marketplace images displayed on a companies profile
+	CoverImages *[]Image    `json:"cover_images,omitempty"`
+	Cuisines    *Categories `json:"cuisines,omitempty"`
+	Description *string     `json:"description,omitempty"`
+	Dietaries   *Categories `json:"dietaries,omitempty"`
+
+	// The message that is shown to the customer when they try to book more guests than the maximum allowed.
+	ExceedMaxGuestsMessage *string `json:"exceed_max_guests_message,omitempty"`
+
+	// The number of favorites/likes on the company.
+	Favorites                *int32 `json:"favorites,omitempty"`
+	Image                    *Image `json:"image,omitempty"`
+	LicensePlate             *bool  `json:"license_plate,omitempty"`
+	MaxBookableFutureDays    *int32 `json:"max_bookable_future_days,omitempty"`
+	MaxGuestsPerBooking      *int32 `json:"max_guests_per_booking,omitempty"`
+	MaxGuestsPerInterval     *int32 `json:"max_guests_per_interval,omitempty"`
+	MaxSameTimeArrival       *int32 `json:"max_same_time_arrival,omitempty"`
+	MinBookingNoticeMinutes  *int32 `json:"min_booking_notice_minutes,omitempty"`
+	MinCancelNoticeHours     *int32 `json:"min_cancel_notice_hours,omitempty"`
+	MinGuestsPerBooking      *int32 `json:"min_guests_per_booking,omitempty"`
+	MinRescheduleNoticeHours *int32 `json:"min_reschedule_notice_hours,omitempty"`
+
+	// Opening hours to list on the company's profile on the marketplace.
+	//
+	// Has no effect on when the calendar is bookable.
+	//
+	// Array of seven (7) items, 0 being Monday and 6 Sunday. Or 0 being Sunday. Nobody really knows.
+	OpeningHours     *OpeningHours `json:"opening_hours,omitempty"`
+	PhoneCountryCode string        `json:"phone_country_code"`
+	PhoneNumber      string        `json:"phone_number"`
+
+	// Whether the company prefers 12 hour time format.
+	Prefer12Hours *bool `json:"prefer_12_hours,omitempty"`
+
+	// The price category of the company.
+	PriceCategory  *int32          `json:"price_category,omitempty"`
+	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
+	ServiceBuffer  *int32          `json:"service_buffer,omitempty"`
+
+	// Controls at what hour in the day the calendar stops to be bookable. Can be restriced with blocked times.
+	StoreClosesAt *int32  `json:"store_closes_at,omitempty"`
+	StoreName     *string `json:"store_name,omitempty"`
+
+	// Controls at what hour in the day the calendar starts to be bookable. Can be restriced with blocked times.
+	StoreOpensAt  *int32 `json:"store_opens_at,omitempty"`
+	WebAuthOptOut *bool  `json:"web_auth_opt_out,omitempty"`
+}
+
+// CompanyProfileCreateOverrides defines model for CompanyProfileCreateOverrides.
+type CompanyProfileCreateOverrides struct {
+	PhoneCountryCode string `json:"phone_country_code"`
+	PhoneNumber      string `json:"phone_number"`
+}
+
+// CompanyResponse defines model for CompanyResponse.
+type CompanyResponse struct {
+	Adyen     *AdyenConnection       `json:"adyen,omitempty"`
+	Checkin   *CompanyCheckin        `json:"checkin,omitempty"`
+	CreatedAt *time.Time             `json:"created_at,omitempty"`
+	Currency  CompanyDefaultCurrency `json:"currency"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Enterprise   ExpandableEnterprise `json:"enterprise"`
+	Id           *string              `json:"id,omitempty"`
+	LastActiveAt *time.Time           `json:"last_active_at,omitempty"`
+	Locale       *Locale              `json:"locale,omitempty"`
+	Location     Location             `json:"location"`
+	Marketplace  CompanyMarketplace   `json:"marketplace"`
+	Messaging    CompanyMessaging     `json:"messaging"`
+	Name         string               `json:"name"`
+
+	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
+	Payments    *PaymentSettings `json:"payments,omitempty"`
+
+	// Deprecated, use profile.phone_country_code instead
+	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
+
+	// Deprecated, use profile.phone_number instead
+	PhoneNumber *string         `json:"phone_number,omitempty"`
+	Pos         POSSettings     `json:"pos"`
+	Profile     CompanyProfile  `json:"profile"`
+	Signup      *CompanySignup  `json:"signup,omitempty"`
+	UpdatedAt   *time.Time      `json:"updated_at,omitempty"`
+	Vertical    CompanyVertical `json:"vertical"`
+	Vouchers    VoucherSettings `json:"vouchers"`
+}
+
+// CompanyResponseOverrides defines model for CompanyResponseOverrides.
+type CompanyResponseOverrides struct {
+	Checkin   *CompanyCheckin        `json:"checkin,omitempty"`
+	CreatedAt *time.Time             `json:"created_at,omitempty"`
+	Currency  CompanyDefaultCurrency `json:"currency"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Enterprise  ExpandableEnterprise `json:"enterprise"`
+	Id          *string              `json:"id,omitempty"`
+	Locale      *Locale              `json:"locale,omitempty"`
+	Location    Location             `json:"location"`
+	Marketplace CompanyMarketplace   `json:"marketplace"`
+	Messaging   CompanyMessaging     `json:"messaging"`
+	Name        string               `json:"name"`
+	Pos         POSSettings          `json:"pos"`
+	Profile     CompanyProfile       `json:"profile"`
+	Signup      *CompanySignup       `json:"signup,omitempty"`
+	UpdatedAt   *time.Time           `json:"updated_at,omitempty"`
+	Vertical    CompanyVertical      `json:"vertical"`
+	Vouchers    VoucherSettings      `json:"vouchers"`
 }
 
 // CompanySignup defines model for CompanySignup.
@@ -1982,6 +2162,49 @@ type CompanySignup struct {
 
 // CompanySize defines model for CompanySize.
 type CompanySize string
+
+// CompanyUpdate defines model for CompanyUpdate.
+type CompanyUpdate struct {
+	Adyen     *AdyenConnection `json:"adyen,omitempty"`
+	Checkin   *CompanyCheckin  `json:"checkin,omitempty"`
+	CreatedAt *time.Time       `json:"created_at,omitempty"`
+	Currency  *interface{}     `json:"currency,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Enterprise   *ExpandableEnterprise `json:"enterprise,omitempty"`
+	Id           *string               `json:"id,omitempty"`
+	LastActiveAt *time.Time            `json:"last_active_at,omitempty"`
+	Locale       *Locale               `json:"locale,omitempty"`
+	Location     *Location             `json:"location,omitempty"`
+	Marketplace  *CompanyMarketplace   `json:"marketplace,omitempty"`
+	Messaging    *CompanyMessaging     `json:"messaging,omitempty"`
+	Name         *string               `json:"name,omitempty"`
+
+	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
+	Payments    *PaymentSettings `json:"payments,omitempty"`
+
+	// Deprecated, use profile.phone_country_code instead
+	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
+
+	// Deprecated, use profile.phone_number instead
+	PhoneNumber *string          `json:"phone_number,omitempty"`
+	Pos         *POSSettings     `json:"pos,omitempty"`
+	Profile     *CompanyProfile  `json:"profile,omitempty"`
+	Signup      *CompanySignup   `json:"signup,omitempty"`
+	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
+	Vertical    *interface{}     `json:"vertical,omitempty"`
+	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
+}
+
+// CompanyUpdateOverrides defines model for CompanyUpdateOverrides.
+type CompanyUpdateOverrides struct {
+	Currency *interface{} `json:"currency,omitempty"`
+	Vertical *interface{} `json:"vertical,omitempty"`
+}
+
+// CompanyVertical defines model for CompanyVertical.
+type CompanyVertical string
 
 // CountMetricsByTimeFrame defines model for CountMetricsByTimeFrame.
 type CountMetricsByTimeFrame struct {
@@ -3590,6 +3813,24 @@ type Location struct {
 	TimeZone         *string         `json:"time_zone,omitempty"`
 }
 
+// LocationCreate defines model for LocationCreate.
+type LocationCreate struct {
+	Address          Address        `json:"address"`
+	Country          Country        `json:"country"`
+	FormattedAddress string         `json:"formatted_address"`
+	GooglePlaceId    *string        `json:"google_place_id,omitempty"`
+	LatLng           LocationLatLng `json:"lat_lng"`
+	TimeZone         string         `json:"time_zone"`
+}
+
+// LocationCreateOverrides defines model for LocationCreateOverrides.
+type LocationCreateOverrides struct {
+	Address          Address        `json:"address"`
+	Country          Country        `json:"country"`
+	FormattedAddress string         `json:"formatted_address"`
+	LatLng           LocationLatLng `json:"lat_lng"`
+}
+
 // LocationLatLng defines model for LocationLatLng.
 type LocationLatLng struct {
 	Lat float64 `json:"lat"`
@@ -4143,7 +4384,11 @@ type OpeningHourFilter struct {
 	To   *string `json:"to,omitempty"`
 }
 
-// Opening hours for the company. Array of seven (7) items, 0 being Monday and 6 Sunday. Or 0 being Sunday. Nobody really knows.
+// Opening hours to list on the company's profile on the marketplace.
+//
+// Has no effect on when the calendar is bookable.
+//
+// Array of seven (7) items, 0 being Monday and 6 Sunday. Or 0 being Sunday. Nobody really knows.
 type OpeningHours []OpeningHour
 
 // OpeningHoursResponse defines model for OpeningHoursResponse.
@@ -4206,6 +4451,7 @@ type POSSettings struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	DefaultVat *ExpandableVAT `json:"default_vat,omitempty"`
+	EacCode    *string        `json:"eac_code,omitempty"`
 
 	// Extra information to include on invoices.
 	ExtraInvoiceInfo *string `json:"extra_invoice_info,omitempty"`
@@ -6683,7 +6929,7 @@ type GetCompaniesParams struct {
 }
 
 // CreateCompanyJSONBody defines parameters for CreateCompany.
-type CreateCompanyJSONBody Company
+type CreateCompanyJSONBody CompanyCreate
 
 // CreateCompanyParams defines parameters for CreateCompany.
 type CreateCompanyParams struct {
@@ -6704,7 +6950,7 @@ type GetCompanyParams struct {
 }
 
 // UpdateCompanyJSONBody defines parameters for UpdateCompany.
-type UpdateCompanyJSONBody Company
+type UpdateCompanyJSONBody CompanyUpdate
 
 // UpdateCompanyParams defines parameters for UpdateCompany.
 type UpdateCompanyParams struct {
@@ -10022,13 +10268,13 @@ func (t *ExpandableCompany) FromID(v ID) error {
 	return err
 }
 
-func (t ExpandableCompany) AsCompany() (Company, error) {
-	var body Company
+func (t ExpandableCompany) AsCompanyResponse() (CompanyResponse, error) {
+	var body CompanyResponse
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-func (t *ExpandableCompany) FromCompany(v Company) error {
+func (t *ExpandableCompany) FromCompanyResponse(v CompanyResponse) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -38627,7 +38873,7 @@ func (r UpdateBlockedTimeResponse) StatusCode() int {
 type GetCompaniesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Companies
+	JSON200      *CompaniesResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -38649,7 +38895,7 @@ func (r GetCompaniesResponse) StatusCode() int {
 type CreateCompanyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Company
+	JSON200      *CompanyResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -38671,7 +38917,7 @@ func (r CreateCompanyResponse) StatusCode() int {
 type GetCompanyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Company
+	JSON200      *CompanyResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -38693,7 +38939,7 @@ func (r GetCompanyResponse) StatusCode() int {
 type UpdateCompanyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Company
+	JSON200      *CompanyResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -40273,7 +40519,7 @@ func (r UpdateEnterpriseResponse) StatusCode() int {
 type ListEnterpriseCompaniesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Companies
+	JSON200      *CompaniesResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -47669,7 +47915,7 @@ func ParseGetCompaniesResponse(rsp *http.Response) (*GetCompaniesResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Companies
+		var dest CompaniesResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -47695,7 +47941,7 @@ func ParseCreateCompanyResponse(rsp *http.Response) (*CreateCompanyResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Company
+		var dest CompanyResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -47721,7 +47967,7 @@ func ParseGetCompanyResponse(rsp *http.Response) (*GetCompanyResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Company
+		var dest CompanyResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -47747,7 +47993,7 @@ func ParseUpdateCompanyResponse(rsp *http.Response) (*UpdateCompanyResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Company
+		var dest CompanyResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -49576,7 +49822,7 @@ func ParseListEnterpriseCompaniesResponse(rsp *http.Response) (*ListEnterpriseCo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Companies
+		var dest CompaniesResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
