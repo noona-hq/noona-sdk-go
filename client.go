@@ -6401,10 +6401,10 @@ type VoucherTemplate struct {
 	Description *string    `json:"description,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType                    *ExpandableEventType `json:"event_type,omitempty"`
-	ExpirationYearsAfterPurchase *int32               `json:"expiration_years_after_purchase,omitempty"`
-	Id                           *string              `json:"id,omitempty"`
-	Images                       *Images              `json:"images,omitempty"`
+	EventType                     *ExpandableEventType `json:"event_type,omitempty"`
+	ExpirationMonthsAfterPurchase *int32               `json:"expiration_months_after_purchase,omitempty"`
+	Id                            *string              `json:"id,omitempty"`
+	Images                        *Images              `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace *bool `json:"marketplace,omitempty"`
@@ -6430,10 +6430,10 @@ type VoucherTemplateCreate struct {
 	Description *string    `json:"description,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType                    ExpandableEventType `json:"event_type"`
-	ExpirationYearsAfterPurchase *int32              `json:"expiration_years_after_purchase,omitempty"`
-	Id                           *string             `json:"id,omitempty"`
-	Images                       *Images             `json:"images,omitempty"`
+	EventType                     ExpandableEventType `json:"event_type"`
+	ExpirationMonthsAfterPurchase *int32              `json:"expiration_months_after_purchase,omitempty"`
+	Id                            *string             `json:"id,omitempty"`
+	Images                        *Images             `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace *bool `json:"marketplace,omitempty"`
@@ -6476,10 +6476,10 @@ type VoucherTemplateResponse struct {
 	Description *string    `json:"description,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType                    ExpandableEventType `json:"event_type"`
-	ExpirationYearsAfterPurchase *int32              `json:"expiration_years_after_purchase,omitempty"`
-	Id                           *string             `json:"id,omitempty"`
-	Images                       *Images             `json:"images,omitempty"`
+	EventType                     ExpandableEventType `json:"event_type"`
+	ExpirationMonthsAfterPurchase *int32              `json:"expiration_months_after_purchase,omitempty"`
+	Id                            *string             `json:"id,omitempty"`
+	Images                        *Images             `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace bool `json:"marketplace"`
@@ -6516,15 +6516,15 @@ type VoucherTemplateResponseOverrides struct {
 
 // VoucherTemplateUpdate defines model for VoucherTemplateUpdate.
 type VoucherTemplateUpdate struct {
-	Amount                       *float64     `json:"amount,omitempty"`
-	Company                      *interface{} `json:"company,omitempty"`
-	CreatedAt                    *time.Time   `json:"created_at,omitempty"`
-	Currency                     *interface{} `json:"currency,omitempty"`
-	Description                  *string      `json:"description,omitempty"`
-	EventType                    *interface{} `json:"event_type,omitempty"`
-	ExpirationYearsAfterPurchase *int32       `json:"expiration_years_after_purchase,omitempty"`
-	Id                           *string      `json:"id,omitempty"`
-	Images                       *Images      `json:"images,omitempty"`
+	Amount                        *float64     `json:"amount,omitempty"`
+	Company                       *interface{} `json:"company,omitempty"`
+	CreatedAt                     *time.Time   `json:"created_at,omitempty"`
+	Currency                      *interface{} `json:"currency,omitempty"`
+	Description                   *string      `json:"description,omitempty"`
+	EventType                     *interface{} `json:"event_type,omitempty"`
+	ExpirationMonthsAfterPurchase *int32       `json:"expiration_months_after_purchase,omitempty"`
+	Id                            *string      `json:"id,omitempty"`
+	Images                        *Images      `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace *bool `json:"marketplace,omitempty"`
