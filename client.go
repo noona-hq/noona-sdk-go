@@ -6407,7 +6407,8 @@ type VoucherTemplate struct {
 	Images                        *Images              `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
-	Marketplace *bool `json:"marketplace,omitempty"`
+	Marketplace            *bool   `json:"marketplace,omitempty"`
+	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
 	// The number of people this voucher is valid for.
 	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
@@ -6436,7 +6437,8 @@ type VoucherTemplateCreate struct {
 	Images                        *Images             `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
-	Marketplace *bool `json:"marketplace,omitempty"`
+	Marketplace            *bool   `json:"marketplace,omitempty"`
+	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
 	// The number of people this voucher is valid for.
 	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
@@ -6482,7 +6484,8 @@ type VoucherTemplateResponse struct {
 	Images                        *Images             `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
-	Marketplace bool `json:"marketplace"`
+	Marketplace            bool    `json:"marketplace"`
+	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
 	// The number of people this voucher is valid for.
 	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
@@ -6527,7 +6530,8 @@ type VoucherTemplateUpdate struct {
 	Images                        *Images      `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
-	Marketplace *bool `json:"marketplace,omitempty"`
+	Marketplace            *bool   `json:"marketplace,omitempty"`
+	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
 	// The number of people this voucher is valid for.
 	NumberOfGuests *int32       `json:"number_of_guests,omitempty"`
