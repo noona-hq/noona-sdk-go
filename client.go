@@ -5582,6 +5582,9 @@ type Rules []Rule
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SMSFilter struct {
+	// Filter by event IDs
+	EventIds *[]string `json:"event_ids,omitempty"`
+
 	// Filter by recipient phone number
 	PhoneNumber *string `json:"phone_number,omitempty"`
 }
