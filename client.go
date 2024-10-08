@@ -6736,6 +6736,12 @@ type WaitlistFilter struct {
 
 	// Filter by maximum duration in minutes
 	MaxDuration *int32 `json:"max_duration,omitempty"`
+
+	// Filter entries with preferred dates starting from this date (inclusive)
+	PreferredDateFrom *string `json:"preferred_date_from,omitempty"`
+
+	// Filter entries with preferred dates up to this date (inclusive)
+	PreferredDateTo *string `json:"preferred_date_to,omitempty"`
 }
 
 // Webhook defines model for Webhook.
