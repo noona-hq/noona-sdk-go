@@ -4761,6 +4761,17 @@ type PrePaymentRulePrePaymentType string
 // PrePaymentRuleType defines model for PrePaymentRule.Type.
 type PrePaymentRuleType string
 
+// PreferredTime defines model for PreferredTime.
+type PreferredTime struct {
+	Date string `json:"date"`
+
+	// If empty, it means any time on the specified date is acceptable
+	Times *[]string `json:"times,omitempty"`
+}
+
+// PreferredTimes defines model for PreferredTimes.
+type PreferredTimes []PreferredTime
+
 // Price defines model for Price.
 type Price struct {
 	Amount     *float64 `json:"amount,omitempty"`
@@ -6586,8 +6597,9 @@ type WaitlistEntry struct {
 	Notes      *string                `json:"notes,omitempty"`
 
 	// Number of guests for the event.
-	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
-	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+	NumberOfGuests *int32          `json:"number_of_guests,omitempty"`
+	PreferredTimes *PreferredTimes `json:"preferred_times,omitempty"`
+	UpdatedAt      *time.Time      `json:"updated_at,omitempty"`
 }
 
 // WaitlistEntryCreate defines model for WaitlistEntryCreate.
@@ -6607,8 +6619,9 @@ type WaitlistEntryCreate struct {
 	Notes      *string               `json:"notes,omitempty"`
 
 	// Number of guests for the event.
-	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
-	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
+	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
+	UpdatedAt      *time.Time       `json:"updated_at,omitempty"`
 }
 
 // WaitlistEntryCreateOverrides defines model for WaitlistEntryCreateOverrides.
@@ -6622,11 +6635,11 @@ type WaitlistEntryCreateOverrides struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Employee   *ExpandableEmployee   `json:"employee,omitempty"`
 	EventTypes []ExpandableEventType `json:"event_types"`
-	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
 	Notes      *string               `json:"notes,omitempty"`
 
 	// Number of guests for the event.
-	NumberOfGuests *int32 `json:"number_of_guests,omitempty"`
+	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
+	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
 }
 
 // WaitlistEntryField defines model for WaitlistEntryField.
@@ -6652,8 +6665,9 @@ type WaitlistEntryResponse struct {
 	Notes      *string               `json:"notes,omitempty"`
 
 	// Number of guests for the event.
-	NumberOfGuests *int32    `json:"number_of_guests,omitempty"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
+	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
+	UpdatedAt      time.Time        `json:"updated_at"`
 }
 
 // WaitlistEntryResponseOverrides defines model for WaitlistEntryResponseOverrides.
@@ -6668,13 +6682,13 @@ type WaitlistEntryResponseOverrides struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Employee   *ExpandableEmployee   `json:"employee,omitempty"`
 	EventTypes []ExpandableEventType `json:"event_types"`
-	ExpiresAt  *time.Time            `json:"expires_at,omitempty"`
 	Id         string                `json:"id"`
 	Notes      *string               `json:"notes,omitempty"`
 
 	// Number of guests for the event.
-	NumberOfGuests *int32    `json:"number_of_guests,omitempty"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
+	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
+	UpdatedAt      time.Time        `json:"updated_at"`
 }
 
 // WaitlistEntryUpdate defines model for WaitlistEntryUpdate.
@@ -6693,8 +6707,9 @@ type WaitlistEntryUpdate struct {
 	Notes      *string                `json:"notes,omitempty"`
 
 	// Number of guests for the event.
-	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
-	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
+	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
+	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
+	UpdatedAt      *time.Time       `json:"updated_at,omitempty"`
 }
 
 // WaitlistEntryUpdateOverrides defines model for WaitlistEntryUpdateOverrides.
@@ -6707,11 +6722,11 @@ type WaitlistEntryUpdateOverrides struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Employee   *ExpandableEmployee    `json:"employee,omitempty"`
 	EventTypes *[]ExpandableEventType `json:"event_types,omitempty"`
-	ExpiresAt  *time.Time             `json:"expires_at,omitempty"`
 	Notes      *string                `json:"notes,omitempty"`
 
 	// Number of guests for the event.
-	NumberOfGuests *int32 `json:"number_of_guests,omitempty"`
+	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
+	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
