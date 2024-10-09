@@ -2540,6 +2540,9 @@ type EmployeeMarketplaceSettings struct {
 	// Whether the employee should be excluded from randomization pool on the marketplace
 	ExcludeFromRandomizationPool *bool `json:"exclude_from_randomization_pool,omitempty"`
 
+	// Controls whether new customers can book this employee online. If set to true, customers will need to have a previous booking with the employee to be able to book online.
+	ExcludeNewCustomers *bool `json:"exclude_new_customers,omitempty"`
+
 	// Whether the employee is receiving their own settlements.
 	//
 	// Calculated from own_settlements_allowed and own_settlements_preferred.
