@@ -299,6 +299,12 @@ const (
 	DisabledAt EmployeeField = "disabled_at"
 )
 
+// Defines values for EventDeletionBehaviorType.
+const (
+	EventDeletionBehaviorTypeFuture EventDeletionBehaviorType = "future"
+	EventDeletionBehaviorTypeSingle EventDeletionBehaviorType = "single"
+)
+
 // Defines values for EventInvoiceStatus.
 const (
 	EventInvoiceStatusCanceledDuringDraft EventInvoiceStatus = "canceledDuringDraft"
@@ -306,21 +312,6 @@ const (
 	EventInvoiceStatusDraft               EventInvoiceStatus = "draft"
 	EventInvoiceStatusPaid                EventInvoiceStatus = "paid"
 	EventInvoiceStatusRefund              EventInvoiceStatus = "refund"
-)
-
-// Defines values for EventCheckinResultInvoiceStatus.
-const (
-	EventCheckinResultInvoiceStatusCanceledDuringDraft EventCheckinResultInvoiceStatus = "canceledDuringDraft"
-	EventCheckinResultInvoiceStatusDeleted             EventCheckinResultInvoiceStatus = "deleted"
-	EventCheckinResultInvoiceStatusDraft               EventCheckinResultInvoiceStatus = "draft"
-	EventCheckinResultInvoiceStatusPaid                EventCheckinResultInvoiceStatus = "paid"
-	EventCheckinResultInvoiceStatusRefund              EventCheckinResultInvoiceStatus = "refund"
-)
-
-// Defines values for EventDeletionBehaviorType.
-const (
-	EventDeletionBehaviorTypeFuture EventDeletionBehaviorType = "future"
-	EventDeletionBehaviorTypeSingle EventDeletionBehaviorType = "single"
 )
 
 // Defines values for EventOrigin.
@@ -799,10 +790,10 @@ const (
 
 // Defines values for SubtransactionState.
 const (
-	Failed      SubtransactionState = "failed"
-	Pending     SubtransactionState = "pending"
-	Successful  SubtransactionState = "successful"
-	Unprocessed SubtransactionState = "unprocessed"
+	SubtransactionStateFailed      SubtransactionState = "failed"
+	SubtransactionStatePending     SubtransactionState = "pending"
+	SubtransactionStateSuccessful  SubtransactionState = "successful"
+	SubtransactionStateUnprocessed SubtransactionState = "unprocessed"
 )
 
 // Defines values for SubtransactionCreationBehaviorType.
@@ -2767,9 +2758,6 @@ type Event struct {
 	WaitlistEntry *string `json:"waitlist_entry,omitempty"`
 }
 
-// EventInvoiceStatus defines model for Event.InvoiceStatus.
-type EventInvoiceStatus string
-
 // Event_RecurringEvent defines model for Event.RecurringEvent.
 type Event_RecurringEvent struct {
 	union json.RawMessage
@@ -2828,10 +2816,10 @@ type EventCheckinResult struct {
 	EndsAt *time.Time `json:"ends_at,omitempty"`
 
 	// Deprecated, use starts_at instead
-	EventDate     *string                          `json:"event_date,omitempty"`
-	EventTypes    *EventTypes                      `json:"event_types,omitempty"`
-	Id            *string                          `json:"id,omitempty"`
-	InvoiceStatus *EventCheckinResultInvoiceStatus `json:"invoice_status,omitempty"`
+	EventDate     *string             `json:"event_date,omitempty"`
+	EventTypes    *EventTypes         `json:"event_types,omitempty"`
+	Id            *string             `json:"id,omitempty"`
+	InvoiceStatus *EventInvoiceStatus `json:"invoice_status,omitempty"`
 
 	// License plate for the vehicle associated with this event
 	LicensePlate            *string                  `json:"license_plate,omitempty"`
@@ -2925,9 +2913,6 @@ type EventCheckinResult struct {
 	WaitlistEntry *string `json:"waitlist_entry,omitempty"`
 }
 
-// EventCheckinResultInvoiceStatus defines model for EventCheckinResult.InvoiceStatus.
-type EventCheckinResultInvoiceStatus string
-
 // EventCheckinResult_RecurringEvent defines model for EventCheckinResult.RecurringEvent.
 type EventCheckinResult_RecurringEvent struct {
 	union json.RawMessage
@@ -2999,8 +2984,11 @@ type EventFilter struct {
 	// When true, deleted events will be included in the response.
 	//
 	// When false, deleted events will not be included in the response.
-	IncludeDeleted *bool         `json:"include_deleted,omitempty"`
-	Origins        *EventOrigins `json:"origins,omitempty"`
+	IncludeDeleted *bool `json:"include_deleted,omitempty"`
+
+	// Filter by invoice status
+	InvoiceStatuses *[]EventInvoiceStatus `json:"invoice_statuses,omitempty"`
+	Origins         *EventOrigins         `json:"origins,omitempty"`
 
 	// Only return events that overlap with this timestamp or later.
 	//
@@ -3037,6 +3025,9 @@ type EventFilter struct {
 	// Only return events where updated_at is after this timestamp.
 	UpdatedFrom *time.Time `json:"updated_from,omitempty"`
 }
+
+// EventInvoiceStatus defines model for EventInvoiceStatus.
+type EventInvoiceStatus string
 
 // EventOrigin defines model for EventOrigin.
 type EventOrigin string
