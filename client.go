@@ -6599,7 +6599,10 @@ type WaitlistEntry struct {
 	// Number of guests for the event.
 	NumberOfGuests *int32          `json:"number_of_guests,omitempty"`
 	PreferredTimes *PreferredTimes `json:"preferred_times,omitempty"`
-	UpdatedAt      *time.Time      `json:"updated_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource  *ExpandableResource `json:"resource,omitempty"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
 }
 
 // WaitlistEntryCreate defines model for WaitlistEntryCreate.
@@ -6621,7 +6624,10 @@ type WaitlistEntryCreate struct {
 	// Number of guests for the event.
 	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
 	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
-	UpdatedAt      *time.Time       `json:"updated_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource  *ExpandableResource `json:"resource,omitempty"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
 }
 
 // WaitlistEntryCreateOverrides defines model for WaitlistEntryCreateOverrides.
@@ -6640,6 +6646,9 @@ type WaitlistEntryCreateOverrides struct {
 	// Number of guests for the event.
 	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
 	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource *ExpandableResource `json:"resource,omitempty"`
 }
 
 // WaitlistEntryField defines model for WaitlistEntryField.
@@ -6667,7 +6676,10 @@ type WaitlistEntryResponse struct {
 	// Number of guests for the event.
 	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
 	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
-	UpdatedAt      time.Time        `json:"updated_at"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource  *ExpandableResource `json:"resource,omitempty"`
+	UpdatedAt time.Time           `json:"updated_at"`
 }
 
 // WaitlistEntryResponseOverrides defines model for WaitlistEntryResponseOverrides.
@@ -6688,7 +6700,10 @@ type WaitlistEntryResponseOverrides struct {
 	// Number of guests for the event.
 	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
 	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
-	UpdatedAt      time.Time        `json:"updated_at"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource  *ExpandableResource `json:"resource,omitempty"`
+	UpdatedAt time.Time           `json:"updated_at"`
 }
 
 // WaitlistEntryUpdate defines model for WaitlistEntryUpdate.
@@ -6709,7 +6724,10 @@ type WaitlistEntryUpdate struct {
 	// Number of guests for the event.
 	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
 	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
-	UpdatedAt      *time.Time       `json:"updated_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource  *ExpandableResource `json:"resource,omitempty"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
 }
 
 // WaitlistEntryUpdateOverrides defines model for WaitlistEntryUpdateOverrides.
@@ -6727,6 +6745,9 @@ type WaitlistEntryUpdateOverrides struct {
 	// Number of guests for the event.
 	NumberOfGuests *int32           `json:"number_of_guests,omitempty"`
 	PreferredTimes *[]PreferredTime `json:"preferred_times,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource *ExpandableResource `json:"resource,omitempty"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
