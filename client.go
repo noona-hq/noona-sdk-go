@@ -1945,6 +1945,12 @@ type CompanyMarketplace struct {
 	//
 	// This allows customers to add themselves to the waitlist at company.
 	WaitlistEnabled *bool `json:"waitlist_enabled,omitempty"`
+
+	// The number of minutes before a waitlist invitation expires
+	WaitlistInvitationExpiryMinutes *int32 `json:"waitlist_invitation_expiry_minutes,omitempty"`
+
+	// The custom message to be sent with waitlist invitations
+	WaitlistInvitationMessage *string `json:"waitlist_invitation_message,omitempty"`
 }
 
 // CompanyMessaging defines model for CompanyMessaging.
