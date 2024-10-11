@@ -2959,6 +2959,12 @@ type EventDeletionBehaviorType string
 
 // EventFilter defines model for EventFilter.
 type EventFilter struct {
+	// Only return events where created_at is after this timestamp.
+	CreatedFrom *time.Time `json:"created_from,omitempty"`
+
+	// Only return events where created_at is before this timestamp.
+	CreatedTo *time.Time `json:"created_to,omitempty"`
+
 	// Filter by custom property IDs
 	CustomPropertyIds *[]string `json:"custom_property_ids,omitempty"`
 
