@@ -2160,6 +2160,17 @@ type CompanySignup struct {
 // CompanySize defines model for CompanySize.
 type CompanySize string
 
+// CompanyType defines model for CompanyType.
+type CompanyType struct {
+	Id         string  `json:"id"`
+	Name       *string `json:"name,omitempty"`
+	Order      *int32  `json:"order,omitempty"`
+	ReadableId *string `json:"readable_id,omitempty"`
+}
+
+// CompanyTypes defines model for CompanyTypes.
+type CompanyTypes []CompanyType
+
 // CompanyUpdate defines model for CompanyUpdate.
 type CompanyUpdate struct {
 	Adyen     *AdyenConnection `json:"adyen,omitempty"`
@@ -7757,6 +7768,18 @@ type ListWebhooksParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// ListCompanyTypesParams defines parameters for ListCompanyTypes.
+type ListCompanyTypesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+}
+
 // ListCuisinesParams defines parameters for ListCuisines.
 type ListCuisinesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -11974,6 +11997,9 @@ type ClientInterface interface {
 	// ListWebhooks request
 	ListWebhooks(ctx context.Context, companyId string, params *ListWebhooksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListCompanyTypes request
+	ListCompanyTypes(ctx context.Context, params *ListCompanyTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListCuisines request
 	ListCuisines(ctx context.Context, params *ListCuisinesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13632,6 +13658,18 @@ func (c *Client) ListWebhookInvocations(ctx context.Context, companyId string, p
 
 func (c *Client) ListWebhooks(ctx context.Context, companyId string, params *ListWebhooksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListWebhooksRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListCompanyTypes(ctx context.Context, params *ListCompanyTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCompanyTypesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -23094,6 +23132,79 @@ func NewListWebhooksRequest(server string, companyId string, params *ListWebhook
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListCompanyTypesRequest generates requests for ListCompanyTypes
+func NewListCompanyTypesRequest(server string, params *ListCompanyTypesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/company_types")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
 		}
 
 	}
@@ -37958,6 +38069,9 @@ type ClientWithResponsesInterface interface {
 	// ListWebhooks request
 	ListWebhooksWithResponse(ctx context.Context, companyId string, params *ListWebhooksParams, reqEditors ...RequestEditorFn) (*ListWebhooksResponse, error)
 
+	// ListCompanyTypes request
+	ListCompanyTypesWithResponse(ctx context.Context, params *ListCompanyTypesParams, reqEditors ...RequestEditorFn) (*ListCompanyTypesResponse, error)
+
 	// ListCuisines request
 	ListCuisinesWithResponse(ctx context.Context, params *ListCuisinesParams, reqEditors ...RequestEditorFn) (*ListCuisinesResponse, error)
 
@@ -40237,6 +40351,28 @@ func (r ListWebhooksResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListWebhooksResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListCompanyTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CompanyTypes
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCompanyTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCompanyTypesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -45305,6 +45441,15 @@ func (c *ClientWithResponses) ListWebhooksWithResponse(ctx context.Context, comp
 	return ParseListWebhooksResponse(rsp)
 }
 
+// ListCompanyTypesWithResponse request returning *ListCompanyTypesResponse
+func (c *ClientWithResponses) ListCompanyTypesWithResponse(ctx context.Context, params *ListCompanyTypesParams, reqEditors ...RequestEditorFn) (*ListCompanyTypesResponse, error) {
+	rsp, err := c.ListCompanyTypes(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCompanyTypesResponse(rsp)
+}
+
 // ListCuisinesWithResponse request returning *ListCuisinesResponse
 func (c *ClientWithResponses) ListCuisinesWithResponse(ctx context.Context, params *ListCuisinesParams, reqEditors ...RequestEditorFn) (*ListCuisinesResponse, error) {
 	rsp, err := c.ListCuisines(ctx, params, reqEditors...)
@@ -49482,6 +49627,32 @@ func ParseListWebhooksResponse(rsp *http.Response) (*ListWebhooksResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Webhooks
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListCompanyTypesResponse parses an HTTP response from a ListCompanyTypesWithResponse call
+func ParseListCompanyTypesResponse(rsp *http.Response) (*ListCompanyTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCompanyTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CompanyTypes
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
