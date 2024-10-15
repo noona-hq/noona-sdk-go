@@ -1913,6 +1913,12 @@ type CompanyMarketplace struct {
 	AllowBookingOverCancelledEvents *bool `json:"allow_booking_over_cancelled_events,omitempty"`
 	AllowBookingWithoutConfirmation *bool `json:"allow_booking_without_confirmation,omitempty"`
 
+	// The number of minutes before a booking offer expires
+	BookingOfferExpiryMinutes *int32 `json:"booking_offer_expiry_minutes,omitempty"`
+
+	// The custom message to be sent with booking offers
+	BookingOfferMessage *string `json:"booking_offer_message,omitempty"`
+
 	// Indicates if the company should receive email notifications upon booking confirmation. Notifications are sent to the company's primary email address.
 	//
 	// This feature is especially beneficial for businesses without dedicated employees, relying solely on resources.
@@ -1945,12 +1951,6 @@ type CompanyMarketplace struct {
 	//
 	// This allows customers to add themselves to the waitlist at company.
 	WaitlistEnabled *bool `json:"waitlist_enabled,omitempty"`
-
-	// The number of minutes before a waitlist invitation expires
-	WaitlistInvitationExpiryMinutes *int32 `json:"waitlist_invitation_expiry_minutes,omitempty"`
-
-	// The custom message to be sent with waitlist invitations
-	WaitlistInvitationMessage *string `json:"waitlist_invitation_message,omitempty"`
 }
 
 // CompanyMessaging defines model for CompanyMessaging.
