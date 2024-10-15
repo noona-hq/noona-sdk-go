@@ -1642,6 +1642,22 @@ type BlockedTimesResponse []BlockedTimeResponse
 // A booking interval is set on the company level but can be overridden on the resource/employee level.
 type BookingInterval int32
 
+// A booking offer is used to notify a customer that an opening has been made for their requested service.
+//
+// On event creation the booking offer payload must be provided in the request body.
+//
+// The payload is only respected if the `booking_offer` behavior is set to `true`.
+type BookingOffer struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	ExpiresAt *time.Time         `json:"expires_at,omitempty"`
+	Id        *string            `json:"id,omitempty"`
+	Message   *string            `json:"message,omitempty"`
+}
+
+// BookingOffers defines model for BookingOffers.
+type BookingOffers []BookingOffer
+
 // BookingQuestion defines model for BookingQuestion.
 type BookingQuestion struct {
 	Answer   *string `json:"answer,omitempty"`
@@ -2644,9 +2660,12 @@ type Error struct {
 // Event defines model for Event.
 type Event struct {
 	// It is only possible to 'accept' and event once.
-	AcceptedAt       *time.Time        `json:"accepted_at,omitempty"`
-	Attachments      *Attachments      `json:"attachments,omitempty"`
-	BookingQuestions *BookingQuestions `json:"booking_questions,omitempty"`
+	AcceptedAt  *time.Time   `json:"accepted_at,omitempty"`
+	Attachments *Attachments `json:"attachments,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	BookingOffer     *ExpandableBookingOffer `json:"booking_offer,omitempty"`
+	BookingQuestions *BookingQuestions       `json:"booking_questions,omitempty"`
 
 	// Provided by customers when they decline through the marketplace.
 	CancelReason  *string      `json:"cancel_reason,omitempty"`
@@ -2791,9 +2810,12 @@ type Event_Space struct {
 // EventCheckinResult defines model for EventCheckinResult.
 type EventCheckinResult struct {
 	// It is only possible to 'accept' and event once.
-	AcceptedAt       *time.Time        `json:"accepted_at,omitempty"`
-	Attachments      *Attachments      `json:"attachments,omitempty"`
-	BookingQuestions *BookingQuestions `json:"booking_questions,omitempty"`
+	AcceptedAt  *time.Time   `json:"accepted_at,omitempty"`
+	Attachments *Attachments `json:"attachments,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	BookingOffer     *ExpandableBookingOffer `json:"booking_offer,omitempty"`
+	BookingQuestions *BookingQuestions       `json:"booking_questions,omitempty"`
 
 	// Provided by customers when they decline through the marketplace.
 	CancelReason          *string      `json:"cancel_reason,omitempty"`
@@ -2945,6 +2967,15 @@ type EventCheckinResult_Space struct {
 
 // [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
 type EventCreationBehavior struct {
+	// Whether to send a booking offer to the customer when the event is created.
+	//
+	// When false, no booking offer will be sent to the customer.
+	//
+	// When true, the event payload must fit the following criteria:
+	// - The status must be 'hold'
+	// - The booking_offer payload must be provided in the request body.
+	BookingOffer *bool `json:"booking_offer,omitempty"`
+
 	// Whether to notify customer about the event.
 	//
 	// When true, the customer will receive an email and push notification about the event.
@@ -3400,6 +3431,11 @@ type ExpandableApp struct {
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableApplication struct {
+	union json.RawMessage
+}
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableBookingOffer struct {
 	union json.RawMessage
 }
 
@@ -10330,6 +10366,40 @@ func (t ExpandableApplication) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ExpandableApplication) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableBookingOffer) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableBookingOffer) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableBookingOffer) AsBookingOffer() (BookingOffer, error) {
+	var body BookingOffer
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableBookingOffer) FromBookingOffer(v BookingOffer) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableBookingOffer) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableBookingOffer) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
