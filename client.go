@@ -1650,9 +1650,13 @@ type BookingInterval int32
 type BookingOffer struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   *ExpandableCompany `json:"company,omitempty"`
+	DeletedAt *time.Time         `json:"deleted_at,omitempty"`
 	ExpiresAt *time.Time         `json:"expires_at,omitempty"`
 	Id        *string            `json:"id,omitempty"`
 	Message   *string            `json:"message,omitempty"`
+
+	// The start time of the event.
+	StartsAt *time.Time `json:"starts_at,omitempty"`
 }
 
 // BookingOffers defines model for BookingOffers.
@@ -3438,6 +3442,9 @@ type ExpandableApplication struct {
 type ExpandableBookingOffer struct {
 	union json.RawMessage
 }
+
+// ExpandableBookingOffers defines model for ExpandableBookingOffers.
+type ExpandableBookingOffers []ExpandableBookingOffer
 
 // ExpandableCompanies defines model for ExpandableCompanies.
 type ExpandableCompanies []ExpandableCompany
@@ -6635,6 +6642,8 @@ type WaitlistEntriesResponse []WaitlistEntryResponse
 
 // WaitlistEntry defines model for WaitlistEntry.
 type WaitlistEntry struct {
+	BookingOffers *ExpandableBookingOffers `json:"booking_offers,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   *ExpandableCompany `json:"company,omitempty"`
 	CreatedAt *time.Time         `json:"created_at,omitempty"`
@@ -6660,6 +6669,8 @@ type WaitlistEntry struct {
 
 // WaitlistEntryCreate defines model for WaitlistEntryCreate.
 type WaitlistEntryCreate struct {
+	BookingOffers *ExpandableBookingOffers `json:"booking_offers,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   ExpandableCompany `json:"company"`
 	CreatedAt *time.Time        `json:"created_at,omitempty"`
@@ -6712,6 +6723,8 @@ type WaitlistEntryFields []WaitlistEntryField
 
 // WaitlistEntryResponse defines model for WaitlistEntryResponse.
 type WaitlistEntryResponse struct {
+	BookingOffers *ExpandableBookingOffers `json:"booking_offers,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   ExpandableCompany `json:"company"`
 	CreatedAt time.Time         `json:"created_at"`
@@ -6761,8 +6774,9 @@ type WaitlistEntryResponseOverrides struct {
 
 // WaitlistEntryUpdate defines model for WaitlistEntryUpdate.
 type WaitlistEntryUpdate struct {
-	Company   *interface{} `json:"company,omitempty"`
-	CreatedAt *time.Time   `json:"created_at,omitempty"`
+	BookingOffers *ExpandableBookingOffers `json:"booking_offers,omitempty"`
+	Company       *interface{}             `json:"company,omitempty"`
+	CreatedAt     *time.Time               `json:"created_at,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Customer *ExpandableCustomer `json:"customer,omitempty"`
