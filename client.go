@@ -1140,8 +1140,11 @@ type Application struct {
 	Currency     *string    `json:"currency,omitempty"`
 
 	// Short text about the functionality of the app that appears next to the icon in the list.
-	Description   *string `json:"description,omitempty"`
-	DeveloperName *string `json:"developer_name,omitempty"`
+	Description *string `json:"description,omitempty"`
+
+	// Localized short descriptions for the application.
+	DescriptionTranslations *map[string]string `json:"description_translations,omitempty"`
+	DeveloperName           *string            `json:"developer_name,omitempty"`
 
 	// Home page or documentation for your application.
 	DeveloperUrl *string `json:"developer_url,omitempty"`
@@ -1149,8 +1152,11 @@ type Application struct {
 	Logo         *string `json:"logo,omitempty"`
 
 	// Shown to the user when they are asked to give consent.
-	Name        *string                 `json:"name,omitempty"`
-	PaymentType *ApplicationPaymentType `json:"payment_type,omitempty"`
+	Name *string `json:"name,omitempty"`
+
+	// Localized titles for the application in different languages.
+	NameTranslations *map[string]string      `json:"name_translations,omitempty"`
+	PaymentType      *ApplicationPaymentType `json:"payment_type,omitempty"`
 
 	// Price in x100 format. (100 is 1.00)
 	Price *int32 `json:"price,omitempty"`
