@@ -305,6 +305,11 @@ const (
 	EventDeletionBehaviorTypeSingle EventDeletionBehaviorType = "single"
 )
 
+// Defines values for EventField.
+const (
+	DeletedAt EventField = "deleted_at"
+)
+
 // Defines values for EventInvoiceStatus.
 const (
 	EventInvoiceStatusCanceledDuringDraft EventInvoiceStatus = "canceledDuringDraft"
@@ -3010,6 +3015,12 @@ type EventDeletionBehavior struct {
 // - `single` - Only delete the referenced event
 // - `future` - Delete referenced event and all events in the series after the referenced event
 type EventDeletionBehaviorType string
+
+// EventField defines model for EventField.
+type EventField string
+
+// EventFields defines model for EventFields.
+type EventFields []EventField
 
 // EventFilter defines model for EventFilter.
 type EventFilter struct {
@@ -8283,6 +8294,7 @@ type UpdateEventParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand   *Expand              `form:"expand,omitempty" json:"expand,omitempty"`
 	Behavior *EventUpdateBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
+	Unset    *EventFields         `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // CreateCheckoutForEventParams defines parameters for CreateCheckoutForEvent.
@@ -26417,6 +26429,22 @@ func NewUpdateEventRequestWithBody(server string, eventId string, params *Update
 			return nil, err
 		} else {
 			queryValues.Add("behavior", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
