@@ -3003,6 +3003,11 @@ type EventCreationBehavior struct {
 
 // [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
 type EventDeletionBehavior struct {
+	// Whether to notify customer about the event deletion.
+	//
+	// When true, the customer will receive an email and push notification about the event deletion.
+	Notify *bool `json:"notify,omitempty"`
+
 	// What events to delete when deleting an event that is a part of a recurring event.
 	//
 	// - `single` - Only delete the referenced event
