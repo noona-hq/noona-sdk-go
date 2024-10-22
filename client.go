@@ -928,8 +928,10 @@ const (
 
 // Defines values for GetEventsAnalyticsParamsGroupBy.
 const (
-	Origin     GetEventsAnalyticsParamsGroupBy = "origin"
-	TimeBucket GetEventsAnalyticsParamsGroupBy = "time_bucket"
+	NumberOfGuests GetEventsAnalyticsParamsGroupBy = "number_of_guests"
+	Origin         GetEventsAnalyticsParamsGroupBy = "origin"
+	Source         GetEventsAnalyticsParamsGroupBy = "source"
+	TimeBucket     GetEventsAnalyticsParamsGroupBy = "time_bucket"
 )
 
 // Defines values for GetPricingByCountryCodeParamsProduct.
