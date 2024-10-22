@@ -926,6 +926,12 @@ const (
 	TransactionUpdated WebhookEvent = "transaction.updated"
 )
 
+// Defines values for GetEventsAnalyticsParamsGroupBy.
+const (
+	Origin     GetEventsAnalyticsParamsGroupBy = "origin"
+	TimeBucket GetEventsAnalyticsParamsGroupBy = "time_bucket"
+)
+
 // Defines values for GetPricingByCountryCodeParamsProduct.
 const (
 	GetPricingByCountryCodeParamsProductBaseFee          GetPricingByCountryCodeParamsProduct = "base_fee"
@@ -3426,6 +3432,17 @@ type EventUpdateBehaviorType string
 
 // Events defines model for Events.
 type Events []Event
+
+// EventsAnalytics defines model for EventsAnalytics.
+type EventsAnalytics []EventsAnalyticsEntry
+
+// EventsAnalyticsEntry defines model for EventsAnalyticsEntry.
+type EventsAnalyticsEntry struct {
+	Count          int32   `json:"count"`
+	Hours          float64 `json:"hours"`
+	Key            string  `json:"key"`
+	NumberOfGuests int32   `json:"number_of_guests"`
+}
 
 // EventsMetrics defines model for EventsMetrics.
 type EventsMetrics struct {
@@ -7113,6 +7130,20 @@ type ListAllCompanyActivitiesParams struct {
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
+
+// GetEventsAnalyticsParams defines parameters for GetEventsAnalytics.
+type GetEventsAnalyticsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand  *Expand                         `form:"expand,omitempty" json:"expand,omitempty"`
+	GroupBy GetEventsAnalyticsParamsGroupBy `form:"group_by" json:"group_by"`
+	Filter  *EventsMetricsFilter            `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// GetEventsAnalyticsParamsGroupBy defines parameters for GetEventsAnalytics.
+type GetEventsAnalyticsParamsGroupBy string
 
 // ListAppsParams defines parameters for ListApps.
 type ListAppsParams struct {
@@ -11935,6 +11966,9 @@ type ClientInterface interface {
 	// ListAllCompanyActivities request
 	ListAllCompanyActivities(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetEventsAnalytics request
+	GetEventsAnalytics(ctx context.Context, companyId string, params *GetEventsAnalyticsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListApps request
 	ListApps(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13071,6 +13105,18 @@ func (c *Client) UpdateCompany(ctx context.Context, companyId string, params *Up
 
 func (c *Client) ListAllCompanyActivities(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAllCompanyActivitiesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetEventsAnalytics(ctx context.Context, companyId string, params *GetEventsAnalyticsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEventsAnalyticsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18205,6 +18251,98 @@ func NewListAllCompanyActivitiesRequest(server string, companyId string, params 
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetEventsAnalyticsRequest generates requests for GetEventsAnalytics
+func NewGetEventsAnalyticsRequest(server string, companyId string, params *GetEventsAnalyticsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/analytics/events", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "group_by", runtime.ParamLocationQuery, params.GroupBy); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
@@ -38023,6 +38161,9 @@ type ClientWithResponsesInterface interface {
 	// ListAllCompanyActivities request
 	ListAllCompanyActivitiesWithResponse(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*ListAllCompanyActivitiesResponse, error)
 
+	// GetEventsAnalytics request
+	GetEventsAnalyticsWithResponse(ctx context.Context, companyId string, params *GetEventsAnalyticsParams, reqEditors ...RequestEditorFn) (*GetEventsAnalyticsResponse, error)
+
 	// ListApps request
 	ListAppsWithResponse(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*ListAppsResponse, error)
 
@@ -39268,6 +39409,28 @@ func (r ListAllCompanyActivitiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListAllCompanyActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetEventsAnalyticsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventsAnalytics
+}
+
+// Status returns HTTPResponse.Status
+func (r GetEventsAnalyticsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetEventsAnalyticsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -45047,6 +45210,15 @@ func (c *ClientWithResponses) ListAllCompanyActivitiesWithResponse(ctx context.C
 	return ParseListAllCompanyActivitiesResponse(rsp)
 }
 
+// GetEventsAnalyticsWithResponse request returning *GetEventsAnalyticsResponse
+func (c *ClientWithResponses) GetEventsAnalyticsWithResponse(ctx context.Context, companyId string, params *GetEventsAnalyticsParams, reqEditors ...RequestEditorFn) (*GetEventsAnalyticsResponse, error) {
+	rsp, err := c.GetEventsAnalytics(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetEventsAnalyticsResponse(rsp)
+}
+
 // ListAppsWithResponse request returning *ListAppsResponse
 func (c *ClientWithResponses) ListAppsWithResponse(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*ListAppsResponse, error) {
 	rsp, err := c.ListApps(ctx, companyId, params, reqEditors...)
@@ -48345,6 +48517,32 @@ func ParseListAllCompanyActivitiesResponse(rsp *http.Response) (*ListAllCompanyA
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Activities
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetEventsAnalyticsResponse parses an HTTP response from a GetEventsAnalyticsWithResponse call
+func ParseGetEventsAnalyticsResponse(rsp *http.Response) (*GetEventsAnalyticsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetEventsAnalyticsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventsAnalytics
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
