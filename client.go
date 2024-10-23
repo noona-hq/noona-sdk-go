@@ -931,6 +931,7 @@ const (
 	NumberOfGuests GetEventsAnalyticsParamsGroupBy = "number_of_guests"
 	Origin         GetEventsAnalyticsParamsGroupBy = "origin"
 	Source         GetEventsAnalyticsParamsGroupBy = "source"
+	Status         GetEventsAnalyticsParamsGroupBy = "status"
 	TimeBucket     GetEventsAnalyticsParamsGroupBy = "time_bucket"
 )
 
@@ -3451,7 +3452,28 @@ type EventsAnalyticsEntryKey struct {
 	NumberOfGuests *string `json:"number_of_guests,omitempty"`
 	Origin         *string `json:"origin,omitempty"`
 	Source         *string `json:"source,omitempty"`
+	Status         *string `json:"status,omitempty"`
 	TimeBucket     *string `json:"time_bucket,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type EventsAnalyticsFilter struct {
+	// Filter by employee ID
+	Employee *string   `json:"employee,omitempty"`
+	From     time.Time `json:"from"`
+
+	// Include canceled and no-show events
+	IncludeCanceledNoshow *bool `json:"include_canceled_noshow,omitempty"`
+
+	// Include deleted events
+	IncludeDeleted *bool `json:"include_deleted,omitempty"`
+
+	// Only include bookings of new customers
+	OnlyNewCustomers *bool `json:"only_new_customers,omitempty"`
+
+	// Filter by employee/resource IDs
+	Resources *[]string `json:"resources,omitempty"`
+	To        time.Time `json:"to"`
 }
 
 // EventsMetrics defines model for EventsMetrics.
@@ -7149,7 +7171,7 @@ type GetEventsAnalyticsParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand  *Expand                           `form:"expand,omitempty" json:"expand,omitempty"`
 	GroupBy []GetEventsAnalyticsParamsGroupBy `form:"group_by" json:"group_by"`
-	Filter  *EventsMetricsFilter              `form:"filter,omitempty" json:"filter,omitempty"`
+	Filter  *EventsAnalyticsFilter            `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // GetEventsAnalyticsParamsGroupBy defines parameters for GetEventsAnalytics.
