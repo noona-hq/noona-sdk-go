@@ -3458,9 +3458,9 @@ type EventsAggregateEntryKey struct {
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type EventsAggregateFilter struct {
-	// Filter by employee ID
-	Employee *string   `json:"employee,omitempty"`
-	From     time.Time `json:"from"`
+	// Filter by employee IDs
+	Employees *[]string `json:"employees,omitempty"`
+	From      time.Time `json:"from"`
 
 	// Include canceled and no-show events
 	IncludeCanceledNoshow *bool `json:"include_canceled_noshow,omitempty"`
@@ -3471,7 +3471,7 @@ type EventsAggregateFilter struct {
 	// Only include bookings of new customers
 	OnlyNewCustomers *bool `json:"only_new_customers,omitempty"`
 
-	// Filter by employee/resource IDs
+	// Filter by resource IDs
 	Resources *[]string `json:"resources,omitempty"`
 	To        time.Time `json:"to"`
 }
