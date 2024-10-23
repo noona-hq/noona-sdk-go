@@ -3440,10 +3440,18 @@ type EventsAnalytics []EventsAnalyticsEntry
 
 // EventsAnalyticsEntry defines model for EventsAnalyticsEntry.
 type EventsAnalyticsEntry struct {
-	Count          int32   `json:"count"`
-	Hours          float64 `json:"hours"`
-	Key            string  `json:"key"`
-	NumberOfGuests int32   `json:"number_of_guests"`
+	Count          int32                   `json:"count"`
+	Hours          float64                 `json:"hours"`
+	Key            EventsAnalyticsEntryKey `json:"key"`
+	NumberOfGuests int32                   `json:"number_of_guests"`
+}
+
+// EventsAnalyticsEntryKey defines model for EventsAnalyticsEntryKey.
+type EventsAnalyticsEntryKey struct {
+	NumberOfGuests *string `json:"number_of_guests,omitempty"`
+	Origin         *string `json:"origin,omitempty"`
+	Source         *string `json:"source,omitempty"`
+	TimeBucket     *string `json:"time_bucket,omitempty"`
 }
 
 // EventsMetrics defines model for EventsMetrics.
@@ -7139,9 +7147,9 @@ type GetEventsAnalyticsParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand  *Expand                         `form:"expand,omitempty" json:"expand,omitempty"`
-	GroupBy GetEventsAnalyticsParamsGroupBy `form:"group_by" json:"group_by"`
-	Filter  *EventsMetricsFilter            `form:"filter,omitempty" json:"filter,omitempty"`
+	Expand  *Expand                           `form:"expand,omitempty" json:"expand,omitempty"`
+	GroupBy []GetEventsAnalyticsParamsGroupBy `form:"group_by" json:"group_by"`
+	Filter  *EventsMetricsFilter              `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // GetEventsAnalyticsParamsGroupBy defines parameters for GetEventsAnalytics.
