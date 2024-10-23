@@ -926,13 +926,13 @@ const (
 	TransactionUpdated WebhookEvent = "transaction.updated"
 )
 
-// Defines values for GetEventsAnalyticsParamsGroupBy.
+// Defines values for GetEventsAggregateParamsGroupBy.
 const (
-	NumberOfGuests GetEventsAnalyticsParamsGroupBy = "number_of_guests"
-	Origin         GetEventsAnalyticsParamsGroupBy = "origin"
-	Source         GetEventsAnalyticsParamsGroupBy = "source"
-	Status         GetEventsAnalyticsParamsGroupBy = "status"
-	TimeBucket     GetEventsAnalyticsParamsGroupBy = "time_bucket"
+	NumberOfGuests GetEventsAggregateParamsGroupBy = "number_of_guests"
+	Origin         GetEventsAggregateParamsGroupBy = "origin"
+	Source         GetEventsAggregateParamsGroupBy = "source"
+	Status         GetEventsAggregateParamsGroupBy = "status"
+	TimeBucket     GetEventsAggregateParamsGroupBy = "time_bucket"
 )
 
 // Defines values for GetPricingByCountryCodeParamsProduct.
@@ -3436,19 +3436,19 @@ type EventUpdateBehaviorType string
 // Events defines model for Events.
 type Events []Event
 
-// EventsAnalytics defines model for EventsAnalytics.
-type EventsAnalytics []EventsAnalyticsEntry
+// EventsAggregate defines model for EventsAggregate.
+type EventsAggregate []EventsAggregateEntry
 
-// EventsAnalyticsEntry defines model for EventsAnalyticsEntry.
-type EventsAnalyticsEntry struct {
+// EventsAggregateEntry defines model for EventsAggregateEntry.
+type EventsAggregateEntry struct {
 	Count          int32                   `json:"count"`
 	Hours          float64                 `json:"hours"`
-	Key            EventsAnalyticsEntryKey `json:"key"`
+	Key            EventsAggregateEntryKey `json:"key"`
 	NumberOfGuests int32                   `json:"number_of_guests"`
 }
 
-// EventsAnalyticsEntryKey defines model for EventsAnalyticsEntryKey.
-type EventsAnalyticsEntryKey struct {
+// EventsAggregateEntryKey defines model for EventsAggregateEntryKey.
+type EventsAggregateEntryKey struct {
 	NumberOfGuests *string `json:"number_of_guests,omitempty"`
 	Origin         *string `json:"origin,omitempty"`
 	Source         *string `json:"source,omitempty"`
@@ -3457,7 +3457,7 @@ type EventsAnalyticsEntryKey struct {
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
-type EventsAnalyticsFilter struct {
+type EventsAggregateFilter struct {
 	// Filter by employee ID
 	Employee *string   `json:"employee,omitempty"`
 	From     time.Time `json:"from"`
@@ -7163,19 +7163,19 @@ type ListAllCompanyActivitiesParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
-// GetEventsAnalyticsParams defines parameters for GetEventsAnalytics.
-type GetEventsAnalyticsParams struct {
+// GetEventsAggregateParams defines parameters for GetEventsAggregate.
+type GetEventsAggregateParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand  *Expand                           `form:"expand,omitempty" json:"expand,omitempty"`
-	GroupBy []GetEventsAnalyticsParamsGroupBy `form:"group_by" json:"group_by"`
-	Filter  *EventsAnalyticsFilter            `form:"filter,omitempty" json:"filter,omitempty"`
+	GroupBy []GetEventsAggregateParamsGroupBy `form:"group_by" json:"group_by"`
+	Filter  *EventsAggregateFilter            `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
-// GetEventsAnalyticsParamsGroupBy defines parameters for GetEventsAnalytics.
-type GetEventsAnalyticsParamsGroupBy string
+// GetEventsAggregateParamsGroupBy defines parameters for GetEventsAggregate.
+type GetEventsAggregateParamsGroupBy string
 
 // ListAppsParams defines parameters for ListApps.
 type ListAppsParams struct {
@@ -11998,8 +11998,8 @@ type ClientInterface interface {
 	// ListAllCompanyActivities request
 	ListAllCompanyActivities(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetEventsAnalytics request
-	GetEventsAnalytics(ctx context.Context, companyId string, params *GetEventsAnalyticsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetEventsAggregate request
+	GetEventsAggregate(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListApps request
 	ListApps(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -13147,8 +13147,8 @@ func (c *Client) ListAllCompanyActivities(ctx context.Context, companyId string,
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetEventsAnalytics(ctx context.Context, companyId string, params *GetEventsAnalyticsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetEventsAnalyticsRequest(c.Server, companyId, params)
+func (c *Client) GetEventsAggregate(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEventsAggregateRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18297,8 +18297,8 @@ func NewListAllCompanyActivitiesRequest(server string, companyId string, params 
 	return req, nil
 }
 
-// NewGetEventsAnalyticsRequest generates requests for GetEventsAnalytics
-func NewGetEventsAnalyticsRequest(server string, companyId string, params *GetEventsAnalyticsParams) (*http.Request, error) {
+// NewGetEventsAggregateRequest generates requests for GetEventsAggregate
+func NewGetEventsAggregateRequest(server string, companyId string, params *GetEventsAggregateParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -18313,7 +18313,7 @@ func NewGetEventsAnalyticsRequest(server string, companyId string, params *GetEv
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/hq/companies/%s/analytics/events", pathParam0)
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/aggregate/events", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -38193,8 +38193,8 @@ type ClientWithResponsesInterface interface {
 	// ListAllCompanyActivities request
 	ListAllCompanyActivitiesWithResponse(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*ListAllCompanyActivitiesResponse, error)
 
-	// GetEventsAnalytics request
-	GetEventsAnalyticsWithResponse(ctx context.Context, companyId string, params *GetEventsAnalyticsParams, reqEditors ...RequestEditorFn) (*GetEventsAnalyticsResponse, error)
+	// GetEventsAggregate request
+	GetEventsAggregateWithResponse(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*GetEventsAggregateResponse, error)
 
 	// ListApps request
 	ListAppsWithResponse(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*ListAppsResponse, error)
@@ -39447,14 +39447,14 @@ func (r ListAllCompanyActivitiesResponse) StatusCode() int {
 	return 0
 }
 
-type GetEventsAnalyticsResponse struct {
+type GetEventsAggregateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *EventsAnalytics
+	JSON200      *EventsAggregate
 }
 
 // Status returns HTTPResponse.Status
-func (r GetEventsAnalyticsResponse) Status() string {
+func (r GetEventsAggregateResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -39462,7 +39462,7 @@ func (r GetEventsAnalyticsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetEventsAnalyticsResponse) StatusCode() int {
+func (r GetEventsAggregateResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -45242,13 +45242,13 @@ func (c *ClientWithResponses) ListAllCompanyActivitiesWithResponse(ctx context.C
 	return ParseListAllCompanyActivitiesResponse(rsp)
 }
 
-// GetEventsAnalyticsWithResponse request returning *GetEventsAnalyticsResponse
-func (c *ClientWithResponses) GetEventsAnalyticsWithResponse(ctx context.Context, companyId string, params *GetEventsAnalyticsParams, reqEditors ...RequestEditorFn) (*GetEventsAnalyticsResponse, error) {
-	rsp, err := c.GetEventsAnalytics(ctx, companyId, params, reqEditors...)
+// GetEventsAggregateWithResponse request returning *GetEventsAggregateResponse
+func (c *ClientWithResponses) GetEventsAggregateWithResponse(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*GetEventsAggregateResponse, error) {
+	rsp, err := c.GetEventsAggregate(ctx, companyId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetEventsAnalyticsResponse(rsp)
+	return ParseGetEventsAggregateResponse(rsp)
 }
 
 // ListAppsWithResponse request returning *ListAppsResponse
@@ -48559,22 +48559,22 @@ func ParseListAllCompanyActivitiesResponse(rsp *http.Response) (*ListAllCompanyA
 	return response, nil
 }
 
-// ParseGetEventsAnalyticsResponse parses an HTTP response from a GetEventsAnalyticsWithResponse call
-func ParseGetEventsAnalyticsResponse(rsp *http.Response) (*GetEventsAnalyticsResponse, error) {
+// ParseGetEventsAggregateResponse parses an HTTP response from a GetEventsAggregateWithResponse call
+func ParseGetEventsAggregateResponse(rsp *http.Response) (*GetEventsAggregateResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetEventsAnalyticsResponse{
+	response := &GetEventsAggregateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest EventsAnalytics
+		var dest EventsAggregate
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
