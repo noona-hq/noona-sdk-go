@@ -940,6 +940,11 @@ const (
 	GetEventsAggregateParamsGroupByTimeBucket     GetEventsAggregateParamsGroupBy = "time_bucket"
 )
 
+// Defines values for GetSMSMessagesAggregateParamsGroupBy.
+const (
+	TimeBucket GetSMSMessagesAggregateParamsGroupBy = "time_bucket"
+)
+
 // Defines values for GetPricingByCountryCodeParamsProduct.
 const (
 	GetPricingByCountryCodeParamsProductBaseFee          GetPricingByCountryCodeParamsProduct = "base_fee"
@@ -5785,11 +5790,34 @@ type SMSMessage struct {
 // SMSMessageStatus defines model for SMSMessage.Status.
 type SMSMessageStatus string
 
-// SMSMessageType defines model for SMSMessage.Type.
+// SMSMessageType defines model for SMSMessageType.
 type SMSMessageType string
 
 // SMSMessages defines model for SMSMessages.
 type SMSMessages []SMSMessage
+
+// SMSMessagesAggregate defines model for SMSMessagesAggregate.
+type SMSMessagesAggregate []SMSMessagesAggregateEntry
+
+// SMSMessagesAggregateEntry defines model for SMSMessagesAggregateEntry.
+type SMSMessagesAggregateEntry struct {
+	Count int32                        `json:"count"`
+	Key   SMSMessagesAggregateEntryKey `json:"key"`
+}
+
+// SMSMessagesAggregateEntryKey defines model for SMSMessagesAggregateEntryKey.
+type SMSMessagesAggregateEntryKey struct {
+	TimeBucket *string `json:"time_bucket,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type SMSMessagesAggregateFilter struct {
+	// Filter by employee IDs
+	Employees *[]string         `json:"employees,omitempty"`
+	From      time.Time         `json:"from"`
+	To        time.Time         `json:"to"`
+	Types     *[]SMSMessageType `json:"types,omitempty"`
+}
 
 // Sale defines model for Sale.
 type Sale struct {
@@ -7217,6 +7245,20 @@ type GetEventsAggregateParams struct {
 
 // GetEventsAggregateParamsGroupBy defines parameters for GetEventsAggregate.
 type GetEventsAggregateParamsGroupBy string
+
+// GetSMSMessagesAggregateParams defines parameters for GetSMSMessagesAggregate.
+type GetSMSMessagesAggregateParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand  *Expand                                `form:"expand,omitempty" json:"expand,omitempty"`
+	GroupBy []GetSMSMessagesAggregateParamsGroupBy `form:"group_by" json:"group_by"`
+	Filter  *SMSMessagesAggregateFilter            `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// GetSMSMessagesAggregateParamsGroupBy defines parameters for GetSMSMessagesAggregate.
+type GetSMSMessagesAggregateParamsGroupBy string
 
 // ListAppsParams defines parameters for ListApps.
 type ListAppsParams struct {
@@ -12045,6 +12087,9 @@ type ClientInterface interface {
 	// GetEventsAggregate request
 	GetEventsAggregate(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetSMSMessagesAggregate request
+	GetSMSMessagesAggregate(ctx context.Context, companyId string, params *GetSMSMessagesAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListApps request
 	ListApps(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13205,6 +13250,18 @@ func (c *Client) GetCustomersAggregate(ctx context.Context, companyId string, pa
 
 func (c *Client) GetEventsAggregate(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetEventsAggregateRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSMSMessagesAggregate(ctx context.Context, companyId string, params *GetSMSMessagesAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSMSMessagesAggregateRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18462,6 +18519,98 @@ func NewGetEventsAggregateRequest(server string, companyId string, params *GetEv
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/aggregate/events", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "group_by", runtime.ParamLocationQuery, params.GroupBy); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSMSMessagesAggregateRequest generates requests for GetSMSMessagesAggregate
+func NewGetSMSMessagesAggregateRequest(server string, companyId string, params *GetSMSMessagesAggregateParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/aggregate/sms_messages", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -38347,6 +38496,9 @@ type ClientWithResponsesInterface interface {
 	// GetEventsAggregate request
 	GetEventsAggregateWithResponse(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*GetEventsAggregateResponse, error)
 
+	// GetSMSMessagesAggregate request
+	GetSMSMessagesAggregateWithResponse(ctx context.Context, companyId string, params *GetSMSMessagesAggregateParams, reqEditors ...RequestEditorFn) (*GetSMSMessagesAggregateResponse, error)
+
 	// ListApps request
 	ListAppsWithResponse(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*ListAppsResponse, error)
 
@@ -39636,6 +39788,28 @@ func (r GetEventsAggregateResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetEventsAggregateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSMSMessagesAggregateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SMSMessagesAggregate
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSMSMessagesAggregateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSMSMessagesAggregateResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -45433,6 +45607,15 @@ func (c *ClientWithResponses) GetEventsAggregateWithResponse(ctx context.Context
 	return ParseGetEventsAggregateResponse(rsp)
 }
 
+// GetSMSMessagesAggregateWithResponse request returning *GetSMSMessagesAggregateResponse
+func (c *ClientWithResponses) GetSMSMessagesAggregateWithResponse(ctx context.Context, companyId string, params *GetSMSMessagesAggregateParams, reqEditors ...RequestEditorFn) (*GetSMSMessagesAggregateResponse, error) {
+	rsp, err := c.GetSMSMessagesAggregate(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSMSMessagesAggregateResponse(rsp)
+}
+
 // ListAppsWithResponse request returning *ListAppsResponse
 func (c *ClientWithResponses) ListAppsWithResponse(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*ListAppsResponse, error) {
 	rsp, err := c.ListApps(ctx, companyId, params, reqEditors...)
@@ -48783,6 +48966,32 @@ func ParseGetEventsAggregateResponse(rsp *http.Response) (*GetEventsAggregateRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest EventsAggregate
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSMSMessagesAggregateResponse parses an HTTP response from a GetSMSMessagesAggregateWithResponse call
+func ParseGetSMSMessagesAggregateResponse(rsp *http.Response) (*GetSMSMessagesAggregateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSMSMessagesAggregateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SMSMessagesAggregate
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
