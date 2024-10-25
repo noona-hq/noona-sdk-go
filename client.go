@@ -926,13 +926,18 @@ const (
 	TransactionUpdated WebhookEvent = "transaction.updated"
 )
 
+// Defines values for GetCustomersAggregateParamsGroupBy.
+const (
+	GetCustomersAggregateParamsGroupByTimeBucket GetCustomersAggregateParamsGroupBy = "time_bucket"
+)
+
 // Defines values for GetEventsAggregateParamsGroupBy.
 const (
-	NumberOfGuests GetEventsAggregateParamsGroupBy = "number_of_guests"
-	Origin         GetEventsAggregateParamsGroupBy = "origin"
-	Source         GetEventsAggregateParamsGroupBy = "source"
-	Status         GetEventsAggregateParamsGroupBy = "status"
-	TimeBucket     GetEventsAggregateParamsGroupBy = "time_bucket"
+	GetEventsAggregateParamsGroupByNumberOfGuests GetEventsAggregateParamsGroupBy = "number_of_guests"
+	GetEventsAggregateParamsGroupByOrigin         GetEventsAggregateParamsGroupBy = "origin"
+	GetEventsAggregateParamsGroupBySource         GetEventsAggregateParamsGroupBy = "source"
+	GetEventsAggregateParamsGroupByStatus         GetEventsAggregateParamsGroupBy = "status"
+	GetEventsAggregateParamsGroupByTimeBucket     GetEventsAggregateParamsGroupBy = "time_bucket"
 )
 
 // Defines values for GetPricingByCountryCodeParamsProduct.
@@ -2453,6 +2458,28 @@ type CustomerTags struct {
 
 // Customers defines model for Customers.
 type Customers []Customer
+
+// CustomersAggregate defines model for CustomersAggregate.
+type CustomersAggregate []CustomersAggregateEntry
+
+// CustomersAggregateEntry defines model for CustomersAggregateEntry.
+type CustomersAggregateEntry struct {
+	Count int32                      `json:"count"`
+	Key   CustomersAggregateEntryKey `json:"key"`
+}
+
+// CustomersAggregateEntryKey defines model for CustomersAggregateEntryKey.
+type CustomersAggregateEntryKey struct {
+	TimeBucket *string `json:"time_bucket,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type CustomersAggregateFilter struct {
+	// Filter by employee IDs
+	Employees *[]string `json:"employees,omitempty"`
+	From      time.Time `json:"from"`
+	To        time.Time `json:"to"`
+}
 
 // DateFilter defines model for DateFilter.
 type DateFilter struct {
@@ -7162,6 +7189,20 @@ type ListAllCompanyActivitiesParams struct {
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
+
+// GetCustomersAggregateParams defines parameters for GetCustomersAggregate.
+type GetCustomersAggregateParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand  *Expand                              `form:"expand,omitempty" json:"expand,omitempty"`
+	GroupBy []GetCustomersAggregateParamsGroupBy `form:"group_by" json:"group_by"`
+	Filter  *CustomersAggregateFilter            `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// GetCustomersAggregateParamsGroupBy defines parameters for GetCustomersAggregate.
+type GetCustomersAggregateParamsGroupBy string
 
 // GetEventsAggregateParams defines parameters for GetEventsAggregate.
 type GetEventsAggregateParams struct {
@@ -11998,6 +12039,9 @@ type ClientInterface interface {
 	// ListAllCompanyActivities request
 	ListAllCompanyActivities(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetCustomersAggregate request
+	GetCustomersAggregate(ctx context.Context, companyId string, params *GetCustomersAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetEventsAggregate request
 	GetEventsAggregate(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13137,6 +13181,18 @@ func (c *Client) UpdateCompany(ctx context.Context, companyId string, params *Up
 
 func (c *Client) ListAllCompanyActivities(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAllCompanyActivitiesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCustomersAggregate(ctx context.Context, companyId string, params *GetCustomersAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCustomersAggregateRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18283,6 +18339,98 @@ func NewListAllCompanyActivitiesRequest(server string, companyId string, params 
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetCustomersAggregateRequest generates requests for GetCustomersAggregate
+func NewGetCustomersAggregateRequest(server string, companyId string, params *GetCustomersAggregateParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/aggregate/customers", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "group_by", runtime.ParamLocationQuery, params.GroupBy); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
@@ -38193,6 +38341,9 @@ type ClientWithResponsesInterface interface {
 	// ListAllCompanyActivities request
 	ListAllCompanyActivitiesWithResponse(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*ListAllCompanyActivitiesResponse, error)
 
+	// GetCustomersAggregate request
+	GetCustomersAggregateWithResponse(ctx context.Context, companyId string, params *GetCustomersAggregateParams, reqEditors ...RequestEditorFn) (*GetCustomersAggregateResponse, error)
+
 	// GetEventsAggregate request
 	GetEventsAggregateWithResponse(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*GetEventsAggregateResponse, error)
 
@@ -39441,6 +39592,28 @@ func (r ListAllCompanyActivitiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListAllCompanyActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCustomersAggregateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CustomersAggregate
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCustomersAggregateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCustomersAggregateResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -45242,6 +45415,15 @@ func (c *ClientWithResponses) ListAllCompanyActivitiesWithResponse(ctx context.C
 	return ParseListAllCompanyActivitiesResponse(rsp)
 }
 
+// GetCustomersAggregateWithResponse request returning *GetCustomersAggregateResponse
+func (c *ClientWithResponses) GetCustomersAggregateWithResponse(ctx context.Context, companyId string, params *GetCustomersAggregateParams, reqEditors ...RequestEditorFn) (*GetCustomersAggregateResponse, error) {
+	rsp, err := c.GetCustomersAggregate(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCustomersAggregateResponse(rsp)
+}
+
 // GetEventsAggregateWithResponse request returning *GetEventsAggregateResponse
 func (c *ClientWithResponses) GetEventsAggregateWithResponse(ctx context.Context, companyId string, params *GetEventsAggregateParams, reqEditors ...RequestEditorFn) (*GetEventsAggregateResponse, error) {
 	rsp, err := c.GetEventsAggregate(ctx, companyId, params, reqEditors...)
@@ -48549,6 +48731,32 @@ func ParseListAllCompanyActivitiesResponse(rsp *http.Response) (*ListAllCompanyA
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Activities
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCustomersAggregateResponse parses an HTTP response from a GetCustomersAggregateWithResponse call
+func ParseGetCustomersAggregateResponse(rsp *http.Response) (*GetCustomersAggregateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCustomersAggregateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CustomersAggregate
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
