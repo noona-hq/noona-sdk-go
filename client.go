@@ -2480,6 +2480,9 @@ type CustomersAggregateEntryKey struct {
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type CustomersAggregateFilter struct {
+	// Filter by custom property values
+	CustomPropertyValues *[]string `json:"custom_property_values,omitempty"`
+
 	// Filter by employee IDs
 	Employees *[]string `json:"employees,omitempty"`
 
@@ -3497,8 +3500,17 @@ type EventsAggregateEntryKey struct {
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type EventsAggregateFilter struct {
+	// Filter by custom property values
+	CustomPropertyValues *[]string `json:"custom_property_values,omitempty"`
+
+	// Filter by customer custom property values
+	CustomerCustomPropertyValues *[]string `json:"customer_custom_property_values,omitempty"`
+
 	// Filter by employee IDs
 	Employees *[]string `json:"employees,omitempty"`
+
+	// Filter by event type IDs
+	EventTypes *[]string `json:"event_types,omitempty"`
 
 	// From/to or time_bucket are required
 	From *time.Time `json:"from,omitempty"`
@@ -3510,10 +3522,16 @@ type EventsAggregateFilter struct {
 	IncludeDeleted *bool `json:"include_deleted,omitempty"`
 
 	// Only include bookings of new customers
-	OnlyNewCustomers *bool `json:"only_new_customers,omitempty"`
+	OnlyNewCustomers *bool         `json:"only_new_customers,omitempty"`
+	Origins          *EventOrigins `json:"origins,omitempty"`
 
 	// Filter by resource IDs
 	Resources *[]string `json:"resources,omitempty"`
+
+	// The status of the event.
+	//
+	// See [Event Statuses](#tag/Event-Statuses) for more information.
+	Statuses *[]string `json:"statuses,omitempty"`
 
 	// From/to or time_bucket are required
 	TimeBucket *string `json:"time_bucket,omitempty"`
