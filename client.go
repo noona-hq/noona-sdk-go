@@ -2482,8 +2482,15 @@ type CustomersAggregateEntryKey struct {
 type CustomersAggregateFilter struct {
 	// Filter by employee IDs
 	Employees *[]string `json:"employees,omitempty"`
-	From      time.Time `json:"from"`
-	To        time.Time `json:"to"`
+
+	// From/to or time_bucket are required
+	From *time.Time `json:"from,omitempty"`
+
+	// From/to or time_bucket are required
+	TimeBucket *string `json:"time_bucket,omitempty"`
+
+	// From/to or time_bucket are required
+	To *time.Time `json:"to,omitempty"`
 }
 
 // DateFilter defines model for DateFilter.
@@ -3492,7 +3499,9 @@ type EventsAggregateEntryKey struct {
 type EventsAggregateFilter struct {
 	// Filter by employee IDs
 	Employees *[]string `json:"employees,omitempty"`
-	From      time.Time `json:"from"`
+
+	// From/to or time_bucket are required
+	From *time.Time `json:"from,omitempty"`
 
 	// Include canceled and no-show events
 	IncludeCanceledNoshow *bool `json:"include_canceled_noshow,omitempty"`
@@ -3505,7 +3514,12 @@ type EventsAggregateFilter struct {
 
 	// Filter by resource IDs
 	Resources *[]string `json:"resources,omitempty"`
-	To        time.Time `json:"to"`
+
+	// From/to or time_bucket are required
+	TimeBucket *string `json:"time_bucket,omitempty"`
+
+	// From/to or time_bucket are required
+	To *time.Time `json:"to,omitempty"`
 }
 
 // EventsMetrics defines model for EventsMetrics.
@@ -5812,11 +5826,21 @@ type SMSMessagesAggregateEntryKey struct {
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SMSMessagesAggregateFilter struct {
+	// Only include custom messages
+	Custom *bool `json:"custom,omitempty"`
+
 	// Filter by employee IDs
-	Employees *[]string         `json:"employees,omitempty"`
-	From      time.Time         `json:"from"`
-	To        time.Time         `json:"to"`
-	Types     *[]SMSMessageType `json:"types,omitempty"`
+	Employees *[]string `json:"employees,omitempty"`
+
+	// From/to or time_bucket are required
+	From *time.Time `json:"from,omitempty"`
+
+	// From/to or time_bucket are required
+	TimeBucket *string `json:"time_bucket,omitempty"`
+
+	// From/to or time_bucket are required
+	To    *time.Time        `json:"to,omitempty"`
+	Types *[]SMSMessageType `json:"types,omitempty"`
 }
 
 // Sale defines model for Sale.
