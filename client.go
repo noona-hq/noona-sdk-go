@@ -933,11 +933,15 @@ const (
 
 // Defines values for GetEventsAggregateParamsGroupBy.
 const (
-	GetEventsAggregateParamsGroupByNumberOfGuests GetEventsAggregateParamsGroupBy = "number_of_guests"
-	GetEventsAggregateParamsGroupByOrigin         GetEventsAggregateParamsGroupBy = "origin"
-	GetEventsAggregateParamsGroupBySource         GetEventsAggregateParamsGroupBy = "source"
-	GetEventsAggregateParamsGroupByStatus         GetEventsAggregateParamsGroupBy = "status"
-	GetEventsAggregateParamsGroupByTimeBucket     GetEventsAggregateParamsGroupBy = "time_bucket"
+	GetEventsAggregateParamsGroupByCreatedTimeBucket GetEventsAggregateParamsGroupBy = "created_time_bucket"
+	GetEventsAggregateParamsGroupByDuration          GetEventsAggregateParamsGroupBy = "duration"
+	GetEventsAggregateParamsGroupByEventType         GetEventsAggregateParamsGroupBy = "event_type"
+	GetEventsAggregateParamsGroupByNumberOfGuests    GetEventsAggregateParamsGroupBy = "number_of_guests"
+	GetEventsAggregateParamsGroupByOrigin            GetEventsAggregateParamsGroupBy = "origin"
+	GetEventsAggregateParamsGroupBySource            GetEventsAggregateParamsGroupBy = "source"
+	GetEventsAggregateParamsGroupByStartTime         GetEventsAggregateParamsGroupBy = "start_time"
+	GetEventsAggregateParamsGroupByStatus            GetEventsAggregateParamsGroupBy = "status"
+	GetEventsAggregateParamsGroupByTimeBucket        GetEventsAggregateParamsGroupBy = "time_bucket"
 )
 
 // Defines values for GetSMSMessagesAggregateParamsGroupBy.
@@ -3491,15 +3495,25 @@ type EventsAggregateEntry struct {
 
 // EventsAggregateEntryKey defines model for EventsAggregateEntryKey.
 type EventsAggregateEntryKey struct {
-	NumberOfGuests *string `json:"number_of_guests,omitempty"`
-	Origin         *string `json:"origin,omitempty"`
-	Source         *string `json:"source,omitempty"`
-	Status         *string `json:"status,omitempty"`
-	TimeBucket     *string `json:"time_bucket,omitempty"`
+	CreatedTimeBucket *string `json:"created_time_bucket,omitempty"`
+	Duration          *string `json:"duration,omitempty"`
+	EventType         *string `json:"event_type,omitempty"`
+	NumberOfGuests    *string `json:"number_of_guests,omitempty"`
+	Origin            *string `json:"origin,omitempty"`
+	Source            *string `json:"source,omitempty"`
+	StartTime         *string `json:"start_time,omitempty"`
+	Status            *string `json:"status,omitempty"`
+	TimeBucket        *string `json:"time_bucket,omitempty"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type EventsAggregateFilter struct {
+	// From/to, created from/to or time_bucket are required
+	CreatedFrom *time.Time `json:"created_from,omitempty"`
+
+	// From/to, created from/to or time_bucket are required
+	CreatedTo *time.Time `json:"created_to,omitempty"`
+
 	// Filter by custom property values
 	CustomPropertyValues *[]string `json:"custom_property_values,omitempty"`
 
@@ -3512,7 +3526,7 @@ type EventsAggregateFilter struct {
 	// Filter by event type IDs
 	EventTypes *[]string `json:"event_types,omitempty"`
 
-	// From/to or time_bucket are required
+	// From/to, created from/to or time_bucket are required
 	From *time.Time `json:"from,omitempty"`
 
 	// Include canceled and no-show events
@@ -3533,10 +3547,10 @@ type EventsAggregateFilter struct {
 	// See [Event Statuses](#tag/Event-Statuses) for more information.
 	Statuses *[]string `json:"statuses,omitempty"`
 
-	// From/to or time_bucket are required
+	// From/to, created from/to or time_bucket are required
 	TimeBucket *string `json:"time_bucket,omitempty"`
 
-	// From/to or time_bucket are required
+	// From/to, created from/to or time_bucket are required
 	To *time.Time `json:"to,omitempty"`
 }
 
