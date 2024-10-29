@@ -3454,6 +3454,7 @@ type EventTypePriceRanges []EventTypePriceRange
 type EventTypeVariation struct {
 	// [Expandable](#section/Expandable-attributes)
 	CustomerGroup *ExpandableCustomerGroup   `json:"customer_group,omitempty"`
+	Description   *string                    `json:"description,omitempty"`
 	Id            *string                    `json:"id,omitempty"`
 	Label         *string                    `json:"label,omitempty"`
 	Prices        *[]EventTypeVariationPrice `json:"prices,omitempty"`
