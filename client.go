@@ -944,6 +944,14 @@ const (
 	GetEventsAggregateParamsGroupByTimeBucket        GetEventsAggregateParamsGroupBy = "time_bucket"
 )
 
+// Defines values for GetEventsAggregateParamsAggregatedFields.
+const (
+	Count          GetEventsAggregateParamsAggregatedFields = "count"
+	Hours          GetEventsAggregateParamsAggregatedFields = "hours"
+	NewCustomers   GetEventsAggregateParamsAggregatedFields = "new_customers"
+	NumberOfGuests GetEventsAggregateParamsAggregatedFields = "number_of_guests"
+)
+
 // Defines values for GetSMSMessagesAggregateParamsGroupBy.
 const (
 	TimeBucket GetSMSMessagesAggregateParamsGroupBy = "time_bucket"
@@ -3504,10 +3512,11 @@ type EventsAggregate []EventsAggregateEntry
 
 // EventsAggregateEntry defines model for EventsAggregateEntry.
 type EventsAggregateEntry struct {
-	Count          int32                   `json:"count"`
-	Hours          float64                 `json:"hours"`
+	Count          *int32                  `json:"count,omitempty"`
+	Hours          *float64                `json:"hours,omitempty"`
 	Key            EventsAggregateEntryKey `json:"key"`
-	NumberOfGuests int32                   `json:"number_of_guests"`
+	NewCustomers   *int32                  `json:"new_customers,omitempty"`
+	NumberOfGuests *int32                  `json:"number_of_guests,omitempty"`
 }
 
 // EventsAggregateEntryKey defines model for EventsAggregateEntryKey.
@@ -7311,13 +7320,17 @@ type GetEventsAggregateParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand  *Expand                           `form:"expand,omitempty" json:"expand,omitempty"`
-	GroupBy []GetEventsAggregateParamsGroupBy `form:"group_by" json:"group_by"`
-	Filter  *EventsAggregateFilter            `form:"filter,omitempty" json:"filter,omitempty"`
+	Expand           *Expand                                     `form:"expand,omitempty" json:"expand,omitempty"`
+	GroupBy          []GetEventsAggregateParamsGroupBy           `form:"group_by" json:"group_by"`
+	AggregatedFields *[]GetEventsAggregateParamsAggregatedFields `form:"aggregated_fields,omitempty" json:"aggregated_fields,omitempty"`
+	Filter           *EventsAggregateFilter                      `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // GetEventsAggregateParamsGroupBy defines parameters for GetEventsAggregate.
 type GetEventsAggregateParamsGroupBy string
+
+// GetEventsAggregateParamsAggregatedFields defines parameters for GetEventsAggregate.
+type GetEventsAggregateParamsAggregatedFields string
 
 // GetSMSMessagesAggregateParams defines parameters for GetSMSMessagesAggregate.
 type GetSMSMessagesAggregateParams struct {
@@ -18645,6 +18658,22 @@ func NewGetEventsAggregateRequest(server string, companyId string, params *GetEv
 				queryValues.Add(k, v2)
 			}
 		}
+	}
+
+	if params.AggregatedFields != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "aggregated_fields", runtime.ParamLocationQuery, *params.AggregatedFields); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
 	}
 
 	if params.Filter != nil {
