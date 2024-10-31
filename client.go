@@ -906,8 +906,38 @@ const (
 
 // Defines values for VoucherFilterType.
 const (
-	Amount  VoucherFilterType = "amount"
-	Service VoucherFilterType = "service"
+	VoucherFilterTypeAmount  VoucherFilterType = "amount"
+	VoucherFilterTypeService VoucherFilterType = "service"
+)
+
+// Defines values for VoucherTemplateType.
+const (
+	VoucherTemplateTypeAmount  VoucherTemplateType = "amount"
+	VoucherTemplateTypeService VoucherTemplateType = "service"
+)
+
+// Defines values for VoucherTemplateCreateType.
+const (
+	VoucherTemplateCreateTypeAmount  VoucherTemplateCreateType = "amount"
+	VoucherTemplateCreateTypeService VoucherTemplateCreateType = "service"
+)
+
+// Defines values for VoucherTemplateCreateOverridesType.
+const (
+	VoucherTemplateCreateOverridesTypeAmount  VoucherTemplateCreateOverridesType = "amount"
+	VoucherTemplateCreateOverridesTypeService VoucherTemplateCreateOverridesType = "service"
+)
+
+// Defines values for VoucherTemplateResponseType.
+const (
+	VoucherTemplateResponseTypeAmount  VoucherTemplateResponseType = "amount"
+	VoucherTemplateResponseTypeService VoucherTemplateResponseType = "service"
+)
+
+// Defines values for VoucherTemplateUpdateType.
+const (
+	VoucherTemplateUpdateTypeAmount  VoucherTemplateUpdateType = "amount"
+	VoucherTemplateUpdateTypeService VoucherTemplateUpdateType = "service"
 )
 
 // Defines values for WaitlistEntryField.
@@ -6716,16 +6746,20 @@ type VoucherTemplate struct {
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string    `json:"primary_color,omitempty"`
-	SessionsTotal  *int32     `json:"sessions_total,omitempty"`
-	Title          *string    `json:"title,omitempty"`
-	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
-	Value          *float64   `json:"value,omitempty"`
+	NumberOfGuests *int32               `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string              `json:"primary_color,omitempty"`
+	SessionsTotal  *int32               `json:"sessions_total,omitempty"`
+	Title          *string              `json:"title,omitempty"`
+	Type           *VoucherTemplateType `json:"type,omitempty"`
+	UpdatedAt      *time.Time           `json:"updated_at,omitempty"`
+	Value          *float64             `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
 }
+
+// VoucherTemplateType defines model for VoucherTemplate.Type.
+type VoucherTemplateType string
 
 // VoucherTemplateCreate defines model for VoucherTemplateCreate.
 type VoucherTemplateCreate struct {
@@ -6736,26 +6770,30 @@ type VoucherTemplateCreate struct {
 	Description *string    `json:"description,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType                     ExpandableEventType `json:"event_type"`
-	ExpirationMonthsAfterPurchase *int32              `json:"expiration_months_after_purchase,omitempty"`
-	Id                            *string             `json:"id,omitempty"`
-	Images                        *Images             `json:"images,omitempty"`
+	EventType                     *ExpandableEventType `json:"event_type,omitempty"`
+	ExpirationMonthsAfterPurchase *int32               `json:"expiration_months_after_purchase,omitempty"`
+	Id                            *string              `json:"id,omitempty"`
+	Images                        *Images              `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace            *bool   `json:"marketplace,omitempty"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string    `json:"primary_color,omitempty"`
-	SessionsTotal  int32      `json:"sessions_total"`
-	Title          *string    `json:"title,omitempty"`
-	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
-	Value          *float64   `json:"value,omitempty"`
+	NumberOfGuests *int32                     `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string                    `json:"primary_color,omitempty"`
+	SessionsTotal  *int32                     `json:"sessions_total,omitempty"`
+	Title          *string                    `json:"title,omitempty"`
+	Type           *VoucherTemplateCreateType `json:"type,omitempty"`
+	UpdatedAt      *time.Time                 `json:"updated_at,omitempty"`
+	Value          *float64                   `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
 }
+
+// VoucherTemplateCreateType defines model for VoucherTemplateCreate.Type.
+type VoucherTemplateCreateType string
 
 // VoucherTemplateCreateOverrides defines model for VoucherTemplateCreateOverrides.
 type VoucherTemplateCreateOverrides struct {
@@ -6764,9 +6802,13 @@ type VoucherTemplateCreateOverrides struct {
 	Currency string  `json:"currency"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType     ExpandableEventType `json:"event_type"`
-	SessionsTotal int32               `json:"sessions_total"`
+	EventType     *ExpandableEventType                `json:"event_type,omitempty"`
+	SessionsTotal *int32                              `json:"sessions_total,omitempty"`
+	Type          *VoucherTemplateCreateOverridesType `json:"type,omitempty"`
 }
+
+// VoucherTemplateCreateOverridesType defines model for VoucherTemplateCreateOverrides.Type.
+type VoucherTemplateCreateOverridesType string
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type VoucherTemplateFilter struct {
@@ -6783,26 +6825,30 @@ type VoucherTemplateResponse struct {
 	Description *string    `json:"description,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType                     ExpandableEventType `json:"event_type"`
-	ExpirationMonthsAfterPurchase *int32              `json:"expiration_months_after_purchase,omitempty"`
-	Id                            *string             `json:"id,omitempty"`
-	Images                        *Images             `json:"images,omitempty"`
+	EventType                     *ExpandableEventType `json:"event_type,omitempty"`
+	ExpirationMonthsAfterPurchase *int32               `json:"expiration_months_after_purchase,omitempty"`
+	Id                            *string              `json:"id,omitempty"`
+	Images                        *Images              `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace            bool    `json:"marketplace"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32     `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string    `json:"primary_color,omitempty"`
-	SessionsTotal  int32      `json:"sessions_total"`
-	Title          *string    `json:"title,omitempty"`
-	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
-	Value          *float64   `json:"value,omitempty"`
+	NumberOfGuests *int32                       `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string                      `json:"primary_color,omitempty"`
+	SessionsTotal  *int32                       `json:"sessions_total,omitempty"`
+	Title          *string                      `json:"title,omitempty"`
+	Type           *VoucherTemplateResponseType `json:"type,omitempty"`
+	UpdatedAt      *time.Time                   `json:"updated_at,omitempty"`
+	Value          *float64                     `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
 }
+
+// VoucherTemplateResponseType defines model for VoucherTemplateResponse.Type.
+type VoucherTemplateResponseType string
 
 // VoucherTemplateResponseOverrides defines model for VoucherTemplateResponseOverrides.
 type VoucherTemplateResponseOverrides struct {
@@ -6812,11 +6858,11 @@ type VoucherTemplateResponseOverrides struct {
 	Currency  string     `json:"currency"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType     ExpandableEventType `json:"event_type"`
-	Id            *string             `json:"id,omitempty"`
-	SessionsTotal int32               `json:"sessions_total"`
-	UpdatedAt     *time.Time          `json:"updated_at,omitempty"`
-	Value         *float64            `json:"value,omitempty"`
+	EventType     *ExpandableEventType `json:"event_type,omitempty"`
+	Id            *string              `json:"id,omitempty"`
+	SessionsTotal *int32               `json:"sessions_total,omitempty"`
+	UpdatedAt     *time.Time           `json:"updated_at,omitempty"`
+	Value         *float64             `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -6839,14 +6885,18 @@ type VoucherTemplateUpdate struct {
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32       `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string      `json:"primary_color,omitempty"`
-	SessionsTotal  *int32       `json:"sessions_total,omitempty"`
-	Title          *string      `json:"title,omitempty"`
-	UpdatedAt      *time.Time   `json:"updated_at,omitempty"`
-	Value          *float64     `json:"value,omitempty"`
-	VariationId    *interface{} `json:"variation_id,omitempty"`
+	NumberOfGuests *int32                     `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string                    `json:"primary_color,omitempty"`
+	SessionsTotal  *int32                     `json:"sessions_total,omitempty"`
+	Title          *string                    `json:"title,omitempty"`
+	Type           *VoucherTemplateUpdateType `json:"type,omitempty"`
+	UpdatedAt      *time.Time                 `json:"updated_at,omitempty"`
+	Value          *float64                   `json:"value,omitempty"`
+	VariationId    *interface{}               `json:"variation_id,omitempty"`
 }
+
+// VoucherTemplateUpdateType defines model for VoucherTemplateUpdate.Type.
+type VoucherTemplateUpdateType string
 
 // VoucherTemplateUpdateOverrides defines model for VoucherTemplateUpdateOverrides.
 type VoucherTemplateUpdateOverrides struct {
