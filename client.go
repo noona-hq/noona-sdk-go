@@ -2872,6 +2872,9 @@ type Event struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	UpdatedBy *ExpandableActor `json:"updated_by,omitempty"`
 
+	// The variations selected for the event during booking flow.
+	VariationSelections *VariationSelections `json:"variation_selections,omitempty"`
+
 	// The version of the event.
 	//
 	// This is incremented every time the event is updated.
@@ -3037,6 +3040,9 @@ type EventCheckinResult struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	UpdatedBy *ExpandableActor `json:"updated_by,omitempty"`
+
+	// The variations selected for the event during booking flow.
+	VariationSelections *VariationSelections `json:"variation_selections,omitempty"`
 
 	// The version of the event.
 	//
@@ -6554,6 +6560,21 @@ type VAT struct {
 
 // VATs defines model for VATs.
 type VATs []VAT
+
+// VariationSelection defines model for VariationSelection.
+type VariationSelection struct {
+	// The ID of the event type the variation belongs to.
+	EventTypeId *string `json:"event_type_id,omitempty"`
+
+	// The quantity of the variation selected.
+	Quantity *int32 `json:"quantity,omitempty"`
+
+	// The ID of the variation selected.
+	VariationId *string `json:"variation_id,omitempty"`
+}
+
+// The variations selected for the event during booking flow.
+type VariationSelections []VariationSelection
 
 // Voucher defines model for Voucher.
 type Voucher struct {
