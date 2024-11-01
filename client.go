@@ -2322,6 +2322,12 @@ type Country struct {
 	ShortName *string `json:"short_name,omitempty"`
 }
 
+// CountryInfo defines model for CountryInfo.
+type CountryInfo struct {
+	DefaultCurrency         CompanyDefaultCurrency `json:"default_currency"`
+	DefaultPhoneCountryCode string                 `json:"default_phone_country_code"`
+}
+
 // CreatePaymentError defines model for CreatePaymentError.
 type CreatePaymentError struct {
 	// The error code. Only populated for certain errors.
@@ -9975,6 +9981,15 @@ type GetUserTokenParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// GetCountryInfoParams defines parameters for GetCountryInfo.
+type GetCountryInfoParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateVoucherTemplateJSONBody defines parameters for CreateVoucherTemplate.
 type CreateVoucherTemplateJSONBody VoucherTemplateCreate
 
@@ -13089,6 +13104,9 @@ type ClientInterface interface {
 
 	// GetUserToken request
 	GetUserToken(ctx context.Context, tokenId string, params *GetUserTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCountryInfo request
+	GetCountryInfo(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateVoucherTemplate request with any body
 	CreateVoucherTemplateWithBody(ctx context.Context, params *CreateVoucherTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -17044,6 +17062,18 @@ func (c *Client) DeleteUserToken(ctx context.Context, tokenId string, params *De
 
 func (c *Client) GetUserToken(ctx context.Context, tokenId string, params *GetUserTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetUserTokenRequest(c.Server, tokenId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCountryInfo(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCountryInfoRequest(c.Server, countryCode, params)
 	if err != nil {
 		return nil, err
 	}
@@ -37229,6 +37259,76 @@ func NewGetUserTokenRequest(server string, tokenId string, params *GetUserTokenP
 	return req, nil
 }
 
+// NewGetCountryInfoRequest generates requests for GetCountryInfo
+func NewGetCountryInfoRequest(server string, countryCode string, params *GetCountryInfoParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "country_code", runtime.ParamLocationPath, countryCode)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/utils/country_info/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateVoucherTemplateRequest calls the generic CreateVoucherTemplate builder with application/json body
 func NewCreateVoucherTemplateRequest(server string, params *CreateVoucherTemplateParams, body CreateVoucherTemplateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -39514,6 +39614,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetUserToken request
 	GetUserTokenWithResponse(ctx context.Context, tokenId string, params *GetUserTokenParams, reqEditors ...RequestEditorFn) (*GetUserTokenResponse, error)
+
+	// GetCountryInfo request
+	GetCountryInfoWithResponse(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*GetCountryInfoResponse, error)
 
 	// CreateVoucherTemplate request with any body
 	CreateVoucherTemplateWithBodyWithResponse(ctx context.Context, params *CreateVoucherTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVoucherTemplateResponse, error)
@@ -45183,6 +45286,28 @@ func (r GetUserTokenResponse) StatusCode() int {
 	return 0
 }
 
+type GetCountryInfoResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CountryInfo
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCountryInfoResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCountryInfoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateVoucherTemplateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -48442,6 +48567,15 @@ func (c *ClientWithResponses) GetUserTokenWithResponse(ctx context.Context, toke
 		return nil, err
 	}
 	return ParseGetUserTokenResponse(rsp)
+}
+
+// GetCountryInfoWithResponse request returning *GetCountryInfoResponse
+func (c *ClientWithResponses) GetCountryInfoWithResponse(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*GetCountryInfoResponse, error) {
+	rsp, err := c.GetCountryInfo(ctx, countryCode, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCountryInfoResponse(rsp)
 }
 
 // CreateVoucherTemplateWithBodyWithResponse request with arbitrary body returning *CreateVoucherTemplateResponse
@@ -54888,6 +55022,32 @@ func ParseGetUserTokenResponse(rsp *http.Response) (*GetUserTokenResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Token
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCountryInfoResponse parses an HTTP response from a GetCountryInfoWithResponse call
+func ParseGetCountryInfoResponse(rsp *http.Response) (*GetCountryInfoResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCountryInfoResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CountryInfo
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
