@@ -6805,6 +6805,7 @@ type VoucherTemplateCreateOverrides struct {
 	EventType     *ExpandableEventType                `json:"event_type,omitempty"`
 	SessionsTotal *int32                              `json:"sessions_total,omitempty"`
 	Type          *VoucherTemplateCreateOverridesType `json:"type,omitempty"`
+	Value         *float64                            `json:"value,omitempty"`
 }
 
 // VoucherTemplateCreateOverridesType defines model for VoucherTemplateCreateOverrides.Type.
@@ -6841,7 +6842,7 @@ type VoucherTemplateResponse struct {
 	Title          *string                      `json:"title,omitempty"`
 	Type           *VoucherTemplateResponseType `json:"type,omitempty"`
 	UpdatedAt      *time.Time                   `json:"updated_at,omitempty"`
-	Value          *float64                     `json:"value,omitempty"`
+	Value          float64                      `json:"value"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -6862,7 +6863,7 @@ type VoucherTemplateResponseOverrides struct {
 	Id            *string              `json:"id,omitempty"`
 	SessionsTotal *int32               `json:"sessions_total,omitempty"`
 	UpdatedAt     *time.Time           `json:"updated_at,omitempty"`
-	Value         *float64             `json:"value,omitempty"`
+	Value         float64              `json:"value"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
