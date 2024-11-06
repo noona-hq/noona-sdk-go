@@ -2756,6 +2756,7 @@ type EnterpriseConnectionsMarketplace struct {
 
 // EnterpriseConnectionsVouchers defines model for EnterpriseConnectionsVouchers.
 type EnterpriseConnectionsVouchers struct {
+	// This property is deprecated and will always be true.
 	Enabled             *bool   `json:"enabled,omitempty"`
 	SettlementAccountId *string `json:"settlement_account_id,omitempty"`
 }
