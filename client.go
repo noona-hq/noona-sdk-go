@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -6663,6 +6664,12 @@ type VoucherData struct {
 type VoucherDataAmount struct {
 	AmountUsed *float64              `json:"amount_used,omitempty"`
 	Type       VoucherDataAmountType `json:"type"`
+
+	// Point-in-time amount from the voucher template when voucher was created
+	VoucherTemplateAmount *float64 `json:"voucher_template_amount,omitempty"`
+
+	// Point-in-time value from the voucher template when voucher was created
+	VoucherTemplateValue *float64 `json:"voucher_template_value,omitempty"`
 }
 
 // VoucherDataAmountType defines model for VoucherDataAmount.Type.
@@ -6674,12 +6681,17 @@ type VoucherDataService struct {
 	EventTypeName *string `json:"event_type_name,omitempty"`
 
 	// The number of people this voucher is valid for.
-	NumberOfGuests        *int32                 `json:"number_of_guests,omitempty"`
-	SessionsTotal         *int32                 `json:"sessions_total,omitempty"`
-	SessionsUsed          *int32                 `json:"sessions_used,omitempty"`
-	Type                  VoucherDataServiceType `json:"type"`
-	VoucherTemplate       *string                `json:"voucher_template,omitempty"`
-	VoucherTemplateAmount *float64               `json:"voucher_template_amount,omitempty"`
+	NumberOfGuests  *int32                 `json:"number_of_guests,omitempty"`
+	SessionsTotal   *int32                 `json:"sessions_total,omitempty"`
+	SessionsUsed    *int32                 `json:"sessions_used,omitempty"`
+	Type            VoucherDataServiceType `json:"type"`
+	VoucherTemplate *string                `json:"voucher_template,omitempty"`
+
+	// Point-in-time amount from the voucher template when voucher was created
+	VoucherTemplateAmount *float64 `json:"voucher_template_amount,omitempty"`
+
+	// Point-in-time value from the voucher template when voucher was created
+	VoucherTemplateValue *float64 `json:"voucher_template_value,omitempty"`
 }
 
 // VoucherDataServiceType defines model for VoucherDataService.Type.
@@ -12043,6 +12055,7 @@ func (t VoucherData) AsVoucherDataService() (VoucherDataService, error) {
 }
 
 func (t *VoucherData) FromVoucherDataService(v VoucherDataService) error {
+	v.Type = "service"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -12055,9 +12068,33 @@ func (t VoucherData) AsVoucherDataAmount() (VoucherDataAmount, error) {
 }
 
 func (t *VoucherData) FromVoucherDataAmount(v VoucherDataAmount) error {
+	v.Type = "amount"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
+}
+
+func (t VoucherData) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t VoucherData) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "amount":
+		return t.AsVoucherDataAmount()
+	case "service":
+		return t.AsVoucherDataService()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t VoucherData) MarshalJSON() ([]byte, error) {
