@@ -7212,6 +7212,9 @@ type WaitlistEntryUpdateOverrides struct {
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type WaitlistFilter struct {
+	// Filter by customer IDs
+	Customers *[]string `json:"customers,omitempty"`
+
 	// Filter by employee IDs
 	Employees *[]string `json:"employees,omitempty"`
 
