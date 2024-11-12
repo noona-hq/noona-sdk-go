@@ -191,6 +191,18 @@ const (
 	N90  BookingInterval = 90
 )
 
+// Defines values for BookingQuestionAnswerType.
+const (
+	BookingQuestionAnswerTypeBoolean BookingQuestionAnswerType = "boolean"
+	BookingQuestionAnswerTypeString  BookingQuestionAnswerType = "string"
+)
+
+// Defines values for BookingQuestionAnswerAnswerType.
+const (
+	BookingQuestionAnswerAnswerTypeBoolean BookingQuestionAnswerAnswerType = "boolean"
+	BookingQuestionAnswerAnswerTypeString  BookingQuestionAnswerAnswerType = "string"
+)
+
 // Defines values for CardCardType.
 const (
 	CardCardTypeAmericanExpress CardCardType = "american_express"
@@ -1739,9 +1751,73 @@ type BookingOffers []BookingOffer
 
 // BookingQuestion defines model for BookingQuestion.
 type BookingQuestion struct {
-	Answer   *string `json:"answer,omitempty"`
-	Question *string `json:"question,omitempty"`
+	// Indicates if an answer is required.
+	AnswerRequired bool `json:"answer_required"`
+
+	// The type of answer expected.
+	AnswerType *BookingQuestionAnswerType `json:"answer_type,omitempty"`
+
+	// Additional details about the question.
+	Description *string `json:"description,omitempty"`
+
+	// Unique identifier for the booking question.
+	Id *string `json:"id,omitempty"`
+
+	// The title of the booking question.
+	Title string `json:"title"`
 }
+
+// The type of answer expected.
+type BookingQuestionAnswerType string
+
+// BookingQuestionAnswer defines model for BookingQuestionAnswer.
+type BookingQuestionAnswer struct {
+	// The answer provided by the user.
+	Answer *BookingQuestionAnswer_Answer `json:"answer,omitempty"`
+
+	// Indicates if an answer is required.
+	AnswerRequired bool `json:"answer_required"`
+
+	// The type of answer expected.
+	AnswerType *BookingQuestionAnswerAnswerType `json:"answer_type,omitempty"`
+
+	// Additional details about the question.
+	Description *string `json:"description,omitempty"`
+
+	// Unique identifier for the booking question.
+	Id *string `json:"id,omitempty"`
+
+	// The title of the booking question.
+	Title string `json:"title"`
+}
+
+// The answer provided by the user.
+type BookingQuestionAnswer_Answer struct {
+	union json.RawMessage
+}
+
+// The type of answer expected.
+type BookingQuestionAnswerAnswerType string
+
+// BookingQuestionAnswerValue defines model for BookingQuestionAnswerValue.
+type BookingQuestionAnswerValue struct {
+	// The answer provided by the user.
+	Answer *BookingQuestionAnswerValue_Answer `json:"answer,omitempty"`
+}
+
+// The answer provided by the user.
+type BookingQuestionAnswerValue_Answer struct {
+	union json.RawMessage
+}
+
+// BookingQuestionAnswerValueBoolean defines model for BookingQuestionAnswerValueBoolean.
+type BookingQuestionAnswerValueBoolean bool
+
+// BookingQuestionAnswerValueString defines model for BookingQuestionAnswerValueString.
+type BookingQuestionAnswerValueString string
+
+// BookingQuestionAnswers defines model for BookingQuestionAnswers.
+type BookingQuestionAnswers []BookingQuestionAnswer
 
 // BookingQuestions defines model for BookingQuestions.
 type BookingQuestions []BookingQuestion
@@ -2782,8 +2858,11 @@ type Event struct {
 	Attachments *Attachments `json:"attachments,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	BookingOffer     *ExpandableBookingOffer `json:"booking_offer,omitempty"`
-	BookingQuestions *BookingQuestions       `json:"booking_questions,omitempty"`
+	BookingOffer           *ExpandableBookingOffer `json:"booking_offer,omitempty"`
+	BookingQuestionAnswers *BookingQuestionAnswers `json:"booking_question_answers,omitempty"`
+
+	// This schema is deprecated. Use `booking_question_answers` instead.
+	BookingQuestions *LegacyBookingQuestions `json:"booking_questions,omitempty"`
 
 	// Provided by customers when they decline through the marketplace.
 	CancelReason *string `json:"cancel_reason,omitempty"`
@@ -2943,8 +3022,11 @@ type EventCheckinResult struct {
 	Attachments *Attachments `json:"attachments,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	BookingOffer     *ExpandableBookingOffer `json:"booking_offer,omitempty"`
-	BookingQuestions *BookingQuestions       `json:"booking_questions,omitempty"`
+	BookingOffer           *ExpandableBookingOffer `json:"booking_offer,omitempty"`
+	BookingQuestionAnswers *BookingQuestionAnswers `json:"booking_question_answers,omitempty"`
+
+	// This schema is deprecated. Use `booking_question_answers` instead.
+	BookingQuestions *LegacyBookingQuestions `json:"booking_questions,omitempty"`
 
 	// Provided by customers when they decline through the marketplace.
 	CancelReason *string `json:"cancel_reason,omitempty"`
@@ -3385,8 +3467,9 @@ type EventTypeCategoryGroups []EventTypeCategoryGroup
 
 // EventTypeConnections defines model for EventTypeConnections.
 type EventTypeConnections struct {
-	// When booking, users are prompted these booking questions and are required to fill in an answer.
-	BookingQuestion *string `json:"booking_question,omitempty"`
+	// Deprecated, use `booking_questions` instead.
+	BookingQuestion  *string           `json:"booking_question,omitempty"`
+	BookingQuestions *BookingQuestions `json:"booking_questions,omitempty"`
 
 	// For a successful booking, this message is displayed for each event type booked.
 	BookingSuccessMessage *string `json:"booking_success_message,omitempty"`
@@ -3991,6 +4074,15 @@ type IssuersFilter struct {
 	// Only return Issuers that can be attached to a terminal, from the calling user's perspective.
 	TerminalAttachable *bool `json:"terminal_attachable,omitempty"`
 }
+
+// This schema is deprecated. Use `booking_question_answers` instead.
+type LegacyBookingQuestion struct {
+	Answer   *string `json:"answer,omitempty"`
+	Question *string `json:"question,omitempty"`
+}
+
+// This schema is deprecated. Use `booking_question_answers` instead.
+type LegacyBookingQuestions []LegacyBookingQuestion
 
 // LineItem defines model for LineItem.
 type LineItem struct {
@@ -10431,6 +10523,74 @@ func (t AdyenTransferInstrument) MarshalJSON() ([]byte, error) {
 }
 
 func (t *AdyenTransferInstrument) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t BookingQuestionAnswer_Answer) AsBookingQuestionAnswerValueString() (BookingQuestionAnswerValueString, error) {
+	var body BookingQuestionAnswerValueString
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BookingQuestionAnswer_Answer) FromBookingQuestionAnswerValueString(v BookingQuestionAnswerValueString) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BookingQuestionAnswer_Answer) AsBookingQuestionAnswerValueBoolean() (BookingQuestionAnswerValueBoolean, error) {
+	var body BookingQuestionAnswerValueBoolean
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BookingQuestionAnswer_Answer) FromBookingQuestionAnswerValueBoolean(v BookingQuestionAnswerValueBoolean) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BookingQuestionAnswer_Answer) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *BookingQuestionAnswer_Answer) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t BookingQuestionAnswerValue_Answer) AsBookingQuestionAnswerValueString() (BookingQuestionAnswerValueString, error) {
+	var body BookingQuestionAnswerValueString
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BookingQuestionAnswerValue_Answer) FromBookingQuestionAnswerValueString(v BookingQuestionAnswerValueString) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BookingQuestionAnswerValue_Answer) AsBookingQuestionAnswerValueBoolean() (BookingQuestionAnswerValueBoolean, error) {
+	var body BookingQuestionAnswerValueBoolean
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BookingQuestionAnswerValue_Answer) FromBookingQuestionAnswerValueBoolean(v BookingQuestionAnswerValueBoolean) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BookingQuestionAnswerValue_Answer) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *BookingQuestionAnswerValue_Answer) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
