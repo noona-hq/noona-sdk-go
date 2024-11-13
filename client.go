@@ -673,6 +673,23 @@ const (
 	PrePaymentRuleTypePrePayment PrePaymentRuleType = "pre_payment"
 )
 
+// Defines values for PushNotificationType.
+const (
+	PushNotificationTypeEventCancelledFromMarketplace PushNotificationType = "eventCancelledFromMarketplace"
+	PushNotificationTypeEventCreated                  PushNotificationType = "eventCreated"
+	PushNotificationTypeEventCreatedFromMarketplace   PushNotificationType = "eventCreatedFromMarketplace"
+	PushNotificationTypeEventMovedFromMarketplace     PushNotificationType = "eventMovedFromMarketplace"
+	PushNotificationTypeEventReminder                 PushNotificationType = "eventReminder"
+	PushNotificationTypeEventUpdated                  PushNotificationType = "eventUpdated"
+	PushNotificationTypeFreeForm                      PushNotificationType = "freeForm"
+	PushNotificationTypeOldAppVersions                PushNotificationType = "oldAppVersions"
+	PushNotificationTypePayoutFailure                 PushNotificationType = "payoutFailure"
+	PushNotificationTypePayoutSuccessful              PushNotificationType = "payoutSuccessful"
+	PushNotificationTypePendingPayment                PushNotificationType = "pendingPayment"
+	PushNotificationTypeVoucherReceived               PushNotificationType = "voucherReceived"
+	PushNotificationTypeVoucherUpdated                PushNotificationType = "voucherUpdated"
+)
+
 // Defines values for RefundMarketplaceSaleErrorCode.
 const (
 	AlreadyRefunded       RefundMarketplaceSaleErrorCode = "already_refunded"
@@ -960,13 +977,13 @@ const (
 
 // Defines values for WebhookEvent.
 const (
-	CustomerCreated    WebhookEvent = "customer.created"
-	CustomerUpdated    WebhookEvent = "customer.updated"
-	EventCreated       WebhookEvent = "event.created"
-	EventDeleted       WebhookEvent = "event.deleted"
-	EventUpdated       WebhookEvent = "event.updated"
-	TransactionCreated WebhookEvent = "transaction.created"
-	TransactionUpdated WebhookEvent = "transaction.updated"
+	WebhookEventCustomerCreated    WebhookEvent = "customer.created"
+	WebhookEventCustomerUpdated    WebhookEvent = "customer.updated"
+	WebhookEventEventCreated       WebhookEvent = "event.created"
+	WebhookEventEventDeleted       WebhookEvent = "event.deleted"
+	WebhookEventEventUpdated       WebhookEvent = "event.updated"
+	WebhookEventTransactionCreated WebhookEvent = "transaction.created"
+	WebhookEventTransactionUpdated WebhookEvent = "transaction.updated"
 )
 
 // Defines values for GetCustomersAggregateParamsGroupBy.
@@ -5291,8 +5308,11 @@ type PushNotification struct {
 	Data      *PushNotificationData `json:"data,omitempty"`
 	Event     *string               `json:"event,omitempty"`
 	Id        *string               `json:"id,omitempty"`
-	Type      *string               `json:"type,omitempty"`
+	Type      *PushNotificationType `json:"type,omitempty"`
 }
+
+// PushNotificationType defines model for PushNotification.Type.
+type PushNotificationType string
 
 // PushNotificationData defines model for PushNotificationData.
 type PushNotificationData struct {
