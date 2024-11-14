@@ -1753,10 +1753,13 @@ type BookingOffer struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   *ExpandableCompany `json:"company,omitempty"`
 	CreatedAt *time.Time         `json:"created_at,omitempty"`
-	DeletedAt *time.Time         `json:"deleted_at,omitempty"`
-	ExpiresAt *time.Time         `json:"expires_at,omitempty"`
-	Id        *string            `json:"id,omitempty"`
-	Message   *string            `json:"message,omitempty"`
+
+	// If the booking offer was explicitly declined, this timestamp is set.
+	DeclinedAt *time.Time `json:"declined_at,omitempty"`
+	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
+	ExpiresAt  *time.Time `json:"expires_at,omitempty"`
+	Id         *string    `json:"id,omitempty"`
+	Message    *string    `json:"message,omitempty"`
 
 	// The start time of the event.
 	StartsAt  *time.Time `json:"starts_at,omitempty"`
