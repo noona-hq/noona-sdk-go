@@ -4949,10 +4949,11 @@ type PaymentFees map[string]float64
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type PaymentFilter struct {
 	// Deprecated: Use ListPayments endpoint to get payments for a company
-	Company  *string          `json:"company,omitempty"`
-	From     *time.Time       `json:"from,omitempty"`
-	Statuses *[]PaymentStatus `json:"statuses,omitempty"`
-	To       *time.Time       `json:"to,omitempty"`
+	Company   *string          `json:"company,omitempty"`
+	From      *time.Time       `json:"from,omitempty"`
+	SettledAt *DateFilter      `json:"settled_at,omitempty"`
+	Statuses  *[]PaymentStatus `json:"statuses,omitempty"`
+	To        *time.Time       `json:"to,omitempty"`
 }
 
 // PaymentIntent defines model for PaymentIntent.
