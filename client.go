@@ -993,28 +993,27 @@ const (
 
 // Defines values for GetEventsAggregateParamsGroupBy.
 const (
-	GetEventsAggregateParamsGroupByCreatedTimeBucket GetEventsAggregateParamsGroupBy = "created_time_bucket"
-	GetEventsAggregateParamsGroupByDuration          GetEventsAggregateParamsGroupBy = "duration"
-	GetEventsAggregateParamsGroupByEventType         GetEventsAggregateParamsGroupBy = "event_type"
-	GetEventsAggregateParamsGroupByNumberOfGuests    GetEventsAggregateParamsGroupBy = "number_of_guests"
-	GetEventsAggregateParamsGroupByOrigin            GetEventsAggregateParamsGroupBy = "origin"
-	GetEventsAggregateParamsGroupBySource            GetEventsAggregateParamsGroupBy = "source"
-	GetEventsAggregateParamsGroupByStartTime         GetEventsAggregateParamsGroupBy = "start_time"
-	GetEventsAggregateParamsGroupByStatus            GetEventsAggregateParamsGroupBy = "status"
-	GetEventsAggregateParamsGroupByTimeBucket        GetEventsAggregateParamsGroupBy = "time_bucket"
+	GetEventsAggregateParamsGroupByBookingDay         GetEventsAggregateParamsGroupBy = "booking_day"
+	GetEventsAggregateParamsGroupByBookingSourceGroup GetEventsAggregateParamsGroupBy = "booking_source_group"
+	GetEventsAggregateParamsGroupByCreatedDay         GetEventsAggregateParamsGroupBy = "created_day"
+	GetEventsAggregateParamsGroupByDuration           GetEventsAggregateParamsGroupBy = "duration"
+	GetEventsAggregateParamsGroupByEventType          GetEventsAggregateParamsGroupBy = "event_type"
+	GetEventsAggregateParamsGroupByNumberOfGuests     GetEventsAggregateParamsGroupBy = "number_of_guests"
+	GetEventsAggregateParamsGroupByStartTime          GetEventsAggregateParamsGroupBy = "start_time"
+	GetEventsAggregateParamsGroupByStatus             GetEventsAggregateParamsGroupBy = "status"
 )
 
 // Defines values for GetEventsAggregateParamsAggregatedFields.
 const (
-	Count          GetEventsAggregateParamsAggregatedFields = "count"
-	Hours          GetEventsAggregateParamsAggregatedFields = "hours"
-	NewCustomers   GetEventsAggregateParamsAggregatedFields = "new_customers"
-	NumberOfGuests GetEventsAggregateParamsAggregatedFields = "number_of_guests"
+	GetEventsAggregateParamsAggregatedFieldsCount          GetEventsAggregateParamsAggregatedFields = "count"
+	GetEventsAggregateParamsAggregatedFieldsHours          GetEventsAggregateParamsAggregatedFields = "hours"
+	GetEventsAggregateParamsAggregatedFieldsNewCustomers   GetEventsAggregateParamsAggregatedFields = "new_customers"
+	GetEventsAggregateParamsAggregatedFieldsNumberOfGuests GetEventsAggregateParamsAggregatedFields = "number_of_guests"
 )
 
 // Defines values for GetSMSMessagesAggregateParamsGroupBy.
 const (
-	TimeBucket GetSMSMessagesAggregateParamsGroupBy = "time_bucket"
+	GetSMSMessagesAggregateParamsGroupByTimeBucket GetSMSMessagesAggregateParamsGroupBy = "time_bucket"
 )
 
 // Defines values for GetPricingByCountryCodeParamsProduct.
@@ -3668,15 +3667,17 @@ type EventsAggregateEntry struct {
 
 // EventsAggregateEntryKey defines model for EventsAggregateEntryKey.
 type EventsAggregateEntryKey struct {
-	CreatedTimeBucket *string `json:"created_time_bucket,omitempty"`
-	Duration          *string `json:"duration,omitempty"`
-	EventType         *string `json:"event_type,omitempty"`
-	NumberOfGuests    *string `json:"number_of_guests,omitempty"`
-	Origin            *string `json:"origin,omitempty"`
-	Source            *string `json:"source,omitempty"`
-	StartTime         *string `json:"start_time,omitempty"`
-	Status            *string `json:"status,omitempty"`
-	TimeBucket        *string `json:"time_bucket,omitempty"`
+	BookingDay         *string `json:"booking_day,omitempty"`
+	BookingSourceGroup *string `json:"booking_source_group,omitempty"`
+	CreatedDay         *string `json:"created_day,omitempty"`
+	Duration           *string `json:"duration,omitempty"`
+	EventType          *string `json:"event_type,omitempty"`
+	NumberOfGuests     *string `json:"number_of_guests,omitempty"`
+	StartTime          *string `json:"start_time,omitempty"`
+	Status             *string `json:"status,omitempty"`
+
+	// Use booking_day instead
+	TimeBucket *string `json:"time_bucket,omitempty"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
