@@ -223,6 +223,13 @@ const (
 	CardStatusValid    CardStatus = "valid"
 )
 
+// Defines values for CardType.
+const (
+	CardTypeAmex       CardType = "amex"
+	CardTypeMastercard CardType = "mastercard"
+	CardTypeVisa       CardType = "visa"
+)
+
 // Defines values for CheckoutBehaviorType.
 const (
 	CheckoutBehaviorTypeCheckout CheckoutBehaviorType = "checkout"
@@ -712,9 +719,9 @@ const (
 
 // Defines values for RoleType.
 const (
-	RoleTypeDefault RoleType = "default"
-	RoleTypeOther   RoleType = "other"
-	RoleTypeRoot    RoleType = "root"
+	Default RoleType = "default"
+	Other   RoleType = "other"
+	Root    RoleType = "root"
 )
 
 // Defines values for RuleEntitiesEmployeesEmployeesAssociation.
@@ -1895,6 +1902,12 @@ type CardCardType string
 
 // CardStatus defines model for Card.Status.
 type CardStatus string
+
+// CardType defines model for CardType.
+type CardType string
+
+// CardTypes defines model for CardTypes.
+type CardTypes []CardType
 
 // Categories defines model for Categories.
 type Categories []Category
@@ -5002,6 +5015,8 @@ type PaymentReceiptRecipient struct {
 
 // PaymentSettings defines model for PaymentSettings.
 type PaymentSettings struct {
+	EnabledCardTypes *CardTypes `json:"enabled_card_types,omitempty"`
+
 	// The amount that must be paid in advance.
 	//
 	// If flat_fee is greater than 0 and pre_payment_ratio is set, flat_fee takes precedence.
@@ -7448,6 +7463,15 @@ type UpdateBlockedTimeParams struct {
 	Expand   *Expand                    `form:"expand,omitempty" json:"expand,omitempty"`
 	Behavior *BlockedTimeUpdateBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
 	Date     string                     `form:"date" json:"date"`
+}
+
+// ListCardTypesParams defines parameters for ListCardTypes.
+type ListCardTypesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // GetCompaniesParams defines parameters for GetCompanies.
@@ -12461,6 +12485,9 @@ type ClientInterface interface {
 
 	UpdateBlockedTime(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListCardTypes request
+	ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCompanies request
 	GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13544,6 +13571,18 @@ func (c *Client) UpdateBlockedTimeWithBody(ctx context.Context, blockedTimeId st
 
 func (c *Client) UpdateBlockedTime(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateBlockedTimeRequest(c.Server, blockedTimeId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCardTypesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18418,6 +18457,69 @@ func NewUpdateBlockedTimeRequestWithBody(server string, blockedTimeId string, pa
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListCardTypesRequest generates requests for ListCardTypes
+func NewListCardTypesRequest(server string, params *ListCardTypesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/card_types")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -38971,6 +39073,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBlockedTimeResponse, error)
 
+	// ListCardTypes request
+	ListCardTypesWithResponse(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*ListCardTypesResponse, error)
+
 	// GetCompanies request
 	GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error)
 
@@ -40137,6 +40242,28 @@ func (r UpdateBlockedTimeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateBlockedTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListCardTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CardTypes
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCardTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCardTypesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -46053,6 +46180,15 @@ func (c *ClientWithResponses) UpdateBlockedTimeWithResponse(ctx context.Context,
 	return ParseUpdateBlockedTimeResponse(rsp)
 }
 
+// ListCardTypesWithResponse request returning *ListCardTypesResponse
+func (c *ClientWithResponses) ListCardTypesWithResponse(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*ListCardTypesResponse, error) {
+	rsp, err := c.ListCardTypes(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCardTypesResponse(rsp)
+}
+
 // GetCompaniesWithResponse request returning *GetCompaniesResponse
 func (c *ClientWithResponses) GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error) {
 	rsp, err := c.GetCompanies(ctx, params, reqEditors...)
@@ -49322,6 +49458,32 @@ func ParseUpdateBlockedTimeResponse(rsp *http.Response) (*UpdateBlockedTimeRespo
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListCardTypesResponse parses an HTTP response from a ListCardTypesWithResponse call
+func ParseListCardTypesResponse(rsp *http.Response) (*ListCardTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCardTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CardTypes
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
