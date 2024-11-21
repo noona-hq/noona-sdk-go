@@ -7543,7 +7543,7 @@ type GetCustomersAggregateParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand  *Expand                              `form:"expand,omitempty" json:"expand,omitempty"`
 	GroupBy []GetCustomersAggregateParamsGroupBy `form:"group_by" json:"group_by"`
-	Filter  *CustomersAggregateFilter            `form:"filter,omitempty" json:"filter,omitempty"`
+	Filter  CustomersAggregateFilter             `form:"filter" json:"filter"`
 }
 
 // GetCustomersAggregateParamsGroupBy defines parameters for GetCustomersAggregate.
@@ -7558,7 +7558,7 @@ type GetEventsAggregateParams struct {
 	Expand           *Expand                                     `form:"expand,omitempty" json:"expand,omitempty"`
 	GroupBy          []GetEventsAggregateParamsGroupBy           `form:"group_by" json:"group_by"`
 	AggregatedFields *[]GetEventsAggregateParamsAggregatedFields `form:"aggregated_fields,omitempty" json:"aggregated_fields,omitempty"`
-	Filter           *EventsAggregateFilter                      `form:"filter,omitempty" json:"filter,omitempty"`
+	Filter           EventsAggregateFilter                       `form:"filter" json:"filter"`
 }
 
 // GetEventsAggregateParamsGroupBy defines parameters for GetEventsAggregate.
@@ -7575,7 +7575,7 @@ type GetSMSMessagesAggregateParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand  *Expand                                `form:"expand,omitempty" json:"expand,omitempty"`
 	GroupBy []GetSMSMessagesAggregateParamsGroupBy `form:"group_by" json:"group_by"`
-	Filter  *SMSMessagesAggregateFilter            `form:"filter,omitempty" json:"filter,omitempty"`
+	Filter  SMSMessagesAggregateFilter             `form:"filter" json:"filter"`
 }
 
 // GetSMSMessagesAggregateParamsGroupBy defines parameters for GetSMSMessagesAggregate.
@@ -18998,14 +18998,10 @@ func NewGetCustomersAggregateRequest(server string, companyId string, params *Ge
 		}
 	}
 
-	if params.Filter != nil {
-
-		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
-			return nil, err
-		} else {
-			queryValues.Add("filter", string(queryParamBuf))
-		}
-
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
@@ -19106,14 +19102,10 @@ func NewGetEventsAggregateRequest(server string, companyId string, params *GetEv
 
 	}
 
-	if params.Filter != nil {
-
-		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
-			return nil, err
-		} else {
-			queryValues.Add("filter", string(queryParamBuf))
-		}
-
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
@@ -19198,14 +19190,10 @@ func NewGetSMSMessagesAggregateRequest(server string, companyId string, params *
 		}
 	}
 
-	if params.Filter != nil {
-
-		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
-			return nil, err
-		} else {
-			queryValues.Add("filter", string(queryParamBuf))
-		}
-
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
