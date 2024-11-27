@@ -1234,12 +1234,17 @@ type Application struct {
 	About *string `json:"about,omitempty"`
 
 	// If true, the application will be listed in the Noona App Store.
-	AppStore     *bool      `json:"app_store,omitempty"`
-	Approved     *bool      `json:"approved,omitempty"`
-	ClientId     *string    `json:"client_id,omitempty"`
-	ClientSecret *string    `json:"client_secret,omitempty"`
-	CreatedAt    *time.Time `json:"created_at,omitempty"`
-	Currency     *string    `json:"currency,omitempty"`
+	AppStore     *bool   `json:"app_store,omitempty"`
+	Approved     *bool   `json:"approved,omitempty"`
+	ClientId     *string `json:"client_id,omitempty"`
+	ClientSecret *string `json:"client_secret,omitempty"`
+
+	// The countries the application is available in.
+	//
+	// If omitted or empty, the application is available in all countries.
+	Countries *[]string  `json:"countries,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	Currency  *string    `json:"currency,omitempty"`
 
 	// Short text about the functionality of the app that appears next to the icon in the list.
 	Description *string `json:"description,omitempty"`
@@ -1273,6 +1278,11 @@ type Application struct {
 	// When clicked, the application's main redirect_uri will be displayed in an iFrame.
 	ShowInNavigation *bool      `json:"show_in_navigation,omitempty"`
 	UpdatedAt        *time.Time `json:"updated_at,omitempty"`
+
+	// The verticals the application is available in.
+	//
+	// If omitted or empty, the application is available for all verticals.
+	Verticals *[]CompanyVertical `json:"verticals,omitempty"`
 }
 
 // ApplicationPaymentType defines model for Application.PaymentType.
