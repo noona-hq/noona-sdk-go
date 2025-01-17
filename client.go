@@ -2061,6 +2061,7 @@ type Company struct {
 	Pos         *POSSettings     `json:"pos,omitempty"`
 	Profile     *CompanyProfile  `json:"profile,omitempty"`
 	Signup      *CompanySignup   `json:"signup,omitempty"`
+	Teya        *TeyaConnection  `json:"teya,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Vertical    *CompanyVertical `json:"vertical,omitempty"`
 	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
@@ -2100,6 +2101,7 @@ type CompanyCreate struct {
 	Pos         *POSSettings         `json:"pos,omitempty"`
 	Profile     CompanyProfileCreate `json:"profile"`
 	Signup      *CompanySignup       `json:"signup,omitempty"`
+	Teya        *TeyaConnection      `json:"teya,omitempty"`
 	UpdatedAt   *time.Time           `json:"updated_at,omitempty"`
 	Vertical    CompanyVertical      `json:"vertical"`
 	Vouchers    *VoucherSettings     `json:"vouchers,omitempty"`
@@ -2337,6 +2339,7 @@ type CompanyResponse struct {
 	Pos         POSSettings     `json:"pos"`
 	Profile     CompanyProfile  `json:"profile"`
 	Signup      *CompanySignup  `json:"signup,omitempty"`
+	Teya        *TeyaConnection `json:"teya,omitempty"`
 	UpdatedAt   *time.Time      `json:"updated_at,omitempty"`
 	Vertical    CompanyVertical `json:"vertical"`
 	Vouchers    VoucherSettings `json:"vouchers"`
@@ -2413,6 +2416,7 @@ type CompanyUpdate struct {
 	Pos         *POSSettings     `json:"pos,omitempty"`
 	Profile     *CompanyProfile  `json:"profile,omitempty"`
 	Signup      *CompanySignup   `json:"signup,omitempty"`
+	Teya        *TeyaConnection  `json:"teya,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Vertical    *interface{}     `json:"vertical,omitempty"`
 	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
@@ -2761,6 +2765,7 @@ type Employee struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	SettlementAccount *ExpandableSettlementAccount `json:"settlement_account,omitempty"`
+	Teya              *TeyaConnection              `json:"teya,omitempty"`
 	UpdatedAt         *time.Time                   `json:"updated_at,omitempty"`
 }
 
@@ -6472,6 +6477,11 @@ type Terminals []Terminal
 type TerminalsFilter struct {
 	// Only get terminals directly connected to the company.
 	CompanyOnly *bool `json:"company_only,omitempty"`
+}
+
+// TeyaConnection defines model for TeyaConnection.
+type TeyaConnection struct {
+	HasToken *bool `json:"has_token,omitempty"`
 }
 
 // TimeRange defines model for TimeRange.
