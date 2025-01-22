@@ -1249,9 +1249,11 @@ type Application struct {
 	// Short text about the functionality of the app that appears next to the icon in the list.
 	Description *string `json:"description,omitempty"`
 
-	// Localized short descriptions for the application.
-	DescriptionTranslations *map[string]string `json:"description_translations,omitempty"`
-	DeveloperName           *string            `json:"developer_name,omitempty"`
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	DeveloperName           *string         `json:"developer_name,omitempty"`
 
 	// Home page or documentation for your application.
 	DeveloperUrl *string `json:"developer_url,omitempty"`
@@ -1261,8 +1263,10 @@ type Application struct {
 	// Shown to the user when they are asked to give consent.
 	Name *string `json:"name,omitempty"`
 
-	// Localized titles for the application in different languages.
-	NameTranslations *map[string]string      `json:"name_translations,omitempty"`
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	NameTranslations *TranslationMap         `json:"name_translations,omitempty"`
 	PaymentType      *ApplicationPaymentType `json:"payment_type,omitempty"`
 
 	// Price in x100 format. (100 is 1.00)
@@ -2195,7 +2199,12 @@ type CompanyProfile struct {
 	CoverImages *[]Image    `json:"cover_images,omitempty"`
 	Cuisines    *Categories `json:"cuisines,omitempty"`
 	Description *string     `json:"description,omitempty"`
-	Dietaries   *Categories `json:"dietaries,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	Dietaries               *Categories     `json:"dietaries,omitempty"`
 
 	// The message that is shown to the customer when they try to book more guests than the maximum allowed.
 	ExceedMaxGuestsMessage *string `json:"exceed_max_guests_message,omitempty"`
@@ -2260,7 +2269,12 @@ type CompanyProfileCreate struct {
 	CoverImages *[]Image    `json:"cover_images,omitempty"`
 	Cuisines    *Categories `json:"cuisines,omitempty"`
 	Description *string     `json:"description,omitempty"`
-	Dietaries   *Categories `json:"dietaries,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	Dietaries               *Categories     `json:"dietaries,omitempty"`
 
 	// The message that is shown to the customer when they try to book more guests than the maximum allowed.
 	ExceedMaxGuestsMessage *string `json:"exceed_max_guests_message,omitempty"`
@@ -6670,6 +6684,11 @@ type TransactionsFilter struct {
 	Sale                    *string     `json:"sale,omitempty"`
 	SubtransactionCreatedAt *DateFilter `json:"subtransaction_created_at,omitempty"`
 }
+
+// A map of translations for a given attribute.
+//
+// The key is the language code, and the value is the translated string.
+type TranslationMap map[string]string
 
 // UnavailableResource defines model for UnavailableResource.
 type UnavailableResource struct {
