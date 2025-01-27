@@ -599,6 +599,13 @@ const (
 	POSSettingsCheckoutFirstTabServices POSSettingsCheckoutFirstTab = "services"
 )
 
+// Defines values for PaymentProvider.
+const (
+	Adyen      PaymentProvider = "adyen"
+	Teya       PaymentProvider = "teya"
+	Teyadirect PaymentProvider = "teyadirect"
+)
+
 // Defines values for PaymentReason.
 const (
 	PaymentReasonEvent   PaymentReason = "event"
@@ -4954,6 +4961,7 @@ type Payment struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	MarketplaceUser *ExpandableMarketplaceUser `json:"marketplace_user,omitempty"`
+	Provider        *PaymentProvider           `json:"provider,omitempty"`
 	Reason          *PaymentReason             `json:"reason,omitempty"`
 	RefundedAt      *time.Time                 `json:"refunded_at,omitempty"`
 	SettledAt       *time.Time                 `json:"settled_at,omitempty"`
@@ -4973,6 +4981,9 @@ type Payment struct {
 	Status            *PaymentStatus `json:"status,omitempty"`
 	UpdatedAt         *time.Time     `json:"updated_at,omitempty"`
 }
+
+// PaymentProvider defines model for Payment.Provider.
+type PaymentProvider string
 
 // PaymentReason defines model for Payment.Reason.
 type PaymentReason string
