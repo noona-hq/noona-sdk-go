@@ -4963,8 +4963,13 @@ type Payment struct {
 	MarketplaceUser *ExpandableMarketplaceUser `json:"marketplace_user,omitempty"`
 	Provider        *PaymentProvider           `json:"provider,omitempty"`
 	Reason          *PaymentReason             `json:"reason,omitempty"`
-	RefundedAt      *time.Time                 `json:"refunded_at,omitempty"`
-	SettledAt       *time.Time                 `json:"settled_at,omitempty"`
+
+	// Indicates if the payment is refundable.
+	//
+	// If true, the payment can be refunded. If false, the payment cannot be refunded.
+	Refundable *bool      `json:"refundable,omitempty"`
+	RefundedAt *time.Time `json:"refunded_at,omitempty"`
+	SettledAt  *time.Time `json:"settled_at,omitempty"`
 
 	// The name of the settlement recipient.
 	SettledTo *string `json:"settled_to,omitempty"`
