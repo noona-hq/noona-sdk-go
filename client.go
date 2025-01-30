@@ -5042,11 +5042,11 @@ type PaymentMethod struct {
 	// If true the payment method is hidden from the POS
 	Hidden      *bool   `json:"hidden,omitempty"`
 	IconName    *string `json:"icon_name,omitempty"`
-	Id          *string `json:"id,omitempty"`
-	LocaleKey   *string `json:"locale_key,omitempty"`
-	Order       *int32  `json:"order,omitempty"`
-	ReadableId  *string `json:"readable_id,omitempty"`
-	Title       *string `json:"title,omitempty"`
+	Id          string  `json:"id"`
+	LocaleKey   string  `json:"locale_key"`
+	Order       int32   `json:"order"`
+	ReadableId  string  `json:"readable_id"`
+	Title       string  `json:"title"`
 	UseTerminal *bool   `json:"use_terminal,omitempty"`
 }
 
