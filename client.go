@@ -2399,10 +2399,12 @@ type CompanySize string
 
 // CompanyType defines model for CompanyType.
 type CompanyType struct {
-	Id         string  `json:"id"`
-	Name       *string `json:"name,omitempty"`
-	Order      *int32  `json:"order,omitempty"`
-	ReadableId *string `json:"readable_id,omitempty"`
+	Id                string  `json:"id"`
+	Name              *string `json:"name,omitempty"`
+	Order             *int32  `json:"order,omitempty"`
+	ReadableId        *string `json:"readable_id,omitempty"`
+	SelectableInHq    *bool   `json:"selectable_in_hq,omitempty"`
+	ShowInMarketplace *bool   `json:"show_in_marketplace,omitempty"`
 }
 
 // CompanyTypes defines model for CompanyTypes.
