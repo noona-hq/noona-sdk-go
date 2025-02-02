@@ -642,11 +642,25 @@ const (
 	PaymentStatusUnsettled PaymentStatus = "unsettled"
 )
 
-// Defines values for PowerupPostBodyProduct.
+// Defines values for Powerup.
 const (
-	PowerupPostBodyProductAppointmentsPro PowerupPostBodyProduct = "appointments_pro"
-	PowerupPostBodyProductPos             PowerupPostBodyProduct = "pos"
-	PowerupPostBodyProductRestaurantsPro  PowerupPostBodyProduct = "restaurants_pro"
+	PowerupAppointmentsPro Powerup = "appointments_pro"
+	PowerupPos             Powerup = "pos"
+	PowerupRestaurantsPro  Powerup = "restaurants_pro"
+)
+
+// Defines values for PowerupAddon.
+const (
+	AppointmentsProResource PowerupAddon = "appointments_pro_resource"
+	AppointmentsProUser     PowerupAddon = "appointments_pro_user"
+	MetaFee                 PowerupAddon = "meta_fee"
+	PosResource             PowerupAddon = "pos_resource"
+	PosUser                 PowerupAddon = "pos_user"
+	SmsCustom               PowerupAddon = "sms_custom"
+	SmsMarketing            PowerupAddon = "sms_marketing"
+	SmsReminders            PowerupAddon = "sms_reminders"
+	TheMichelinGuideFee     PowerupAddon = "the_michelin_guide_fee"
+	TripadvisorFee          PowerupAddon = "tripadvisor_fee"
 )
 
 // Defines values for PowerupSubscriptionCancelReason.
@@ -5123,13 +5137,16 @@ type PaymentStatus string
 // Payments defines model for Payments.
 type Payments []Payment
 
+// Powerup defines model for Powerup.
+type Powerup string
+
+// PowerupAddon defines model for PowerupAddon.
+type PowerupAddon string
+
 // PowerupPostBody defines model for PowerupPostBody.
 type PowerupPostBody struct {
-	Product *PowerupPostBodyProduct `json:"product,omitempty"`
+	Product *Powerup `json:"product,omitempty"`
 }
-
-// PowerupPostBodyProduct defines model for PowerupPostBody.Product.
-type PowerupPostBodyProduct string
 
 // PowerupSubscription defines model for PowerupSubscription.
 type PowerupSubscription struct {
@@ -6387,6 +6404,28 @@ type SubscriptionItemItemType string
 
 // SubscriptionItems defines model for SubscriptionItems.
 type SubscriptionItems []SubscriptionItem
+
+// SubscriptionPricing defines model for SubscriptionPricing.
+type SubscriptionPricing []SubscriptionPricingItem
+
+// SubscriptionPricingItem defines model for SubscriptionPricingItem.
+type SubscriptionPricingItem struct {
+	Addons   []SubscriptionPricingItemAddon `json:"addons"`
+	Currency string                         `json:"currency"`
+	Powerup  Powerup                        `json:"powerup"`
+
+	// Price in cents
+	Price int64 `json:"price"`
+}
+
+// SubscriptionPricingItemAddon defines model for SubscriptionPricingItemAddon.
+type SubscriptionPricingItemAddon struct {
+	Addon    PowerupAddon `json:"addon"`
+	Currency string       `json:"currency"`
+
+	// Price in cents
+	Price int64 `json:"price"`
+}
 
 // Subtransaction defines model for Subtransaction.
 type Subtransaction struct {
@@ -8211,6 +8250,15 @@ type ListBillingInvoicesParams struct {
 
 // CreatePaymentIntentParams defines parameters for CreatePaymentIntent.
 type CreatePaymentIntentParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetSubscriptionPricingParams defines parameters for GetSubscriptionPricing.
+type GetSubscriptionPricingParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -12714,6 +12762,9 @@ type ClientInterface interface {
 	// CreatePaymentIntent request
 	CreatePaymentIntent(ctx context.Context, companyId string, params *CreatePaymentIntentParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetSubscriptionPricing request
+	GetSubscriptionPricing(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListTerminals request
 	ListTerminals(ctx context.Context, companyId string, params *ListTerminalsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -14336,6 +14387,18 @@ func (c *Client) ListBillingInvoices(ctx context.Context, companyId string, para
 
 func (c *Client) CreatePaymentIntent(ctx context.Context, companyId string, params *CreatePaymentIntentParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreatePaymentIntentRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSubscriptionPricing(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSubscriptionPricingRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -23272,6 +23335,76 @@ func NewCreatePaymentIntentRequest(server string, companyId string, params *Crea
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSubscriptionPricingRequest generates requests for GetSubscriptionPricing
+func NewGetSubscriptionPricingRequest(server string, companyId string, params *GetSubscriptionPricingParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/subscriptions/pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -39290,6 +39423,9 @@ type ClientWithResponsesInterface interface {
 	// CreatePaymentIntent request
 	CreatePaymentIntentWithResponse(ctx context.Context, companyId string, params *CreatePaymentIntentParams, reqEditors ...RequestEditorFn) (*CreatePaymentIntentResponse, error)
 
+	// GetSubscriptionPricing request
+	GetSubscriptionPricingWithResponse(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*GetSubscriptionPricingResponse, error)
+
 	// ListTerminals request
 	ListTerminalsWithResponse(ctx context.Context, companyId string, params *ListTerminalsParams, reqEditors ...RequestEditorFn) (*ListTerminalsResponse, error)
 
@@ -41473,6 +41609,28 @@ func (r CreatePaymentIntentResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreatePaymentIntentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSubscriptionPricingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SubscriptionPricing
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSubscriptionPricingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSubscriptionPricingResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -46751,6 +46909,15 @@ func (c *ClientWithResponses) CreatePaymentIntentWithResponse(ctx context.Contex
 	return ParseCreatePaymentIntentResponse(rsp)
 }
 
+// GetSubscriptionPricingWithResponse request returning *GetSubscriptionPricingResponse
+func (c *ClientWithResponses) GetSubscriptionPricingWithResponse(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*GetSubscriptionPricingResponse, error) {
+	rsp, err := c.GetSubscriptionPricing(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSubscriptionPricingResponse(rsp)
+}
+
 // ListTerminalsWithResponse request returning *ListTerminalsResponse
 func (c *ClientWithResponses) ListTerminalsWithResponse(ctx context.Context, companyId string, params *ListTerminalsParams, reqEditors ...RequestEditorFn) (*ListTerminalsResponse, error) {
 	rsp, err := c.ListTerminals(ctx, companyId, params, reqEditors...)
@@ -50880,6 +51047,32 @@ func ParseCreatePaymentIntentResponse(rsp *http.Response) (*CreatePaymentIntentR
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PaymentIntent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSubscriptionPricingResponse parses an HTTP response from a GetSubscriptionPricingWithResponse call
+func ParseGetSubscriptionPricingResponse(rsp *http.Response) (*GetSubscriptionPricingResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSubscriptionPricingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SubscriptionPricing
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
