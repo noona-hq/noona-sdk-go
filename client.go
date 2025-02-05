@@ -423,6 +423,14 @@ const (
 	IssuerTypeEmployee IssuerType = "employee"
 )
 
+// Defines values for LineItemType.
+const (
+	LineItemTypeClaim     LineItemType = "claim"
+	LineItemTypeEventType LineItemType = "event_type"
+	LineItemTypeProduct   LineItemType = "product"
+	LineItemTypeVoucher   LineItemType = "voucher"
+)
+
 // Defines values for LineItemVoucherDataAmountType.
 const (
 	LineItemVoucherDataAmountTypeAmount LineItemVoucherDataAmountType = "amount"
@@ -3836,6 +3844,11 @@ type ExpandableBookingOffer struct {
 // ExpandableBookingOffers defines model for ExpandableBookingOffers.
 type ExpandableBookingOffers []ExpandableBookingOffer
 
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableClaim struct {
+	union json.RawMessage
+}
+
 // ExpandableCompanies defines model for ExpandableCompanies.
 type ExpandableCompanies []ExpandableCompany
 
@@ -4176,6 +4189,9 @@ type LineItem struct {
 	BookedBy *string `json:"booked_by,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Claim *ExpandableClaim `json:"claim,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company *ExpandableCompany `json:"company,omitempty"`
 
 	// Discount percentage
@@ -4197,11 +4213,12 @@ type LineItem struct {
 	Quantity *int32             `json:"quantity,omitempty"`
 
 	// The VAT exemption reason when the VAT amount is equal to 0
-	TaxExemptionReason *string    `json:"tax_exemption_reason,omitempty"`
-	Title              *string    `json:"title,omitempty"`
-	Transaction        *string    `json:"transaction,omitempty"`
-	UnitPrice          *UnitPrice `json:"unit_price,omitempty"`
-	VariationId        *string    `json:"variation_id,omitempty"`
+	TaxExemptionReason *string       `json:"tax_exemption_reason,omitempty"`
+	Title              *string       `json:"title,omitempty"`
+	Transaction        *string       `json:"transaction,omitempty"`
+	Type               *LineItemType `json:"type,omitempty"`
+	UnitPrice          *UnitPrice    `json:"unit_price,omitempty"`
+	VariationId        *string       `json:"variation_id,omitempty"`
 
 	// The VAT ratio
 	VatAmount *float64 `json:"vat_amount,omitempty"`
@@ -4212,6 +4229,9 @@ type LineItem struct {
 	Voucher         *LineItemVoucher   `json:"voucher,omitempty"`
 	VoucherTemplate *VoucherTemplateID `json:"voucher_template,omitempty"`
 }
+
+// LineItemType defines model for LineItemType.
+type LineItemType string
 
 // The voucher object is only returned when the line item is a voucher template.
 //
@@ -11088,6 +11108,40 @@ func (t ExpandableBookingOffer) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ExpandableBookingOffer) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableClaim) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableClaim) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableClaim) AsClaim() (Claim, error) {
+	var body Claim
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableClaim) FromClaim(v Claim) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableClaim) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableClaim) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
