@@ -2788,6 +2788,7 @@ type Employee struct {
 	// Whether the employee is connected to teya
 	ConnectedToTeya      *bool                         `json:"connected_to_teya,omitempty"`
 	CreatedAt            *time.Time                    `json:"created_at,omitempty"`
+	DeletedAt            *time.Time                    `json:"deleted_at,omitempty"`
 	Description          *string                       `json:"description,omitempty"`
 	DisabledAt           *time.Time                    `json:"disabled_at,omitempty"`
 	Email                *string                       `json:"email,omitempty"`
@@ -2837,6 +2838,16 @@ type EmployeeField string
 
 // EmployeeFields defines model for EmployeeFields.
 type EmployeeFields []EmployeeField
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type EmployeeFilter struct {
+	// Whether to include deleted employees in the response.
+	//
+	// When true, deleted employees will be included in the response.
+	//
+	// When false, deleted employees will not be included in the response.
+	IncludeDeleted *bool `json:"include_deleted,omitempty"`
+}
 
 // EmployeeMarketplaceSettings defines model for EmployeeMarketplaceSettings.
 type EmployeeMarketplaceSettings struct {
@@ -7817,6 +7828,9 @@ type ListEmployeesParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+
+	// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+	Filter *EmployeeFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // DeleteEmployeeParams defines parameters for DeleteEmployee.
@@ -20190,6 +20204,16 @@ func NewListEmployeesRequest(server string, companyId string, params *ListEmploy
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
