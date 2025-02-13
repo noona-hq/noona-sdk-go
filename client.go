@@ -1811,9 +1811,12 @@ type BookingOffer struct {
 	// If the booking offer was explicitly declined, this timestamp is set.
 	DeclinedAt *time.Time `json:"declined_at,omitempty"`
 	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
-	ExpiresAt  *time.Time `json:"expires_at,omitempty"`
-	Id         *string    `json:"id,omitempty"`
-	Message    *string    `json:"message,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Event     *ExpandableEvent `json:"event,omitempty"`
+	ExpiresAt *time.Time       `json:"expires_at,omitempty"`
+	Id        *string          `json:"id,omitempty"`
+	Message   *string          `json:"message,omitempty"`
 
 	// The start time of the event.
 	StartsAt  *time.Time `json:"starts_at,omitempty"`
