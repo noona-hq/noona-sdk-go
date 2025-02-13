@@ -423,6 +423,11 @@ const (
 	IssuerTypeEmployee IssuerType = "employee"
 )
 
+// Defines values for LineItemField.
+const (
+	LineItemFieldEmployee LineItemField = "employee"
+)
+
 // Defines values for LineItemType.
 const (
 	LineItemTypeClaim     LineItemType = "claim"
@@ -4240,6 +4245,12 @@ type LineItem struct {
 	Voucher         *LineItemVoucher   `json:"voucher,omitempty"`
 	VoucherTemplate *VoucherTemplateID `json:"voucher_template,omitempty"`
 }
+
+// LineItemField defines model for LineItemField.
+type LineItemField string
+
+// LineItemFields defines model for LineItemFields.
+type LineItemFields []LineItemField
 
 // LineItemType defines model for LineItemType.
 type LineItemType string
@@ -9128,7 +9139,8 @@ type UpdateLineItemParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand         `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *LineItemFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // CreateMemoJSONBody defines parameters for CreateMemo.
@@ -29406,6 +29418,22 @@ func NewUpdateLineItemRequestWithBody(server string, lineItemId string, params *
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
