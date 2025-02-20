@@ -5496,6 +5496,9 @@ type RequiredFields struct {
 
 // Resource defines model for Resource.
 type Resource struct {
+	// If true, multiple bookings per timeslot is allowed for this resource.
+	AllowOverlappingBookings *bool `json:"allow_overlapping_bookings,omitempty"`
+
 	// Whether the resource is visible on the calendar
 	AvailableForBookings *bool `json:"available_for_bookings,omitempty"`
 
