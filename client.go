@@ -6989,6 +6989,9 @@ type VoucherFilter struct {
 	EventTypes *[]string  `json:"event_types,omitempty"`
 	From       *time.Time `json:"from,omitempty"`
 
+	// Filter by specific voucher IDs
+	Ids *[]string `json:"ids,omitempty"`
+
 	// Whether to include deleted vouchers in the response.
 	//
 	// When true, deleted vouchers will be included in the response.
