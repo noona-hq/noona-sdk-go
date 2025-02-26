@@ -8120,6 +8120,49 @@ type ListPaymentsParams struct {
 	Search *Search `form:"search,omitempty" json:"search,omitempty"`
 }
 
+// ListProductGroupsParams defines parameters for ListProductGroups.
+type ListProductGroupsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// ListGroupsAndProductsParams defines parameters for ListGroupsAndProducts.
+type ListGroupsAndProductsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListProductsParams defines parameters for ListProducts.
+type ListProductsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand        `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *ProductFilter `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+
+	// Use filter instead.
+	Barcode *string `form:"barcode,omitempty" json:"barcode,omitempty"`
+}
+
 // ListCustomPropertiesParams defines parameters for ListCustomProperties.
 type ListCustomPropertiesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -9456,8 +9499,8 @@ type GetPricingByCountryCodeParams struct {
 // GetPricingByCountryCodeParamsProduct defines parameters for GetPricingByCountryCode.
 type GetPricingByCountryCodeParamsProduct string
 
-// ListProductGroupsParams defines parameters for ListProductGroups.
-type ListProductGroupsParams struct {
+// ListProductGroupsLegacyParams defines parameters for ListProductGroupsLegacy.
+type ListProductGroupsLegacyParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -9483,8 +9526,8 @@ type CreateProductGroupParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// ListGroupsAndProductsParams defines parameters for ListGroupsAndProducts.
-type ListGroupsAndProductsParams struct {
+// ListGroupsAndProductsLegacyParams defines parameters for ListGroupsAndProductsLegacy.
+type ListGroupsAndProductsLegacyParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -9534,8 +9577,8 @@ type UpdateProductGroupParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// ListProductsParams defines parameters for ListProducts.
-type ListProductsParams struct {
+// ListProductsLegacyParams defines parameters for ListProductsLegacy.
+type ListProductsLegacyParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -12802,6 +12845,15 @@ type ClientInterface interface {
 	// PreviewVoucherTemplate request
 	PreviewVoucherTemplate(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListProductGroups request
+	ListProductGroups(ctx context.Context, companyId string, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListGroupsAndProducts request
+	ListGroupsAndProducts(ctx context.Context, companyId string, params *ListGroupsAndProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListProducts request
+	ListProducts(ctx context.Context, companyId string, params *ListProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListCustomProperties request
 	ListCustomProperties(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13237,16 +13289,16 @@ type ClientInterface interface {
 	// GetPricingByCountryCode request
 	GetPricingByCountryCode(ctx context.Context, countryCode string, params *GetPricingByCountryCodeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListProductGroups request
-	ListProductGroups(ctx context.Context, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListProductGroupsLegacy request
+	ListProductGroupsLegacy(ctx context.Context, params *ListProductGroupsLegacyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateProductGroup request with any body
 	CreateProductGroupWithBody(ctx context.Context, params *CreateProductGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateProductGroup(ctx context.Context, params *CreateProductGroupParams, body CreateProductGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListGroupsAndProducts request
-	ListGroupsAndProducts(ctx context.Context, params *ListGroupsAndProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListGroupsAndProductsLegacy request
+	ListGroupsAndProductsLegacy(ctx context.Context, params *ListGroupsAndProductsLegacyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateProductGroupsOrder request with any body
 	UpdateProductGroupsOrderWithBody(ctx context.Context, params *UpdateProductGroupsOrderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -13264,8 +13316,8 @@ type ClientInterface interface {
 
 	UpdateProductGroup(ctx context.Context, id string, params *UpdateProductGroupParams, body UpdateProductGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListProducts request
-	ListProducts(ctx context.Context, params *ListProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListProductsLegacy request
+	ListProductsLegacy(ctx context.Context, params *ListProductsLegacyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateProduct request with any body
 	CreateProductWithBody(ctx context.Context, params *CreateProductParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14272,6 +14324,42 @@ func (c *Client) ListPayments(ctx context.Context, companyId string, params *Lis
 
 func (c *Client) PreviewVoucherTemplate(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPreviewVoucherTemplateRequest(c.Server, companyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListProductGroups(ctx context.Context, companyId string, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListProductGroupsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListGroupsAndProducts(ctx context.Context, companyId string, params *ListGroupsAndProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListGroupsAndProductsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListProducts(ctx context.Context, companyId string, params *ListProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListProductsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16166,8 +16254,8 @@ func (c *Client) GetPricingByCountryCode(ctx context.Context, countryCode string
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListProductGroups(ctx context.Context, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListProductGroupsRequest(c.Server, params)
+func (c *Client) ListProductGroupsLegacy(ctx context.Context, params *ListProductGroupsLegacyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListProductGroupsLegacyRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16202,8 +16290,8 @@ func (c *Client) CreateProductGroup(ctx context.Context, params *CreateProductGr
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListGroupsAndProducts(ctx context.Context, params *ListGroupsAndProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListGroupsAndProductsRequest(c.Server, params)
+func (c *Client) ListGroupsAndProductsLegacy(ctx context.Context, params *ListGroupsAndProductsLegacyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListGroupsAndProductsLegacyRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16286,8 +16374,8 @@ func (c *Client) UpdateProductGroup(ctx context.Context, id string, params *Upda
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListProducts(ctx context.Context, params *ListProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListProductsRequest(c.Server, params)
+func (c *Client) ListProductsLegacy(ctx context.Context, params *ListProductsLegacyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListProductsLegacyRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -22146,6 +22234,282 @@ func NewPreviewVoucherTemplateRequest(server string, companyId string) (*http.Re
 	if err != nil {
 		return nil, err
 	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListProductGroupsRequest generates requests for ListProductGroups
+func NewListProductGroupsRequest(server string, companyId string, params *ListProductGroupsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/product_groups", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListGroupsAndProductsRequest generates requests for ListGroupsAndProducts
+func NewListGroupsAndProductsRequest(server string, companyId string, params *ListGroupsAndProductsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/product_groups/expanded", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListProductsRequest generates requests for ListProducts
+func NewListProductsRequest(server string, companyId string, params *ListProductsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/products", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Barcode != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "barcode", runtime.ParamLocationQuery, *params.Barcode); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -31645,8 +32009,8 @@ func NewGetPricingByCountryCodeRequest(server string, countryCode string, params
 	return req, nil
 }
 
-// NewListProductGroupsRequest generates requests for ListProductGroups
-func NewListProductGroupsRequest(server string, params *ListProductGroupsParams) (*http.Request, error) {
+// NewListProductGroupsLegacyRequest generates requests for ListProductGroupsLegacy
+func NewListProductGroupsLegacyRequest(server string, params *ListProductGroupsLegacyParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -31804,8 +32168,8 @@ func NewCreateProductGroupRequestWithBody(server string, params *CreateProductGr
 	return req, nil
 }
 
-// NewListGroupsAndProductsRequest generates requests for ListGroupsAndProducts
-func NewListGroupsAndProductsRequest(server string, params *ListGroupsAndProductsParams) (*http.Request, error) {
+// NewListGroupsAndProductsLegacyRequest generates requests for ListGroupsAndProductsLegacy
+func NewListGroupsAndProductsLegacyRequest(server string, params *ListGroupsAndProductsLegacyParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -32166,8 +32530,8 @@ func NewUpdateProductGroupRequestWithBody(server string, id string, params *Upda
 	return req, nil
 }
 
-// NewListProductsRequest generates requests for ListProducts
-func NewListProductsRequest(server string, params *ListProductsParams) (*http.Request, error) {
+// NewListProductsLegacyRequest generates requests for ListProductsLegacy
+func NewListProductsLegacyRequest(server string, params *ListProductsLegacyParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -39489,6 +39853,15 @@ type ClientWithResponsesInterface interface {
 	// PreviewVoucherTemplate request
 	PreviewVoucherTemplateWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*PreviewVoucherTemplateResponse, error)
 
+	// ListProductGroups request
+	ListProductGroupsWithResponse(ctx context.Context, companyId string, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*ListProductGroupsResponse, error)
+
+	// ListGroupsAndProducts request
+	ListGroupsAndProductsWithResponse(ctx context.Context, companyId string, params *ListGroupsAndProductsParams, reqEditors ...RequestEditorFn) (*ListGroupsAndProductsResponse, error)
+
+	// ListProducts request
+	ListProductsWithResponse(ctx context.Context, companyId string, params *ListProductsParams, reqEditors ...RequestEditorFn) (*ListProductsResponse, error)
+
 	// ListCustomProperties request
 	ListCustomPropertiesWithResponse(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*ListCustomPropertiesResponse, error)
 
@@ -39924,16 +40297,16 @@ type ClientWithResponsesInterface interface {
 	// GetPricingByCountryCode request
 	GetPricingByCountryCodeWithResponse(ctx context.Context, countryCode string, params *GetPricingByCountryCodeParams, reqEditors ...RequestEditorFn) (*GetPricingByCountryCodeResponse, error)
 
-	// ListProductGroups request
-	ListProductGroupsWithResponse(ctx context.Context, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*ListProductGroupsResponse, error)
+	// ListProductGroupsLegacy request
+	ListProductGroupsLegacyWithResponse(ctx context.Context, params *ListProductGroupsLegacyParams, reqEditors ...RequestEditorFn) (*ListProductGroupsLegacyResponse, error)
 
 	// CreateProductGroup request with any body
 	CreateProductGroupWithBodyWithResponse(ctx context.Context, params *CreateProductGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProductGroupResponse, error)
 
 	CreateProductGroupWithResponse(ctx context.Context, params *CreateProductGroupParams, body CreateProductGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateProductGroupResponse, error)
 
-	// ListGroupsAndProducts request
-	ListGroupsAndProductsWithResponse(ctx context.Context, params *ListGroupsAndProductsParams, reqEditors ...RequestEditorFn) (*ListGroupsAndProductsResponse, error)
+	// ListGroupsAndProductsLegacy request
+	ListGroupsAndProductsLegacyWithResponse(ctx context.Context, params *ListGroupsAndProductsLegacyParams, reqEditors ...RequestEditorFn) (*ListGroupsAndProductsLegacyResponse, error)
 
 	// UpdateProductGroupsOrder request with any body
 	UpdateProductGroupsOrderWithBodyWithResponse(ctx context.Context, params *UpdateProductGroupsOrderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProductGroupsOrderResponse, error)
@@ -39951,8 +40324,8 @@ type ClientWithResponsesInterface interface {
 
 	UpdateProductGroupWithResponse(ctx context.Context, id string, params *UpdateProductGroupParams, body UpdateProductGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProductGroupResponse, error)
 
-	// ListProducts request
-	ListProductsWithResponse(ctx context.Context, params *ListProductsParams, reqEditors ...RequestEditorFn) (*ListProductsResponse, error)
+	// ListProductsLegacy request
+	ListProductsLegacyWithResponse(ctx context.Context, params *ListProductsLegacyParams, reqEditors ...RequestEditorFn) (*ListProductsLegacyResponse, error)
 
 	// CreateProduct request with any body
 	CreateProductWithBodyWithResponse(ctx context.Context, params *CreateProductParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateProductResponse, error)
@@ -41393,6 +41766,72 @@ func (r PreviewVoucherTemplateResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PreviewVoucherTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListProductGroupsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProductGroups
+}
+
+// Status returns HTTPResponse.Status
+func (r ListProductGroupsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListProductGroupsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListGroupsAndProductsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProductGroupsExpanded
+}
+
+// Status returns HTTPResponse.Status
+func (r ListGroupsAndProductsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListGroupsAndProductsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListProductsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Products
+}
+
+// Status returns HTTPResponse.Status
+func (r ListProductsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListProductsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -44048,14 +44487,14 @@ func (r GetPricingByCountryCodeResponse) StatusCode() int {
 	return 0
 }
 
-type ListProductGroupsResponse struct {
+type ListProductGroupsLegacyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ProductGroups
 }
 
 // Status returns HTTPResponse.Status
-func (r ListProductGroupsResponse) Status() string {
+func (r ListProductGroupsLegacyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -44063,7 +44502,7 @@ func (r ListProductGroupsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListProductGroupsResponse) StatusCode() int {
+func (r ListProductGroupsLegacyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -44092,14 +44531,14 @@ func (r CreateProductGroupResponse) StatusCode() int {
 	return 0
 }
 
-type ListGroupsAndProductsResponse struct {
+type ListGroupsAndProductsLegacyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ProductGroupsExpanded
 }
 
 // Status returns HTTPResponse.Status
-func (r ListGroupsAndProductsResponse) Status() string {
+func (r ListGroupsAndProductsLegacyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -44107,7 +44546,7 @@ func (r ListGroupsAndProductsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListGroupsAndProductsResponse) StatusCode() int {
+func (r ListGroupsAndProductsLegacyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -44201,14 +44640,14 @@ func (r UpdateProductGroupResponse) StatusCode() int {
 	return 0
 }
 
-type ListProductsResponse struct {
+type ListProductsLegacyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Products
 }
 
 // Status returns HTTPResponse.Status
-func (r ListProductsResponse) Status() string {
+func (r ListProductsLegacyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -44216,7 +44655,7 @@ func (r ListProductsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListProductsResponse) StatusCode() int {
+func (r ListProductsLegacyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -46873,6 +47312,33 @@ func (c *ClientWithResponses) PreviewVoucherTemplateWithResponse(ctx context.Con
 	return ParsePreviewVoucherTemplateResponse(rsp)
 }
 
+// ListProductGroupsWithResponse request returning *ListProductGroupsResponse
+func (c *ClientWithResponses) ListProductGroupsWithResponse(ctx context.Context, companyId string, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*ListProductGroupsResponse, error) {
+	rsp, err := c.ListProductGroups(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListProductGroupsResponse(rsp)
+}
+
+// ListGroupsAndProductsWithResponse request returning *ListGroupsAndProductsResponse
+func (c *ClientWithResponses) ListGroupsAndProductsWithResponse(ctx context.Context, companyId string, params *ListGroupsAndProductsParams, reqEditors ...RequestEditorFn) (*ListGroupsAndProductsResponse, error) {
+	rsp, err := c.ListGroupsAndProducts(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListGroupsAndProductsResponse(rsp)
+}
+
+// ListProductsWithResponse request returning *ListProductsResponse
+func (c *ClientWithResponses) ListProductsWithResponse(ctx context.Context, companyId string, params *ListProductsParams, reqEditors ...RequestEditorFn) (*ListProductsResponse, error) {
+	rsp, err := c.ListProducts(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListProductsResponse(rsp)
+}
+
 // ListCustomPropertiesWithResponse request returning *ListCustomPropertiesResponse
 func (c *ClientWithResponses) ListCustomPropertiesWithResponse(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*ListCustomPropertiesResponse, error) {
 	rsp, err := c.ListCustomProperties(ctx, companyId, params, reqEditors...)
@@ -48250,13 +48716,13 @@ func (c *ClientWithResponses) GetPricingByCountryCodeWithResponse(ctx context.Co
 	return ParseGetPricingByCountryCodeResponse(rsp)
 }
 
-// ListProductGroupsWithResponse request returning *ListProductGroupsResponse
-func (c *ClientWithResponses) ListProductGroupsWithResponse(ctx context.Context, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*ListProductGroupsResponse, error) {
-	rsp, err := c.ListProductGroups(ctx, params, reqEditors...)
+// ListProductGroupsLegacyWithResponse request returning *ListProductGroupsLegacyResponse
+func (c *ClientWithResponses) ListProductGroupsLegacyWithResponse(ctx context.Context, params *ListProductGroupsLegacyParams, reqEditors ...RequestEditorFn) (*ListProductGroupsLegacyResponse, error) {
+	rsp, err := c.ListProductGroupsLegacy(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListProductGroupsResponse(rsp)
+	return ParseListProductGroupsLegacyResponse(rsp)
 }
 
 // CreateProductGroupWithBodyWithResponse request with arbitrary body returning *CreateProductGroupResponse
@@ -48276,13 +48742,13 @@ func (c *ClientWithResponses) CreateProductGroupWithResponse(ctx context.Context
 	return ParseCreateProductGroupResponse(rsp)
 }
 
-// ListGroupsAndProductsWithResponse request returning *ListGroupsAndProductsResponse
-func (c *ClientWithResponses) ListGroupsAndProductsWithResponse(ctx context.Context, params *ListGroupsAndProductsParams, reqEditors ...RequestEditorFn) (*ListGroupsAndProductsResponse, error) {
-	rsp, err := c.ListGroupsAndProducts(ctx, params, reqEditors...)
+// ListGroupsAndProductsLegacyWithResponse request returning *ListGroupsAndProductsLegacyResponse
+func (c *ClientWithResponses) ListGroupsAndProductsLegacyWithResponse(ctx context.Context, params *ListGroupsAndProductsLegacyParams, reqEditors ...RequestEditorFn) (*ListGroupsAndProductsLegacyResponse, error) {
+	rsp, err := c.ListGroupsAndProductsLegacy(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListGroupsAndProductsResponse(rsp)
+	return ParseListGroupsAndProductsLegacyResponse(rsp)
 }
 
 // UpdateProductGroupsOrderWithBodyWithResponse request with arbitrary body returning *UpdateProductGroupsOrderResponse
@@ -48337,13 +48803,13 @@ func (c *ClientWithResponses) UpdateProductGroupWithResponse(ctx context.Context
 	return ParseUpdateProductGroupResponse(rsp)
 }
 
-// ListProductsWithResponse request returning *ListProductsResponse
-func (c *ClientWithResponses) ListProductsWithResponse(ctx context.Context, params *ListProductsParams, reqEditors ...RequestEditorFn) (*ListProductsResponse, error) {
-	rsp, err := c.ListProducts(ctx, params, reqEditors...)
+// ListProductsLegacyWithResponse request returning *ListProductsLegacyResponse
+func (c *ClientWithResponses) ListProductsLegacyWithResponse(ctx context.Context, params *ListProductsLegacyParams, reqEditors ...RequestEditorFn) (*ListProductsLegacyResponse, error) {
+	rsp, err := c.ListProductsLegacy(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListProductsResponse(rsp)
+	return ParseListProductsLegacyResponse(rsp)
 }
 
 // CreateProductWithBodyWithResponse request with arbitrary body returning *CreateProductResponse
@@ -50770,6 +51236,84 @@ func ParsePreviewVoucherTemplateResponse(rsp *http.Response) (*PreviewVoucherTem
 	response := &PreviewVoucherTemplateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListProductGroupsResponse parses an HTTP response from a ListProductGroupsWithResponse call
+func ParseListProductGroupsResponse(rsp *http.Response) (*ListProductGroupsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListProductGroupsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProductGroups
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListGroupsAndProductsResponse parses an HTTP response from a ListGroupsAndProductsWithResponse call
+func ParseListGroupsAndProductsResponse(rsp *http.Response) (*ListGroupsAndProductsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListGroupsAndProductsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProductGroupsExpanded
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListProductsResponse parses an HTTP response from a ListProductsWithResponse call
+func ParseListProductsResponse(rsp *http.Response) (*ListProductsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListProductsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Products
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
@@ -53782,15 +54326,15 @@ func ParseGetPricingByCountryCodeResponse(rsp *http.Response) (*GetPricingByCoun
 	return response, nil
 }
 
-// ParseListProductGroupsResponse parses an HTTP response from a ListProductGroupsWithResponse call
-func ParseListProductGroupsResponse(rsp *http.Response) (*ListProductGroupsResponse, error) {
+// ParseListProductGroupsLegacyResponse parses an HTTP response from a ListProductGroupsLegacyWithResponse call
+func ParseListProductGroupsLegacyResponse(rsp *http.Response) (*ListProductGroupsLegacyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListProductGroupsResponse{
+	response := &ListProductGroupsLegacyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -53834,15 +54378,15 @@ func ParseCreateProductGroupResponse(rsp *http.Response) (*CreateProductGroupRes
 	return response, nil
 }
 
-// ParseListGroupsAndProductsResponse parses an HTTP response from a ListGroupsAndProductsWithResponse call
-func ParseListGroupsAndProductsResponse(rsp *http.Response) (*ListGroupsAndProductsResponse, error) {
+// ParseListGroupsAndProductsLegacyResponse parses an HTTP response from a ListGroupsAndProductsLegacyWithResponse call
+func ParseListGroupsAndProductsLegacyResponse(rsp *http.Response) (*ListGroupsAndProductsLegacyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListGroupsAndProductsResponse{
+	response := &ListGroupsAndProductsLegacyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -53954,15 +54498,15 @@ func ParseUpdateProductGroupResponse(rsp *http.Response) (*UpdateProductGroupRes
 	return response, nil
 }
 
-// ParseListProductsResponse parses an HTTP response from a ListProductsWithResponse call
-func ParseListProductsResponse(rsp *http.Response) (*ListProductsResponse, error) {
+// ParseListProductsLegacyResponse parses an HTTP response from a ListProductsLegacyWithResponse call
+func ParseListProductsLegacyResponse(rsp *http.Response) (*ListProductsLegacyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListProductsResponse{
+	response := &ListProductsLegacyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
