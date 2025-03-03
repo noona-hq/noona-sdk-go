@@ -555,6 +555,7 @@ const (
 	PropertiesRead        OAuthScope = "properties:read"
 	PropertiesWrite       OAuthScope = "properties:write"
 	PushNotificationsRead OAuthScope = "push_notifications:read"
+	ReportsWrite          OAuthScope = "reports:write"
 	ResourcesRead         OAuthScope = "resources:read"
 	ResourcesWrite        OAuthScope = "resources:write"
 	RuleSetTemplatesRead  OAuthScope = "rule_set_templates:read"
@@ -4201,6 +4202,30 @@ type LegacyBookingQuestion struct {
 
 // This schema is deprecated. Use `booking_question_answers` instead.
 type LegacyBookingQuestions []LegacyBookingQuestion
+
+// LegacyReport defines model for LegacyReport.
+type LegacyReport struct {
+	// The base64 encoded data of the report
+	Base64Data string `json:"base64Data"`
+
+	// Optional customer identifier
+	Customer *string `json:"customer,omitempty"`
+
+	// The header data of the report
+	HeaderData string `json:"headerData"`
+
+	// The ID of the report
+	Id *string `json:"id,omitempty"`
+
+	// Optional transaction identifier
+	TransactionId *string `json:"transactionId,omitempty"`
+}
+
+// LegacyReportResponse defines model for LegacyReportResponse.
+type LegacyReportResponse struct {
+	// The unique identifier of the created report
+	Id string `json:"id"`
+}
 
 // LineItem defines model for LineItem.
 type LineItem struct {
@@ -9152,6 +9177,18 @@ type UpdateSaltpayTerminalParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateReportJSONBody defines parameters for CreateReport.
+type CreateReportJSONBody LegacyReport
+
+// CreateReportParams defines parameters for CreateReport.
+type CreateReportParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateLineItemJSONBody defines parameters for CreateLineItem.
 type CreateLineItemJSONBody LineItem
 
@@ -10615,6 +10652,9 @@ type LinkSaltpayBankAccountJSONRequestBody LinkSaltpayBankAccountJSONBody
 
 // UpdateSaltpayTerminalJSONRequestBody defines body for UpdateSaltpayTerminal for application/json ContentType.
 type UpdateSaltpayTerminalJSONRequestBody UpdateSaltpayTerminalJSONBody
+
+// CreateReportJSONRequestBody defines body for CreateReport for application/json ContentType.
+type CreateReportJSONRequestBody CreateReportJSONBody
 
 // CreateLineItemJSONRequestBody defines body for CreateLineItem for application/json ContentType.
 type CreateLineItemJSONRequestBody CreateLineItemJSONBody
@@ -13163,6 +13203,11 @@ type ClientInterface interface {
 
 	UpdateSaltpayTerminal(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, body UpdateSaltpayTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateReport request with any body
+	CreateReportWithBody(ctx context.Context, params *CreateReportParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateReport(ctx context.Context, params *CreateReportParams, body CreateReportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateLineItem request with any body
 	CreateLineItemWithBody(ctx context.Context, params *CreateLineItemParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15692,6 +15737,30 @@ func (c *Client) UpdateSaltpayTerminalWithBody(ctx context.Context, storeId stri
 
 func (c *Client) UpdateSaltpayTerminal(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, body UpdateSaltpayTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateSaltpayTerminalRequest(c.Server, storeId, terminalId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateReportWithBody(ctx context.Context, params *CreateReportParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReportRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateReport(ctx context.Context, params *CreateReportParams, body CreateReportJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReportRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -29517,6 +29586,82 @@ func NewUpdateSaltpayTerminalRequestWithBody(server string, storeId string, term
 	return req, nil
 }
 
+// NewCreateReportRequest calls the generic CreateReport builder with application/json body
+func NewCreateReportRequest(server string, params *CreateReportParams, body CreateReportJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateReportRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateReportRequestWithBody generates requests for CreateReport with any type of body
+func NewCreateReportRequestWithBody(server string, params *CreateReportParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/legacy_reports")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateLineItemRequest calls the generic CreateLineItem builder with application/json body
 func NewCreateLineItemRequest(server string, params *CreateLineItemParams, body CreateLineItemJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -40171,6 +40316,11 @@ type ClientWithResponsesInterface interface {
 
 	UpdateSaltpayTerminalWithResponse(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, body UpdateSaltpayTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSaltpayTerminalResponse, error)
 
+	// CreateReport request with any body
+	CreateReportWithBodyWithResponse(ctx context.Context, params *CreateReportParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReportResponse, error)
+
+	CreateReportWithResponse(ctx context.Context, params *CreateReportParams, body CreateReportJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReportResponse, error)
+
 	// CreateLineItem request with any body
 	CreateLineItemWithBodyWithResponse(ctx context.Context, params *CreateLineItemParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateLineItemResponse, error)
 
@@ -43739,6 +43889,28 @@ func (r UpdateSaltpayTerminalResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateSaltpayTerminalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *LegacyReportResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateReportResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -48312,6 +48484,23 @@ func (c *ClientWithResponses) UpdateSaltpayTerminalWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseUpdateSaltpayTerminalResponse(rsp)
+}
+
+// CreateReportWithBodyWithResponse request with arbitrary body returning *CreateReportResponse
+func (c *ClientWithResponses) CreateReportWithBodyWithResponse(ctx context.Context, params *CreateReportParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReportResponse, error) {
+	rsp, err := c.CreateReportWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateReportResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateReportWithResponse(ctx context.Context, params *CreateReportParams, body CreateReportJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReportResponse, error) {
+	rsp, err := c.CreateReport(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateReportResponse(rsp)
 }
 
 // CreateLineItemWithBodyWithResponse request with arbitrary body returning *CreateLineItemResponse
@@ -53495,6 +53684,32 @@ func ParseUpdateSaltpayTerminalResponse(rsp *http.Response) (*UpdateSaltpayTermi
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest SaltpayTerminal
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateReportResponse parses an HTTP response from a CreateReportWithResponse call
+func ParseCreateReportResponse(rsp *http.Response) (*CreateReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest LegacyReportResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
