@@ -4212,7 +4212,7 @@ type LegacyReport struct {
 	Customer *string `json:"customer,omitempty"`
 
 	// The header data of the report
-	HeaderData string `json:"headerData"`
+	HeaderData *string `json:"headerData,omitempty"`
 
 	// The ID of the report
 	Id *string `json:"id,omitempty"`
