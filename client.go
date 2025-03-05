@@ -525,6 +525,7 @@ const (
 	BlockedTimesWrite     OAuthScope = "blocked_times:write"
 	ClaimsRead            OAuthScope = "claims:read"
 	CompaniesRead         OAuthScope = "companies:read"
+	CompaniesWrite        OAuthScope = "companies:write"
 	CustomerGroupsRead    OAuthScope = "customer_groups:read"
 	CustomerGroupsWrite   OAuthScope = "customer_groups:write"
 	CustomersRead         OAuthScope = "customers:read"
@@ -558,6 +559,8 @@ const (
 	ReportsWrite          OAuthScope = "reports:write"
 	ResourcesRead         OAuthScope = "resources:read"
 	ResourcesWrite        OAuthScope = "resources:write"
+	RolesRead             OAuthScope = "roles:read"
+	RolesWrite            OAuthScope = "roles:write"
 	RuleSetTemplatesRead  OAuthScope = "rule_set_templates:read"
 	RuleSetTemplatesWrite OAuthScope = "rule_set_templates:write"
 	RuleSetsRead          OAuthScope = "rule_sets:read"
@@ -654,6 +657,53 @@ const (
 	PaymentStatusRefunded  PaymentStatus = "refunded"
 	PaymentStatusSettled   PaymentStatus = "settled"
 	PaymentStatusUnsettled PaymentStatus = "unsettled"
+)
+
+// Defines values for Permission.
+const (
+	DeleteAttachments                    Permission = "deleteAttachments"
+	ManageAllAppointments                Permission = "manageAllAppointments"
+	ManageAllBlockedTimes                Permission = "manageAllBlockedTimes"
+	ManageAllBookableResources           Permission = "manageAllBookableResources"
+	ManageAllClientContactInformation    Permission = "manageAllClientContactInformation"
+	ManageAllClientIdentificationNumbers Permission = "manageAllClientIdentificationNumbers"
+	ManageAllClientNotes                 Permission = "manageAllClientNotes"
+	ManageAllClients                     Permission = "manageAllClients"
+	ManageAllEventNotes                  Permission = "manageAllEventNotes"
+	ManageAllNoshowClaims                Permission = "manageAllNoshowClaims"
+	ManageAllPayments                    Permission = "manageAllPayments"
+	ManageAllPosProducts                 Permission = "manageAllPosProducts"
+	ManageAllSMSMessages                 Permission = "manageAllSMSMessages"
+	ManageAllServices                    Permission = "manageAllServices"
+	ManageAllSettlements                 Permission = "manageAllSettlements"
+	ManageAllStaff                       Permission = "manageAllStaff"
+	ManageAllSubscriptions               Permission = "manageAllSubscriptions"
+	ManageCalendarSettings               Permission = "manageCalendarSettings"
+	ManageCheckinSettings                Permission = "manageCheckinSettings"
+	ManageClientNames                    Permission = "manageClientNames"
+	ManageCustomFields                   Permission = "manageCustomFields"
+	ManageInvoiceIssuerInfo              Permission = "manageInvoiceIssuerInfo"
+	ManageLocationSettings               Permission = "manageLocationSettings"
+	ManageLockedSections                 Permission = "manageLockedSections"
+	ManageMarketplaceSettings            Permission = "manageMarketplaceSettings"
+	ManageOwnAppointments                Permission = "manageOwnAppointments"
+	ManageOwnBlockedTimes                Permission = "manageOwnBlockedTimes"
+	ManageOwnClientContactInformation    Permission = "manageOwnClientContactInformation"
+	ManageOwnClientIdentificationNumbers Permission = "manageOwnClientIdentificationNumbers"
+	ManagePosSettings                    Permission = "managePosSettings"
+	ManageRolesAndPermission             Permission = "manageRolesAndPermission"
+	ViewAllAnalytics                     Permission = "viewAllAnalytics"
+	ViewAllCalendars                     Permission = "viewAllCalendars"
+	ViewAllClients                       Permission = "viewAllClients"
+	ViewAllInvoices                      Permission = "viewAllInvoices"
+	ViewAllMemos                         Permission = "viewAllMemos"
+	ViewAllNotifications                 Permission = "viewAllNotifications"
+	ViewAllReports                       Permission = "viewAllReports"
+	ViewAllWaitlists                     Permission = "viewAllWaitlists"
+	ViewClientNamesForAllAppointments    Permission = "viewClientNamesForAllAppointments"
+	ViewLocations                        Permission = "viewLocations"
+	ViewOwnInvoices                      Permission = "viewOwnInvoices"
+	ViewOwnReports                       Permission = "viewOwnReports"
 )
 
 // Defines values for Powerup.
@@ -754,9 +804,16 @@ const (
 
 // Defines values for RoleType.
 const (
-	Default RoleType = "default"
-	Other   RoleType = "other"
-	Root    RoleType = "root"
+	RoleTypeDefault RoleType = "default"
+	RoleTypeOther   RoleType = "other"
+	RoleTypeRoot    RoleType = "root"
+)
+
+// Defines values for RoleInputType.
+const (
+	RoleInputTypeDefault RoleInputType = "default"
+	RoleInputTypeOther   RoleInputType = "other"
+	RoleInputTypeRoot    RoleInputType = "root"
 )
 
 // Defines values for RuleEntitiesEmployeesEmployeesAssociation.
@@ -5207,6 +5264,24 @@ type PaymentStatus string
 // Payments defines model for Payments.
 type Payments []Payment
 
+// Permission defines model for Permission.
+type Permission string
+
+// PermissionGroup defines model for PermissionGroup.
+type PermissionGroup struct {
+	Id          *string               `json:"_id,omitempty"`
+	Permissions *[]PermissionMetadata `json:"permissions,omitempty"`
+	ReadableId  *string               `json:"readableId,omitempty"`
+	Title       *string               `json:"title,omitempty"`
+}
+
+// PermissionMetadata defines model for PermissionMetadata.
+type PermissionMetadata struct {
+	Id         *string     `json:"_id,omitempty"`
+	ReadableId *Permission `json:"readableId,omitempty"`
+	Title      *string     `json:"title,omitempty"`
+}
+
 // Powerup defines model for Powerup.
 type Powerup string
 
@@ -5663,13 +5738,29 @@ type ResourcesFilter struct {
 
 // Role defines model for Role.
 type Role struct {
-	Id    *string   `json:"id,omitempty"`
-	Title *string   `json:"title,omitempty"`
-	Type  *RoleType `json:"type,omitempty"`
+	Id          *string       `json:"id,omitempty"`
+	Permissions *[]Permission `json:"permissions,omitempty"`
+	Title       *string       `json:"title,omitempty"`
+	Type        *RoleType     `json:"type,omitempty"`
 }
 
 // RoleType defines model for Role.Type.
 type RoleType string
+
+// RoleInput defines model for RoleInput.
+type RoleInput struct {
+	CompanyId   *string        `json:"company_id,omitempty"`
+	Id          *string        `json:"id,omitempty"`
+	Permissions *[]Permission  `json:"permissions,omitempty"`
+	Title       *string        `json:"title,omitempty"`
+	Type        *RoleInputType `json:"type,omitempty"`
+}
+
+// RoleInputType defines model for RoleInput.Type.
+type RoleInputType string
+
+// Roles defines model for Roles.
+type Roles []Role
 
 // Rule defines model for Rule.
 type Rule struct {
@@ -8145,6 +8236,15 @@ type ListPaymentsParams struct {
 	Search *Search `form:"search,omitempty" json:"search,omitempty"`
 }
 
+// ListPermissionGroupsParams defines parameters for ListPermissionGroups.
+type ListPermissionGroupsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListProductGroupsParams defines parameters for ListProductGroups.
 type ListProductGroupsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -8231,6 +8331,15 @@ type ListResourcesParams struct {
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination      `form:"pagination,omitempty" json:"pagination,omitempty"`
 	Filter     *ResourcesFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// ListRolesParams defines parameters for ListRoles.
+type ListRolesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // ListRuleSetTemplatesParams defines parameters for ListRuleSetTemplates.
@@ -9792,6 +9901,48 @@ type UpdateResourceParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateRoleJSONBody defines parameters for CreateRole.
+type CreateRoleJSONBody RoleInput
+
+// CreateRoleParams defines parameters for CreateRole.
+type CreateRoleParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteRoleParams defines parameters for DeleteRole.
+type DeleteRoleParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetRoleParams defines parameters for GetRole.
+type GetRoleParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateRoleJSONBody defines parameters for UpdateRole.
+type UpdateRoleJSONBody RoleInput
+
+// UpdateRoleParams defines parameters for UpdateRole.
+type UpdateRoleParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateRuleSetTemplateJSONBody defines parameters for CreateRuleSetTemplate.
 type CreateRuleSetTemplateJSONBody RuleSetTemplateCreate
 
@@ -10724,6 +10875,12 @@ type CreateResourceJSONRequestBody CreateResourceJSONBody
 
 // UpdateResourceJSONRequestBody defines body for UpdateResource for application/json ContentType.
 type UpdateResourceJSONRequestBody UpdateResourceJSONBody
+
+// CreateRoleJSONRequestBody defines body for CreateRole for application/json ContentType.
+type CreateRoleJSONRequestBody CreateRoleJSONBody
+
+// UpdateRoleJSONRequestBody defines body for UpdateRole for application/json ContentType.
+type UpdateRoleJSONRequestBody UpdateRoleJSONBody
 
 // CreateRuleSetTemplateJSONRequestBody defines body for CreateRuleSetTemplate for application/json ContentType.
 type CreateRuleSetTemplateJSONRequestBody CreateRuleSetTemplateJSONBody
@@ -12885,6 +13042,9 @@ type ClientInterface interface {
 	// PreviewVoucherTemplate request
 	PreviewVoucherTemplate(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListPermissionGroups request
+	ListPermissionGroups(ctx context.Context, companyId string, params *ListPermissionGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListProductGroups request
 	ListProductGroups(ctx context.Context, companyId string, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -12905,6 +13065,9 @@ type ClientInterface interface {
 
 	// ListResources request
 	ListResources(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListRoles request
+	ListRoles(ctx context.Context, companyId string, params *ListRolesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListRuleSetTemplates request
 	ListRuleSetTemplates(ctx context.Context, companyId string, params *ListRuleSetTemplatesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -13424,6 +13587,22 @@ type ClientInterface interface {
 	UpdateResourceWithBody(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRole request with any body
+	CreateRoleWithBody(ctx context.Context, params *CreateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateRole(ctx context.Context, params *CreateRoleParams, body CreateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRole request
+	DeleteRole(ctx context.Context, roleId string, params *DeleteRoleParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetRole request
+	GetRole(ctx context.Context, roleId string, params *GetRoleParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRole request with any body
+	UpdateRoleWithBody(ctx context.Context, roleId string, params *UpdateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateRole(ctx context.Context, roleId string, params *UpdateRoleParams, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateRuleSetTemplate request with any body
 	CreateRuleSetTemplateWithBody(ctx context.Context, params *CreateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14379,6 +14558,18 @@ func (c *Client) PreviewVoucherTemplate(ctx context.Context, companyId string, r
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListPermissionGroups(ctx context.Context, companyId string, params *ListPermissionGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListPermissionGroupsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListProductGroups(ctx context.Context, companyId string, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListProductGroupsRequest(c.Server, companyId, params)
 	if err != nil {
@@ -14453,6 +14644,18 @@ func (c *Client) ListResourceGroups(ctx context.Context, companyId string, param
 
 func (c *Client) ListResources(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListResourcesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListRoles(ctx context.Context, companyId string, params *ListRolesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRolesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16721,6 +16924,78 @@ func (c *Client) UpdateResourceWithBody(ctx context.Context, resourceId string, 
 
 func (c *Client) UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateResourceRequest(c.Server, resourceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRoleWithBody(ctx context.Context, params *CreateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRoleRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateRole(ctx context.Context, params *CreateRoleParams, body CreateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRoleRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteRole(ctx context.Context, roleId string, params *DeleteRoleParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRoleRequest(c.Server, roleId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetRole(ctx context.Context, roleId string, params *GetRoleParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetRoleRequest(c.Server, roleId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRoleWithBody(ctx context.Context, roleId string, params *UpdateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRoleRequestWithBody(c.Server, roleId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRole(ctx context.Context, roleId string, params *UpdateRoleParams, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRoleRequest(c.Server, roleId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -22312,6 +22587,76 @@ func NewPreviewVoucherTemplateRequest(server string, companyId string) (*http.Re
 	return req, nil
 }
 
+// NewListPermissionGroupsRequest generates requests for ListPermissionGroups
+func NewListPermissionGroupsRequest(server string, companyId string, params *ListPermissionGroupsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/permission_groups", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListProductGroupsRequest generates requests for ListProductGroups
 func NewListProductGroupsRequest(server string, companyId string, params *ListProductGroupsParams) (*http.Request, error) {
 	var err error
@@ -22888,6 +23233,76 @@ func NewListResourcesRequest(server string, companyId string, params *ListResour
 			return nil, err
 		} else {
 			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListRolesRequest generates requests for ListRoles
+func NewListRolesRequest(server string, companyId string, params *ListRolesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/roles", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
@@ -33910,6 +34325,305 @@ func NewUpdateResourceRequestWithBody(server string, resourceId string, params *
 	return req, nil
 }
 
+// NewCreateRoleRequest calls the generic CreateRole builder with application/json body
+func NewCreateRoleRequest(server string, params *CreateRoleParams, body CreateRoleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRoleRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateRoleRequestWithBody generates requests for CreateRole with any type of body
+func NewCreateRoleRequestWithBody(server string, params *CreateRoleParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/roles")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteRoleRequest generates requests for DeleteRole
+func NewDeleteRoleRequest(server string, roleId string, params *DeleteRoleParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "role_id", runtime.ParamLocationPath, roleId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/roles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetRoleRequest generates requests for GetRole
+func NewGetRoleRequest(server string, roleId string, params *GetRoleParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "role_id", runtime.ParamLocationPath, roleId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/roles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateRoleRequest calls the generic UpdateRole builder with application/json body
+func NewUpdateRoleRequest(server string, roleId string, params *UpdateRoleParams, body UpdateRoleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateRoleRequestWithBody(server, roleId, params, "application/json", bodyReader)
+}
+
+// NewUpdateRoleRequestWithBody generates requests for UpdateRole with any type of body
+func NewUpdateRoleRequestWithBody(server string, roleId string, params *UpdateRoleParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "role_id", runtime.ParamLocationPath, roleId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/roles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateRuleSetTemplateRequest calls the generic CreateRuleSetTemplate builder with application/json body
 func NewCreateRuleSetTemplateRequest(server string, params *CreateRuleSetTemplateParams, body CreateRuleSetTemplateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -39998,6 +40712,9 @@ type ClientWithResponsesInterface interface {
 	// PreviewVoucherTemplate request
 	PreviewVoucherTemplateWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*PreviewVoucherTemplateResponse, error)
 
+	// ListPermissionGroups request
+	ListPermissionGroupsWithResponse(ctx context.Context, companyId string, params *ListPermissionGroupsParams, reqEditors ...RequestEditorFn) (*ListPermissionGroupsResponse, error)
+
 	// ListProductGroups request
 	ListProductGroupsWithResponse(ctx context.Context, companyId string, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*ListProductGroupsResponse, error)
 
@@ -40018,6 +40735,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListResources request
 	ListResourcesWithResponse(ctx context.Context, companyId string, params *ListResourcesParams, reqEditors ...RequestEditorFn) (*ListResourcesResponse, error)
+
+	// ListRoles request
+	ListRolesWithResponse(ctx context.Context, companyId string, params *ListRolesParams, reqEditors ...RequestEditorFn) (*ListRolesResponse, error)
 
 	// ListRuleSetTemplates request
 	ListRuleSetTemplatesWithResponse(ctx context.Context, companyId string, params *ListRuleSetTemplatesParams, reqEditors ...RequestEditorFn) (*ListRuleSetTemplatesResponse, error)
@@ -40537,6 +41257,22 @@ type ClientWithResponsesInterface interface {
 	UpdateResourceWithBodyWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error)
 
 	UpdateResourceWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error)
+
+	// CreateRole request with any body
+	CreateRoleWithBodyWithResponse(ctx context.Context, params *CreateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRoleResponse, error)
+
+	CreateRoleWithResponse(ctx context.Context, params *CreateRoleParams, body CreateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRoleResponse, error)
+
+	// DeleteRole request
+	DeleteRoleWithResponse(ctx context.Context, roleId string, params *DeleteRoleParams, reqEditors ...RequestEditorFn) (*DeleteRoleResponse, error)
+
+	// GetRole request
+	GetRoleWithResponse(ctx context.Context, roleId string, params *GetRoleParams, reqEditors ...RequestEditorFn) (*GetRoleResponse, error)
+
+	// UpdateRole request with any body
+	UpdateRoleWithBodyWithResponse(ctx context.Context, roleId string, params *UpdateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error)
+
+	UpdateRoleWithResponse(ctx context.Context, roleId string, params *UpdateRoleParams, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error)
 
 	// CreateRuleSetTemplate request with any body
 	CreateRuleSetTemplateWithBodyWithResponse(ctx context.Context, params *CreateRuleSetTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRuleSetTemplateResponse, error)
@@ -41922,6 +42658,28 @@ func (r PreviewVoucherTemplateResponse) StatusCode() int {
 	return 0
 }
 
+type ListPermissionGroupsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]PermissionGroup
+}
+
+// Status returns HTTPResponse.Status
+func (r ListPermissionGroupsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListPermissionGroupsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListProductGroupsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -42071,6 +42829,28 @@ func (r ListResourcesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListResourcesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListRolesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Roles
+}
+
+// Status returns HTTPResponse.Status
+func (r ListRolesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListRolesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -45164,6 +45944,93 @@ func (r UpdateResourceResponse) StatusCode() int {
 	return 0
 }
 
+type CreateRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Role
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Role
+}
+
+// Status returns HTTPResponse.Status
+func (r GetRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Role
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateRuleSetTemplateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -47484,6 +48351,15 @@ func (c *ClientWithResponses) PreviewVoucherTemplateWithResponse(ctx context.Con
 	return ParsePreviewVoucherTemplateResponse(rsp)
 }
 
+// ListPermissionGroupsWithResponse request returning *ListPermissionGroupsResponse
+func (c *ClientWithResponses) ListPermissionGroupsWithResponse(ctx context.Context, companyId string, params *ListPermissionGroupsParams, reqEditors ...RequestEditorFn) (*ListPermissionGroupsResponse, error) {
+	rsp, err := c.ListPermissionGroups(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListPermissionGroupsResponse(rsp)
+}
+
 // ListProductGroupsWithResponse request returning *ListProductGroupsResponse
 func (c *ClientWithResponses) ListProductGroupsWithResponse(ctx context.Context, companyId string, params *ListProductGroupsParams, reqEditors ...RequestEditorFn) (*ListProductGroupsResponse, error) {
 	rsp, err := c.ListProductGroups(ctx, companyId, params, reqEditors...)
@@ -47545,6 +48421,15 @@ func (c *ClientWithResponses) ListResourcesWithResponse(ctx context.Context, com
 		return nil, err
 	}
 	return ParseListResourcesResponse(rsp)
+}
+
+// ListRolesWithResponse request returning *ListRolesResponse
+func (c *ClientWithResponses) ListRolesWithResponse(ctx context.Context, companyId string, params *ListRolesParams, reqEditors ...RequestEditorFn) (*ListRolesResponse, error) {
+	rsp, err := c.ListRoles(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRolesResponse(rsp)
 }
 
 // ListRuleSetTemplatesWithResponse request returning *ListRuleSetTemplatesResponse
@@ -49198,6 +50083,58 @@ func (c *ClientWithResponses) UpdateResourceWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseUpdateResourceResponse(rsp)
+}
+
+// CreateRoleWithBodyWithResponse request with arbitrary body returning *CreateRoleResponse
+func (c *ClientWithResponses) CreateRoleWithBodyWithResponse(ctx context.Context, params *CreateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRoleResponse, error) {
+	rsp, err := c.CreateRoleWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRoleResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateRoleWithResponse(ctx context.Context, params *CreateRoleParams, body CreateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRoleResponse, error) {
+	rsp, err := c.CreateRole(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRoleResponse(rsp)
+}
+
+// DeleteRoleWithResponse request returning *DeleteRoleResponse
+func (c *ClientWithResponses) DeleteRoleWithResponse(ctx context.Context, roleId string, params *DeleteRoleParams, reqEditors ...RequestEditorFn) (*DeleteRoleResponse, error) {
+	rsp, err := c.DeleteRole(ctx, roleId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRoleResponse(rsp)
+}
+
+// GetRoleWithResponse request returning *GetRoleResponse
+func (c *ClientWithResponses) GetRoleWithResponse(ctx context.Context, roleId string, params *GetRoleParams, reqEditors ...RequestEditorFn) (*GetRoleResponse, error) {
+	rsp, err := c.GetRole(ctx, roleId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetRoleResponse(rsp)
+}
+
+// UpdateRoleWithBodyWithResponse request with arbitrary body returning *UpdateRoleResponse
+func (c *ClientWithResponses) UpdateRoleWithBodyWithResponse(ctx context.Context, roleId string, params *UpdateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error) {
+	rsp, err := c.UpdateRoleWithBody(ctx, roleId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRoleResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateRoleWithResponse(ctx context.Context, roleId string, params *UpdateRoleParams, body UpdateRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRoleResponse, error) {
+	rsp, err := c.UpdateRole(ctx, roleId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRoleResponse(rsp)
 }
 
 // CreateRuleSetTemplateWithBodyWithResponse request with arbitrary body returning *CreateRuleSetTemplateResponse
@@ -51430,6 +52367,32 @@ func ParsePreviewVoucherTemplateResponse(rsp *http.Response) (*PreviewVoucherTem
 	return response, nil
 }
 
+// ParseListPermissionGroupsResponse parses an HTTP response from a ListPermissionGroupsWithResponse call
+func ParseListPermissionGroupsResponse(rsp *http.Response) (*ListPermissionGroupsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListPermissionGroupsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []PermissionGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListProductGroupsResponse parses an HTTP response from a ListProductGroupsWithResponse call
 func ParseListProductGroupsResponse(rsp *http.Response) (*ListProductGroupsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -51609,6 +52572,32 @@ func ParseListResourcesResponse(rsp *http.Response) (*ListResourcesResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Resources
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListRolesResponse parses an HTTP response from a ListRolesWithResponse call
+func ParseListRolesResponse(rsp *http.Response) (*ListRolesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListRolesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Roles
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -55110,6 +56099,100 @@ func ParseUpdateResourceResponse(rsp *http.Response) (*UpdateResourceResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Resource
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateRoleResponse parses an HTTP response from a CreateRoleWithResponse call
+func ParseCreateRoleResponse(rsp *http.Response) (*CreateRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Role
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRoleResponse parses an HTTP response from a DeleteRoleWithResponse call
+func ParseDeleteRoleResponse(rsp *http.Response) (*DeleteRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetRoleResponse parses an HTTP response from a GetRoleWithResponse call
+func ParseGetRoleResponse(rsp *http.Response) (*GetRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Role
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateRoleResponse parses an HTTP response from a UpdateRoleWithResponse call
+func ParseUpdateRoleResponse(rsp *http.Response) (*UpdateRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Role
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
