@@ -3403,6 +3403,9 @@ type EventFields []EventField
 
 // EventFilter defines model for EventFilter.
 type EventFilter struct {
+	// Filter by created_by ID
+	CreatedBy *[]string `json:"created_by,omitempty"`
+
 	// Only return events where created_at is after this timestamp.
 	CreatedFrom *time.Time `json:"created_from,omitempty"`
 
@@ -3467,6 +3470,9 @@ type EventFilter struct {
 
 	// Filter by resource IDs
 	Resources *[]string `json:"resources,omitempty"`
+
+	// Filter by sources
+	Sources *[]string `json:"sources,omitempty"`
 
 	// Filter by space IDs
 	Spaces *[]string `json:"spaces,omitempty"`
