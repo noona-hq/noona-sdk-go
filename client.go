@@ -302,6 +302,7 @@ const (
 
 // Defines values for EmailType.
 const (
+	EventCancellationCustomer EmailType = "event_cancellation_customer"
 	EventConfirmationCustomer EmailType = "event_confirmation_customer"
 	EventMovedCustomer        EmailType = "event_moved_customer"
 )
