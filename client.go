@@ -2139,14 +2139,17 @@ type Company struct {
 	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Enterprise   *ExpandableEnterprise `json:"enterprise,omitempty"`
-	Id           *string               `json:"id,omitempty"`
-	LastActiveAt *time.Time            `json:"last_active_at,omitempty"`
-	Locale       *Locale               `json:"locale,omitempty"`
-	Location     *Location             `json:"location,omitempty"`
-	Marketplace  *CompanyMarketplace   `json:"marketplace,omitempty"`
-	Messaging    *CompanyMessaging     `json:"messaging,omitempty"`
-	Name         *string               `json:"name,omitempty"`
+	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
+
+	// The order/position of this company within its enterprise. Used for custom sorting of companies.
+	EnterpriseOrder *int32              `json:"enterprise_order,omitempty"`
+	Id              *string             `json:"id,omitempty"`
+	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
+	Locale          *Locale             `json:"locale,omitempty"`
+	Location        *Location           `json:"location,omitempty"`
+	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
+	Name            *string             `json:"name,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -2179,14 +2182,17 @@ type CompanyCreate struct {
 	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Enterprise   *ExpandableEnterprise `json:"enterprise,omitempty"`
-	Id           *string               `json:"id,omitempty"`
-	LastActiveAt *time.Time            `json:"last_active_at,omitempty"`
-	Locale       *Locale               `json:"locale,omitempty"`
-	Location     LocationCreate        `json:"location"`
-	Marketplace  *CompanyMarketplace   `json:"marketplace,omitempty"`
-	Messaging    *CompanyMessaging     `json:"messaging,omitempty"`
-	Name         string                `json:"name"`
+	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
+
+	// The order/position of this company within its enterprise. Used for custom sorting of companies.
+	EnterpriseOrder *int32              `json:"enterprise_order,omitempty"`
+	Id              *string             `json:"id,omitempty"`
+	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
+	Locale          *Locale             `json:"locale,omitempty"`
+	Location        LocationCreate      `json:"location"`
+	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
+	Name            string              `json:"name"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -2427,14 +2433,17 @@ type CompanyResponse struct {
 	Currency  CompanyDefaultCurrency `json:"currency"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Enterprise   ExpandableEnterprise `json:"enterprise"`
-	Id           *string              `json:"id,omitempty"`
-	LastActiveAt *time.Time           `json:"last_active_at,omitempty"`
-	Locale       *Locale              `json:"locale,omitempty"`
-	Location     Location             `json:"location"`
-	Marketplace  CompanyMarketplace   `json:"marketplace"`
-	Messaging    CompanyMessaging     `json:"messaging"`
-	Name         string               `json:"name"`
+	Enterprise ExpandableEnterprise `json:"enterprise"`
+
+	// The order/position of this company within its enterprise. Used for custom sorting of companies.
+	EnterpriseOrder *int32             `json:"enterprise_order,omitempty"`
+	Id              *string            `json:"id,omitempty"`
+	LastActiveAt    *time.Time         `json:"last_active_at,omitempty"`
+	Locale          *Locale            `json:"locale,omitempty"`
+	Location        Location           `json:"location"`
+	Marketplace     CompanyMarketplace `json:"marketplace"`
+	Messaging       CompanyMessaging   `json:"messaging"`
+	Name            string             `json:"name"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -2506,14 +2515,17 @@ type CompanyUpdate struct {
 	Currency  *interface{}     `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Enterprise   *ExpandableEnterprise `json:"enterprise,omitempty"`
-	Id           *string               `json:"id,omitempty"`
-	LastActiveAt *time.Time            `json:"last_active_at,omitempty"`
-	Locale       *Locale               `json:"locale,omitempty"`
-	Location     *Location             `json:"location,omitempty"`
-	Marketplace  *CompanyMarketplace   `json:"marketplace,omitempty"`
-	Messaging    *CompanyMessaging     `json:"messaging,omitempty"`
-	Name         *string               `json:"name,omitempty"`
+	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
+
+	// The order/position of this company within its enterprise. Used for custom sorting of companies.
+	EnterpriseOrder *int32              `json:"enterprise_order,omitempty"`
+	Id              *string             `json:"id,omitempty"`
+	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
+	Locale          *Locale             `json:"locale,omitempty"`
+	Location        *Location           `json:"location,omitempty"`
+	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
+	Name            *string             `json:"name,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
