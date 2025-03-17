@@ -3624,6 +3624,11 @@ type EventType struct {
 	Delay       *int32  `json:"delay,omitempty"`
 	Description *string `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// Duration of the event type
 	Duration *int32 `json:"duration,omitempty"`
 
@@ -3667,10 +3672,15 @@ type EventType struct {
 	TaxExemptionReason *string `json:"tax_exemption_reason,omitempty"`
 
 	// Use images instead.
-	Thumb      *string              `json:"thumb,omitempty"`
-	Title      *string              `json:"title,omitempty"`
-	UpdatedAt  *time.Time           `json:"updated_at,omitempty"`
-	Variations *EventTypeVariations `json:"variations,omitempty"`
+	Thumb *string `json:"thumb,omitempty"`
+	Title *string `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap      `json:"title_translations,omitempty"`
+	UpdatedAt         *time.Time           `json:"updated_at,omitempty"`
+	Variations        *EventTypeVariations `json:"variations,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Vat *ExpandableVAT `json:"vat,omitempty"`
