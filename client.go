@@ -5156,6 +5156,9 @@ type Payment struct {
 	Provider        *PaymentProvider           `json:"provider,omitempty"`
 	Reason          *PaymentReason             `json:"reason,omitempty"`
 
+	// Reference from payment service provider
+	Reference *string `json:"reference,omitempty"`
+
 	// Indicates if the payment is refundable.
 	//
 	// If true, the payment can be refunded. If false, the payment cannot be refunded.
