@@ -203,6 +203,39 @@ const (
 	BookingQuestionAnswerAnswerTypeString  BookingQuestionAnswerAnswerType = "string"
 )
 
+// Defines values for BookingSourceChannel.
+const (
+	BookingSourceChannelApp           BookingSourceChannel = "app"
+	BookingSourceChannelBookingLink   BookingSourceChannel = "bookingLink"
+	BookingSourceChannelBookingWidget BookingSourceChannel = "bookingWidget"
+	BookingSourceChannelCalendar      BookingSourceChannel = "calendar"
+	BookingSourceChannelFacebook      BookingSourceChannel = "facebook"
+	BookingSourceChannelImport        BookingSourceChannel = "import"
+	BookingSourceChannelInstagram     BookingSourceChannel = "instagram"
+	BookingSourceChannelMichelinGuide BookingSourceChannel = "michelinGuide"
+	BookingSourceChannelSecretary     BookingSourceChannel = "secretary"
+	BookingSourceChannelTripadvisor   BookingSourceChannel = "tripadvisor"
+	BookingSourceChannelWeb           BookingSourceChannel = "web"
+)
+
+// Defines values for BookingSourceFunnel.
+const (
+	Ads                BookingSourceFunnel = "ads"
+	BookingHistory     BookingSourceFunnel = "bookingHistory"
+	Favorites          BookingSourceFunnel = "favorites"
+	QuickBookings      BookingSourceFunnel = "quickBookings"
+	SearchAndDiscovery BookingSourceFunnel = "searchAndDiscovery"
+	TrendingCompanies  BookingSourceFunnel = "trendingCompanies"
+)
+
+// Defines values for BookingSourceGroup.
+const (
+	BookingSourceGroupBookingLink BookingSourceGroup = "bookingLink"
+	BookingSourceGroupHq          BookingSourceGroup = "hq"
+	BookingSourceGroupMarketplace BookingSourceGroup = "marketplace"
+	BookingSourceGroupPartners    BookingSourceGroup = "partners"
+)
+
 // Defines values for CardCardType.
 const (
 	CardCardTypeAmericanExpress CardCardType = "american_express"
@@ -971,8 +1004,8 @@ const (
 
 // Defines values for TransactionOrigin.
 const (
-	Marketplace TransactionOrigin = "marketplace"
-	Pos         TransactionOrigin = "pos"
+	TransactionOriginMarketplace TransactionOrigin = "marketplace"
+	TransactionOriginPos         TransactionOrigin = "pos"
 )
 
 // Defines values for TransactionStatus.
@@ -1957,6 +1990,22 @@ type BookingQuestionAnswers []BookingQuestionAnswer
 
 // BookingQuestions defines model for BookingQuestions.
 type BookingQuestions []BookingQuestion
+
+// Describes where the booking came from?
+type BookingSource struct {
+	Channel *BookingSourceChannel `json:"channel,omitempty"`
+	Funnel  *BookingSourceFunnel  `json:"funnel,omitempty"`
+	Group   *BookingSourceGroup   `json:"group,omitempty"`
+}
+
+// BookingSourceChannel defines model for BookingSourceChannel.
+type BookingSourceChannel string
+
+// BookingSourceFunnel defines model for BookingSourceFunnel.
+type BookingSourceFunnel string
+
+// BookingSourceGroup defines model for BookingSourceGroup.
+type BookingSourceGroup string
 
 // The calculated price of an event type or event for a customer.
 //
@@ -3046,13 +3095,11 @@ type Event struct {
 	// This schema is deprecated. Use `booking_question_answers` instead.
 	BookingQuestions *LegacyBookingQuestions `json:"booking_questions,omitempty"`
 
-	// Provided by customers when they decline through the marketplace.
-	CancelReason *string `json:"cancel_reason,omitempty"`
+	// Describes where the booking came from?
+	BookingSource *BookingSource `json:"booking_source,omitempty"`
 
-	// Where did you come to the app from? (Instagram etc.)
-	//
-	// So if a user clicks a link on Instagram, that deeplinks into the Noona app - channel should be Instagram.
-	Channel       *string      `json:"channel,omitempty"`
+	// Provided by customers when they decline through the marketplace.
+	CancelReason  *string      `json:"cancel_reason,omitempty"`
 	CheckInAt     *int32       `json:"check_in_at,omitempty"`
 	CheckInOrigin *string      `json:"check_in_origin,omitempty"`
 	ClaimStatus   *ClaimStatus `json:"claim_status,omitempty"`
@@ -3138,9 +3185,6 @@ type Event struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Sale *ExpandableSale `json:"sale,omitempty"`
 
-	// Where did the booking come from within the app? (Book again, Quick Book, Search etc.)
-	Source *string `json:"source,omitempty"`
-
 	// Use resource instead
 	Space *Event_Space `json:"space,omitempty"`
 
@@ -3210,13 +3254,11 @@ type EventCheckinResult struct {
 	// This schema is deprecated. Use `booking_question_answers` instead.
 	BookingQuestions *LegacyBookingQuestions `json:"booking_questions,omitempty"`
 
-	// Provided by customers when they decline through the marketplace.
-	CancelReason *string `json:"cancel_reason,omitempty"`
+	// Describes where the booking came from?
+	BookingSource *BookingSource `json:"booking_source,omitempty"`
 
-	// Where did you come to the app from? (Instagram etc.)
-	//
-	// So if a user clicks a link on Instagram, that deeplinks into the Noona app - channel should be Instagram.
-	Channel               *string      `json:"channel,omitempty"`
+	// Provided by customers when they decline through the marketplace.
+	CancelReason          *string      `json:"cancel_reason,omitempty"`
 	CheckInAt             *int32       `json:"check_in_at,omitempty"`
 	CheckInOrigin         *string      `json:"check_in_origin,omitempty"`
 	CheckInSuccessMessage *string      `json:"check_in_success_message,omitempty"`
@@ -3303,9 +3345,6 @@ type EventCheckinResult struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Sale   *ExpandableSale `json:"sale,omitempty"`
 	SaleId *string         `json:"sale_id,omitempty"`
-
-	// Where did the booking come from within the app? (Book again, Quick Book, Search etc.)
-	Source *string `json:"source,omitempty"`
 
 	// Use resource instead
 	Space *EventCheckinResult_Space `json:"space,omitempty"`
