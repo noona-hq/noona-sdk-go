@@ -3461,6 +3461,9 @@ type EventFields []EventField
 
 // EventFilter defines model for EventFilter.
 type EventFilter struct {
+	// Filter by booking source channels
+	Channels *[]BookingSourceChannel `json:"channels,omitempty"`
+
 	// Filter by created_by ID
 	CreatedBy *[]string `json:"created_by,omitempty"`
 
@@ -3496,6 +3499,12 @@ type EventFilter struct {
 	// _Mutually exclusive with overlap filter_
 	From *time.Time `json:"from,omitempty"`
 
+	// Filter by booking source funnels
+	Funnels *[]BookingSourceFunnel `json:"funnels,omitempty"`
+
+	// Filter by booking source groups
+	Groups *[]BookingSourceGroup `json:"groups,omitempty"`
+
 	// Filter by specific event IDs
 	Ids *[]string `json:"ids,omitempty"`
 
@@ -3528,9 +3537,6 @@ type EventFilter struct {
 
 	// Filter by resource IDs
 	Resources *[]string `json:"resources,omitempty"`
-
-	// Filter by sources
-	Sources *[]string `json:"sources,omitempty"`
 
 	// Filter by space IDs
 	Spaces *[]string `json:"spaces,omitempty"`
