@@ -3842,6 +3842,9 @@ type EventTypeVariation struct {
 	Id            *string                    `json:"id,omitempty"`
 	Label         *string                    `json:"label,omitempty"`
 	Prices        *[]EventTypeVariationPrice `json:"prices,omitempty"`
+
+	// Whether this variation is selectable in the marketplace
+	SelectableInMarketplace *bool `json:"selectable_in_marketplace,omitempty"`
 }
 
 // EventTypeVariationPrice defines model for EventTypeVariationPrice.
