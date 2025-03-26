@@ -1110,6 +1110,9 @@ const (
 
 // Defines values for WebhookEvent.
 const (
+	WebhookEventBlockedTimeCreated WebhookEvent = "blocked_time.created"
+	WebhookEventBlockedTimeDeleted WebhookEvent = "blocked_time.deleted"
+	WebhookEventBlockedTimeUpdated WebhookEvent = "blocked_time.updated"
 	WebhookEventCustomerCreated    WebhookEvent = "customer.created"
 	WebhookEventCustomerUpdated    WebhookEvent = "customer.updated"
 	WebhookEventEventCreated       WebhookEvent = "event.created"
