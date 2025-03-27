@@ -4667,6 +4667,12 @@ type Memos []Memo
 // MemosResponse defines model for MemosResponse.
 type MemosResponse []MemoResponse
 
+// MergeCustomersRequest defines model for MergeCustomersRequest.
+type MergeCustomersRequest struct {
+	// List of customer IDs to merge into the target customer
+	CustomerIds []string `json:"customer_ids"`
+}
+
 // MozrestBookingChannel defines model for MozrestBookingChannel.
 type MozrestBookingChannel struct {
 	Enabled *bool   `json:"enabled,omitempty"`
@@ -8889,6 +8895,9 @@ type UpdateCustomerParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// MergeCustomersJSONBody defines parameters for MergeCustomers.
+type MergeCustomersJSONBody MergeCustomersRequest
+
 // ListDietariesParams defines parameters for ListDietaries.
 type ListDietariesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -10872,6 +10881,9 @@ type CreateCustomerJSONRequestBody CreateCustomerJSONBody
 
 // UpdateCustomerJSONRequestBody defines body for UpdateCustomer for application/json ContentType.
 type UpdateCustomerJSONRequestBody UpdateCustomerJSONBody
+
+// MergeCustomersJSONRequestBody defines body for MergeCustomers for application/json ContentType.
+type MergeCustomersJSONRequestBody MergeCustomersJSONBody
 
 // CreateEmployeeJSONRequestBody defines body for CreateEmployee for application/json ContentType.
 type CreateEmployeeJSONRequestBody CreateEmployeeJSONBody
@@ -13306,6 +13318,11 @@ type ClientInterface interface {
 
 	UpdateCustomer(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MergeCustomers request with any body
+	MergeCustomersWithBody(ctx context.Context, customerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	MergeCustomers(ctx context.Context, customerId string, body MergeCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListDietaries request
 	ListDietaries(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15262,6 +15279,30 @@ func (c *Client) UpdateCustomerWithBody(ctx context.Context, customerId string, 
 
 func (c *Client) UpdateCustomer(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateCustomerRequest(c.Server, customerId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MergeCustomersWithBody(ctx context.Context, customerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMergeCustomersRequestWithBody(c.Server, customerId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MergeCustomers(ctx context.Context, customerId string, body MergeCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMergeCustomersRequest(c.Server, customerId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -26420,6 +26461,53 @@ func NewUpdateCustomerRequestWithBody(server string, customerId string, params *
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMergeCustomersRequest calls the generic MergeCustomers builder with application/json body
+func NewMergeCustomersRequest(server string, customerId string, body MergeCustomersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMergeCustomersRequestWithBody(server, customerId, "application/json", bodyReader)
+}
+
+// NewMergeCustomersRequestWithBody generates requests for MergeCustomers with any type of body
+func NewMergeCustomersRequestWithBody(server string, customerId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "customer_id", runtime.ParamLocationPath, customerId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/customers/%s/merge", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
@@ -41071,6 +41159,11 @@ type ClientWithResponsesInterface interface {
 
 	UpdateCustomerWithResponse(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomerResponse, error)
 
+	// MergeCustomers request with any body
+	MergeCustomersWithBodyWithResponse(ctx context.Context, customerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MergeCustomersResponse, error)
+
+	MergeCustomersWithResponse(ctx context.Context, customerId string, body MergeCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*MergeCustomersResponse, error)
+
 	// ListDietaries request
 	ListDietariesWithResponse(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*ListDietariesResponse, error)
 
@@ -43818,6 +43911,28 @@ func (r UpdateCustomerResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateCustomerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MergeCustomersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Customer
+}
+
+// Status returns HTTPResponse.Status
+func (r MergeCustomersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MergeCustomersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -49029,6 +49144,23 @@ func (c *ClientWithResponses) UpdateCustomerWithResponse(ctx context.Context, cu
 	return ParseUpdateCustomerResponse(rsp)
 }
 
+// MergeCustomersWithBodyWithResponse request with arbitrary body returning *MergeCustomersResponse
+func (c *ClientWithResponses) MergeCustomersWithBodyWithResponse(ctx context.Context, customerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MergeCustomersResponse, error) {
+	rsp, err := c.MergeCustomersWithBody(ctx, customerId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMergeCustomersResponse(rsp)
+}
+
+func (c *ClientWithResponses) MergeCustomersWithResponse(ctx context.Context, customerId string, body MergeCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*MergeCustomersResponse, error) {
+	rsp, err := c.MergeCustomers(ctx, customerId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMergeCustomersResponse(rsp)
+}
+
 // ListDietariesWithResponse request returning *ListDietariesResponse
 func (c *ClientWithResponses) ListDietariesWithResponse(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*ListDietariesResponse, error) {
 	rsp, err := c.ListDietaries(ctx, params, reqEditors...)
@@ -53707,6 +53839,32 @@ func ParseUpdateCustomerResponse(rsp *http.Response) (*UpdateCustomerResponse, e
 	}
 
 	response := &UpdateCustomerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Customer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMergeCustomersResponse parses an HTTP response from a MergeCustomersWithResponse call
+func ParseMergeCustomersResponse(rsp *http.Response) (*MergeCustomersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MergeCustomersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
