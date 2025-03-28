@@ -1168,8 +1168,14 @@ const (
 
 // Defines values for UserOAuthParamsProvider.
 const (
-	Google  UserOAuthParamsProvider = "google"
-	Saltpay UserOAuthParamsProvider = "saltpay"
+	UserOAuthParamsProviderGoogle  UserOAuthParamsProvider = "google"
+	UserOAuthParamsProviderSaltpay UserOAuthParamsProvider = "saltpay"
+)
+
+// Defines values for UserOAuthPostParamsProvider.
+const (
+	UserOAuthPostParamsProviderGoogle  UserOAuthPostParamsProvider = "google"
+	UserOAuthPostParamsProviderSaltpay UserOAuthPostParamsProvider = "saltpay"
 )
 
 // Activities defines model for Activities.
@@ -7096,6 +7102,11 @@ type UserConnectionsGoogle struct {
 	Connected *bool `json:"connected,omitempty"`
 }
 
+// UserOAuthRedirect defines model for UserOAuthRedirect.
+type UserOAuthRedirect struct {
+	RedirectUrl *string `json:"redirect_url,omitempty"`
+}
+
 // Users defines model for Users.
 type Users []User
 
@@ -10586,6 +10597,17 @@ type UserOAuthParams struct {
 // UserOAuthParamsProvider defines parameters for UserOAuth.
 type UserOAuthParamsProvider string
 
+// UserOAuthPostParams defines parameters for UserOAuthPost.
+type UserOAuthPostParams struct {
+	Provider UserOAuthPostParamsProvider `form:"provider" json:"provider"`
+
+	// The URI to redirect to after the OAuth flow is complete.
+	RedirectUri *string `form:"redirect_uri,omitempty" json:"redirect_uri,omitempty"`
+}
+
+// UserOAuthPostParamsProvider defines parameters for UserOAuthPost.
+type UserOAuthPostParamsProvider string
+
 // ListUserSettlementAccountsParams defines parameters for ListUserSettlementAccounts.
 type ListUserSettlementAccountsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -13947,6 +13969,9 @@ type ClientInterface interface {
 
 	// UserOAuth request
 	UserOAuth(ctx context.Context, params *UserOAuthParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UserOAuthPost request
+	UserOAuthPost(ctx context.Context, params *UserOAuthPostParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListUserSettlementAccounts request
 	ListUserSettlementAccounts(ctx context.Context, params *ListUserSettlementAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -18039,6 +18064,18 @@ func (c *Client) CreateGoogleCalendarConnection(ctx context.Context, body Create
 
 func (c *Client) UserOAuth(ctx context.Context, params *UserOAuthParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUserOAuthRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UserOAuthPost(ctx context.Context, params *UserOAuthPostParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUserOAuthPostRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -38864,6 +38901,65 @@ func NewUserOAuthRequest(server string, params *UserOAuthParams) (*http.Request,
 	return req, nil
 }
 
+// NewUserOAuthPostRequest generates requests for UserOAuthPost
+func NewUserOAuthPostRequest(server string, params *UserOAuthPostParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user/oauth")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "provider", runtime.ParamLocationQuery, params.Provider); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	if params.RedirectUri != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "redirect_uri", runtime.ParamLocationQuery, *params.RedirectUri); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListUserSettlementAccountsRequest generates requests for ListUserSettlementAccounts
 func NewListUserSettlementAccountsRequest(server string, params *ListUserSettlementAccountsParams) (*http.Request, error) {
 	var err error
@@ -41788,6 +41884,9 @@ type ClientWithResponsesInterface interface {
 
 	// UserOAuth request
 	UserOAuthWithResponse(ctx context.Context, params *UserOAuthParams, reqEditors ...RequestEditorFn) (*UserOAuthResponse, error)
+
+	// UserOAuthPost request
+	UserOAuthPostWithResponse(ctx context.Context, params *UserOAuthPostParams, reqEditors ...RequestEditorFn) (*UserOAuthPostResponse, error)
 
 	// ListUserSettlementAccounts request
 	ListUserSettlementAccountsWithResponse(ctx context.Context, params *ListUserSettlementAccountsParams, reqEditors ...RequestEditorFn) (*ListUserSettlementAccountsResponse, error)
@@ -47619,6 +47718,28 @@ func (r UserOAuthResponse) StatusCode() int {
 	return 0
 }
 
+type UserOAuthPostResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UserOAuthRedirect
+}
+
+// Status returns HTTPResponse.Status
+func (r UserOAuthPostResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UserOAuthPostResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListUserSettlementAccountsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -51152,6 +51273,15 @@ func (c *ClientWithResponses) UserOAuthWithResponse(ctx context.Context, params 
 		return nil, err
 	}
 	return ParseUserOAuthResponse(rsp)
+}
+
+// UserOAuthPostWithResponse request returning *UserOAuthPostResponse
+func (c *ClientWithResponses) UserOAuthPostWithResponse(ctx context.Context, params *UserOAuthPostParams, reqEditors ...RequestEditorFn) (*UserOAuthPostResponse, error) {
+	rsp, err := c.UserOAuthPost(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUserOAuthPostResponse(rsp)
 }
 
 // ListUserSettlementAccountsWithResponse request returning *ListUserSettlementAccountsResponse
@@ -57858,6 +57988,32 @@ func ParseUserOAuthResponse(rsp *http.Response) (*UserOAuthResponse, error) {
 	response := &UserOAuthResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUserOAuthPostResponse parses an HTTP response from a UserOAuthPostWithResponse call
+func ParseUserOAuthPostResponse(rsp *http.Response) (*UserOAuthPostResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UserOAuthPostResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UserOAuthRedirect
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
