@@ -1575,6 +1575,11 @@ type BillingInvoice struct {
 // BillingInvoiceStatus defines model for BillingInvoice.Status.
 type BillingInvoiceStatus string
 
+// BillingInvoiceDownload defines model for BillingInvoiceDownload.
+type BillingInvoiceDownload struct {
+	DownloadUrl *string `json:"download_url,omitempty"`
+}
+
 // BillingInvoices defines model for BillingInvoices.
 type BillingInvoices []BillingInvoice
 
@@ -47178,6 +47183,7 @@ func (r StreamTimeSlotReservationsResponse) StatusCode() int {
 type GetBillingInvoiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *BillingInvoiceDownload
 }
 
 // Status returns HTTPResponse.Status
@@ -57442,6 +57448,16 @@ func ParseGetBillingInvoiceResponse(rsp *http.Response) (*GetBillingInvoiceRespo
 	response := &GetBillingInvoiceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingInvoiceDownload
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
