@@ -3158,7 +3158,10 @@ type Event struct {
 	InvoiceStatus *EventInvoiceStatus `json:"invoice_status,omitempty"`
 
 	// License plate for the vehicle associated with this event
-	LicensePlate            *string                  `json:"license_plate,omitempty"`
+	LicensePlate *string `json:"license_plate,omitempty"`
+
+	// This value is true if this is the first booking for this customer
+	NewCustomer             *bool                    `json:"new_customer,omitempty"`
 	NotificationPreferences *NotificationPreferences `json:"notification_preferences,omitempty"`
 
 	// Number of guests for the event.
@@ -3318,7 +3321,10 @@ type EventCheckinResult struct {
 	InvoiceStatus *EventInvoiceStatus `json:"invoice_status,omitempty"`
 
 	// License plate for the vehicle associated with this event
-	LicensePlate            *string                  `json:"license_plate,omitempty"`
+	LicensePlate *string `json:"license_plate,omitempty"`
+
+	// This value is true if this is the first booking for this customer
+	NewCustomer             *bool                    `json:"new_customer,omitempty"`
 	NotificationPreferences *NotificationPreferences `json:"notification_preferences,omitempty"`
 
 	// Number of guests for the event.
