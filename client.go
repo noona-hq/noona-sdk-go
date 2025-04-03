@@ -559,6 +559,7 @@ const (
 	EventStatusesRead     OAuthScope = "event_statuses:read"
 	EventStatusesWrite    OAuthScope = "event_statuses:write"
 	EventTypeGroupsRead   OAuthScope = "event_type_groups:read"
+	EventTypeGroupsWrite  OAuthScope = "event_type_groups:write"
 	EventTypesRead        OAuthScope = "event_types:read"
 	EventTypesWrite       OAuthScope = "event_types:write"
 	EventsRead            OAuthScope = "events:read"
@@ -3811,6 +3812,21 @@ type EventTypeGroup struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	ParentEventTypeGroup *ExpandableEventTypeGroup `json:"parent_event_type_group,omitempty"`
 	Title                *string                   `json:"title,omitempty"`
+}
+
+// EventTypeGroupInput defines model for EventTypeGroupInput.
+type EventTypeGroupInput struct {
+	Company              *string   `json:"company,omitempty"`
+	EventTypes           *[]string `json:"event_types,omitempty"`
+	IsDefaultGroup       *bool     `json:"is_default_group,omitempty"`
+	Order                *int32    `json:"order,omitempty"`
+	ParentEventTypeGroup *string   `json:"parent_event_type_group,omitempty"`
+	Title                *string   `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap `json:"title_translations,omitempty"`
 }
 
 // EventTypeGroups defines model for EventTypeGroups.
@@ -9150,8 +9166,41 @@ type UpdateEventStatusParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateEventTypeGroupJSONBody defines parameters for CreateEventTypeGroup.
+type CreateEventTypeGroupJSONBody EventTypeGroupInput
+
+// CreateEventTypeGroupParams defines parameters for CreateEventTypeGroup.
+type CreateEventTypeGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteEventTypeGroupParams defines parameters for DeleteEventTypeGroup.
+type DeleteEventTypeGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // GetEventTypeGroupParams defines parameters for GetEventTypeGroup.
 type GetEventTypeGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateEventTypeGroupJSONBody defines parameters for UpdateEventTypeGroup.
+type UpdateEventTypeGroupJSONBody EventTypeGroupInput
+
+// UpdateEventTypeGroupParams defines parameters for UpdateEventTypeGroup.
+type UpdateEventTypeGroupParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -10924,6 +10973,12 @@ type CreateEventStatusJSONRequestBody CreateEventStatusJSONBody
 
 // UpdateEventStatusJSONRequestBody defines body for UpdateEventStatus for application/json ContentType.
 type UpdateEventStatusJSONRequestBody UpdateEventStatusJSONBody
+
+// CreateEventTypeGroupJSONRequestBody defines body for CreateEventTypeGroup for application/json ContentType.
+type CreateEventTypeGroupJSONRequestBody CreateEventTypeGroupJSONBody
+
+// UpdateEventTypeGroupJSONRequestBody defines body for UpdateEventTypeGroup for application/json ContentType.
+type UpdateEventTypeGroupJSONRequestBody UpdateEventTypeGroupJSONBody
 
 // CreateEventTypeJSONRequestBody defines body for CreateEventType for application/json ContentType.
 type CreateEventTypeJSONRequestBody CreateEventTypeJSONBody
@@ -13417,8 +13472,21 @@ type ClientInterface interface {
 
 	UpdateEventStatus(ctx context.Context, eventStatusId string, params *UpdateEventStatusParams, body UpdateEventStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateEventTypeGroup request with any body
+	CreateEventTypeGroupWithBody(ctx context.Context, params *CreateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateEventTypeGroup(ctx context.Context, params *CreateEventTypeGroupParams, body CreateEventTypeGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteEventTypeGroup request
+	DeleteEventTypeGroup(ctx context.Context, eventTypeGroupId string, params *DeleteEventTypeGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetEventTypeGroup request
 	GetEventTypeGroup(ctx context.Context, eventTypeGroupId string, params *GetEventTypeGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateEventTypeGroup request with any body
+	UpdateEventTypeGroupWithBody(ctx context.Context, eventTypeGroupId string, params *UpdateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateEventTypeGroup(ctx context.Context, eventTypeGroupId string, params *UpdateEventTypeGroupParams, body UpdateEventTypeGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateEventType request with any body
 	CreateEventTypeWithBody(ctx context.Context, params *CreateEventTypeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15650,8 +15718,68 @@ func (c *Client) UpdateEventStatus(ctx context.Context, eventStatusId string, pa
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateEventTypeGroupWithBody(ctx context.Context, params *CreateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEventTypeGroupRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateEventTypeGroup(ctx context.Context, params *CreateEventTypeGroupParams, body CreateEventTypeGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEventTypeGroupRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteEventTypeGroup(ctx context.Context, eventTypeGroupId string, params *DeleteEventTypeGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteEventTypeGroupRequest(c.Server, eventTypeGroupId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetEventTypeGroup(ctx context.Context, eventTypeGroupId string, params *GetEventTypeGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetEventTypeGroupRequest(c.Server, eventTypeGroupId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateEventTypeGroupWithBody(ctx context.Context, eventTypeGroupId string, params *UpdateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEventTypeGroupRequestWithBody(c.Server, eventTypeGroupId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateEventTypeGroup(ctx context.Context, eventTypeGroupId string, params *UpdateEventTypeGroupParams, body UpdateEventTypeGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEventTypeGroupRequest(c.Server, eventTypeGroupId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -28203,6 +28331,152 @@ func NewUpdateEventStatusRequestWithBody(server string, eventStatusId string, pa
 	return req, nil
 }
 
+// NewCreateEventTypeGroupRequest calls the generic CreateEventTypeGroup builder with application/json body
+func NewCreateEventTypeGroupRequest(server string, params *CreateEventTypeGroupParams, body CreateEventTypeGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateEventTypeGroupRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateEventTypeGroupRequestWithBody generates requests for CreateEventTypeGroup with any type of body
+func NewCreateEventTypeGroupRequestWithBody(server string, params *CreateEventTypeGroupParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/event_type_groups")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteEventTypeGroupRequest generates requests for DeleteEventTypeGroup
+func NewDeleteEventTypeGroupRequest(server string, eventTypeGroupId string, params *DeleteEventTypeGroupParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "event_type_group_id", runtime.ParamLocationPath, eventTypeGroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/event_type_groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetEventTypeGroupRequest generates requests for GetEventTypeGroup
 func NewGetEventTypeGroupRequest(server string, eventTypeGroupId string, params *GetEventTypeGroupParams) (*http.Request, error) {
 	var err error
@@ -28269,6 +28543,89 @@ func NewGetEventTypeGroupRequest(server string, eventTypeGroupId string, params 
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateEventTypeGroupRequest calls the generic UpdateEventTypeGroup builder with application/json body
+func NewUpdateEventTypeGroupRequest(server string, eventTypeGroupId string, params *UpdateEventTypeGroupParams, body UpdateEventTypeGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateEventTypeGroupRequestWithBody(server, eventTypeGroupId, params, "application/json", bodyReader)
+}
+
+// NewUpdateEventTypeGroupRequestWithBody generates requests for UpdateEventTypeGroup with any type of body
+func NewUpdateEventTypeGroupRequestWithBody(server string, eventTypeGroupId string, params *UpdateEventTypeGroupParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "event_type_group_id", runtime.ParamLocationPath, eventTypeGroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/event_type_groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -41332,8 +41689,21 @@ type ClientWithResponsesInterface interface {
 
 	UpdateEventStatusWithResponse(ctx context.Context, eventStatusId string, params *UpdateEventStatusParams, body UpdateEventStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEventStatusResponse, error)
 
+	// CreateEventTypeGroup request with any body
+	CreateEventTypeGroupWithBodyWithResponse(ctx context.Context, params *CreateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEventTypeGroupResponse, error)
+
+	CreateEventTypeGroupWithResponse(ctx context.Context, params *CreateEventTypeGroupParams, body CreateEventTypeGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEventTypeGroupResponse, error)
+
+	// DeleteEventTypeGroup request
+	DeleteEventTypeGroupWithResponse(ctx context.Context, eventTypeGroupId string, params *DeleteEventTypeGroupParams, reqEditors ...RequestEditorFn) (*DeleteEventTypeGroupResponse, error)
+
 	// GetEventTypeGroup request
 	GetEventTypeGroupWithResponse(ctx context.Context, eventTypeGroupId string, params *GetEventTypeGroupParams, reqEditors ...RequestEditorFn) (*GetEventTypeGroupResponse, error)
+
+	// UpdateEventTypeGroup request with any body
+	UpdateEventTypeGroupWithBodyWithResponse(ctx context.Context, eventTypeGroupId string, params *UpdateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEventTypeGroupResponse, error)
+
+	UpdateEventTypeGroupWithResponse(ctx context.Context, eventTypeGroupId string, params *UpdateEventTypeGroupParams, body UpdateEventTypeGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEventTypeGroupResponse, error)
 
 	// CreateEventType request with any body
 	CreateEventTypeWithBodyWithResponse(ctx context.Context, params *CreateEventTypeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEventTypeResponse, error)
@@ -44476,6 +44846,49 @@ func (r UpdateEventStatusResponse) StatusCode() int {
 	return 0
 }
 
+type CreateEventTypeGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventTypeGroup
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateEventTypeGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateEventTypeGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteEventTypeGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteEventTypeGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteEventTypeGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetEventTypeGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -44492,6 +44905,28 @@ func (r GetEventTypeGroupResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetEventTypeGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateEventTypeGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventTypeGroup
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateEventTypeGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateEventTypeGroupResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -49511,6 +49946,32 @@ func (c *ClientWithResponses) UpdateEventStatusWithResponse(ctx context.Context,
 	return ParseUpdateEventStatusResponse(rsp)
 }
 
+// CreateEventTypeGroupWithBodyWithResponse request with arbitrary body returning *CreateEventTypeGroupResponse
+func (c *ClientWithResponses) CreateEventTypeGroupWithBodyWithResponse(ctx context.Context, params *CreateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEventTypeGroupResponse, error) {
+	rsp, err := c.CreateEventTypeGroupWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEventTypeGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateEventTypeGroupWithResponse(ctx context.Context, params *CreateEventTypeGroupParams, body CreateEventTypeGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEventTypeGroupResponse, error) {
+	rsp, err := c.CreateEventTypeGroup(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEventTypeGroupResponse(rsp)
+}
+
+// DeleteEventTypeGroupWithResponse request returning *DeleteEventTypeGroupResponse
+func (c *ClientWithResponses) DeleteEventTypeGroupWithResponse(ctx context.Context, eventTypeGroupId string, params *DeleteEventTypeGroupParams, reqEditors ...RequestEditorFn) (*DeleteEventTypeGroupResponse, error) {
+	rsp, err := c.DeleteEventTypeGroup(ctx, eventTypeGroupId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteEventTypeGroupResponse(rsp)
+}
+
 // GetEventTypeGroupWithResponse request returning *GetEventTypeGroupResponse
 func (c *ClientWithResponses) GetEventTypeGroupWithResponse(ctx context.Context, eventTypeGroupId string, params *GetEventTypeGroupParams, reqEditors ...RequestEditorFn) (*GetEventTypeGroupResponse, error) {
 	rsp, err := c.GetEventTypeGroup(ctx, eventTypeGroupId, params, reqEditors...)
@@ -49518,6 +49979,23 @@ func (c *ClientWithResponses) GetEventTypeGroupWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseGetEventTypeGroupResponse(rsp)
+}
+
+// UpdateEventTypeGroupWithBodyWithResponse request with arbitrary body returning *UpdateEventTypeGroupResponse
+func (c *ClientWithResponses) UpdateEventTypeGroupWithBodyWithResponse(ctx context.Context, eventTypeGroupId string, params *UpdateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEventTypeGroupResponse, error) {
+	rsp, err := c.UpdateEventTypeGroupWithBody(ctx, eventTypeGroupId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEventTypeGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateEventTypeGroupWithResponse(ctx context.Context, eventTypeGroupId string, params *UpdateEventTypeGroupParams, body UpdateEventTypeGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEventTypeGroupResponse, error) {
+	rsp, err := c.UpdateEventTypeGroup(ctx, eventTypeGroupId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEventTypeGroupResponse(rsp)
 }
 
 // CreateEventTypeWithBodyWithResponse request with arbitrary body returning *CreateEventTypeResponse
@@ -54513,6 +54991,48 @@ func ParseUpdateEventStatusResponse(rsp *http.Response) (*UpdateEventStatusRespo
 	return response, nil
 }
 
+// ParseCreateEventTypeGroupResponse parses an HTTP response from a CreateEventTypeGroupWithResponse call
+func ParseCreateEventTypeGroupResponse(rsp *http.Response) (*CreateEventTypeGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateEventTypeGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventTypeGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteEventTypeGroupResponse parses an HTTP response from a DeleteEventTypeGroupWithResponse call
+func ParseDeleteEventTypeGroupResponse(rsp *http.Response) (*DeleteEventTypeGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteEventTypeGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseGetEventTypeGroupResponse parses an HTTP response from a GetEventTypeGroupWithResponse call
 func ParseGetEventTypeGroupResponse(rsp *http.Response) (*GetEventTypeGroupResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -54522,6 +55042,32 @@ func ParseGetEventTypeGroupResponse(rsp *http.Response) (*GetEventTypeGroupRespo
 	}
 
 	response := &GetEventTypeGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventTypeGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateEventTypeGroupResponse parses an HTTP response from a UpdateEventTypeGroupWithResponse call
+func ParseUpdateEventTypeGroupResponse(rsp *http.Response) (*UpdateEventTypeGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateEventTypeGroupResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
