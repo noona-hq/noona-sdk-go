@@ -1323,6 +1323,8 @@ type AmountMetricsByDay struct {
 
 // App defines model for App.
 type App struct {
+	// Whether the app is visible in the app store (without being installed).
+	AppStore      *bool   `json:"app_store,omitempty"`
 	ClientId      *string `json:"client_id,omitempty"`
 	Description   *string `json:"description,omitempty"`
 	DeveloperName *string `json:"developer_name,omitempty"`
