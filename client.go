@@ -571,6 +571,7 @@ const (
 	NotificationsRead     OAuthScope = "notifications:read"
 	NotificationsWrite    OAuthScope = "notifications:write"
 	PaymentMethodsRead    OAuthScope = "payment_methods:read"
+	PaymentMethodsWrite   OAuthScope = "payment_methods:write"
 	PaymentsRead          OAuthScope = "payments:read"
 	PaymentsWrite         OAuthScope = "payments:write"
 	ProductGroupsRead     OAuthScope = "product_groups:read"
@@ -667,6 +668,12 @@ const (
 	PaymentIntentStatusExpired    PaymentIntentStatus = "expired"
 	PaymentIntentStatusInProgress PaymentIntentStatus = "in_progress"
 	PaymentIntentStatusInited     PaymentIntentStatus = "inited"
+)
+
+// Defines values for PaymentMethodInstancesFilterStatus.
+const (
+	Active   PaymentMethodInstancesFilterStatus = "active"
+	Inactive PaymentMethodInstancesFilterStatus = "inactive"
 )
 
 // Defines values for PaymentSettingsPrePaymentType.
@@ -2641,6 +2648,14 @@ type CreatePaymentError struct {
 //
 // - `unable_to_process_payment`: Charging the card for the noshow fee failed.
 type CreatePaymentErrorCode string
+
+// CreatePaymentMethodInstanceRequest defines model for CreatePaymentMethodInstanceRequest.
+type CreatePaymentMethodInstanceRequest struct {
+	Company       string `json:"company"`
+	Enabled       *bool  `json:"enabled,omitempty"`
+	PaymentMethod string `json:"payment_method"`
+	Title         string `json:"title"`
+}
 
 // CustomDuration defines model for CustomDuration.
 type CustomDuration struct {
@@ -5334,6 +5349,38 @@ type PaymentMethod struct {
 	UseTerminal *bool   `json:"use_terminal,omitempty"`
 }
 
+// PaymentMethodInstance defines model for PaymentMethodInstance.
+type PaymentMethodInstance struct {
+	Available bool `json:"available"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt time.Time         `json:"created_at"`
+	Enabled   bool              `json:"enabled"`
+	Id        string            `json:"id"`
+	IsCustom  *bool             `json:"is_custom,omitempty"`
+	Order     int32             `json:"order"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	PaymentMethod     ExpandablePayment  `json:"payment_method"`
+	Title             string             `json:"title"`
+	TitleTranslations *map[string]string `json:"title_translations,omitempty"`
+	UpdatedAt         time.Time          `json:"updated_at"`
+}
+
+// PaymentMethodInstances defines model for PaymentMethodInstances.
+type PaymentMethodInstances []PaymentMethodInstance
+
+// PaymentMethodInstancesFilter defines model for PaymentMethodInstancesFilter.
+type PaymentMethodInstancesFilter struct {
+	// Filter by one or more payment method IDs.
+	PaymentMethodIds *[]string                             `json:"payment_method_ids,omitempty"`
+	Status           *[]PaymentMethodInstancesFilterStatus `json:"status,omitempty"`
+}
+
+// PaymentMethodInstancesFilterStatus defines model for PaymentMethodInstancesFilter.Status.
+type PaymentMethodInstancesFilterStatus string
+
 // PaymentMethods defines model for PaymentMethods.
 type PaymentMethods []PaymentMethod
 
@@ -7093,6 +7140,18 @@ type UnitPrice struct {
 	OriginalAmount *float64 `json:"original_amount,omitempty"`
 }
 
+// UpdatePaymentMethodInstanceRequest defines model for UpdatePaymentMethodInstanceRequest.
+type UpdatePaymentMethodInstanceRequest struct {
+	// Whether this payment method is enabled for the company.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// New position for this payment method. Other methods will be reordered automatically.
+	Order *int32 `json:"order,omitempty"`
+
+	// Display name of the payment method.
+	Title *string `json:"title,omitempty"`
+}
+
 // User defines model for User.
 type User struct {
 	Companies   *ExpandableCompanies `json:"companies,omitempty"`
@@ -8371,6 +8430,16 @@ type ListPaxStatusesParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand          `form:"expand,omitempty" json:"expand,omitempty"`
 	Filter *PaxStatusFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// ListPaymentMethodInstancesParams defines parameters for ListPaymentMethodInstances.
+type ListPaymentMethodInstancesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand                       `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *PaymentMethodInstancesFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // ListPaymentsParams defines parameters for ListPayments.
@@ -9732,6 +9801,30 @@ type GetOAuthTokenParams struct {
 	ClientSecret string `form:"client_secret" json:"client_secret"`
 }
 
+// CreatePaymentMethodInstanceJSONBody defines parameters for CreatePaymentMethodInstance.
+type CreatePaymentMethodInstanceJSONBody CreatePaymentMethodInstanceRequest
+
+// CreatePaymentMethodInstanceParams defines parameters for CreatePaymentMethodInstance.
+type CreatePaymentMethodInstanceParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdatePaymentMethodInstanceJSONBody defines parameters for UpdatePaymentMethodInstance.
+type UpdatePaymentMethodInstanceJSONBody UpdatePaymentMethodInstanceRequest
+
+// UpdatePaymentMethodInstanceParams defines parameters for UpdatePaymentMethodInstance.
+type UpdatePaymentMethodInstanceParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListPaymentMethodsParams defines parameters for ListPaymentMethods.
 type ListPaymentMethodsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -11045,6 +11138,12 @@ type CreateOAuthConsentJSONRequestBody CreateOAuthConsentJSONBody
 
 // GetOAuthTokenJSONRequestBody defines body for GetOAuthToken for application/json ContentType.
 type GetOAuthTokenJSONRequestBody GetOAuthTokenJSONBody
+
+// CreatePaymentMethodInstanceJSONRequestBody defines body for CreatePaymentMethodInstance for application/json ContentType.
+type CreatePaymentMethodInstanceJSONRequestBody CreatePaymentMethodInstanceJSONBody
+
+// UpdatePaymentMethodInstanceJSONRequestBody defines body for UpdatePaymentMethodInstance for application/json ContentType.
+type UpdatePaymentMethodInstanceJSONRequestBody UpdatePaymentMethodInstanceJSONBody
 
 // CreatePaymentJSONRequestBody defines body for CreatePayment for application/json ContentType.
 type CreatePaymentJSONRequestBody CreatePaymentJSONBody
@@ -13251,6 +13350,9 @@ type ClientInterface interface {
 	// ListPaxStatuses request
 	ListPaxStatuses(ctx context.Context, companyId string, params *ListPaxStatusesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListPaymentMethodInstances request
+	ListPaymentMethodInstances(ctx context.Context, companyId string, params *ListPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListPayments request
 	ListPayments(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13696,6 +13798,16 @@ type ClientInterface interface {
 	GetOAuthTokenWithBody(ctx context.Context, params *GetOAuthTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	GetOAuthToken(ctx context.Context, params *GetOAuthTokenParams, body GetOAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreatePaymentMethodInstance request with any body
+	CreatePaymentMethodInstanceWithBody(ctx context.Context, params *CreatePaymentMethodInstanceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreatePaymentMethodInstance(ctx context.Context, params *CreatePaymentMethodInstanceParams, body CreatePaymentMethodInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdatePaymentMethodInstance request with any body
+	UpdatePaymentMethodInstanceWithBody(ctx context.Context, instanceId string, params *UpdatePaymentMethodInstanceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdatePaymentMethodInstance(ctx context.Context, instanceId string, params *UpdatePaymentMethodInstanceParams, body UpdatePaymentMethodInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListPaymentMethods request
 	ListPaymentMethods(ctx context.Context, params *ListPaymentMethodsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14772,6 +14884,18 @@ func (c *Client) ListOpeningHours(ctx context.Context, companyId string, params 
 
 func (c *Client) ListPaxStatuses(ctx context.Context, companyId string, params *ListPaxStatusesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPaxStatusesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListPaymentMethodInstances(ctx context.Context, companyId string, params *ListPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListPaymentMethodInstancesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16704,6 +16828,54 @@ func (c *Client) GetOAuthTokenWithBody(ctx context.Context, params *GetOAuthToke
 
 func (c *Client) GetOAuthToken(ctx context.Context, params *GetOAuthTokenParams, body GetOAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOAuthTokenRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreatePaymentMethodInstanceWithBody(ctx context.Context, params *CreatePaymentMethodInstanceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreatePaymentMethodInstanceRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreatePaymentMethodInstance(ctx context.Context, params *CreatePaymentMethodInstanceParams, body CreatePaymentMethodInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreatePaymentMethodInstanceRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePaymentMethodInstanceWithBody(ctx context.Context, instanceId string, params *UpdatePaymentMethodInstanceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdatePaymentMethodInstanceRequestWithBody(c.Server, instanceId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePaymentMethodInstance(ctx context.Context, instanceId string, params *UpdatePaymentMethodInstanceParams, body UpdatePaymentMethodInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdatePaymentMethodInstanceRequest(c.Server, instanceId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -22798,6 +22970,86 @@ func NewListPaxStatusesRequest(server string, companyId string, params *ListPaxS
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/pax_statuses", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListPaymentMethodInstancesRequest generates requests for ListPaymentMethodInstances
+func NewListPaymentMethodInstancesRequest(server string, companyId string, params *ListPaymentMethodInstancesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/payment_method_instances", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -32576,6 +32828,165 @@ func NewGetOAuthTokenRequestWithBody(server string, params *GetOAuthTokenParams,
 	return req, nil
 }
 
+// NewCreatePaymentMethodInstanceRequest calls the generic CreatePaymentMethodInstance builder with application/json body
+func NewCreatePaymentMethodInstanceRequest(server string, params *CreatePaymentMethodInstanceParams, body CreatePaymentMethodInstanceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreatePaymentMethodInstanceRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreatePaymentMethodInstanceRequestWithBody generates requests for CreatePaymentMethodInstance with any type of body
+func NewCreatePaymentMethodInstanceRequestWithBody(server string, params *CreatePaymentMethodInstanceParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/payment_method_instances")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdatePaymentMethodInstanceRequest calls the generic UpdatePaymentMethodInstance builder with application/json body
+func NewUpdatePaymentMethodInstanceRequest(server string, instanceId string, params *UpdatePaymentMethodInstanceParams, body UpdatePaymentMethodInstanceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdatePaymentMethodInstanceRequestWithBody(server, instanceId, params, "application/json", bodyReader)
+}
+
+// NewUpdatePaymentMethodInstanceRequestWithBody generates requests for UpdatePaymentMethodInstance with any type of body
+func NewUpdatePaymentMethodInstanceRequestWithBody(server string, instanceId string, params *UpdatePaymentMethodInstanceParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "instance_id", runtime.ParamLocationPath, instanceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/payment_method_instances/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListPaymentMethodsRequest generates requests for ListPaymentMethods
 func NewListPaymentMethodsRequest(server string, params *ListPaymentMethodsParams) (*http.Request, error) {
 	var err error
@@ -41468,6 +41879,9 @@ type ClientWithResponsesInterface interface {
 	// ListPaxStatuses request
 	ListPaxStatusesWithResponse(ctx context.Context, companyId string, params *ListPaxStatusesParams, reqEditors ...RequestEditorFn) (*ListPaxStatusesResponse, error)
 
+	// ListPaymentMethodInstances request
+	ListPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, params *ListPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*ListPaymentMethodInstancesResponse, error)
+
 	// ListPayments request
 	ListPaymentsWithResponse(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*ListPaymentsResponse, error)
 
@@ -41913,6 +42327,16 @@ type ClientWithResponsesInterface interface {
 	GetOAuthTokenWithBodyWithResponse(ctx context.Context, params *GetOAuthTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetOAuthTokenResponse, error)
 
 	GetOAuthTokenWithResponse(ctx context.Context, params *GetOAuthTokenParams, body GetOAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*GetOAuthTokenResponse, error)
+
+	// CreatePaymentMethodInstance request with any body
+	CreatePaymentMethodInstanceWithBodyWithResponse(ctx context.Context, params *CreatePaymentMethodInstanceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreatePaymentMethodInstanceResponse, error)
+
+	CreatePaymentMethodInstanceWithResponse(ctx context.Context, params *CreatePaymentMethodInstanceParams, body CreatePaymentMethodInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreatePaymentMethodInstanceResponse, error)
+
+	// UpdatePaymentMethodInstance request with any body
+	UpdatePaymentMethodInstanceWithBodyWithResponse(ctx context.Context, instanceId string, params *UpdatePaymentMethodInstanceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdatePaymentMethodInstanceResponse, error)
+
+	UpdatePaymentMethodInstanceWithResponse(ctx context.Context, instanceId string, params *UpdatePaymentMethodInstanceParams, body UpdatePaymentMethodInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePaymentMethodInstanceResponse, error)
 
 	// ListPaymentMethods request
 	ListPaymentMethodsWithResponse(ctx context.Context, params *ListPaymentMethodsParams, reqEditors ...RequestEditorFn) (*ListPaymentMethodsResponse, error)
@@ -43414,6 +43838,28 @@ func (r ListPaxStatusesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPaxStatusesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListPaymentMethodInstancesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PaymentMethodInstances
+}
+
+// Status returns HTTPResponse.Status
+func (r ListPaymentMethodInstancesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListPaymentMethodInstancesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -46128,6 +46574,50 @@ func (r GetOAuthTokenResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetOAuthTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreatePaymentMethodInstanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PaymentMethodInstance
+}
+
+// Status returns HTTPResponse.Status
+func (r CreatePaymentMethodInstanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreatePaymentMethodInstanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdatePaymentMethodInstanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PaymentMethodInstance
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdatePaymentMethodInstanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdatePaymentMethodInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -49257,6 +49747,15 @@ func (c *ClientWithResponses) ListPaxStatusesWithResponse(ctx context.Context, c
 	return ParseListPaxStatusesResponse(rsp)
 }
 
+// ListPaymentMethodInstancesWithResponse request returning *ListPaymentMethodInstancesResponse
+func (c *ClientWithResponses) ListPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, params *ListPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*ListPaymentMethodInstancesResponse, error) {
+	rsp, err := c.ListPaymentMethodInstances(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListPaymentMethodInstancesResponse(rsp)
+}
+
 // ListPaymentsWithResponse request returning *ListPaymentsResponse
 func (c *ClientWithResponses) ListPaymentsWithResponse(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*ListPaymentsResponse, error) {
 	rsp, err := c.ListPayments(ctx, companyId, params, reqEditors...)
@@ -50667,6 +51166,40 @@ func (c *ClientWithResponses) GetOAuthTokenWithResponse(ctx context.Context, par
 		return nil, err
 	}
 	return ParseGetOAuthTokenResponse(rsp)
+}
+
+// CreatePaymentMethodInstanceWithBodyWithResponse request with arbitrary body returning *CreatePaymentMethodInstanceResponse
+func (c *ClientWithResponses) CreatePaymentMethodInstanceWithBodyWithResponse(ctx context.Context, params *CreatePaymentMethodInstanceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreatePaymentMethodInstanceResponse, error) {
+	rsp, err := c.CreatePaymentMethodInstanceWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreatePaymentMethodInstanceResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreatePaymentMethodInstanceWithResponse(ctx context.Context, params *CreatePaymentMethodInstanceParams, body CreatePaymentMethodInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreatePaymentMethodInstanceResponse, error) {
+	rsp, err := c.CreatePaymentMethodInstance(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreatePaymentMethodInstanceResponse(rsp)
+}
+
+// UpdatePaymentMethodInstanceWithBodyWithResponse request with arbitrary body returning *UpdatePaymentMethodInstanceResponse
+func (c *ClientWithResponses) UpdatePaymentMethodInstanceWithBodyWithResponse(ctx context.Context, instanceId string, params *UpdatePaymentMethodInstanceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdatePaymentMethodInstanceResponse, error) {
+	rsp, err := c.UpdatePaymentMethodInstanceWithBody(ctx, instanceId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePaymentMethodInstanceResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdatePaymentMethodInstanceWithResponse(ctx context.Context, instanceId string, params *UpdatePaymentMethodInstanceParams, body UpdatePaymentMethodInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePaymentMethodInstanceResponse, error) {
+	rsp, err := c.UpdatePaymentMethodInstance(ctx, instanceId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePaymentMethodInstanceResponse(rsp)
 }
 
 // ListPaymentMethodsWithResponse request returning *ListPaymentMethodsResponse
@@ -53334,6 +53867,32 @@ func ParseListPaxStatusesResponse(rsp *http.Response) (*ListPaxStatusesResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PaxStatuses
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListPaymentMethodInstancesResponse parses an HTTP response from a ListPaymentMethodInstancesWithResponse call
+func ParseListPaymentMethodInstancesResponse(rsp *http.Response) (*ListPaymentMethodInstancesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListPaymentMethodInstancesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PaymentMethodInstances
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -56412,6 +56971,58 @@ func ParseGetOAuthTokenResponse(rsp *http.Response) (*GetOAuthTokenResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest OAuthToken
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreatePaymentMethodInstanceResponse parses an HTTP response from a CreatePaymentMethodInstanceWithResponse call
+func ParseCreatePaymentMethodInstanceResponse(rsp *http.Response) (*CreatePaymentMethodInstanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreatePaymentMethodInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PaymentMethodInstance
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdatePaymentMethodInstanceResponse parses an HTTP response from a UpdatePaymentMethodInstanceWithResponse call
+func ParseUpdatePaymentMethodInstanceResponse(rsp *http.Response) (*UpdatePaymentMethodInstanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdatePaymentMethodInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PaymentMethodInstance
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
