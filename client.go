@@ -6783,18 +6783,19 @@ type SubscriptionPricingItemAddon struct {
 
 // Subtransaction defines model for Subtransaction.
 type Subtransaction struct {
-	Amount          *float64                    `json:"amount,omitempty"`
-	CreatedAt       *time.Time                  `json:"created_at,omitempty"`
-	Currency        *string                     `json:"currency,omitempty"`
-	Data            *SubtransactionData         `json:"data,omitempty"`
-	FailureState    *SubtransactionFailureState `json:"failure_state,omitempty"`
-	Id              *string                     `json:"id,omitempty"`
-	Note            *string                     `json:"note,omitempty"`
-	Origin          *SubtransactionOrigin       `json:"origin,omitempty"`
-	PaymentMethodId *string                     `json:"payment_method_id,omitempty"`
-	State           *SubtransactionState        `json:"state,omitempty"`
-	TransactionId   *string                     `json:"transaction_id,omitempty"`
-	UpdatedAt       *time.Time                  `json:"updated_at,omitempty"`
+	Amount                  *float64                    `json:"amount,omitempty"`
+	CreatedAt               *time.Time                  `json:"created_at,omitempty"`
+	Currency                *string                     `json:"currency,omitempty"`
+	Data                    *SubtransactionData         `json:"data,omitempty"`
+	FailureState            *SubtransactionFailureState `json:"failure_state,omitempty"`
+	Id                      *string                     `json:"id,omitempty"`
+	Note                    *string                     `json:"note,omitempty"`
+	Origin                  *SubtransactionOrigin       `json:"origin,omitempty"`
+	PaymentMethodId         *string                     `json:"payment_method_id,omitempty"`
+	PaymentMethodInstanceId *string                     `json:"payment_method_instance_id,omitempty"`
+	State                   *SubtransactionState        `json:"state,omitempty"`
+	TransactionId           *string                     `json:"transaction_id,omitempty"`
+	UpdatedAt               *time.Time                  `json:"updated_at,omitempty"`
 }
 
 // SubtransactionFailureState defines model for Subtransaction.FailureState.
