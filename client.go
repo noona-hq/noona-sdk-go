@@ -6640,8 +6640,12 @@ type Settlements []Settlement
 
 // Sort defines model for Sort.
 type Sort struct {
-	Field *string    `json:"field,omitempty"`
-	Order *SortOrder `json:"order,omitempty"`
+	Field *string `json:"field,omitempty"`
+
+	// When true, use case-insensitive sorting for string fields.
+	// Note: This may prevent the use of indexes for sorting operations impacting performance.
+	IgnoreCasing *bool      `json:"ignore_casing,omitempty"`
+	Order        *SortOrder `json:"order,omitempty"`
 }
 
 // SortOrder defines model for Sort.Order.
