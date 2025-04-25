@@ -4169,6 +4169,11 @@ type ExpandablePayment struct {
 }
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandablePaymentMethod struct {
+	union json.RawMessage
+}
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableProduct struct {
 	union json.RawMessage
 }
@@ -5364,10 +5369,10 @@ type PaymentMethodInstance struct {
 	Order     int32             `json:"order"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	PaymentMethod     ExpandablePayment  `json:"payment_method"`
-	Title             string             `json:"title"`
-	TitleTranslations *map[string]string `json:"title_translations,omitempty"`
-	UpdatedAt         time.Time          `json:"updated_at"`
+	PaymentMethod     ExpandablePaymentMethod `json:"payment_method"`
+	Title             string                  `json:"title"`
+	TitleTranslations *map[string]string      `json:"title_translations,omitempty"`
+	UpdatedAt         time.Time               `json:"updated_at"`
 }
 
 // PaymentMethodInstances defines model for PaymentMethodInstances.
@@ -12245,6 +12250,40 @@ func (t ExpandablePayment) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ExpandablePayment) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandablePaymentMethod) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandablePaymentMethod) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandablePaymentMethod) AsPaymentMethod() (PaymentMethod, error) {
+	var body PaymentMethod
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandablePaymentMethod) FromPaymentMethod(v PaymentMethod) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandablePaymentMethod) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandablePaymentMethod) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
