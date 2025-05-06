@@ -5464,17 +5464,23 @@ type Permission string
 
 // PermissionGroup defines model for PermissionGroup.
 type PermissionGroup struct {
-	Id          *string               `json:"_id,omitempty"`
+	Id *string `json:"id,omitempty"`
+
+	// Defines the order among sibling permission groups
+	Order       *int32                `json:"order,omitempty"`
 	Permissions *[]PermissionMetadata `json:"permissions,omitempty"`
-	ReadableId  *string               `json:"readableId,omitempty"`
+	ReadableId  *string               `json:"readable_id,omitempty"`
 	Title       *string               `json:"title,omitempty"`
 }
 
 // PermissionMetadata defines model for PermissionMetadata.
 type PermissionMetadata struct {
-	Id         *string     `json:"_id,omitempty"`
-	ReadableId *Permission `json:"readableId,omitempty"`
-	Title      *string     `json:"title,omitempty"`
+	Id         *string     `json:"id,omitempty"`
+	ReadableId *Permission `json:"readable_id,omitempty"`
+
+	// List of permission IDs that are prerequisites for this permission
+	Requirements *[]Permission `json:"requirements,omitempty"`
+	Title        *string       `json:"title,omitempty"`
 }
 
 // Powerup defines model for Powerup.
