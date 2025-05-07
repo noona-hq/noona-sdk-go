@@ -5475,7 +5475,10 @@ type PermissionGroup struct {
 
 // PermissionMetadata defines model for PermissionMetadata.
 type PermissionMetadata struct {
-	Id         *string     `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
+
+	// Defines the order among sibling permissions
+	Order      *int32      `json:"order,omitempty"`
 	ReadableId *Permission `json:"readable_id,omitempty"`
 
 	// List of permission IDs that are prerequisites for this permission
