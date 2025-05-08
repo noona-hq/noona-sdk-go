@@ -2214,7 +2214,7 @@ type Company struct {
 	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
 	Name            *string             `json:"name,omitempty"`
 
-	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
 
@@ -2257,7 +2257,7 @@ type CompanyCreate struct {
 	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
 	Name            string              `json:"name"`
 
-	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
 
@@ -2508,7 +2508,7 @@ type CompanyResponse struct {
 	Messaging       CompanyMessaging   `json:"messaging"`
 	Name            string             `json:"name"`
 
-	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
 
@@ -2590,7 +2590,7 @@ type CompanyUpdate struct {
 	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
 	Name            *string             `json:"name,omitempty"`
 
-	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
 
@@ -5308,7 +5308,7 @@ type PaymentCreate struct {
 // PaymentCreateReason defines model for PaymentCreate.Reason.
 type PaymentCreateReason string
 
-// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc.,  representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 type PaymentFees map[string]float64
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
@@ -13408,6 +13408,9 @@ type ClientInterface interface {
 	// ListPaymentMethodInstances request
 	ListPaymentMethodInstances(ctx context.Context, companyId string, params *ListPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SeedCompanyPaymentMethodInstances request
+	SeedCompanyPaymentMethodInstances(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListPayments request
 	ListPayments(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -14951,6 +14954,18 @@ func (c *Client) ListPaxStatuses(ctx context.Context, companyId string, params *
 
 func (c *Client) ListPaymentMethodInstances(ctx context.Context, companyId string, params *ListPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPaymentMethodInstancesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SeedCompanyPaymentMethodInstances(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSeedCompanyPaymentMethodInstancesRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -23161,6 +23176,40 @@ func NewListPaymentMethodInstancesRequest(server string, companyId string, param
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSeedCompanyPaymentMethodInstancesRequest generates requests for SeedCompanyPaymentMethodInstances
+func NewSeedCompanyPaymentMethodInstancesRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/payment_method_instances/seed", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -41937,6 +41986,9 @@ type ClientWithResponsesInterface interface {
 	// ListPaymentMethodInstances request
 	ListPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, params *ListPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*ListPaymentMethodInstancesResponse, error)
 
+	// SeedCompanyPaymentMethodInstances request
+	SeedCompanyPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*SeedCompanyPaymentMethodInstancesResponse, error)
+
 	// ListPayments request
 	ListPaymentsWithResponse(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*ListPaymentsResponse, error)
 
@@ -43915,6 +43967,28 @@ func (r ListPaymentMethodInstancesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPaymentMethodInstancesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SeedCompanyPaymentMethodInstancesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]PaymentMethodInstance
+}
+
+// Status returns HTTPResponse.Status
+func (r SeedCompanyPaymentMethodInstancesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SeedCompanyPaymentMethodInstancesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -49811,6 +49885,15 @@ func (c *ClientWithResponses) ListPaymentMethodInstancesWithResponse(ctx context
 	return ParseListPaymentMethodInstancesResponse(rsp)
 }
 
+// SeedCompanyPaymentMethodInstancesWithResponse request returning *SeedCompanyPaymentMethodInstancesResponse
+func (c *ClientWithResponses) SeedCompanyPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*SeedCompanyPaymentMethodInstancesResponse, error) {
+	rsp, err := c.SeedCompanyPaymentMethodInstances(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSeedCompanyPaymentMethodInstancesResponse(rsp)
+}
+
 // ListPaymentsWithResponse request returning *ListPaymentsResponse
 func (c *ClientWithResponses) ListPaymentsWithResponse(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*ListPaymentsResponse, error) {
 	rsp, err := c.ListPayments(ctx, companyId, params, reqEditors...)
@@ -53948,6 +54031,32 @@ func ParseListPaymentMethodInstancesResponse(rsp *http.Response) (*ListPaymentMe
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PaymentMethodInstances
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSeedCompanyPaymentMethodInstancesResponse parses an HTTP response from a SeedCompanyPaymentMethodInstancesWithResponse call
+func ParseSeedCompanyPaymentMethodInstancesResponse(rsp *http.Response) (*SeedCompanyPaymentMethodInstancesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SeedCompanyPaymentMethodInstancesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []PaymentMethodInstance
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
