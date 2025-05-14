@@ -3816,8 +3816,14 @@ type EventTypeFields []EventTypeField
 // EventTypeGroup defines model for EventTypeGroup.
 type EventTypeGroup struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company *ExpandableCompany `json:"company,omitempty"`
-	Id      *string            `json:"id,omitempty"`
+	Company     *ExpandableCompany `json:"company,omitempty"`
+	Description *string            `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	Id                      *string         `json:"id,omitempty"`
 
 	// Whether this is the default group for event types that do not have a group.
 	IsDefaultGroup *bool `json:"is_default_group,omitempty"`
@@ -3829,16 +3835,27 @@ type EventTypeGroup struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	ParentEventTypeGroup *ExpandableEventTypeGroup `json:"parent_event_type_group,omitempty"`
 	Title                *string                   `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap `json:"title_translations,omitempty"`
 }
 
 // EventTypeGroupInput defines model for EventTypeGroupInput.
 type EventTypeGroupInput struct {
-	Company              *string   `json:"company,omitempty"`
-	EventTypes           *[]string `json:"event_types,omitempty"`
-	IsDefaultGroup       *bool     `json:"is_default_group,omitempty"`
-	Order                *int32    `json:"order,omitempty"`
-	ParentEventTypeGroup *string   `json:"parent_event_type_group,omitempty"`
-	Title                *string   `json:"title,omitempty"`
+	Company     *string `json:"company,omitempty"`
+	Description *string `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	EventTypes              *[]string       `json:"event_types,omitempty"`
+	IsDefaultGroup          *bool           `json:"is_default_group,omitempty"`
+	Order                   *int32          `json:"order,omitempty"`
+	ParentEventTypeGroup    *string         `json:"parent_event_type_group,omitempty"`
+	Title                   *string         `json:"title,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
