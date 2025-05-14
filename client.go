@@ -3824,6 +3824,7 @@ type EventTypeGroup struct {
 	// The key is the language code, and the value is the translated string.
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
 	Id                      *string         `json:"id,omitempty"`
+	Images                  *Images         `json:"images,omitempty"`
 
 	// Whether this is the default group for event types that do not have a group.
 	IsDefaultGroup *bool `json:"is_default_group,omitempty"`
@@ -3852,6 +3853,7 @@ type EventTypeGroupInput struct {
 	// The key is the language code, and the value is the translated string.
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
 	EventTypes              *[]string       `json:"event_types,omitempty"`
+	Images                  *Images         `json:"images,omitempty"`
 	IsDefaultGroup          *bool           `json:"is_default_group,omitempty"`
 	Order                   *int32          `json:"order,omitempty"`
 	ParentEventTypeGroup    *string         `json:"parent_event_type_group,omitempty"`
