@@ -9450,12 +9450,6 @@ type FiscalizeTransactionParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 }
 
-// SendFiscalizedTransactionPDFJSONBody defines parameters for SendFiscalizedTransactionPDF.
-type SendFiscalizedTransactionPDFJSONBody struct {
-	// The email address to send the PDF to.
-	Email *string `json:"email,omitempty"`
-}
-
 // RefundFiscalizedTransactionParams defines parameters for RefundFiscalizedTransaction.
 type RefundFiscalizedTransactionParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -11130,9 +11124,6 @@ type UpsertCompanyFiscalizationDataJSONRequestBody UpsertCompanyFiscalizationDat
 
 // FiscalizeTransactionJSONRequestBody defines body for FiscalizeTransaction for application/json ContentType.
 type FiscalizeTransactionJSONRequestBody FiscalizeTransactionJSONBody
-
-// SendFiscalizedTransactionPDFJSONRequestBody defines body for SendFiscalizedTransactionPDF for application/json ContentType.
-type SendFiscalizedTransactionPDFJSONRequestBody SendFiscalizedTransactionPDFJSONBody
 
 // AdyenCompanyOnboardingJSONRequestBody defines body for AdyenCompanyOnboarding for application/json ContentType.
 type AdyenCompanyOnboardingJSONRequestBody AdyenCompanyOnboardingJSONBody
@@ -13721,11 +13712,6 @@ type ClientInterface interface {
 
 	FiscalizeTransaction(ctx context.Context, transactionId string, params *FiscalizeTransactionParams, body FiscalizeTransactionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// SendFiscalizedTransactionPDF request with any body
-	SendFiscalizedTransactionPDFWithBody(ctx context.Context, transactionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	SendFiscalizedTransactionPDF(ctx context.Context, transactionId string, body SendFiscalizedTransactionPDFJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetFiscalizedTransactionPDF request
 	GetFiscalizedTransactionPDF(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -16233,30 +16219,6 @@ func (c *Client) FiscalizeTransactionWithBody(ctx context.Context, transactionId
 
 func (c *Client) FiscalizeTransaction(ctx context.Context, transactionId string, params *FiscalizeTransactionParams, body FiscalizeTransactionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewFiscalizeTransactionRequest(c.Server, transactionId, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) SendFiscalizedTransactionPDFWithBody(ctx context.Context, transactionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSendFiscalizedTransactionPDFRequestWithBody(c.Server, transactionId, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) SendFiscalizedTransactionPDF(ctx context.Context, transactionId string, body SendFiscalizedTransactionPDFJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSendFiscalizedTransactionPDFRequest(c.Server, transactionId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -30009,53 +29971,6 @@ func NewFiscalizeTransactionRequestWithBody(server string, transactionId string,
 	return req, nil
 }
 
-// NewSendFiscalizedTransactionPDFRequest calls the generic SendFiscalizedTransactionPDF builder with application/json body
-func NewSendFiscalizedTransactionPDFRequest(server string, transactionId string, body SendFiscalizedTransactionPDFJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewSendFiscalizedTransactionPDFRequestWithBody(server, transactionId, "application/json", bodyReader)
-}
-
-// NewSendFiscalizedTransactionPDFRequestWithBody generates requests for SendFiscalizedTransactionPDF with any type of body
-func NewSendFiscalizedTransactionPDFRequestWithBody(server string, transactionId string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "transaction_id", runtime.ParamLocationPath, transactionId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/transactions/%s/email", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewGetFiscalizedTransactionPDFRequest generates requests for GetFiscalizedTransactionPDF
 func NewGetFiscalizedTransactionPDFRequest(server string, transactionId string) (*http.Request, error) {
 	var err error
@@ -42299,11 +42214,6 @@ type ClientWithResponsesInterface interface {
 
 	FiscalizeTransactionWithResponse(ctx context.Context, transactionId string, params *FiscalizeTransactionParams, body FiscalizeTransactionJSONRequestBody, reqEditors ...RequestEditorFn) (*FiscalizeTransactionResponse, error)
 
-	// SendFiscalizedTransactionPDF request with any body
-	SendFiscalizedTransactionPDFWithBodyWithResponse(ctx context.Context, transactionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendFiscalizedTransactionPDFResponse, error)
-
-	SendFiscalizedTransactionPDFWithResponse(ctx context.Context, transactionId string, body SendFiscalizedTransactionPDFJSONRequestBody, reqEditors ...RequestEditorFn) (*SendFiscalizedTransactionPDFResponse, error)
-
 	// GetFiscalizedTransactionPDF request
 	GetFiscalizedTransactionPDFWithResponse(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*GetFiscalizedTransactionPDFResponse, error)
 
@@ -45827,27 +45737,6 @@ func (r FiscalizeTransactionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r FiscalizeTransactionResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type SendFiscalizedTransactionPDFResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r SendFiscalizedTransactionPDFResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r SendFiscalizedTransactionPDFResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -50826,23 +50715,6 @@ func (c *ClientWithResponses) FiscalizeTransactionWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseFiscalizeTransactionResponse(rsp)
-}
-
-// SendFiscalizedTransactionPDFWithBodyWithResponse request with arbitrary body returning *SendFiscalizedTransactionPDFResponse
-func (c *ClientWithResponses) SendFiscalizedTransactionPDFWithBodyWithResponse(ctx context.Context, transactionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendFiscalizedTransactionPDFResponse, error) {
-	rsp, err := c.SendFiscalizedTransactionPDFWithBody(ctx, transactionId, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseSendFiscalizedTransactionPDFResponse(rsp)
-}
-
-func (c *ClientWithResponses) SendFiscalizedTransactionPDFWithResponse(ctx context.Context, transactionId string, body SendFiscalizedTransactionPDFJSONRequestBody, reqEditors ...RequestEditorFn) (*SendFiscalizedTransactionPDFResponse, error) {
-	rsp, err := c.SendFiscalizedTransactionPDF(ctx, transactionId, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseSendFiscalizedTransactionPDFResponse(rsp)
 }
 
 // GetFiscalizedTransactionPDFWithResponse request returning *GetFiscalizedTransactionPDFResponse
@@ -56163,22 +56035,6 @@ func ParseFiscalizeTransactionResponse(rsp *http.Response) (*FiscalizeTransactio
 		}
 		response.JSON400 = &dest
 
-	}
-
-	return response, nil
-}
-
-// ParseSendFiscalizedTransactionPDFResponse parses an HTTP response from a SendFiscalizedTransactionPDFWithResponse call
-func ParseSendFiscalizedTransactionPDFResponse(rsp *http.Response) (*SendFiscalizedTransactionPDFResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &SendFiscalizedTransactionPDFResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
 	}
 
 	return response, nil
