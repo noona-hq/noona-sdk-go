@@ -2953,7 +2953,13 @@ type Employee struct {
 	Order *int32 `json:"order,omitempty"`
 
 	// Whether the employee is pending owner approval
-	PendingOwnerApproval *bool `json:"pending_owner_approval,omitempty"`
+	PendingOwnerApproval *bool   `json:"pending_owner_approval,omitempty"`
+	PhoneCountryCode     *string `json:"phone_country_code,omitempty"`
+	PhoneNumber          *string `json:"phone_number,omitempty"`
+
+	// An ID that can be used to reference the event type in an external system.
+	// This ID is not used by Noona and is not guaranteed to be unique.
+	ReferenceId *string `json:"reference_id,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Role *ExpandableRole `json:"role,omitempty"`
