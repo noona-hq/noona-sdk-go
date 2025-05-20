@@ -2206,6 +2206,7 @@ type Company struct {
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32              `json:"enterprise_order,omitempty"`
+	Google          *GoogleConnection   `json:"google,omitempty"`
 	Id              *string             `json:"id,omitempty"`
 	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
 	Locale          *Locale             `json:"locale,omitempty"`
@@ -2249,6 +2250,7 @@ type CompanyCreate struct {
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32              `json:"enterprise_order,omitempty"`
+	Google          *GoogleConnection   `json:"google,omitempty"`
 	Id              *string             `json:"id,omitempty"`
 	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
 	Locale          *Locale             `json:"locale,omitempty"`
@@ -2500,6 +2502,7 @@ type CompanyResponse struct {
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32             `json:"enterprise_order,omitempty"`
+	Google          *GoogleConnection  `json:"google,omitempty"`
 	Id              *string            `json:"id,omitempty"`
 	LastActiveAt    *time.Time         `json:"last_active_at,omitempty"`
 	Locale          *Locale            `json:"locale,omitempty"`
@@ -2582,6 +2585,7 @@ type CompanyUpdate struct {
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32              `json:"enterprise_order,omitempty"`
+	Google          *GoogleConnection   `json:"google,omitempty"`
 	Id              *string             `json:"id,omitempty"`
 	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
 	Locale          *Locale             `json:"locale,omitempty"`
@@ -4345,6 +4349,12 @@ type GoogleCalendarConnection struct {
 
 	// Whether events should be synced between Noona and Google Calendar.
 	SyncEvents *bool `json:"sync_events,omitempty"`
+}
+
+// GoogleConnection defines model for GoogleConnection.
+type GoogleConnection struct {
+	// The Google Analytics ID for the company.
+	GoogleAnalyticsId *string `json:"google_analytics_id,omitempty"`
 }
 
 // GroupProduct defines model for GroupProduct.
