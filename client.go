@@ -821,6 +821,11 @@ const (
 	SaleHasBeenMutated    RefundMarketplaceSaleErrorCode = "sale_has_been_mutated"
 )
 
+// Defines values for ResourceField.
+const (
+	ResourceFieldImage ResourceField = "image"
+)
+
 // Defines values for ResourcePriority.
 const (
 	High   ResourcePriority = "high"
@@ -5882,6 +5887,12 @@ type Resource struct {
 	UpdatedAt     *time.Time               `json:"updated_at,omitempty"`
 }
 
+// ResourceField defines model for ResourceField.
+type ResourceField string
+
+// ResourceFields defines model for ResourceFields.
+type ResourceFields []ResourceField
+
 // ResourceGroup defines model for ResourceGroup.
 type ResourceGroup struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -10234,7 +10245,8 @@ type UpdateResourceParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand         `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *ResourceFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // CreateRoleJSONBody defines parameters for CreateRole.
@@ -35466,6 +35478,22 @@ func NewUpdateResourceRequestWithBody(server string, resourceId string, params *
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
