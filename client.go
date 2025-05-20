@@ -339,7 +339,8 @@ const (
 
 // Defines values for EmployeeField.
 const (
-	DisabledAt EmployeeField = "disabled_at"
+	EmployeeFieldDisabledAt EmployeeField = "disabled_at"
+	EmployeeFieldImage      EmployeeField = "image"
 )
 
 // Defines values for EventDeletionBehaviorType.
