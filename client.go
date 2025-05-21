@@ -5880,6 +5880,9 @@ type Resource struct {
 	// Controls the priority of the resource when being randomly selected in the booking process.
 	Priority *ResourcePriority `json:"priority,omitempty"`
 
+	// The reference ID of the resource.
+	ReferenceId *string `json:"reference_id,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	ResourceGroup *ExpandableResourceGroup `json:"resource_group,omitempty"`
 	SubResources  *[]string                `json:"sub_resources,omitempty"`
