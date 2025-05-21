@@ -274,6 +274,11 @@ const (
 	Rates CommissionRatesType = "rates"
 )
 
+// Defines values for CompanyField.
+const (
+	CompanyFieldImage CompanyField = "image"
+)
+
 // Defines values for CompanySize.
 const (
 	Solo       CompanySize = "solo"
@@ -2297,6 +2302,12 @@ type CompanyDefaultCurrency struct {
 	Name   *string `json:"name,omitempty"`
 	Symbol *string `json:"symbol,omitempty"`
 }
+
+// CompanyField defines model for CompanyField.
+type CompanyField string
+
+// CompanyFields defines model for CompanyFields.
+type CompanyFields []CompanyField
 
 // CompanyMarketplace defines model for CompanyMarketplace.
 type CompanyMarketplace struct {
@@ -8058,7 +8069,8 @@ type UpdateCompanyParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand        `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *CompanyFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // ListAllCompanyActivitiesParams defines parameters for ListAllCompanyActivities.
@@ -20051,6 +20063,22 @@ func NewUpdateCompanyRequestWithBody(server string, companyId string, params *Up
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
