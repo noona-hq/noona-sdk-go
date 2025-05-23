@@ -8525,6 +8525,15 @@ type ListPaymentMethodInstancesParams struct {
 	Filter *PaymentMethodInstancesFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
+// SeedCompanyPaymentMethodInstancesParams defines parameters for SeedCompanyPaymentMethodInstances.
+type SeedCompanyPaymentMethodInstancesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListPaymentsParams defines parameters for ListPayments.
 type ListPaymentsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -8694,6 +8703,15 @@ type ListSalesParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// SeedCompanyInitialDataParams defines parameters for SeedCompanyInitialData.
+type SeedCompanyInitialDataParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // ListSettlementsParams defines parameters for ListSettlements.
@@ -13463,7 +13481,7 @@ type ClientInterface interface {
 	ListPaymentMethodInstances(ctx context.Context, companyId string, params *ListPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SeedCompanyPaymentMethodInstances request
-	SeedCompanyPaymentMethodInstances(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	SeedCompanyPaymentMethodInstances(ctx context.Context, companyId string, params *SeedCompanyPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListPayments request
 	ListPayments(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -13506,6 +13524,9 @@ type ClientInterface interface {
 
 	// ListSales request
 	ListSales(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SeedCompanyInitialData request
+	SeedCompanyInitialData(ctx context.Context, companyId string, params *SeedCompanyInitialDataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListSettlements request
 	ListSettlements(ctx context.Context, companyId string, params *ListSettlementsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15013,8 +15034,8 @@ func (c *Client) ListPaymentMethodInstances(ctx context.Context, companyId strin
 	return c.Client.Do(req)
 }
 
-func (c *Client) SeedCompanyPaymentMethodInstances(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSeedCompanyPaymentMethodInstancesRequest(c.Server, companyId)
+func (c *Client) SeedCompanyPaymentMethodInstances(ctx context.Context, companyId string, params *SeedCompanyPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSeedCompanyPaymentMethodInstancesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -15183,6 +15204,18 @@ func (c *Client) ListRuleSets(ctx context.Context, companyId string, params *Lis
 
 func (c *Client) ListSales(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListSalesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SeedCompanyInitialData(ctx context.Context, companyId string, params *SeedCompanyInitialDataParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSeedCompanyInitialDataRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -23225,7 +23258,7 @@ func NewListPaymentMethodInstancesRequest(server string, companyId string, param
 }
 
 // NewSeedCompanyPaymentMethodInstancesRequest generates requests for SeedCompanyPaymentMethodInstances
-func NewSeedCompanyPaymentMethodInstancesRequest(server string, companyId string) (*http.Request, error) {
+func NewSeedCompanyPaymentMethodInstancesRequest(server string, companyId string, params *SeedCompanyPaymentMethodInstancesParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -23249,6 +23282,42 @@ func NewSeedCompanyPaymentMethodInstancesRequest(server string, companyId string
 	if err != nil {
 		return nil, err
 	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
@@ -24411,6 +24480,76 @@ func NewListSalesRequest(server string, companyId string, params *ListSalesParam
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewSeedCompanyInitialDataRequest generates requests for SeedCompanyInitialData
+func NewSeedCompanyInitialDataRequest(server string, companyId string, params *SeedCompanyInitialDataParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/seed_initial_data", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -41997,7 +42136,7 @@ type ClientWithResponsesInterface interface {
 	ListPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, params *ListPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*ListPaymentMethodInstancesResponse, error)
 
 	// SeedCompanyPaymentMethodInstances request
-	SeedCompanyPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*SeedCompanyPaymentMethodInstancesResponse, error)
+	SeedCompanyPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, params *SeedCompanyPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*SeedCompanyPaymentMethodInstancesResponse, error)
 
 	// ListPayments request
 	ListPaymentsWithResponse(ctx context.Context, companyId string, params *ListPaymentsParams, reqEditors ...RequestEditorFn) (*ListPaymentsResponse, error)
@@ -42040,6 +42179,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListSales request
 	ListSalesWithResponse(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*ListSalesResponse, error)
+
+	// SeedCompanyInitialData request
+	SeedCompanyInitialDataWithResponse(ctx context.Context, companyId string, params *SeedCompanyInitialDataParams, reqEditors ...RequestEditorFn) (*SeedCompanyInitialDataResponse, error)
 
 	// ListSettlements request
 	ListSettlementsWithResponse(ctx context.Context, companyId string, params *ListSettlementsParams, reqEditors ...RequestEditorFn) (*ListSettlementsResponse, error)
@@ -44302,6 +44444,27 @@ func (r ListSalesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListSalesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SeedCompanyInitialDataResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r SeedCompanyInitialDataResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SeedCompanyInitialDataResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -49870,8 +50033,8 @@ func (c *ClientWithResponses) ListPaymentMethodInstancesWithResponse(ctx context
 }
 
 // SeedCompanyPaymentMethodInstancesWithResponse request returning *SeedCompanyPaymentMethodInstancesResponse
-func (c *ClientWithResponses) SeedCompanyPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*SeedCompanyPaymentMethodInstancesResponse, error) {
-	rsp, err := c.SeedCompanyPaymentMethodInstances(ctx, companyId, reqEditors...)
+func (c *ClientWithResponses) SeedCompanyPaymentMethodInstancesWithResponse(ctx context.Context, companyId string, params *SeedCompanyPaymentMethodInstancesParams, reqEditors ...RequestEditorFn) (*SeedCompanyPaymentMethodInstancesResponse, error) {
+	rsp, err := c.SeedCompanyPaymentMethodInstances(ctx, companyId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -50002,6 +50165,15 @@ func (c *ClientWithResponses) ListSalesWithResponse(ctx context.Context, company
 		return nil, err
 	}
 	return ParseListSalesResponse(rsp)
+}
+
+// SeedCompanyInitialDataWithResponse request returning *SeedCompanyInitialDataResponse
+func (c *ClientWithResponses) SeedCompanyInitialDataWithResponse(ctx context.Context, companyId string, params *SeedCompanyInitialDataParams, reqEditors ...RequestEditorFn) (*SeedCompanyInitialDataResponse, error) {
+	rsp, err := c.SeedCompanyInitialData(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSeedCompanyInitialDataResponse(rsp)
 }
 
 // ListSettlementsWithResponse request returning *ListSettlementsResponse
@@ -54390,6 +54562,22 @@ func ParseListSalesResponse(rsp *http.Response) (*ListSalesResponse, error) {
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseSeedCompanyInitialDataResponse parses an HTTP response from a SeedCompanyInitialDataWithResponse call
+func ParseSeedCompanyInitialDataResponse(rsp *http.Response) (*SeedCompanyInitialDataResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SeedCompanyInitialDataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
