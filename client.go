@@ -418,6 +418,11 @@ const (
 	EventTypeFieldPayments            EventTypeField = "payments"
 )
 
+// Defines values for EventTypeGroupField.
+const (
+	EventTypeGroupFieldImage EventTypeGroupField = "image"
+)
+
 // Defines values for EventUpdateBehaviorType.
 const (
 	EventUpdateBehaviorTypeDetach  EventUpdateBehaviorType = "detach"
@@ -3869,6 +3874,12 @@ type EventTypeGroup struct {
 	// The key is the language code, and the value is the translated string.
 	TitleTranslations *TranslationMap `json:"title_translations,omitempty"`
 }
+
+// EventTypeGroupField defines model for EventTypeGroupField.
+type EventTypeGroupField string
+
+// EventTypeGroupFields defines model for EventTypeGroupFields.
+type EventTypeGroupFields []EventTypeGroupField
 
 // EventTypeGroupInput defines model for EventTypeGroupInput.
 type EventTypeGroupInput struct {
@@ -9375,7 +9386,8 @@ type UpdateEventTypeGroupParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand               `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *EventTypeGroupFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // CreateEventTypeJSONBody defines parameters for CreateEventType.
@@ -29141,6 +29153,22 @@ func NewUpdateEventTypeGroupRequestWithBody(server string, eventTypeGroupId stri
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
