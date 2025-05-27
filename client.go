@@ -413,6 +413,7 @@ const (
 const (
 	EventTypeFieldBufferAfterService  EventTypeField = "buffer_after_service"
 	EventTypeFieldColor               EventTypeField = "color"
+	EventTypeFieldImage               EventTypeField = "image"
 	EventTypeFieldMaxGuestsPerBooking EventTypeField = "max_guests_per_booking"
 	EventTypeFieldMinGuestsPerBooking EventTypeField = "min_guests_per_booking"
 	EventTypeFieldPayments            EventTypeField = "payments"
