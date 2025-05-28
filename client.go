@@ -276,7 +276,8 @@ const (
 
 // Defines values for CompanyField.
 const (
-	CompanyFieldImage CompanyField = "image"
+	CompanyFieldClaimantId CompanyField = "claimant_id"
+	CompanyFieldImage      CompanyField = "image"
 )
 
 // Defines values for CompanySize.
@@ -2207,6 +2208,12 @@ type ClaimStatus string
 // Claims defines model for Claims.
 type Claims []Claim
 
+// ClaimsConnection defines model for ClaimsConnection.
+type ClaimsConnection struct {
+	// The ID of the claimant for the company.
+	ClaimantId *string `json:"claimant_id,omitempty"`
+}
+
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type ClaimsFilter struct {
 	CreatedAt *DateFilter `json:"created_at,omitempty"`
@@ -2237,6 +2244,7 @@ type CompaniesResponse []CompanyResponse
 type Company struct {
 	Adyen     *AdyenConnection        `json:"adyen,omitempty"`
 	Checkin   *CompanyCheckin         `json:"checkin,omitempty"`
+	Claims    *ClaimsConnection       `json:"claims,omitempty"`
 	CreatedAt *time.Time              `json:"created_at,omitempty"`
 	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
 
@@ -2281,6 +2289,7 @@ type CompanyCheckin struct {
 type CompanyCreate struct {
 	Adyen     *AdyenConnection        `json:"adyen,omitempty"`
 	Checkin   *CompanyCheckin         `json:"checkin,omitempty"`
+	Claims    *ClaimsConnection       `json:"claims,omitempty"`
 	CreatedAt *time.Time              `json:"created_at,omitempty"`
 	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
 
@@ -2539,6 +2548,7 @@ type CompanyProfileCreateOverrides struct {
 type CompanyResponse struct {
 	Adyen     *AdyenConnection       `json:"adyen,omitempty"`
 	Checkin   *CompanyCheckin        `json:"checkin,omitempty"`
+	Claims    *ClaimsConnection      `json:"claims,omitempty"`
 	CreatedAt *time.Time             `json:"created_at,omitempty"`
 	Currency  CompanyDefaultCurrency `json:"currency"`
 
@@ -2620,10 +2630,11 @@ type CompanyTypes []CompanyType
 
 // CompanyUpdate defines model for CompanyUpdate.
 type CompanyUpdate struct {
-	Adyen     *AdyenConnection `json:"adyen,omitempty"`
-	Checkin   *CompanyCheckin  `json:"checkin,omitempty"`
-	CreatedAt *time.Time       `json:"created_at,omitempty"`
-	Currency  *interface{}     `json:"currency,omitempty"`
+	Adyen     *AdyenConnection  `json:"adyen,omitempty"`
+	Checkin   *CompanyCheckin   `json:"checkin,omitempty"`
+	Claims    *ClaimsConnection `json:"claims,omitempty"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Currency  *interface{}      `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
