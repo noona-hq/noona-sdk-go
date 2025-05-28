@@ -559,6 +559,7 @@ const (
 	BlockedTimesRead      OAuthScope = "blocked_times:read"
 	BlockedTimesWrite     OAuthScope = "blocked_times:write"
 	ClaimsRead            OAuthScope = "claims:read"
+	ClaimsWrite           OAuthScope = "claims:write"
 	CompaniesRead         OAuthScope = "companies:read"
 	CompaniesWrite        OAuthScope = "companies:write"
 	CustomerGroupsRead    OAuthScope = "customer_groups:read"
@@ -2177,6 +2178,27 @@ type Claim struct {
 	Id                *string      `json:"id,omitempty"`
 	ReferenceId       *string      `json:"reference_id,omitempty"`
 	Status            *ClaimStatus `json:"status,omitempty"`
+}
+
+// ClaimInput defines model for ClaimInput.
+type ClaimInput struct {
+	// Total monetary value of the claim.
+	Amount *float64 `json:"amount,omitempty"`
+
+	// Unique identifier of the company associated with this claim.
+	CompanyId string `json:"company_id"`
+
+	// Unique identifier of the event for which the claim is being made.
+	EventId string `json:"event_id"`
+
+	// Unique identifier of the payor (typically the customer responsible for the claim).
+	PayorId string `json:"payor_id"`
+
+	// Proportional share of the event cost to be paid, expressed as a percentage (1–100).
+	Ratio *float64 `json:"ratio,omitempty"`
+
+	// Unique identifier of the VAT percentage to be used for the claim.
+	VatId string `json:"vat_id"`
 }
 
 // ClaimStatus defines model for ClaimStatus.
@@ -8036,6 +8058,18 @@ type ListCardTypesParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateClaimJSONBody defines parameters for CreateClaim.
+type CreateClaimJSONBody ClaimInput
+
+// CreateClaimParams defines parameters for CreateClaim.
+type CreateClaimParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // GetCompaniesParams defines parameters for GetCompanies.
 type GetCompaniesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -11128,6 +11162,9 @@ type CreateBlockedTimeJSONRequestBody CreateBlockedTimeJSONBody
 // UpdateBlockedTimeJSONRequestBody defines body for UpdateBlockedTime for application/json ContentType.
 type UpdateBlockedTimeJSONRequestBody UpdateBlockedTimeJSONBody
 
+// CreateClaimJSONRequestBody defines body for CreateClaim for application/json ContentType.
+type CreateClaimJSONRequestBody CreateClaimJSONBody
+
 // CreateCompanyJSONRequestBody defines body for CreateCompany for application/json ContentType.
 type CreateCompanyJSONRequestBody CreateCompanyJSONBody
 
@@ -13373,6 +13410,11 @@ type ClientInterface interface {
 	// ListCardTypes request
 	ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateClaim request with any body
+	CreateClaimWithBody(ctx context.Context, params *CreateClaimParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateClaim(ctx context.Context, params *CreateClaimParams, body CreateClaimJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCompanies request
 	GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -14545,6 +14587,30 @@ func (c *Client) UpdateBlockedTime(ctx context.Context, blockedTimeId string, pa
 
 func (c *Client) ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCardTypesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateClaimWithBody(ctx context.Context, params *CreateClaimParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateClaimRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateClaim(ctx context.Context, params *CreateClaimParams, body CreateClaimJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateClaimRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -19818,6 +19884,82 @@ func NewListCardTypesRequest(server string, params *ListCardTypesParams) (*http.
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewCreateClaimRequest calls the generic CreateClaim builder with application/json body
+func NewCreateClaimRequest(server string, params *CreateClaimParams, body CreateClaimJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateClaimRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateClaimRequestWithBody generates requests for CreateClaim with any type of body
+func NewCreateClaimRequestWithBody(server string, params *CreateClaimParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/claims")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -42044,6 +42186,11 @@ type ClientWithResponsesInterface interface {
 	// ListCardTypes request
 	ListCardTypesWithResponse(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*ListCardTypesResponse, error)
 
+	// CreateClaim request with any body
+	CreateClaimWithBodyWithResponse(ctx context.Context, params *CreateClaimParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateClaimResponse, error)
+
+	CreateClaimWithResponse(ctx context.Context, params *CreateClaimParams, body CreateClaimJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateClaimResponse, error)
+
 	// GetCompanies request
 	GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error)
 
@@ -43309,6 +43456,28 @@ func (r ListCardTypesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListCardTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateClaimResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Claim
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateClaimResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateClaimResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -49695,6 +49864,23 @@ func (c *ClientWithResponses) ListCardTypesWithResponse(ctx context.Context, par
 	return ParseListCardTypesResponse(rsp)
 }
 
+// CreateClaimWithBodyWithResponse request with arbitrary body returning *CreateClaimResponse
+func (c *ClientWithResponses) CreateClaimWithBodyWithResponse(ctx context.Context, params *CreateClaimParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateClaimResponse, error) {
+	rsp, err := c.CreateClaimWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateClaimResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateClaimWithResponse(ctx context.Context, params *CreateClaimParams, body CreateClaimJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateClaimResponse, error) {
+	rsp, err := c.CreateClaim(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateClaimResponse(rsp)
+}
+
 // GetCompaniesWithResponse request returning *GetCompaniesResponse
 func (c *ClientWithResponses) GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error) {
 	rsp, err := c.GetCompanies(ctx, params, reqEditors...)
@@ -53231,6 +53417,32 @@ func ParseListCardTypesResponse(rsp *http.Response) (*ListCardTypesResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CardTypes
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateClaimResponse parses an HTTP response from a CreateClaimWithResponse call
+func ParseCreateClaimResponse(rsp *http.Response) (*CreateClaimResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateClaimResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Claim
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
