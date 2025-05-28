@@ -894,6 +894,12 @@ const (
 	RuleTypePrePayment        RuleType = "pre_payment"
 )
 
+// Defines values for RwgConversionTrackingMerchantChanged.
+const (
+	N1 RwgConversionTrackingMerchantChanged = "1"
+	N2 RwgConversionTrackingMerchantChanged = "2"
+)
+
 // Defines values for SMSMessageStatus.
 const (
 	SMSMessageStatusCreated     SMSMessageStatus = "created"
@@ -3272,6 +3278,9 @@ type Event struct {
 	// Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
 	Rrule *RRuleString `json:"rrule,omitempty"`
 
+	// Google Reserve with Google conversion tracking data
+	Rwg *RwgConversionTracking `json:"rwg,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Sale *ExpandableSale `json:"sale,omitempty"`
 
@@ -3434,6 +3443,9 @@ type EventCheckinResult struct {
 	//
 	// Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
 	Rrule *RRuleString `json:"rrule,omitempty"`
+
+	// Google Reserve with Google conversion tracking data
+	Rwg *RwgConversionTracking `json:"rwg,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Sale   *ExpandableSale `json:"sale,omitempty"`
@@ -6541,6 +6553,18 @@ type RuleType string
 
 // Rules defines model for Rules.
 type Rules []Rule
+
+// Google Reserve with Google conversion tracking data
+type RwgConversionTracking struct {
+	// Merchant changed indicator for Google conversion tracking
+	MerchantChanged RwgConversionTrackingMerchantChanged `json:"merchant_changed"`
+
+	// Google rwg_token for conversion tracking
+	Token string `json:"token"`
+}
+
+// Merchant changed indicator for Google conversion tracking
+type RwgConversionTrackingMerchantChanged string
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SMSFilter struct {
