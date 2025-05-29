@@ -828,6 +828,12 @@ const (
 	PushNotificationTypeVoucherUpdated                PushNotificationType = "voucherUpdated"
 )
 
+// Defines values for PushTokenPlatform.
+const (
+	Android PushTokenPlatform = "android"
+	Ios     PushTokenPlatform = "ios"
+)
+
 // Defines values for RefundMarketplaceSaleErrorCode.
 const (
 	AlreadyRefunded       RefundMarketplaceSaleErrorCode = "already_refunded"
@@ -5872,6 +5878,16 @@ type PushNotificationFilter struct {
 
 // PushNotifications defines model for PushNotifications.
 type PushNotifications []PushNotification
+
+// PushToken defines model for PushToken.
+type PushToken struct {
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+	Platform  PushTokenPlatform `json:"platform"`
+	Token     string            `json:"token"`
+}
+
+// PushTokenPlatform defines model for PushToken.Platform.
+type PushTokenPlatform string
 
 // [RRULE](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html) string for recurring events and blocked times.
 //
@@ -10953,6 +10969,27 @@ type UserOAuthPostParams struct {
 // UserOAuthPostParamsProvider defines parameters for UserOAuthPost.
 type UserOAuthPostParamsProvider string
 
+// CreateUserPushTokenJSONBody defines parameters for CreateUserPushToken.
+type CreateUserPushTokenJSONBody PushToken
+
+// CreateUserPushTokenParams defines parameters for CreateUserPushToken.
+type CreateUserPushTokenParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteUserPushTokenParams defines parameters for DeleteUserPushToken.
+type DeleteUserPushTokenParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListUserSettlementAccountsParams defines parameters for ListUserSettlementAccounts.
 type ListUserSettlementAccountsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -11443,6 +11480,9 @@ type UpdateCurrentUserJSONRequestBody UpdateCurrentUserJSONBody
 
 // CreateGoogleCalendarConnectionJSONRequestBody defines body for CreateGoogleCalendarConnection for application/json ContentType.
 type CreateGoogleCalendarConnectionJSONRequestBody CreateGoogleCalendarConnectionJSONBody
+
+// CreateUserPushTokenJSONRequestBody defines body for CreateUserPushToken for application/json ContentType.
+type CreateUserPushTokenJSONRequestBody CreateUserPushTokenJSONBody
 
 // CreateUserTokenJSONRequestBody defines body for CreateUserToken for application/json ContentType.
 type CreateUserTokenJSONRequestBody CreateUserTokenJSONBody
@@ -14403,6 +14443,14 @@ type ClientInterface interface {
 
 	// UserOAuthPost request
 	UserOAuthPost(ctx context.Context, params *UserOAuthPostParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateUserPushToken request with any body
+	CreateUserPushTokenWithBody(ctx context.Context, params *CreateUserPushTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateUserPushToken(ctx context.Context, params *CreateUserPushTokenParams, body CreateUserPushTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteUserPushToken request
+	DeleteUserPushToken(ctx context.Context, pushToken string, params *DeleteUserPushTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListUserSettlementAccounts request
 	ListUserSettlementAccounts(ctx context.Context, params *ListUserSettlementAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -18675,6 +18723,42 @@ func (c *Client) UserOAuth(ctx context.Context, params *UserOAuthParams, reqEdit
 
 func (c *Client) UserOAuthPost(ctx context.Context, params *UserOAuthPostParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUserOAuthPostRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUserPushTokenWithBody(ctx context.Context, params *CreateUserPushTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserPushTokenRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUserPushToken(ctx context.Context, params *CreateUserPushTokenParams, body CreateUserPushTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserPushTokenRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteUserPushToken(ctx context.Context, pushToken string, params *DeleteUserPushTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteUserPushTokenRequest(c.Server, pushToken, params)
 	if err != nil {
 		return nil, err
 	}
@@ -40320,6 +40404,152 @@ func NewUserOAuthPostRequest(server string, params *UserOAuthPostParams) (*http.
 	return req, nil
 }
 
+// NewCreateUserPushTokenRequest calls the generic CreateUserPushToken builder with application/json body
+func NewCreateUserPushTokenRequest(server string, params *CreateUserPushTokenParams, body CreateUserPushTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateUserPushTokenRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateUserPushTokenRequestWithBody generates requests for CreateUserPushToken with any type of body
+func NewCreateUserPushTokenRequestWithBody(server string, params *CreateUserPushTokenParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user/push_tokens")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteUserPushTokenRequest generates requests for DeleteUserPushToken
+func NewDeleteUserPushTokenRequest(server string, pushToken string, params *DeleteUserPushTokenParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "push_token", runtime.ParamLocationPath, pushToken)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user/push_tokens/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListUserSettlementAccountsRequest generates requests for ListUserSettlementAccounts
 func NewListUserSettlementAccountsRequest(server string, params *ListUserSettlementAccountsParams) (*http.Request, error) {
 	var err error
@@ -43284,6 +43514,14 @@ type ClientWithResponsesInterface interface {
 
 	// UserOAuthPost request
 	UserOAuthPostWithResponse(ctx context.Context, params *UserOAuthPostParams, reqEditors ...RequestEditorFn) (*UserOAuthPostResponse, error)
+
+	// CreateUserPushToken request with any body
+	CreateUserPushTokenWithBodyWithResponse(ctx context.Context, params *CreateUserPushTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserPushTokenResponse, error)
+
+	CreateUserPushTokenWithResponse(ctx context.Context, params *CreateUserPushTokenParams, body CreateUserPushTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserPushTokenResponse, error)
+
+	// DeleteUserPushToken request
+	DeleteUserPushTokenWithResponse(ctx context.Context, pushToken string, params *DeleteUserPushTokenParams, reqEditors ...RequestEditorFn) (*DeleteUserPushTokenResponse, error)
 
 	// ListUserSettlementAccounts request
 	ListUserSettlementAccountsWithResponse(ctx context.Context, params *ListUserSettlementAccountsParams, reqEditors ...RequestEditorFn) (*ListUserSettlementAccountsResponse, error)
@@ -49335,6 +49573,49 @@ func (r UserOAuthPostResponse) StatusCode() int {
 	return 0
 }
 
+type CreateUserPushTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PushToken
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateUserPushTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateUserPushTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteUserPushTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteUserPushTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteUserPushTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListUserSettlementAccountsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -52998,6 +53279,32 @@ func (c *ClientWithResponses) UserOAuthPostWithResponse(ctx context.Context, par
 		return nil, err
 	}
 	return ParseUserOAuthPostResponse(rsp)
+}
+
+// CreateUserPushTokenWithBodyWithResponse request with arbitrary body returning *CreateUserPushTokenResponse
+func (c *ClientWithResponses) CreateUserPushTokenWithBodyWithResponse(ctx context.Context, params *CreateUserPushTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserPushTokenResponse, error) {
+	rsp, err := c.CreateUserPushTokenWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUserPushTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateUserPushTokenWithResponse(ctx context.Context, params *CreateUserPushTokenParams, body CreateUserPushTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserPushTokenResponse, error) {
+	rsp, err := c.CreateUserPushToken(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUserPushTokenResponse(rsp)
+}
+
+// DeleteUserPushTokenWithResponse request returning *DeleteUserPushTokenResponse
+func (c *ClientWithResponses) DeleteUserPushTokenWithResponse(ctx context.Context, pushToken string, params *DeleteUserPushTokenParams, reqEditors ...RequestEditorFn) (*DeleteUserPushTokenResponse, error) {
+	rsp, err := c.DeleteUserPushToken(ctx, pushToken, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteUserPushTokenResponse(rsp)
 }
 
 // ListUserSettlementAccountsWithResponse request returning *ListUserSettlementAccountsResponse
@@ -59964,6 +60271,48 @@ func ParseUserOAuthPostResponse(rsp *http.Response) (*UserOAuthPostResponse, err
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseCreateUserPushTokenResponse parses an HTTP response from a CreateUserPushTokenWithResponse call
+func ParseCreateUserPushTokenResponse(rsp *http.Response) (*CreateUserPushTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateUserPushTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PushToken
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteUserPushTokenResponse parses an HTTP response from a DeleteUserPushTokenWithResponse call
+func ParseDeleteUserPushTokenResponse(rsp *http.Response) (*DeleteUserPushTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteUserPushTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
