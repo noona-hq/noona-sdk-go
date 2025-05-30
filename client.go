@@ -349,6 +349,11 @@ const (
 	EmployeeFieldImage      EmployeeField = "image"
 )
 
+// Defines values for EnterpriseField.
+const (
+	EnterpriseFieldImage EnterpriseField = "image"
+)
+
 // Defines values for EventDeletionBehaviorType.
 const (
 	EventDeletionBehaviorTypeFuture EventDeletionBehaviorType = "future"
@@ -3172,6 +3177,12 @@ type EnterpriseConnectionsVouchers struct {
 	Enabled             *bool   `json:"enabled,omitempty"`
 	SettlementAccountId *string `json:"settlement_account_id,omitempty"`
 }
+
+// EnterpriseField defines model for EnterpriseField.
+type EnterpriseField string
+
+// EnterpriseFields defines model for EnterpriseFields.
+type EnterpriseFields []EnterpriseField
 
 // EnterpriseProfile defines model for EnterpriseProfile.
 type EnterpriseProfile struct {
@@ -9270,7 +9281,8 @@ type UpdateEnterpriseParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand           `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *EnterpriseFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // ListEnterpriseCompaniesParams defines parameters for ListEnterpriseCompanies.
@@ -27906,6 +27918,22 @@ func NewUpdateEnterpriseRequestWithBody(server string, params *UpdateEnterpriseP
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
