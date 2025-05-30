@@ -811,6 +811,11 @@ const (
 	PrePaymentRuleTypePrePayment PrePaymentRuleType = "pre_payment"
 )
 
+// Defines values for ProductField.
+const (
+	ProductFieldImage ProductField = "image"
+)
+
 // Defines values for PushNotificationType.
 const (
 	PushNotificationTypeEventCancelledFromMarketplace PushNotificationType = "eventCancelledFromMarketplace"
@@ -5767,6 +5772,12 @@ type Product struct {
 	VatId *string `json:"vat_id,omitempty"`
 }
 
+// ProductField defines model for ProductField.
+type ProductField string
+
+// ProductFields defines model for ProductFields.
+type ProductFields []ProductField
+
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type ProductFilter struct {
 	Barcode *string `json:"barcode,omitempty"`
@@ -10272,7 +10283,8 @@ type UpdateProductParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand        `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *ProductFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // CreateCustomPropertyJSONBody defines parameters for CreateCustomProperty.
@@ -35168,6 +35180,22 @@ func NewUpdateProductRequestWithBody(server string, id string, params *UpdatePro
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
