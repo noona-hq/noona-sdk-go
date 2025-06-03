@@ -9274,6 +9274,15 @@ type UpdateCustomerParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// DeleteCustomerFileParams defines parameters for DeleteCustomerFile.
+type DeleteCustomerFileParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // GetCustomerFileParams defines parameters for GetCustomerFile.
 type GetCustomerFileParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -9668,6 +9677,15 @@ type CreateCheckoutForEventParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand   *Expand           `form:"expand,omitempty" json:"expand,omitempty"`
 	Behavior *CheckoutBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
+}
+
+// DeleteEventFileParams defines parameters for DeleteEventFile.
+type DeleteEventFileParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // GetEventFileParams defines parameters for GetEventFile.
@@ -13883,6 +13901,9 @@ type ClientInterface interface {
 
 	UpdateCustomer(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteCustomerFile request
+	DeleteCustomerFile(ctx context.Context, customerId string, fileId string, params *DeleteCustomerFileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCustomerFile request
 	GetCustomerFile(ctx context.Context, customerId string, fileId string, params *GetCustomerFileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -14013,6 +14034,9 @@ type ClientInterface interface {
 
 	// CreateCheckoutForEvent request
 	CreateCheckoutForEvent(ctx context.Context, eventId string, params *CreateCheckoutForEventParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteEventFile request
+	DeleteEventFile(ctx context.Context, eventId string, fileId string, params *DeleteEventFileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetEventFile request
 	GetEventFile(ctx context.Context, eventId string, fileId string, params *GetEventFileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15966,6 +15990,18 @@ func (c *Client) UpdateCustomer(ctx context.Context, customerId string, params *
 	return c.Client.Do(req)
 }
 
+func (c *Client) DeleteCustomerFile(ctx context.Context, customerId string, fileId string, params *DeleteCustomerFileParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCustomerFileRequest(c.Server, customerId, fileId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetCustomerFile(ctx context.Context, customerId string, fileId string, params *GetCustomerFileParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCustomerFileRequest(c.Server, customerId, fileId, params)
 	if err != nil {
@@ -16532,6 +16568,18 @@ func (c *Client) UpdateEvent(ctx context.Context, eventId string, params *Update
 
 func (c *Client) CreateCheckoutForEvent(ctx context.Context, eventId string, params *CreateCheckoutForEventParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateCheckoutForEventRequest(c.Server, eventId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteEventFile(ctx context.Context, eventId string, fileId string, params *DeleteEventFileParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteEventFileRequest(c.Server, eventId, fileId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -27713,6 +27761,83 @@ func NewUpdateCustomerRequestWithBody(server string, customerId string, params *
 	return req, nil
 }
 
+// NewDeleteCustomerFileRequest generates requests for DeleteCustomerFile
+func NewDeleteCustomerFileRequest(server string, customerId string, fileId string, params *DeleteCustomerFileParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "customer_id", runtime.ParamLocationPath, customerId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "file_id", runtime.ParamLocationPath, fileId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/customers/%s/files/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetCustomerFileRequest generates requests for GetCustomerFile
 func NewGetCustomerFileRequest(server string, customerId string, fileId string, params *GetCustomerFileParams) (*http.Request, error) {
 	var err error
@@ -30548,6 +30673,83 @@ func NewCreateCheckoutForEventRequest(server string, eventId string, params *Cre
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteEventFileRequest generates requests for DeleteEventFile
+func NewDeleteEventFileRequest(server string, eventId string, fileId string, params *DeleteEventFileParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "event_id", runtime.ParamLocationPath, eventId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "file_id", runtime.ParamLocationPath, fileId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/events/%s/files/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -43257,6 +43459,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateCustomerWithResponse(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomerResponse, error)
 
+	// DeleteCustomerFile request
+	DeleteCustomerFileWithResponse(ctx context.Context, customerId string, fileId string, params *DeleteCustomerFileParams, reqEditors ...RequestEditorFn) (*DeleteCustomerFileResponse, error)
+
 	// GetCustomerFile request
 	GetCustomerFileWithResponse(ctx context.Context, customerId string, fileId string, params *GetCustomerFileParams, reqEditors ...RequestEditorFn) (*GetCustomerFileResponse, error)
 
@@ -43387,6 +43592,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateCheckoutForEvent request
 	CreateCheckoutForEventWithResponse(ctx context.Context, eventId string, params *CreateCheckoutForEventParams, reqEditors ...RequestEditorFn) (*CreateCheckoutForEventResponse, error)
+
+	// DeleteEventFile request
+	DeleteEventFileWithResponse(ctx context.Context, eventId string, fileId string, params *DeleteEventFileParams, reqEditors ...RequestEditorFn) (*DeleteEventFileResponse, error)
 
 	// GetEventFile request
 	GetEventFileWithResponse(ctx context.Context, eventId string, fileId string, params *GetEventFileParams, reqEditors ...RequestEditorFn) (*GetEventFileResponse, error)
@@ -46164,6 +46372,27 @@ func (r UpdateCustomerResponse) StatusCode() int {
 	return 0
 }
 
+type DeleteCustomerFileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCustomerFileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCustomerFileResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetCustomerFileResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -46923,6 +47152,27 @@ func (r CreateCheckoutForEventResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateCheckoutForEventResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteEventFileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteEventFileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteEventFileResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -51664,6 +51914,15 @@ func (c *ClientWithResponses) UpdateCustomerWithResponse(ctx context.Context, cu
 	return ParseUpdateCustomerResponse(rsp)
 }
 
+// DeleteCustomerFileWithResponse request returning *DeleteCustomerFileResponse
+func (c *ClientWithResponses) DeleteCustomerFileWithResponse(ctx context.Context, customerId string, fileId string, params *DeleteCustomerFileParams, reqEditors ...RequestEditorFn) (*DeleteCustomerFileResponse, error) {
+	rsp, err := c.DeleteCustomerFile(ctx, customerId, fileId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCustomerFileResponse(rsp)
+}
+
 // GetCustomerFileWithResponse request returning *GetCustomerFileResponse
 func (c *ClientWithResponses) GetCustomerFileWithResponse(ctx context.Context, customerId string, fileId string, params *GetCustomerFileParams, reqEditors ...RequestEditorFn) (*GetCustomerFileResponse, error) {
 	rsp, err := c.GetCustomerFile(ctx, customerId, fileId, params, reqEditors...)
@@ -52081,6 +52340,15 @@ func (c *ClientWithResponses) CreateCheckoutForEventWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseCreateCheckoutForEventResponse(rsp)
+}
+
+// DeleteEventFileWithResponse request returning *DeleteEventFileResponse
+func (c *ClientWithResponses) DeleteEventFileWithResponse(ctx context.Context, eventId string, fileId string, params *DeleteEventFileParams, reqEditors ...RequestEditorFn) (*DeleteEventFileResponse, error) {
+	rsp, err := c.DeleteEventFile(ctx, eventId, fileId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteEventFileResponse(rsp)
 }
 
 // GetEventFileWithResponse request returning *GetEventFileResponse
@@ -56626,6 +56894,22 @@ func ParseUpdateCustomerResponse(rsp *http.Response) (*UpdateCustomerResponse, e
 	return response, nil
 }
 
+// ParseDeleteCustomerFileResponse parses an HTTP response from a DeleteCustomerFileWithResponse call
+func ParseDeleteCustomerFileResponse(rsp *http.Response) (*DeleteCustomerFileResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCustomerFileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseGetCustomerFileResponse parses an HTTP response from a GetCustomerFileWithResponse call
 func ParseGetCustomerFileResponse(rsp *http.Response) (*GetCustomerFileResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -57481,6 +57765,22 @@ func ParseCreateCheckoutForEventResponse(rsp *http.Response) (*CreateCheckoutFor
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseDeleteEventFileResponse parses an HTTP response from a DeleteEventFileWithResponse call
+func ParseDeleteEventFileResponse(rsp *http.Response) (*DeleteEventFileResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteEventFileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
