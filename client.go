@@ -583,6 +583,8 @@ const (
 	EventTypesWrite       OAuthScope = "event_types:write"
 	EventsRead            OAuthScope = "events:read"
 	EventsWrite           OAuthScope = "events:write"
+	FilesRead             OAuthScope = "files:read"
+	FilesWrite            OAuthScope = "files:write"
 	IssuersRead           OAuthScope = "issuers:read"
 	MemosRead             OAuthScope = "memos:read"
 	MemosWrite            OAuthScope = "memos:write"
@@ -4374,6 +4376,45 @@ type ExpandableVoucherTemplate struct {
 type ExpandableWebhook struct {
 	union json.RawMessage
 }
+
+// File defines model for File.
+type File struct {
+	Bytes int64 `json:"bytes"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+
+	// Original filename of the uploaded attachment
+	Filename  string     `json:"filename"`
+	Id        *string    `json:"id,omitempty"`
+	Type      string     `json:"type"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// FileSignedURL defines model for FileSignedURL.
+type FileSignedURL struct {
+	SignedUrl string `json:"signed_url"`
+}
+
+// FileWithSignedURL defines model for FileWithSignedURL.
+type FileWithSignedURL struct {
+	Bytes int64 `json:"bytes"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt *time.Time        `json:"created_at,omitempty"`
+
+	// Original filename of the uploaded attachment
+	Filename  string     `json:"filename"`
+	Id        *string    `json:"id,omitempty"`
+	SignedUrl string     `json:"signed_url"`
+	Type      string     `json:"type"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// Files defines model for Files.
+type Files []File
 
 // FiscalizationOnboarding defines model for FiscalizationOnboarding.
 type FiscalizationOnboarding struct {
@@ -8541,6 +8582,15 @@ type CountEventsParams struct {
 	Filter *EventsCountParams `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
+// UploadCompanyFileParams defines parameters for UploadCompanyFile.
+type UploadCompanyFileParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListHolidaysParams defines parameters for ListHolidays.
 type ListHolidaysParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -9224,6 +9274,15 @@ type UpdateCustomerParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// GetCustomerFileParams defines parameters for GetCustomerFile.
+type GetCustomerFileParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // MergeCustomersJSONBody defines parameters for MergeCustomers.
 type MergeCustomersJSONBody MergeCustomersRequest
 
@@ -9609,6 +9668,15 @@ type CreateCheckoutForEventParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand   *Expand           `form:"expand,omitempty" json:"expand,omitempty"`
 	Behavior *CheckoutBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
+}
+
+// GetEventFileParams defines parameters for GetEventFile.
+type GetEventFileParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // GetCompanyFiscalizationDataParams defines parameters for GetCompanyFiscalizationData.
@@ -13632,6 +13700,9 @@ type ClientInterface interface {
 	// CountEvents request
 	CountEvents(ctx context.Context, companyId string, params *CountEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UploadCompanyFile request with any body
+	UploadCompanyFileWithBody(ctx context.Context, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListHolidays request
 	ListHolidays(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13812,6 +13883,9 @@ type ClientInterface interface {
 
 	UpdateCustomer(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetCustomerFile request
+	GetCustomerFile(ctx context.Context, customerId string, fileId string, params *GetCustomerFileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// MergeCustomers request with any body
 	MergeCustomersWithBody(ctx context.Context, customerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -13939,6 +14013,9 @@ type ClientInterface interface {
 
 	// CreateCheckoutForEvent request
 	CreateCheckoutForEvent(ctx context.Context, eventId string, params *CreateCheckoutForEventParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetEventFile request
+	GetEventFile(ctx context.Context, eventId string, fileId string, params *GetEventFileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteCompanyFiscalizationData request
 	DeleteCompanyFiscalizationData(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15133,6 +15210,18 @@ func (c *Client) CountEvents(ctx context.Context, companyId string, params *Coun
 	return c.Client.Do(req)
 }
 
+func (c *Client) UploadCompanyFileWithBody(ctx context.Context, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUploadCompanyFileRequestWithBody(c.Server, companyId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListHolidays(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListHolidaysRequest(c.Server, companyId, params)
 	if err != nil {
@@ -15877,6 +15966,18 @@ func (c *Client) UpdateCustomer(ctx context.Context, customerId string, params *
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetCustomerFile(ctx context.Context, customerId string, fileId string, params *GetCustomerFileParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCustomerFileRequest(c.Server, customerId, fileId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) MergeCustomersWithBody(ctx context.Context, customerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMergeCustomersRequestWithBody(c.Server, customerId, contentType, body)
 	if err != nil {
@@ -16431,6 +16532,18 @@ func (c *Client) UpdateEvent(ctx context.Context, eventId string, params *Update
 
 func (c *Client) CreateCheckoutForEvent(ctx context.Context, eventId string, params *CreateCheckoutForEventParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateCheckoutForEventRequest(c.Server, eventId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetEventFile(ctx context.Context, eventId string, fileId string, params *GetEventFileParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEventFileRequest(c.Server, eventId, fileId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -22775,6 +22888,78 @@ func NewCountEventsRequest(server string, companyId string, params *CountEventsP
 	return req, nil
 }
 
+// NewUploadCompanyFileRequestWithBody generates requests for UploadCompanyFile with any type of body
+func NewUploadCompanyFileRequestWithBody(server string, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/files", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListHolidaysRequest generates requests for ListHolidays
 func NewListHolidaysRequest(server string, companyId string, params *ListHolidaysParams) (*http.Request, error) {
 	var err error
@@ -27528,6 +27713,83 @@ func NewUpdateCustomerRequestWithBody(server string, customerId string, params *
 	return req, nil
 }
 
+// NewGetCustomerFileRequest generates requests for GetCustomerFile
+func NewGetCustomerFileRequest(server string, customerId string, fileId string, params *GetCustomerFileParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "customer_id", runtime.ParamLocationPath, customerId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "file_id", runtime.ParamLocationPath, fileId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/customers/%s/files/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewMergeCustomersRequest calls the generic MergeCustomers builder with application/json body
 func NewMergeCustomersRequest(server string, customerId string, body MergeCustomersJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -30286,6 +30548,83 @@ func NewCreateCheckoutForEventRequest(server string, eventId string, params *Cre
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetEventFileRequest generates requests for GetEventFile
+func NewGetEventFileRequest(server string, eventId string, fileId string, params *GetEventFileParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "event_id", runtime.ParamLocationPath, eventId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "file_id", runtime.ParamLocationPath, fileId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/events/%s/files/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -42735,6 +43074,9 @@ type ClientWithResponsesInterface interface {
 	// CountEvents request
 	CountEventsWithResponse(ctx context.Context, companyId string, params *CountEventsParams, reqEditors ...RequestEditorFn) (*CountEventsResponse, error)
 
+	// UploadCompanyFile request with any body
+	UploadCompanyFileWithBodyWithResponse(ctx context.Context, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadCompanyFileResponse, error)
+
 	// ListHolidays request
 	ListHolidaysWithResponse(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*ListHolidaysResponse, error)
 
@@ -42915,6 +43257,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateCustomerWithResponse(ctx context.Context, customerId string, params *UpdateCustomerParams, body UpdateCustomerJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomerResponse, error)
 
+	// GetCustomerFile request
+	GetCustomerFileWithResponse(ctx context.Context, customerId string, fileId string, params *GetCustomerFileParams, reqEditors ...RequestEditorFn) (*GetCustomerFileResponse, error)
+
 	// MergeCustomers request with any body
 	MergeCustomersWithBodyWithResponse(ctx context.Context, customerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MergeCustomersResponse, error)
 
@@ -43042,6 +43387,9 @@ type ClientWithResponsesInterface interface {
 
 	// CreateCheckoutForEvent request
 	CreateCheckoutForEventWithResponse(ctx context.Context, eventId string, params *CreateCheckoutForEventParams, reqEditors ...RequestEditorFn) (*CreateCheckoutForEventResponse, error)
+
+	// GetEventFile request
+	GetEventFileWithResponse(ctx context.Context, eventId string, fileId string, params *GetEventFileParams, reqEditors ...RequestEditorFn) (*GetEventFileResponse, error)
 
 	// DeleteCompanyFiscalizationData request
 	DeleteCompanyFiscalizationDataWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*DeleteCompanyFiscalizationDataResponse, error)
@@ -44565,6 +44913,28 @@ func (r CountEventsResponse) StatusCode() int {
 	return 0
 }
 
+type UploadCompanyFileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *File
+}
+
+// Status returns HTTPResponse.Status
+func (r UploadCompanyFileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UploadCompanyFileResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListHolidaysResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -45794,6 +46164,28 @@ func (r UpdateCustomerResponse) StatusCode() int {
 	return 0
 }
 
+type GetCustomerFileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FileWithSignedURL
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCustomerFileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCustomerFileResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type MergeCustomersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -46531,6 +46923,28 @@ func (r CreateCheckoutForEventResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateCheckoutForEventResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetEventFileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FileWithSignedURL
+}
+
+// Status returns HTTPResponse.Status
+func (r GetEventFileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetEventFileResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -50689,6 +51103,15 @@ func (c *ClientWithResponses) CountEventsWithResponse(ctx context.Context, compa
 	return ParseCountEventsResponse(rsp)
 }
 
+// UploadCompanyFileWithBodyWithResponse request with arbitrary body returning *UploadCompanyFileResponse
+func (c *ClientWithResponses) UploadCompanyFileWithBodyWithResponse(ctx context.Context, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadCompanyFileResponse, error) {
+	rsp, err := c.UploadCompanyFileWithBody(ctx, companyId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUploadCompanyFileResponse(rsp)
+}
+
 // ListHolidaysWithResponse request returning *ListHolidaysResponse
 func (c *ClientWithResponses) ListHolidaysWithResponse(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*ListHolidaysResponse, error) {
 	rsp, err := c.ListHolidays(ctx, companyId, params, reqEditors...)
@@ -51241,6 +51664,15 @@ func (c *ClientWithResponses) UpdateCustomerWithResponse(ctx context.Context, cu
 	return ParseUpdateCustomerResponse(rsp)
 }
 
+// GetCustomerFileWithResponse request returning *GetCustomerFileResponse
+func (c *ClientWithResponses) GetCustomerFileWithResponse(ctx context.Context, customerId string, fileId string, params *GetCustomerFileParams, reqEditors ...RequestEditorFn) (*GetCustomerFileResponse, error) {
+	rsp, err := c.GetCustomerFile(ctx, customerId, fileId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCustomerFileResponse(rsp)
+}
+
 // MergeCustomersWithBodyWithResponse request with arbitrary body returning *MergeCustomersResponse
 func (c *ClientWithResponses) MergeCustomersWithBodyWithResponse(ctx context.Context, customerId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MergeCustomersResponse, error) {
 	rsp, err := c.MergeCustomersWithBody(ctx, customerId, contentType, body, reqEditors...)
@@ -51649,6 +52081,15 @@ func (c *ClientWithResponses) CreateCheckoutForEventWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseCreateCheckoutForEventResponse(rsp)
+}
+
+// GetEventFileWithResponse request returning *GetEventFileResponse
+func (c *ClientWithResponses) GetEventFileWithResponse(ctx context.Context, eventId string, fileId string, params *GetEventFileParams, reqEditors ...RequestEditorFn) (*GetEventFileResponse, error) {
+	rsp, err := c.GetEventFile(ctx, eventId, fileId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetEventFileResponse(rsp)
 }
 
 // DeleteCompanyFiscalizationDataWithResponse request returning *DeleteCompanyFiscalizationDataResponse
@@ -54736,6 +55177,32 @@ func ParseCountEventsResponse(rsp *http.Response) (*CountEventsResponse, error) 
 	return response, nil
 }
 
+// ParseUploadCompanyFileResponse parses an HTTP response from a UploadCompanyFileWithResponse call
+func ParseUploadCompanyFileResponse(rsp *http.Response) (*UploadCompanyFileResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UploadCompanyFileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest File
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListHolidaysResponse parses an HTTP response from a ListHolidaysWithResponse call
 func ParseListHolidaysResponse(rsp *http.Response) (*ListHolidaysResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -56159,6 +56626,32 @@ func ParseUpdateCustomerResponse(rsp *http.Response) (*UpdateCustomerResponse, e
 	return response, nil
 }
 
+// ParseGetCustomerFileResponse parses an HTTP response from a GetCustomerFileWithResponse call
+func ParseGetCustomerFileResponse(rsp *http.Response) (*GetCustomerFileResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCustomerFileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FileWithSignedURL
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseMergeCustomersResponse parses an HTTP response from a MergeCustomersWithResponse call
 func ParseMergeCustomersResponse(rsp *http.Response) (*MergeCustomersResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -56983,6 +57476,32 @@ func ParseCreateCheckoutForEventResponse(rsp *http.Response) (*CreateCheckoutFor
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Sale
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetEventFileResponse parses an HTTP response from a GetEventFileWithResponse call
+func ParseGetEventFileResponse(rsp *http.Response) (*GetEventFileResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetEventFileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FileWithSignedURL
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
