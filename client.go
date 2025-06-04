@@ -2201,6 +2201,7 @@ type Claim struct {
 	CustomerName      *string      `json:"customer_name,omitempty"`
 	DueDate           *string      `json:"due_date,omitempty"`
 	EmployeeName      *string      `json:"employee_name,omitempty"`
+	ExternalUrl       *string      `json:"external_url,omitempty"`
 	Id                *string      `json:"id,omitempty"`
 	ReferenceId       *string      `json:"reference_id,omitempty"`
 	Status            *ClaimStatus `json:"status,omitempty"`
