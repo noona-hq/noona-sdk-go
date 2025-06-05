@@ -276,8 +276,9 @@ const (
 
 // Defines values for CompanyField.
 const (
-	CompanyFieldClaimantId CompanyField = "claimant_id"
-	CompanyFieldImage      CompanyField = "image"
+	CompanyFieldClaimantId     CompanyField = "claimant_id"
+	CompanyFieldCustomReminder CompanyField = "custom_reminder"
+	CompanyFieldImage          CompanyField = "image"
 )
 
 // Defines values for CompanySize.
@@ -2442,9 +2443,10 @@ type CompanyProfile struct {
 	ContactEmail          *string          `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
-	CoverImages *[]Image    `json:"cover_images,omitempty"`
-	Cuisines    *Categories `json:"cuisines,omitempty"`
-	Description *string     `json:"description,omitempty"`
+	CoverImages    *[]Image    `json:"cover_images,omitempty"`
+	Cuisines       *Categories `json:"cuisines,omitempty"`
+	CustomReminder *string     `json:"custom_reminder,omitempty"`
+	Description    *string     `json:"description,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -2512,9 +2514,10 @@ type CompanyProfileCreate struct {
 	ContactEmail          *string          `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
-	CoverImages *[]Image    `json:"cover_images,omitempty"`
-	Cuisines    *Categories `json:"cuisines,omitempty"`
-	Description *string     `json:"description,omitempty"`
+	CoverImages    *[]Image    `json:"cover_images,omitempty"`
+	Cuisines       *Categories `json:"cuisines,omitempty"`
+	CustomReminder *string     `json:"custom_reminder,omitempty"`
+	Description    *string     `json:"description,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
