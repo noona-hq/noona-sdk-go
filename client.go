@@ -325,8 +325,8 @@ const (
 
 // Defines values for DuplicateStatus.
 const (
-	Approved DuplicateStatus = "approved"
-	Possible DuplicateStatus = "possible"
+	DuplicateStatusApproved DuplicateStatus = "approved"
+	DuplicateStatusPossible DuplicateStatus = "possible"
 )
 
 // Defines values for EmailType.
@@ -1078,6 +1078,35 @@ const (
 	OutsideOpeningHours   UnavailableResourceReason = "outside_opening_hours"
 )
 
+// Defines values for VerificationCertificationLevel.
+const (
+	VerificationCertificationLevelApprentice VerificationCertificationLevel = "apprentice"
+	VerificationCertificationLevelJourneyman VerificationCertificationLevel = "journeyman"
+	VerificationCertificationLevelMaster     VerificationCertificationLevel = "master"
+)
+
+// Defines values for VerificationCertificationType.
+const (
+	VerificationCertificationTypeCosmetology    VerificationCertificationType = "cosmetology"
+	VerificationCertificationTypeHairdressing   VerificationCertificationType = "hairdressing"
+	VerificationCertificationTypeMassageTherapy VerificationCertificationType = "massage_therapy"
+	VerificationCertificationTypePodiatry       VerificationCertificationType = "podiatry"
+)
+
+// Defines values for VerificationStatus.
+const (
+	VerificationStatusApproved VerificationStatus = "approved"
+	VerificationStatusPending  VerificationStatus = "pending"
+	VerificationStatusRejected VerificationStatus = "rejected"
+)
+
+// Defines values for VerificationRequestsFilterStatus.
+const (
+	VerificationRequestsFilterStatusApproved VerificationRequestsFilterStatus = "approved"
+	VerificationRequestsFilterStatusPending  VerificationRequestsFilterStatus = "pending"
+	VerificationRequestsFilterStatusRejected VerificationRequestsFilterStatus = "rejected"
+)
+
 // Defines values for VoucherStatus.
 const (
 	VoucherStatusExpired    VoucherStatus = "expired"
@@ -1218,6 +1247,27 @@ const (
 const (
 	UserOAuthPostParamsProviderGoogle  UserOAuthPostParamsProvider = "google"
 	UserOAuthPostParamsProviderSaltpay UserOAuthPostParamsProvider = "saltpay"
+)
+
+// Defines values for CreateVerificationRequestJSONBodyCertificationLevel.
+const (
+	CreateVerificationRequestJSONBodyCertificationLevelApprentice CreateVerificationRequestJSONBodyCertificationLevel = "apprentice"
+	CreateVerificationRequestJSONBodyCertificationLevelJourneyman CreateVerificationRequestJSONBodyCertificationLevel = "journeyman"
+	CreateVerificationRequestJSONBodyCertificationLevelMaster     CreateVerificationRequestJSONBodyCertificationLevel = "master"
+)
+
+// Defines values for CreateVerificationRequestJSONBodyCertificationType.
+const (
+	CreateVerificationRequestJSONBodyCertificationTypeCosmetology    CreateVerificationRequestJSONBodyCertificationType = "cosmetology"
+	CreateVerificationRequestJSONBodyCertificationTypeHairdressing   CreateVerificationRequestJSONBodyCertificationType = "hairdressing"
+	CreateVerificationRequestJSONBodyCertificationTypeMassageTherapy CreateVerificationRequestJSONBodyCertificationType = "massage_therapy"
+	CreateVerificationRequestJSONBodyCertificationTypePodiatry       CreateVerificationRequestJSONBodyCertificationType = "podiatry"
+)
+
+// Defines values for UpdateVerificationRequestJSONBodyStatus.
+const (
+	UpdateVerificationRequestJSONBodyStatusApproved UpdateVerificationRequestJSONBodyStatus = "approved"
+	UpdateVerificationRequestJSONBodyStatusRejected UpdateVerificationRequestJSONBodyStatus = "rejected"
 )
 
 // Activities defines model for Activities.
@@ -7458,6 +7508,65 @@ type VariationSelection struct {
 // The variations selected for the event during booking flow.
 type VariationSelections []VariationSelection
 
+// Verification defines model for Verification.
+type Verification struct {
+	// When the verification was approved
+	ApprovedAt *time.Time `json:"approved_at"`
+
+	// The certification level (if applicable)
+	CertificationLevel *VerificationCertificationLevel `json:"certification_level"`
+
+	// The type of certification
+	CertificationType *VerificationCertificationType `json:"certification_type,omitempty"`
+
+	// URL to the verification document
+	File *string `json:"file,omitempty"`
+
+	// When the verification was rejected
+	RejectedAt *time.Time `json:"rejected_at"`
+
+	// Reason for rejection
+	RejectedReason *string `json:"rejected_reason"`
+
+	// The verification status
+	Status *VerificationStatus `json:"status,omitempty"`
+
+	// When the verification was submitted
+	SubmittedAt *time.Time `json:"submitted_at,omitempty"`
+}
+
+// The certification level (if applicable)
+type VerificationCertificationLevel string
+
+// The type of certification
+type VerificationCertificationType string
+
+// The verification status
+type VerificationStatus string
+
+// VerificationRequest defines model for VerificationRequest.
+type VerificationRequest struct {
+	// The email of the user
+	Email *string `json:"email,omitempty"`
+	Image *Image  `json:"image,omitempty"`
+
+	// The name of the user
+	Name *string `json:"name,omitempty"`
+
+	// The ID of the user
+	UserId       *string       `json:"user_id,omitempty"`
+	Verification *Verification `json:"verification,omitempty"`
+}
+
+// VerificationRequestsFilter defines model for VerificationRequestsFilter.
+type VerificationRequestsFilter struct {
+	// Filter by verification status
+	Status *[]VerificationRequestsFilterStatus `json:"status,omitempty"`
+}
+
+// VerificationRequestsFilterStatus defines model for VerificationRequestsFilter.Status.
+type VerificationRequestsFilterStatus string
+
 // Voucher defines model for Voucher.
 type Voucher struct {
 	Amount *float64 `json:"amount,omitempty"`
@@ -11179,6 +11288,24 @@ type GetUserTokenParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateVerificationRequestJSONBody defines parameters for CreateVerificationRequest.
+type CreateVerificationRequestJSONBody struct {
+	// The certification level
+	CertificationLevel *CreateVerificationRequestJSONBodyCertificationLevel `json:"certification_level"`
+
+	// The type of certification
+	CertificationType CreateVerificationRequestJSONBodyCertificationType `json:"certification_type"`
+
+	// URL to the verification document
+	File string `json:"file"`
+}
+
+// CreateVerificationRequestJSONBodyCertificationLevel defines parameters for CreateVerificationRequest.
+type CreateVerificationRequestJSONBodyCertificationLevel string
+
+// CreateVerificationRequestJSONBodyCertificationType defines parameters for CreateVerificationRequest.
+type CreateVerificationRequestJSONBodyCertificationType string
+
 // GetCountryInfoParams defines parameters for GetCountryInfo.
 type GetCountryInfoParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -11187,6 +11314,23 @@ type GetCountryInfoParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
+
+// ListVerificationRequestsParams defines parameters for ListVerificationRequests.
+type ListVerificationRequestsParams struct {
+	Filter *VerificationRequestsFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// UpdateVerificationRequestJSONBody defines parameters for UpdateVerificationRequest.
+type UpdateVerificationRequestJSONBody struct {
+	// Reason for rejection (required when status is 'rejected')
+	RejectedReason *string `json:"rejected_reason,omitempty"`
+
+	// The new verification status
+	Status UpdateVerificationRequestJSONBodyStatus `json:"status"`
+}
+
+// UpdateVerificationRequestJSONBodyStatus defines parameters for UpdateVerificationRequest.
+type UpdateVerificationRequestJSONBodyStatus string
 
 // CreateVoucherTemplateJSONBody defines parameters for CreateVoucherTemplate.
 type CreateVoucherTemplateJSONBody VoucherTemplateCreate
@@ -11600,6 +11744,12 @@ type CreateUserPushTokenJSONRequestBody CreateUserPushTokenJSONBody
 
 // CreateUserTokenJSONRequestBody defines body for CreateUserToken for application/json ContentType.
 type CreateUserTokenJSONRequestBody CreateUserTokenJSONBody
+
+// CreateVerificationRequestJSONRequestBody defines body for CreateVerificationRequest for application/json ContentType.
+type CreateVerificationRequestJSONRequestBody CreateVerificationRequestJSONBody
+
+// UpdateVerificationRequestJSONRequestBody defines body for UpdateVerificationRequest for application/json ContentType.
+type UpdateVerificationRequestJSONRequestBody UpdateVerificationRequestJSONBody
 
 // CreateVoucherTemplateJSONRequestBody defines body for CreateVoucherTemplate for application/json ContentType.
 type CreateVoucherTemplateJSONRequestBody CreateVoucherTemplateJSONBody
@@ -14607,8 +14757,21 @@ type ClientInterface interface {
 	// GetUserToken request
 	GetUserToken(ctx context.Context, tokenId string, params *GetUserTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateVerificationRequest request with any body
+	CreateVerificationRequestWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateVerificationRequest(ctx context.Context, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCountryInfo request
 	GetCountryInfo(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListVerificationRequests request
+	ListVerificationRequests(ctx context.Context, params *ListVerificationRequestsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateVerificationRequest request with any body
+	UpdateVerificationRequestWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateVerificationRequest(ctx context.Context, userId string, body UpdateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateVoucherTemplate request with any body
 	CreateVoucherTemplateWithBody(ctx context.Context, params *CreateVoucherTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19066,8 +19229,68 @@ func (c *Client) GetUserToken(ctx context.Context, tokenId string, params *GetUs
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateVerificationRequestWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateVerificationRequestRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateVerificationRequest(ctx context.Context, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateVerificationRequestRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetCountryInfo(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCountryInfoRequest(c.Server, countryCode, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListVerificationRequests(ctx context.Context, params *ListVerificationRequestsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVerificationRequestsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateVerificationRequestWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateVerificationRequestRequestWithBody(c.Server, userId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateVerificationRequest(ctx context.Context, userId string, body UpdateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateVerificationRequestRequest(c.Server, userId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -41696,6 +41919,46 @@ func NewGetUserTokenRequest(server string, tokenId string, params *GetUserTokenP
 	return req, nil
 }
 
+// NewCreateVerificationRequestRequest calls the generic CreateVerificationRequest builder with application/json body
+func NewCreateVerificationRequestRequest(server string, body CreateVerificationRequestJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateVerificationRequestRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateVerificationRequestRequestWithBody generates requests for CreateVerificationRequest with any type of body
+func NewCreateVerificationRequestRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user/verification")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetCountryInfoRequest generates requests for GetCountryInfo
 func NewGetCountryInfoRequest(server string, countryCode string, params *GetCountryInfoParams) (*http.Request, error) {
 	var err error
@@ -41762,6 +42025,94 @@ func NewGetCountryInfoRequest(server string, countryCode string, params *GetCoun
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewListVerificationRequestsRequest generates requests for ListVerificationRequests
+func NewListVerificationRequestsRequest(server string, params *ListVerificationRequestsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/verifications")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateVerificationRequestRequest calls the generic UpdateVerificationRequest builder with application/json body
+func NewUpdateVerificationRequestRequest(server string, userId string, body UpdateVerificationRequestJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateVerificationRequestRequestWithBody(server, userId, "application/json", bodyReader)
+}
+
+// NewUpdateVerificationRequestRequestWithBody generates requests for UpdateVerificationRequest with any type of body
+func NewUpdateVerificationRequestRequestWithBody(server string, userId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "userId", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/verifications/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -44165,8 +44516,21 @@ type ClientWithResponsesInterface interface {
 	// GetUserToken request
 	GetUserTokenWithResponse(ctx context.Context, tokenId string, params *GetUserTokenParams, reqEditors ...RequestEditorFn) (*GetUserTokenResponse, error)
 
+	// CreateVerificationRequest request with any body
+	CreateVerificationRequestWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVerificationRequestResponse, error)
+
+	CreateVerificationRequestWithResponse(ctx context.Context, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVerificationRequestResponse, error)
+
 	// GetCountryInfo request
 	GetCountryInfoWithResponse(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*GetCountryInfoResponse, error)
+
+	// ListVerificationRequests request
+	ListVerificationRequestsWithResponse(ctx context.Context, params *ListVerificationRequestsParams, reqEditors ...RequestEditorFn) (*ListVerificationRequestsResponse, error)
+
+	// UpdateVerificationRequest request with any body
+	UpdateVerificationRequestWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateVerificationRequestResponse, error)
+
+	UpdateVerificationRequestWithResponse(ctx context.Context, userId string, body UpdateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateVerificationRequestResponse, error)
 
 	// CreateVoucherTemplate request with any body
 	CreateVoucherTemplateWithBodyWithResponse(ctx context.Context, params *CreateVoucherTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVoucherTemplateResponse, error)
@@ -50514,6 +50878,28 @@ func (r GetUserTokenResponse) StatusCode() int {
 	return 0
 }
 
+type CreateVerificationRequestResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Verification
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateVerificationRequestResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateVerificationRequestResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetCountryInfoResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -50530,6 +50916,50 @@ func (r GetCountryInfoResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetCountryInfoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListVerificationRequestsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]VerificationRequest
+}
+
+// Status returns HTTPResponse.Status
+func (r ListVerificationRequestsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListVerificationRequestsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateVerificationRequestResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *VerificationRequest
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateVerificationRequestResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateVerificationRequestResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -54156,6 +54586,23 @@ func (c *ClientWithResponses) GetUserTokenWithResponse(ctx context.Context, toke
 	return ParseGetUserTokenResponse(rsp)
 }
 
+// CreateVerificationRequestWithBodyWithResponse request with arbitrary body returning *CreateVerificationRequestResponse
+func (c *ClientWithResponses) CreateVerificationRequestWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVerificationRequestResponse, error) {
+	rsp, err := c.CreateVerificationRequestWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateVerificationRequestResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateVerificationRequestWithResponse(ctx context.Context, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVerificationRequestResponse, error) {
+	rsp, err := c.CreateVerificationRequest(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateVerificationRequestResponse(rsp)
+}
+
 // GetCountryInfoWithResponse request returning *GetCountryInfoResponse
 func (c *ClientWithResponses) GetCountryInfoWithResponse(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*GetCountryInfoResponse, error) {
 	rsp, err := c.GetCountryInfo(ctx, countryCode, params, reqEditors...)
@@ -54163,6 +54610,32 @@ func (c *ClientWithResponses) GetCountryInfoWithResponse(ctx context.Context, co
 		return nil, err
 	}
 	return ParseGetCountryInfoResponse(rsp)
+}
+
+// ListVerificationRequestsWithResponse request returning *ListVerificationRequestsResponse
+func (c *ClientWithResponses) ListVerificationRequestsWithResponse(ctx context.Context, params *ListVerificationRequestsParams, reqEditors ...RequestEditorFn) (*ListVerificationRequestsResponse, error) {
+	rsp, err := c.ListVerificationRequests(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListVerificationRequestsResponse(rsp)
+}
+
+// UpdateVerificationRequestWithBodyWithResponse request with arbitrary body returning *UpdateVerificationRequestResponse
+func (c *ClientWithResponses) UpdateVerificationRequestWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateVerificationRequestResponse, error) {
+	rsp, err := c.UpdateVerificationRequestWithBody(ctx, userId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateVerificationRequestResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateVerificationRequestWithResponse(ctx context.Context, userId string, body UpdateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateVerificationRequestResponse, error) {
+	rsp, err := c.UpdateVerificationRequest(ctx, userId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateVerificationRequestResponse(rsp)
 }
 
 // CreateVoucherTemplateWithBodyWithResponse request with arbitrary body returning *CreateVoucherTemplateResponse
@@ -61385,6 +61858,32 @@ func ParseGetUserTokenResponse(rsp *http.Response) (*GetUserTokenResponse, error
 	return response, nil
 }
 
+// ParseCreateVerificationRequestResponse parses an HTTP response from a CreateVerificationRequestWithResponse call
+func ParseCreateVerificationRequestResponse(rsp *http.Response) (*CreateVerificationRequestResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateVerificationRequestResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Verification
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetCountryInfoResponse parses an HTTP response from a GetCountryInfoWithResponse call
 func ParseGetCountryInfoResponse(rsp *http.Response) (*GetCountryInfoResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -61401,6 +61900,58 @@ func ParseGetCountryInfoResponse(rsp *http.Response) (*GetCountryInfoResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CountryInfo
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListVerificationRequestsResponse parses an HTTP response from a ListVerificationRequestsWithResponse call
+func ParseListVerificationRequestsResponse(rsp *http.Response) (*ListVerificationRequestsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListVerificationRequestsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []VerificationRequest
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateVerificationRequestResponse parses an HTTP response from a UpdateVerificationRequestWithResponse call
+func ParseUpdateVerificationRequestResponse(rsp *http.Response) (*UpdateVerificationRequestResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateVerificationRequestResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VerificationRequest
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
