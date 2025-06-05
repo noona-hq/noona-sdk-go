@@ -2533,9 +2533,10 @@ type CompanyProfile struct {
 	Prefer12Hours *bool `json:"prefer_12_hours,omitempty"`
 
 	// The price category of the company.
-	PriceCategory  *int32          `json:"price_category,omitempty"`
-	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
-	ServiceBuffer  *int32          `json:"service_buffer,omitempty"`
+	PriceCategory       *int32          `json:"price_category,omitempty"`
+	RequiredFields      *RequiredFields `json:"required_fields,omitempty"`
+	SendSmsFromEmployee *bool           `json:"send_sms_from_employee,omitempty"`
+	ServiceBuffer       *int32          `json:"service_buffer,omitempty"`
 
 	// Controls at what hour in the day the calendar stops to be bookable. Can be restriced with blocked times.
 	StoreClosesAt *int32  `json:"store_closes_at,omitempty"`
@@ -2604,9 +2605,10 @@ type CompanyProfileCreate struct {
 	Prefer12Hours *bool `json:"prefer_12_hours,omitempty"`
 
 	// The price category of the company.
-	PriceCategory  *int32          `json:"price_category,omitempty"`
-	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
-	ServiceBuffer  *int32          `json:"service_buffer,omitempty"`
+	PriceCategory       *int32          `json:"price_category,omitempty"`
+	RequiredFields      *RequiredFields `json:"required_fields,omitempty"`
+	SendSmsFromEmployee *bool           `json:"send_sms_from_employee,omitempty"`
+	ServiceBuffer       *int32          `json:"service_buffer,omitempty"`
 
 	// Controls at what hour in the day the calendar stops to be bookable. Can be restriced with blocked times.
 	StoreClosesAt *int32  `json:"store_closes_at,omitempty"`
