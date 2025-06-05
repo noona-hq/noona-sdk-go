@@ -11356,6 +11356,15 @@ type UpdateVerificationRequestParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// GetVerificationRequestFileParams defines parameters for GetVerificationRequestFile.
+type GetVerificationRequestFileParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateVoucherTemplateJSONBody defines parameters for CreateVoucherTemplate.
 type CreateVoucherTemplateJSONBody VoucherTemplateCreate
 
@@ -14796,6 +14805,9 @@ type ClientInterface interface {
 	UpdateVerificationRequestWithBody(ctx context.Context, userId string, params *UpdateVerificationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateVerificationRequest(ctx context.Context, userId string, params *UpdateVerificationRequestParams, body UpdateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetVerificationRequestFile request
+	GetVerificationRequestFile(ctx context.Context, userId string, params *GetVerificationRequestFileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateVoucherTemplate request with any body
 	CreateVoucherTemplateWithBody(ctx context.Context, params *CreateVoucherTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19315,6 +19327,18 @@ func (c *Client) UpdateVerificationRequestWithBody(ctx context.Context, userId s
 
 func (c *Client) UpdateVerificationRequest(ctx context.Context, userId string, params *UpdateVerificationRequestParams, body UpdateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateVerificationRequestRequest(c.Server, userId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetVerificationRequestFile(ctx context.Context, userId string, params *GetVerificationRequestFileParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetVerificationRequestFileRequest(c.Server, userId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -42245,6 +42269,76 @@ func NewUpdateVerificationRequestRequestWithBody(server string, userId string, p
 	return req, nil
 }
 
+// NewGetVerificationRequestFileRequest generates requests for GetVerificationRequestFile
+func NewGetVerificationRequestFileRequest(server string, userId string, params *GetVerificationRequestFileParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "userId", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/verifications/%s/file", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateVoucherTemplateRequest calls the generic CreateVoucherTemplate builder with application/json body
 func NewCreateVoucherTemplateRequest(server string, params *CreateVoucherTemplateParams, body CreateVoucherTemplateJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -44659,6 +44753,9 @@ type ClientWithResponsesInterface interface {
 	UpdateVerificationRequestWithBodyWithResponse(ctx context.Context, userId string, params *UpdateVerificationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateVerificationRequestResponse, error)
 
 	UpdateVerificationRequestWithResponse(ctx context.Context, userId string, params *UpdateVerificationRequestParams, body UpdateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateVerificationRequestResponse, error)
+
+	// GetVerificationRequestFile request
+	GetVerificationRequestFileWithResponse(ctx context.Context, userId string, params *GetVerificationRequestFileParams, reqEditors ...RequestEditorFn) (*GetVerificationRequestFileResponse, error)
 
 	// CreateVoucherTemplate request with any body
 	CreateVoucherTemplateWithBodyWithResponse(ctx context.Context, params *CreateVoucherTemplateParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVoucherTemplateResponse, error)
@@ -51094,6 +51191,28 @@ func (r UpdateVerificationRequestResponse) StatusCode() int {
 	return 0
 }
 
+type GetVerificationRequestFileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FileWithSignedURL
+}
+
+// Status returns HTTPResponse.Status
+func (r GetVerificationRequestFileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetVerificationRequestFileResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateVoucherTemplateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -54764,6 +54883,15 @@ func (c *ClientWithResponses) UpdateVerificationRequestWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseUpdateVerificationRequestResponse(rsp)
+}
+
+// GetVerificationRequestFileWithResponse request returning *GetVerificationRequestFileResponse
+func (c *ClientWithResponses) GetVerificationRequestFileWithResponse(ctx context.Context, userId string, params *GetVerificationRequestFileParams, reqEditors ...RequestEditorFn) (*GetVerificationRequestFileResponse, error) {
+	rsp, err := c.GetVerificationRequestFile(ctx, userId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetVerificationRequestFileResponse(rsp)
 }
 
 // CreateVoucherTemplateWithBodyWithResponse request with arbitrary body returning *CreateVoucherTemplateResponse
@@ -62080,6 +62208,32 @@ func ParseUpdateVerificationRequestResponse(rsp *http.Response) (*UpdateVerifica
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Verification
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetVerificationRequestFileResponse parses an HTTP response from a GetVerificationRequestFileWithResponse call
+func ParseGetVerificationRequestFileResponse(rsp *http.Response) (*GetVerificationRequestFileResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetVerificationRequestFileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FileWithSignedURL
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
