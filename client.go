@@ -2940,6 +2940,9 @@ type CustomerFilter struct {
 
 	// Filter by phone number of customer
 	PhoneNumber *string `json:"phone_number,omitempty"`
+
+	// Filter by social security number of customer
+	SocialSecurityNumber *string `json:"social_security_number,omitempty"`
 }
 
 // CustomerGroup defines model for CustomerGroup.
