@@ -2344,6 +2344,7 @@ type Company struct {
 	Pos         *POSSettings     `json:"pos,omitempty"`
 	Profile     *CompanyProfile  `json:"profile,omitempty"`
 	Signup      *CompanySignup   `json:"signup,omitempty"`
+	Sms         *SMSConnection   `json:"sms,omitempty"`
 	Teya        *TeyaConnection  `json:"teya,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Vertical    *CompanyVertical `json:"vertical,omitempty"`
@@ -2389,6 +2390,7 @@ type CompanyCreate struct {
 	Pos         *POSSettings         `json:"pos,omitempty"`
 	Profile     CompanyProfileCreate `json:"profile"`
 	Signup      *CompanySignup       `json:"signup,omitempty"`
+	Sms         *SMSConnection       `json:"sms,omitempty"`
 	Teya        *TeyaConnection      `json:"teya,omitempty"`
 	UpdatedAt   *time.Time           `json:"updated_at,omitempty"`
 	Vertical    CompanyVertical      `json:"vertical"`
@@ -2486,10 +2488,9 @@ type CompanyProfile struct {
 	ContactEmail          *string          `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
-	CoverImages    *[]Image    `json:"cover_images,omitempty"`
-	Cuisines       *Categories `json:"cuisines,omitempty"`
-	CustomReminder *string     `json:"custom_reminder,omitempty"`
-	Description    *string     `json:"description,omitempty"`
+	CoverImages *[]Image    `json:"cover_images,omitempty"`
+	Cuisines    *Categories `json:"cuisines,omitempty"`
+	Description *string     `json:"description,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -2558,10 +2559,9 @@ type CompanyProfileCreate struct {
 	ContactEmail          *string          `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
-	CoverImages    *[]Image    `json:"cover_images,omitempty"`
-	Cuisines       *Categories `json:"cuisines,omitempty"`
-	CustomReminder *string     `json:"custom_reminder,omitempty"`
-	Description    *string     `json:"description,omitempty"`
+	CoverImages *[]Image    `json:"cover_images,omitempty"`
+	Cuisines    *Categories `json:"cuisines,omitempty"`
+	Description *string     `json:"description,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -2652,6 +2652,7 @@ type CompanyResponse struct {
 	Pos         POSSettings     `json:"pos"`
 	Profile     CompanyProfile  `json:"profile"`
 	Signup      *CompanySignup  `json:"signup,omitempty"`
+	Sms         *SMSConnection  `json:"sms,omitempty"`
 	Teya        *TeyaConnection `json:"teya,omitempty"`
 	UpdatedAt   *time.Time      `json:"updated_at,omitempty"`
 	Vertical    CompanyVertical `json:"vertical"`
@@ -2736,6 +2737,7 @@ type CompanyUpdate struct {
 	Pos         *POSSettings     `json:"pos,omitempty"`
 	Profile     *CompanyProfile  `json:"profile,omitempty"`
 	Signup      *CompanySignup   `json:"signup,omitempty"`
+	Sms         *SMSConnection   `json:"sms,omitempty"`
 	Teya        *TeyaConnection  `json:"teya,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Vertical    *interface{}     `json:"vertical,omitempty"`
@@ -6697,6 +6699,14 @@ type RwgConversionTracking struct {
 
 // Merchant changed indicator for Google conversion tracking
 type RwgConversionTrackingMerchantChanged string
+
+// SMSConnection defines model for SMSConnection.
+type SMSConnection struct {
+	CustomReminder *string `json:"custom_reminder,omitempty"`
+
+	// Whether to enable SMS reminders for the company.
+	EnableReminders *bool `json:"enable_reminders,omitempty"`
+}
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SMSFilter struct {
