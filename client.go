@@ -7464,14 +7464,15 @@ type UpdateVerificationStatus string
 
 // User defines model for User.
 type User struct {
-	Companies   *ExpandableCompanies `json:"companies,omitempty"`
-	Connections *UserConnections     `json:"connections,omitempty"`
-	Email       *string              `json:"email,omitempty"`
-	Employees   *Employees           `json:"employees,omitempty"`
-	Id          *string              `json:"id,omitempty"`
-	Image       *Image               `json:"image,omitempty"`
-	Locale      *string              `json:"locale,omitempty"`
-	Settings    *UserSettings        `json:"settings,omitempty"`
+	Companies    *ExpandableCompanies `json:"companies,omitempty"`
+	Connections  *UserConnections     `json:"connections,omitempty"`
+	Email        *string              `json:"email,omitempty"`
+	Employees    *Employees           `json:"employees,omitempty"`
+	Id           *string              `json:"id,omitempty"`
+	Image        *Image               `json:"image,omitempty"`
+	Locale       *string              `json:"locale,omitempty"`
+	Settings     *UserSettings        `json:"settings,omitempty"`
+	Verification *Verification        `json:"verification,omitempty"`
 }
 
 // UserConnections defines model for UserConnections.
