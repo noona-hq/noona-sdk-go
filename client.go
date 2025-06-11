@@ -3123,6 +3123,7 @@ type Employee struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	SettlementAccount *ExpandableSettlementAccount `json:"settlement_account,omitempty"`
+	Sms               *EmployeeSMSSettings         `json:"sms,omitempty"`
 	Teya              *TeyaConnection              `json:"teya,omitempty"`
 	UpdatedAt         *time.Time                   `json:"updated_at,omitempty"`
 }
@@ -3212,6 +3213,15 @@ type EmployeeMarketplaceSettings struct {
 type EmployeeNotificationSettings struct {
 	// Whether the employee should receive emails when a booking is made
 	BookingEmail *bool `json:"booking_email,omitempty"`
+}
+
+// EmployeeSMSSettings defines model for EmployeeSMSSettings.
+type EmployeeSMSSettings struct {
+	// Custom text for SMS messages
+	CustomText *string `json:"custom_text,omitempty"`
+
+	// The sender name for SMS messages
+	From *string `json:"from,omitempty"`
 }
 
 // Employees defines model for Employees.
