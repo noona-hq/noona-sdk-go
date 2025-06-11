@@ -2338,6 +2338,9 @@ type Company struct {
 	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
 	Name            *string             `json:"name,omitempty"`
 
+	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
+	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
@@ -2383,6 +2386,9 @@ type CompanyCreate struct {
 	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
 	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
 	Name            string              `json:"name"`
+
+	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
+	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -2646,6 +2652,9 @@ type CompanyResponse struct {
 	Messaging       CompanyMessaging   `json:"messaging"`
 	Name            string             `json:"name"`
 
+	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
+	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
@@ -2730,6 +2739,9 @@ type CompanyUpdate struct {
 	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
 	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
 	Name            *string             `json:"name,omitempty"`
+
+	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
+	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
