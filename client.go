@@ -2262,8 +2262,14 @@ type ClaimInput struct {
 	// Unique identifier of the event for which the claim is being made.
 	EventId string `json:"event_id"`
 
+	// Whether to notify the customer via sms about the claim.
+	NotifyCustomer *bool `json:"notify_customer,omitempty"`
+
 	// Unique identifier of the payor (typically the customer responsible for the claim).
 	PayorId string `json:"payor_id"`
+
+	// Social security number of the payor.
+	PayorSsn string `json:"payor_ssn"`
 
 	// Proportional share of the event cost to be paid, expressed as a percentage (1–100).
 	Ratio *float64 `json:"ratio,omitempty"`
