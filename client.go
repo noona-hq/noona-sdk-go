@@ -346,8 +346,9 @@ const (
 
 // Defines values for EmployeeField.
 const (
-	EmployeeFieldDisabledAt EmployeeField = "disabled_at"
-	EmployeeFieldImage      EmployeeField = "image"
+	EmployeeFieldCustomReminder EmployeeField = "custom_reminder"
+	EmployeeFieldDisabledAt     EmployeeField = "disabled_at"
+	EmployeeFieldImage          EmployeeField = "image"
 )
 
 // Defines values for EnterpriseField.
@@ -2353,7 +2354,6 @@ type Company struct {
 	Pos         *POSSettings     `json:"pos,omitempty"`
 	Profile     *CompanyProfile  `json:"profile,omitempty"`
 	Signup      *CompanySignup   `json:"signup,omitempty"`
-	Sms         *SMSConnection   `json:"sms,omitempty"`
 	Teya        *TeyaConnection  `json:"teya,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Vertical    *CompanyVertical `json:"vertical,omitempty"`
@@ -2402,7 +2402,6 @@ type CompanyCreate struct {
 	Pos         *POSSettings         `json:"pos,omitempty"`
 	Profile     CompanyProfileCreate `json:"profile"`
 	Signup      *CompanySignup       `json:"signup,omitempty"`
-	Sms         *SMSConnection       `json:"sms,omitempty"`
 	Teya        *TeyaConnection      `json:"teya,omitempty"`
 	UpdatedAt   *time.Time           `json:"updated_at,omitempty"`
 	Vertical    CompanyVertical      `json:"vertical"`
@@ -2478,6 +2477,12 @@ type CompanyMarketplace struct {
 
 // CompanyMessaging defines model for CompanyMessaging.
 type CompanyMessaging struct {
+	CustomReminder *string `json:"custom_reminder,omitempty"`
+
+	// Whether to enable SMS reminders for the company.
+	EnableReminders     *bool `json:"enable_reminders,omitempty"`
+	SendSmsFromEmployee *bool `json:"send_sms_from_employee,omitempty"`
+
 	// Whether the company wants to show the booking end time/duration in booking confirmation messages and reminders.
 	ShowBookingEndsAt *bool `json:"show_booking_ends_at,omitempty"`
 }
@@ -2539,10 +2544,9 @@ type CompanyProfile struct {
 	Prefer12Hours *bool `json:"prefer_12_hours,omitempty"`
 
 	// The price category of the company.
-	PriceCategory       *int32          `json:"price_category,omitempty"`
-	RequiredFields      *RequiredFields `json:"required_fields,omitempty"`
-	SendSmsFromEmployee *bool           `json:"send_sms_from_employee,omitempty"`
-	ServiceBuffer       *int32          `json:"service_buffer,omitempty"`
+	PriceCategory  *int32          `json:"price_category,omitempty"`
+	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
+	ServiceBuffer  *int32          `json:"service_buffer,omitempty"`
 
 	// Controls at what hour in the day the calendar stops to be bookable. Can be restriced with blocked times.
 	StoreClosesAt *int32  `json:"store_closes_at,omitempty"`
@@ -2610,10 +2614,9 @@ type CompanyProfileCreate struct {
 	Prefer12Hours *bool `json:"prefer_12_hours,omitempty"`
 
 	// The price category of the company.
-	PriceCategory       *int32          `json:"price_category,omitempty"`
-	RequiredFields      *RequiredFields `json:"required_fields,omitempty"`
-	SendSmsFromEmployee *bool           `json:"send_sms_from_employee,omitempty"`
-	ServiceBuffer       *int32          `json:"service_buffer,omitempty"`
+	PriceCategory  *int32          `json:"price_category,omitempty"`
+	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
+	ServiceBuffer  *int32          `json:"service_buffer,omitempty"`
 
 	// Controls at what hour in the day the calendar stops to be bookable. Can be restriced with blocked times.
 	StoreClosesAt *int32  `json:"store_closes_at,omitempty"`
@@ -2667,7 +2670,6 @@ type CompanyResponse struct {
 	Pos         POSSettings     `json:"pos"`
 	Profile     CompanyProfile  `json:"profile"`
 	Signup      *CompanySignup  `json:"signup,omitempty"`
-	Sms         *SMSConnection  `json:"sms,omitempty"`
 	Teya        *TeyaConnection `json:"teya,omitempty"`
 	UpdatedAt   *time.Time      `json:"updated_at,omitempty"`
 	Vertical    CompanyVertical `json:"vertical"`
@@ -2755,7 +2757,6 @@ type CompanyUpdate struct {
 	Pos         *POSSettings     `json:"pos,omitempty"`
 	Profile     *CompanyProfile  `json:"profile,omitempty"`
 	Signup      *CompanySignup   `json:"signup,omitempty"`
-	Sms         *SMSConnection   `json:"sms,omitempty"`
 	Teya        *TeyaConnection  `json:"teya,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Vertical    *interface{}     `json:"vertical,omitempty"`
@@ -6727,14 +6728,6 @@ type RwgConversionTracking struct {
 
 // Merchant changed indicator for Google conversion tracking
 type RwgConversionTrackingMerchantChanged string
-
-// SMSConnection defines model for SMSConnection.
-type SMSConnection struct {
-	CustomReminder *string `json:"custom_reminder,omitempty"`
-
-	// Whether to enable SMS reminders for the company.
-	EnableReminders *bool `json:"enable_reminders,omitempty"`
-}
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SMSFilter struct {
