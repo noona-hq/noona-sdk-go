@@ -2350,9 +2350,13 @@ type Company struct {
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 
 	// Deprecated, use profile.phone_number instead
-	PhoneNumber *string          `json:"phone_number,omitempty"`
-	Pos         *POSSettings     `json:"pos,omitempty"`
-	Profile     *CompanyProfile  `json:"profile,omitempty"`
+	PhoneNumber *string         `json:"phone_number,omitempty"`
+	Pos         *POSSettings    `json:"pos,omitempty"`
+	Profile     *CompanyProfile `json:"profile,omitempty"`
+
+	// An ID that can be used to reference the company in an external system.
+	// This ID is not used by Noona and is not guaranteed to be unique.
+	ReferenceId *string          `json:"reference_id,omitempty"`
 	Signup      *CompanySignup   `json:"signup,omitempty"`
 	Teya        *TeyaConnection  `json:"teya,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
@@ -2401,11 +2405,15 @@ type CompanyCreate struct {
 	PhoneNumber *string              `json:"phone_number,omitempty"`
 	Pos         *POSSettings         `json:"pos,omitempty"`
 	Profile     CompanyProfileCreate `json:"profile"`
-	Signup      *CompanySignup       `json:"signup,omitempty"`
-	Teya        *TeyaConnection      `json:"teya,omitempty"`
-	UpdatedAt   *time.Time           `json:"updated_at,omitempty"`
-	Vertical    CompanyVertical      `json:"vertical"`
-	Vouchers    *VoucherSettings     `json:"vouchers,omitempty"`
+
+	// An ID that can be used to reference the company in an external system.
+	// This ID is not used by Noona and is not guaranteed to be unique.
+	ReferenceId *string          `json:"reference_id,omitempty"`
+	Signup      *CompanySignup   `json:"signup,omitempty"`
+	Teya        *TeyaConnection  `json:"teya,omitempty"`
+	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
+	Vertical    CompanyVertical  `json:"vertical"`
+	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
 }
 
 // CompanyCreateOverrides defines model for CompanyCreateOverrides.
@@ -2666,9 +2674,13 @@ type CompanyResponse struct {
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 
 	// Deprecated, use profile.phone_number instead
-	PhoneNumber *string         `json:"phone_number,omitempty"`
-	Pos         POSSettings     `json:"pos"`
-	Profile     CompanyProfile  `json:"profile"`
+	PhoneNumber *string        `json:"phone_number,omitempty"`
+	Pos         POSSettings    `json:"pos"`
+	Profile     CompanyProfile `json:"profile"`
+
+	// An ID that can be used to reference the company in an external system.
+	// This ID is not used by Noona and is not guaranteed to be unique.
+	ReferenceId *string         `json:"reference_id,omitempty"`
 	Signup      *CompanySignup  `json:"signup,omitempty"`
 	Teya        *TeyaConnection `json:"teya,omitempty"`
 	UpdatedAt   *time.Time      `json:"updated_at,omitempty"`
@@ -2753,9 +2765,13 @@ type CompanyUpdate struct {
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 
 	// Deprecated, use profile.phone_number instead
-	PhoneNumber *string          `json:"phone_number,omitempty"`
-	Pos         *POSSettings     `json:"pos,omitempty"`
-	Profile     *CompanyProfile  `json:"profile,omitempty"`
+	PhoneNumber *string         `json:"phone_number,omitempty"`
+	Pos         *POSSettings    `json:"pos,omitempty"`
+	Profile     *CompanyProfile `json:"profile,omitempty"`
+
+	// An ID that can be used to reference the company in an external system.
+	// This ID is not used by Noona and is not guaranteed to be unique.
+	ReferenceId *string          `json:"reference_id,omitempty"`
 	Signup      *CompanySignup   `json:"signup,omitempty"`
 	Teya        *TeyaConnection  `json:"teya,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
