@@ -1628,7 +1628,9 @@ type BillingAddress struct {
 
 // BillingCustomer defines model for BillingCustomer.
 type BillingCustomer struct {
-	BillingAddress         *BillingAddress                 `json:"billing_address,omitempty"`
+	BillingAddress *BillingAddress `json:"billing_address,omitempty"`
+
+	// The billing method. "card" for regular card-based subscriptions (default), "invoice" for invoice-based subscriptions (only available for Icelandic companies).
 	BillingMethod          *BillingCustomerBillingMethod   `json:"billing_method,omitempty"`
 	BusinessRegistrationId *string                         `json:"business_registration_id,omitempty"`
 	Card                   *Card                           `json:"card,omitempty"`
@@ -1644,7 +1646,7 @@ type BillingCustomer struct {
 	VatNumberStatus        *BillingCustomerVatNumberStatus `json:"vat_number_status,omitempty"`
 }
 
-// BillingCustomerBillingMethod defines model for BillingCustomer.BillingMethod.
+// The billing method. "card" for regular card-based subscriptions (default), "invoice" for invoice-based subscriptions (only available for Icelandic companies).
 type BillingCustomerBillingMethod string
 
 // BillingCustomerVatNumberStatus defines model for BillingCustomer.VatNumberStatus.
