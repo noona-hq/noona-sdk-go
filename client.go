@@ -11212,21 +11212,6 @@ type UpdateTerminalParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// GetOAuthConsentParams defines parameters for GetOAuthConsent.
-type GetOAuthConsentParams struct {
-	ClientId     string      `form:"client_id" json:"client_id"`
-	RedirectUri  string      `form:"redirect_uri" json:"redirect_uri"`
-	State        *string     `form:"state,omitempty" json:"state,omitempty"`
-	ResponseType string      `form:"response_type" json:"response_type"`
-	Scope        OAuthScopes `form:"scope" json:"scope"`
-}
-
-// PostOAuthLoginJSONBody defines parameters for PostOAuthLogin.
-type PostOAuthLoginJSONBody struct {
-	Email    *string `json:"email,omitempty"`
-	Password *string `json:"password,omitempty"`
-}
-
 // GetTimeSlotReservationParams defines parameters for GetTimeSlotReservation.
 type GetTimeSlotReservationParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -11909,9 +11894,6 @@ type CreateSubtransactionJSONRequestBody CreateSubtransactionJSONBody
 
 // UpdateTerminalJSONRequestBody defines body for UpdateTerminal for application/json ContentType.
 type UpdateTerminalJSONRequestBody UpdateTerminalJSONBody
-
-// PostOAuthLoginJSONRequestBody defines body for PostOAuthLogin for application/json ContentType.
-type PostOAuthLoginJSONRequestBody PostOAuthLoginJSONBody
 
 // CreateTransactionJSONRequestBody defines body for CreateTransaction for application/json ContentType.
 type CreateTransactionJSONRequestBody CreateTransactionJSONBody
@@ -14852,17 +14834,6 @@ type ClientInterface interface {
 	UpdateTerminalWithBody(ctx context.Context, terminalId string, params *UpdateTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateTerminal(ctx context.Context, terminalId string, params *UpdateTerminalParams, body UpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetOAuthConsent request
-	GetOAuthConsent(ctx context.Context, params *GetOAuthConsentParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetOAuthLogin request
-	GetOAuthLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// PostOAuthLogin request with any body
-	PostOAuthLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PostOAuthLogin(ctx context.Context, body PostOAuthLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetTimeSlotReservation request
 	GetTimeSlotReservation(ctx context.Context, timeSlotReservationId string, params *GetTimeSlotReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19032,54 +19003,6 @@ func (c *Client) UpdateTerminalWithBody(ctx context.Context, terminalId string, 
 
 func (c *Client) UpdateTerminal(ctx context.Context, terminalId string, params *UpdateTerminalParams, body UpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateTerminalRequest(c.Server, terminalId, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetOAuthConsent(ctx context.Context, params *GetOAuthConsentParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetOAuthConsentRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetOAuthLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetOAuthLoginRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostOAuthLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostOAuthLoginRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostOAuthLogin(ctx context.Context, body PostOAuthLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostOAuthLoginRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -40537,168 +40460,6 @@ func NewUpdateTerminalRequestWithBody(server string, terminalId string, params *
 	return req, nil
 }
 
-// NewGetOAuthConsentRequest generates requests for GetOAuthConsent
-func NewGetOAuthConsentRequest(server string, params *GetOAuthConsentParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/testing/consent")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "client_id", runtime.ParamLocationQuery, params.ClientId); err != nil {
-		return nil, err
-	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-		return nil, err
-	} else {
-		for k, v := range parsed {
-			for _, v2 := range v {
-				queryValues.Add(k, v2)
-			}
-		}
-	}
-
-	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "redirect_uri", runtime.ParamLocationQuery, params.RedirectUri); err != nil {
-		return nil, err
-	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-		return nil, err
-	} else {
-		for k, v := range parsed {
-			for _, v2 := range v {
-				queryValues.Add(k, v2)
-			}
-		}
-	}
-
-	if params.State != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "state", runtime.ParamLocationQuery, *params.State); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "response_type", runtime.ParamLocationQuery, params.ResponseType); err != nil {
-		return nil, err
-	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-		return nil, err
-	} else {
-		for k, v := range parsed {
-			for _, v2 := range v {
-				queryValues.Add(k, v2)
-			}
-		}
-	}
-
-	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "scope", runtime.ParamLocationQuery, params.Scope); err != nil {
-		return nil, err
-	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-		return nil, err
-	} else {
-		for k, v := range parsed {
-			for _, v2 := range v {
-				queryValues.Add(k, v2)
-			}
-		}
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetOAuthLoginRequest generates requests for GetOAuthLogin
-func NewGetOAuthLoginRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/testing/login")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewPostOAuthLoginRequest calls the generic PostOAuthLogin builder with application/json body
-func NewPostOAuthLoginRequest(server string, body PostOAuthLoginJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPostOAuthLoginRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewPostOAuthLoginRequestWithBody generates requests for PostOAuthLogin with any type of body
-func NewPostOAuthLoginRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/testing/login")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewGetTimeSlotReservationRequest generates requests for GetTimeSlotReservation
 func NewGetTimeSlotReservationRequest(server string, timeSlotReservationId string, params *GetTimeSlotReservationParams) (*http.Request, error) {
 	var err error
@@ -45003,17 +44764,6 @@ type ClientWithResponsesInterface interface {
 	UpdateTerminalWithBodyWithResponse(ctx context.Context, terminalId string, params *UpdateTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTerminalResponse, error)
 
 	UpdateTerminalWithResponse(ctx context.Context, terminalId string, params *UpdateTerminalParams, body UpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTerminalResponse, error)
-
-	// GetOAuthConsent request
-	GetOAuthConsentWithResponse(ctx context.Context, params *GetOAuthConsentParams, reqEditors ...RequestEditorFn) (*GetOAuthConsentResponse, error)
-
-	// GetOAuthLogin request
-	GetOAuthLoginWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOAuthLoginResponse, error)
-
-	// PostOAuthLogin request with any body
-	PostOAuthLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOAuthLoginResponse, error)
-
-	PostOAuthLoginWithResponse(ctx context.Context, body PostOAuthLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOAuthLoginResponse, error)
 
 	// GetTimeSlotReservation request
 	GetTimeSlotReservationWithResponse(ctx context.Context, timeSlotReservationId string, params *GetTimeSlotReservationParams, reqEditors ...RequestEditorFn) (*GetTimeSlotReservationResponse, error)
@@ -50899,72 +50649,6 @@ func (r UpdateTerminalResponse) StatusCode() int {
 	return 0
 }
 
-type GetOAuthConsentResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetOAuthConsentResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetOAuthConsentResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetOAuthLoginResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r GetOAuthLoginResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetOAuthLoginResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PostOAuthLoginResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *struct {
-		Token *string `json:"token,omitempty"`
-	}
-}
-
-// Status returns HTTPResponse.Status
-func (r PostOAuthLoginResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostOAuthLoginResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type GetTimeSlotReservationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -54955,41 +54639,6 @@ func (c *ClientWithResponses) UpdateTerminalWithResponse(ctx context.Context, te
 		return nil, err
 	}
 	return ParseUpdateTerminalResponse(rsp)
-}
-
-// GetOAuthConsentWithResponse request returning *GetOAuthConsentResponse
-func (c *ClientWithResponses) GetOAuthConsentWithResponse(ctx context.Context, params *GetOAuthConsentParams, reqEditors ...RequestEditorFn) (*GetOAuthConsentResponse, error) {
-	rsp, err := c.GetOAuthConsent(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetOAuthConsentResponse(rsp)
-}
-
-// GetOAuthLoginWithResponse request returning *GetOAuthLoginResponse
-func (c *ClientWithResponses) GetOAuthLoginWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetOAuthLoginResponse, error) {
-	rsp, err := c.GetOAuthLogin(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetOAuthLoginResponse(rsp)
-}
-
-// PostOAuthLoginWithBodyWithResponse request with arbitrary body returning *PostOAuthLoginResponse
-func (c *ClientWithResponses) PostOAuthLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOAuthLoginResponse, error) {
-	rsp, err := c.PostOAuthLoginWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostOAuthLoginResponse(rsp)
-}
-
-func (c *ClientWithResponses) PostOAuthLoginWithResponse(ctx context.Context, body PostOAuthLoginJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOAuthLoginResponse, error) {
-	rsp, err := c.PostOAuthLogin(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostOAuthLoginResponse(rsp)
 }
 
 // GetTimeSlotReservationWithResponse request returning *GetTimeSlotReservationResponse
@@ -61918,66 +61567,6 @@ func ParseUpdateTerminalResponse(rsp *http.Response) (*UpdateTerminalResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Terminal
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetOAuthConsentResponse parses an HTTP response from a GetOAuthConsentWithResponse call
-func ParseGetOAuthConsentResponse(rsp *http.Response) (*GetOAuthConsentResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetOAuthConsentResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetOAuthLoginResponse parses an HTTP response from a GetOAuthLoginWithResponse call
-func ParseGetOAuthLoginResponse(rsp *http.Response) (*GetOAuthLoginResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetOAuthLoginResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParsePostOAuthLoginResponse parses an HTTP response from a PostOAuthLoginWithResponse call
-func ParsePostOAuthLoginResponse(rsp *http.Response) (*PostOAuthLoginResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostOAuthLoginResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Token *string `json:"token,omitempty"`
-		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
