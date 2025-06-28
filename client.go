@@ -956,6 +956,38 @@ const (
 	SpaceTypeTableCombination SpaceType = "table_combination"
 )
 
+// Defines values for StreamEventName.
+const (
+	OnBlockedTimeUpdated         StreamEventName = "onBlockedTimeUpdated"
+	OnEmployeeUpdated            StreamEventName = "onEmployeeUpdated"
+	OnEventTypeGroupUpdated      StreamEventName = "onEventTypeGroupUpdated"
+	OnEventTypeUpdated           StreamEventName = "onEventTypeUpdated"
+	OnEventUpdated               StreamEventName = "onEventUpdated"
+	OnNotificationUpdated        StreamEventName = "onNotificationUpdated"
+	OnPaymentUpdated             StreamEventName = "onPaymentUpdated"
+	OnProductGroupUpdated        StreamEventName = "onProductGroupUpdated"
+	OnProductUpdated             StreamEventName = "onProductUpdated"
+	OnResourceUpdated            StreamEventName = "onResourceUpdated"
+	OnTimeSlotReservationUpdated StreamEventName = "onTimeSlotReservationUpdated"
+	OnTransactionUpdated         StreamEventName = "onTransactionUpdated"
+)
+
+// Defines values for StreamableEntityType.
+const (
+	StreamableEntityTypeBlockedTimes         StreamableEntityType = "blocked_times"
+	StreamableEntityTypeEmployees            StreamableEntityType = "employees"
+	StreamableEntityTypeEventTypeGroups      StreamableEntityType = "event_type_groups"
+	StreamableEntityTypeEventTypes           StreamableEntityType = "event_types"
+	StreamableEntityTypeEvents               StreamableEntityType = "events"
+	StreamableEntityTypeNotifications        StreamableEntityType = "notifications"
+	StreamableEntityTypePayments             StreamableEntityType = "payments"
+	StreamableEntityTypeProductGroups        StreamableEntityType = "product_groups"
+	StreamableEntityTypeProducts             StreamableEntityType = "products"
+	StreamableEntityTypeResources            StreamableEntityType = "resources"
+	StreamableEntityTypeTimeSlotReservations StreamableEntityType = "time_slot_reservations"
+	StreamableEntityTypeTransactions         StreamableEntityType = "transactions"
+)
+
 // Defines values for SubscriptionDiscountApplyOn.
 const (
 	InvoiceAmount     SubscriptionDiscountApplyOn = "invoice_amount"
@@ -4575,6 +4607,18 @@ type FiscalizeTransactionError struct {
 // The error code. Only populated for certain errors.
 type FiscalizeTransactionErrorCode string
 
+// Filter for the generic entity stream endpoint.
+//
+// Specifies which types of entities to subscribe to for real-time updates.
+// Multiple entity types can be specified to receive updates for all of them.
+type GenericStreamFilter struct {
+	// The types of entities to stream updates for.
+	//
+	// Clients will receive notifications when any of the specified entity types
+	// are created, updated, or deleted within the company.
+	EntityTypes []StreamableEntityType `json:"entity_types"`
+}
+
 // GoogleCalendarConnection defines model for GoogleCalendarConnection.
 type GoogleCalendarConnection struct {
 	Id   *string `json:"id,omitempty"`
@@ -7034,6 +7078,35 @@ type SpacesFilter struct {
 	// Filter by space IDs
 	Types *[]SpaceType `json:"types,omitempty"`
 }
+
+// The Server-Sent Event names that will be emitted by the generic stream endpoint.
+//
+// **Usage with JavaScript EventSource:**
+// ```javascript
+// const eventSource = new EventSource('/v1/hq/stream/companies/123?filter={"entity_types":["events","products"]}');
+//
+//	eventSource.addEventListener('onEventUpdated', (event) => {
+//	  console.log('Event updated:', event.data); // "{}"
+//	});
+//
+//	eventSource.addEventListener('onProductUpdated', (event) => {
+//	  console.log('Product updated:', event.data); // "{}"
+//	});
+//
+// ```
+//
+// **SSE Format:**
+// ```
+// event: onEventUpdated
+// data: {}
+//
+// event: onProductUpdated
+// data: {}
+// ```
+type StreamEventName string
+
+// The types of entities that can be streamed for real-time updates.
+type StreamableEntityType string
 
 // SubscriptionCoupon defines model for SubscriptionCoupon.
 type SubscriptionCoupon struct {
@@ -10939,6 +11012,16 @@ type UpdateSpaceParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// StreamUpdatesParams defines parameters for StreamUpdates.
+type StreamUpdatesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand             `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter GenericStreamFilter `form:"filter" json:"filter"`
+}
+
 // StreamBlockedTimesParams defines parameters for StreamBlockedTimes.
 type StreamBlockedTimesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -14699,6 +14782,9 @@ type ClientInterface interface {
 	UpdateSpaceWithBody(ctx context.Context, spaceId string, params *UpdateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateSpace(ctx context.Context, spaceId string, params *UpdateSpaceParams, body UpdateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// StreamUpdates request
+	StreamUpdates(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// StreamBlockedTimes request
 	StreamBlockedTimes(ctx context.Context, companyId string, params *StreamBlockedTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -18658,6 +18744,18 @@ func (c *Client) UpdateSpaceWithBody(ctx context.Context, spaceId string, params
 
 func (c *Client) UpdateSpace(ctx context.Context, spaceId string, params *UpdateSpaceParams, body UpdateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateSpaceRequest(c.Server, spaceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) StreamUpdates(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStreamUpdatesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -38870,6 +38968,82 @@ func NewUpdateSpaceRequestWithBody(server string, spaceId string, params *Update
 	return req, nil
 }
 
+// NewStreamUpdatesRequest generates requests for StreamUpdates
+func NewStreamUpdatesRequest(server string, companyId string, params *StreamUpdatesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/stream/companies/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewStreamBlockedTimesRequest generates requests for StreamBlockedTimes
 func NewStreamBlockedTimesRequest(server string, companyId string, params *StreamBlockedTimesParams) (*http.Request, error) {
 	var err error
@@ -44760,6 +44934,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateSpaceWithResponse(ctx context.Context, spaceId string, params *UpdateSpaceParams, body UpdateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSpaceResponse, error)
 
+	// StreamUpdates request
+	StreamUpdatesWithResponse(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*StreamUpdatesResponse, error)
+
 	// StreamBlockedTimes request
 	StreamBlockedTimesWithResponse(ctx context.Context, companyId string, params *StreamBlockedTimesParams, reqEditors ...RequestEditorFn) (*StreamBlockedTimesResponse, error)
 
@@ -50254,6 +50431,27 @@ func (r UpdateSpaceResponse) StatusCode() int {
 	return 0
 }
 
+type StreamUpdatesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r StreamUpdatesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StreamUpdatesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type StreamBlockedTimesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -54543,6 +54741,15 @@ func (c *ClientWithResponses) UpdateSpaceWithResponse(ctx context.Context, space
 		return nil, err
 	}
 	return ParseUpdateSpaceResponse(rsp)
+}
+
+// StreamUpdatesWithResponse request returning *StreamUpdatesResponse
+func (c *ClientWithResponses) StreamUpdatesWithResponse(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*StreamUpdatesResponse, error) {
+	rsp, err := c.StreamUpdates(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStreamUpdatesResponse(rsp)
 }
 
 // StreamBlockedTimesWithResponse request returning *StreamBlockedTimesResponse
@@ -61304,6 +61511,22 @@ func ParseUpdateSpaceResponse(rsp *http.Response) (*UpdateSpaceResponse, error) 
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseStreamUpdatesResponse parses an HTTP response from a StreamUpdatesWithResponse call
+func ParseStreamUpdatesResponse(rsp *http.Response) (*StreamUpdatesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StreamUpdatesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
