@@ -2691,7 +2691,7 @@ type CompanyResponse struct {
 	Google          *GoogleConnection  `json:"google,omitempty"`
 	Id              *string            `json:"id,omitempty"`
 	LastActiveAt    *time.Time         `json:"last_active_at,omitempty"`
-	Locale          *Locale            `json:"locale,omitempty"`
+	Locale          Locale             `json:"locale"`
 	Location        Location           `json:"location"`
 	Marketplace     CompanyMarketplace `json:"marketplace"`
 	Messaging       CompanyMessaging   `json:"messaging"`
@@ -2731,7 +2731,7 @@ type CompanyResponseOverrides struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Enterprise  ExpandableEnterprise `json:"enterprise"`
 	Id          *string              `json:"id,omitempty"`
-	Locale      *Locale              `json:"locale,omitempty"`
+	Locale      Locale               `json:"locale"`
 	Location    Location             `json:"location"`
 	Marketplace CompanyMarketplace   `json:"marketplace"`
 	Messaging   CompanyMessaging     `json:"messaging"`
