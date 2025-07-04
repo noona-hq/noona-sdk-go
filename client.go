@@ -281,6 +281,12 @@ const (
 	CompanyFieldImage          CompanyField = "image"
 )
 
+// Defines values for CompanyPOSSettingsCheckoutFirstTab.
+const (
+	CompanyPOSSettingsCheckoutFirstTabProducts CompanyPOSSettingsCheckoutFirstTab = "products"
+	CompanyPOSSettingsCheckoutFirstTabServices CompanyPOSSettingsCheckoutFirstTab = "services"
+)
+
 // Defines values for CompanySize.
 const (
 	Solo       CompanySize = "solo"
@@ -657,12 +663,6 @@ const (
 // Defines values for OnlineBookingsRuleType.
 const (
 	OnlineBookings OnlineBookingsRuleType = "online_bookings"
-)
-
-// Defines values for POSSettingsCheckoutFirstTab.
-const (
-	POSSettingsCheckoutFirstTabProducts POSSettingsCheckoutFirstTab = "products"
-	POSSettingsCheckoutFirstTabServices POSSettingsCheckoutFirstTab = "services"
 )
 
 // Defines values for PaymentProvider.
@@ -2389,9 +2389,9 @@ type Company struct {
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 
 	// Deprecated, use profile.phone_number instead
-	PhoneNumber *string         `json:"phone_number,omitempty"`
-	Pos         *POSSettings    `json:"pos,omitempty"`
-	Profile     *CompanyProfile `json:"profile,omitempty"`
+	PhoneNumber *string             `json:"phone_number,omitempty"`
+	Pos         *CompanyPOSSettings `json:"pos,omitempty"`
+	Profile     *CompanyProfile     `json:"profile,omitempty"`
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
@@ -2442,7 +2442,7 @@ type CompanyCreate struct {
 
 	// Deprecated, use profile.phone_number instead
 	PhoneNumber *string              `json:"phone_number,omitempty"`
-	Pos         *POSSettings         `json:"pos,omitempty"`
+	Pos         *CompanyPOSSettings  `json:"pos,omitempty"`
 	Profile     CompanyProfileCreate `json:"profile"`
 
 	// An ID that can be used to reference the company in an external system.
@@ -2533,6 +2533,35 @@ type CompanyMessaging struct {
 	// Whether the company wants to show the booking end time/duration in booking confirmation messages and reminders.
 	ShowBookingEndsAt *bool `json:"show_booking_ends_at,omitempty"`
 }
+
+// CompanyPOSSettings defines model for CompanyPOSSettings.
+type CompanyPOSSettings struct {
+	// The first tab to show in the checkout flow.
+	CheckoutFirstTab *CompanyPOSSettingsCheckoutFirstTab `json:"checkout_first_tab,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	DefaultVat *ExpandableVAT `json:"default_vat,omitempty"`
+	EacCode    *string        `json:"eac_code,omitempty"`
+
+	// Extra information to include on invoices.
+	ExtraInvoiceInfo *string `json:"extra_invoice_info,omitempty"`
+
+	// The initial invoice number for the company.
+	InitialInvoiceNumber *int64 `json:"initial_invoice_number,omitempty"`
+
+	// The kennitala for the company.
+	Kennitala    *string `json:"kennitala,omitempty"`
+	LegalAddress *string `json:"legal_address,omitempty"`
+
+	// The name that will be printed on invoices.
+	NameOnInvoices *string `json:"name_on_invoices,omitempty"`
+
+	// The VAT number for the company.
+	VatNumber *string `json:"vat_number,omitempty"`
+}
+
+// The first tab to show in the checkout flow.
+type CompanyPOSSettingsCheckoutFirstTab string
 
 // CompanyProfile defines model for CompanyProfile.
 type CompanyProfile struct {
@@ -2713,9 +2742,9 @@ type CompanyResponse struct {
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 
 	// Deprecated, use profile.phone_number instead
-	PhoneNumber *string        `json:"phone_number,omitempty"`
-	Pos         POSSettings    `json:"pos"`
-	Profile     CompanyProfile `json:"profile"`
+	PhoneNumber *string            `json:"phone_number,omitempty"`
+	Pos         CompanyPOSSettings `json:"pos"`
+	Profile     CompanyProfile     `json:"profile"`
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
@@ -2741,7 +2770,7 @@ type CompanyResponseOverrides struct {
 	Marketplace CompanyMarketplace   `json:"marketplace"`
 	Messaging   CompanyMessaging     `json:"messaging"`
 	Name        string               `json:"name"`
-	Pos         POSSettings          `json:"pos"`
+	Pos         CompanyPOSSettings   `json:"pos"`
 	Profile     CompanyProfile       `json:"profile"`
 	Signup      *CompanySignup       `json:"signup,omitempty"`
 	UpdatedAt   *time.Time           `json:"updated_at,omitempty"`
@@ -2804,9 +2833,9 @@ type CompanyUpdate struct {
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 
 	// Deprecated, use profile.phone_number instead
-	PhoneNumber *string         `json:"phone_number,omitempty"`
-	Pos         *POSSettings    `json:"pos,omitempty"`
-	Profile     *CompanyProfile `json:"profile,omitempty"`
+	PhoneNumber *string             `json:"phone_number,omitempty"`
+	Pos         *CompanyPOSSettings `json:"pos,omitempty"`
+	Profile     *CompanyProfile     `json:"profile,omitempty"`
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
@@ -5513,35 +5542,6 @@ type OrderedProduct struct {
 	VatId *string `json:"vat_id,omitempty"`
 }
 
-// POSSettings defines model for POSSettings.
-type POSSettings struct {
-	// The first tab to show in the checkout flow.
-	CheckoutFirstTab *POSSettingsCheckoutFirstTab `json:"checkout_first_tab,omitempty"`
-
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	DefaultVat *ExpandableVAT `json:"default_vat,omitempty"`
-	EacCode    *string        `json:"eac_code,omitempty"`
-
-	// Extra information to include on invoices.
-	ExtraInvoiceInfo *string `json:"extra_invoice_info,omitempty"`
-
-	// The initial invoice number for the company.
-	InitialInvoiceNumber *int32 `json:"initial_invoice_number,omitempty"`
-
-	// The kennitala for the company.
-	Kennitala    *string `json:"kennitala,omitempty"`
-	LegalAddress *string `json:"legal_address,omitempty"`
-
-	// The name that will be printed on invoices.
-	NameOnInvoices *string `json:"name_on_invoices,omitempty"`
-
-	// The VAT number for the company.
-	VatNumber *string `json:"vat_number,omitempty"`
-}
-
-// The first tab to show in the checkout flow.
-type POSSettingsCheckoutFirstTab string
-
 // Pagination defines model for Pagination.
 type Pagination struct {
 	// The maximum number of results to return.
@@ -7588,6 +7588,7 @@ type User struct {
 	Id           *string              `json:"id,omitempty"`
 	Image        *Image               `json:"image,omitempty"`
 	Locale       *string              `json:"locale,omitempty"`
+	Pos          *UserPOSSettings     `json:"pos,omitempty"`
 	Settings     *UserSettings        `json:"settings,omitempty"`
 	Verification *Verification        `json:"verification,omitempty"`
 }
@@ -7617,6 +7618,26 @@ type UserOAuthRedirect struct {
 	RedirectUrl *string `json:"redirect_url,omitempty"`
 }
 
+// UserPOSSettings defines model for UserPOSSettings.
+type UserPOSSettings struct {
+	// Business Identification Number
+	Bin *string `json:"bin,omitempty"`
+
+	// Whether the user is issuing their own invoices or not.
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Extra information to include on invoices.
+	ExtraInvoiceInfo *string `json:"extra_invoice_info,omitempty"`
+
+	// The initial invoice number for the user.
+	InitialInvoiceNumber *int64  `json:"initial_invoice_number,omitempty"`
+	LegalAddress         *string `json:"legal_address,omitempty"`
+	Name                 *string `json:"name,omitempty"`
+
+	// VAT Identification Number
+	VatId *string `json:"vat_id,omitempty"`
+}
+
 // UserSettings defines model for UserSettings.
 type UserSettings struct {
 	CalendarSlotHeight *int32  `json:"calendar_slot_height,omitempty"`
@@ -7625,7 +7646,8 @@ type UserSettings struct {
 
 // UserUpdate defines model for UserUpdate.
 type UserUpdate struct {
-	Settings *UserSettings `json:"settings,omitempty"`
+	Pos      *UserPOSSettings `json:"pos,omitempty"`
+	Settings *UserSettings    `json:"settings,omitempty"`
 }
 
 // Users defines model for Users.

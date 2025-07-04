@@ -7,6 +7,6 @@ const (
 	EventStatusShowedUp   string = "showedUp"
 )
 
-func (p POSSettingsCheckoutFirstTab) Ptr() *POSSettingsCheckoutFirstTab {
+func (p CompanyPOSSettingsCheckoutFirstTab) Ptr() *CompanyPOSSettingsCheckoutFirstTab {
 	return &p
 }
