@@ -1117,6 +1117,11 @@ const (
 	UpdateVerificationStatusRejected UpdateVerificationStatus = "rejected"
 )
 
+// Defines values for UserField.
+const (
+	UserFieldSaltpay UserField = "saltpay"
+)
+
 // Defines values for VerificationCertificationLevel.
 const (
 	VerificationCertificationLevelApprentice VerificationCertificationLevel = "apprentice"
@@ -1277,8 +1282,8 @@ const (
 
 // Defines values for UserOAuthPostParamsProvider.
 const (
-	UserOAuthPostParamsProviderGoogle  UserOAuthPostParamsProvider = "google"
-	UserOAuthPostParamsProviderSaltpay UserOAuthPostParamsProvider = "saltpay"
+	Google  UserOAuthPostParamsProvider = "google"
+	Saltpay UserOAuthPostParamsProvider = "saltpay"
 )
 
 // Defines values for CreateVerificationRequestJSONBodyCertificationLevel.
@@ -7601,6 +7606,12 @@ type UserConnectionsGoogle struct {
 	Connected *bool `json:"connected,omitempty"`
 }
 
+// UserField defines model for UserField.
+type UserField string
+
+// UserFields defines model for UserFields.
+type UserFields []UserField
+
 // UserOAuthRedirect defines model for UserOAuthRedirect.
 type UserOAuthRedirect struct {
 	RedirectUrl *string `json:"redirect_url,omitempty"`
@@ -11309,7 +11320,8 @@ type UpdateCurrentUserParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand     `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *UserFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // CreateGoogleCalendarConnectionJSONBody defines parameters for CreateGoogleCalendarConnection.
@@ -41156,6 +41168,22 @@ func NewUpdateCurrentUserRequestWithBody(server string, params *UpdateCurrentUse
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
