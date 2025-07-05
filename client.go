@@ -456,6 +456,22 @@ const (
 	TaxExemptionCodeMissingError FiscalizeTransactionErrorCode = "tax_exemption_code_missing_error"
 )
 
+// Defines values for ImageFolder.
+const (
+	ImageFolderCompanyCover    ImageFolder = "company_cover"
+	ImageFolderCompanyProfile  ImageFolder = "company_profile"
+	ImageFolderEmployee        ImageFolder = "employee"
+	ImageFolderEventType       ImageFolder = "event_type"
+	ImageFolderProduct         ImageFolder = "product"
+	ImageFolderResource        ImageFolder = "resource"
+	ImageFolderVoucherTemplate ImageFolder = "voucher_template"
+)
+
+// Defines values for ImageProvider.
+const (
+	Cloudinary ImageProvider = "cloudinary"
+)
+
 // Defines values for InvoicesFilterStatus.
 const (
 	InvoicesFilterStatusNotPaid    InvoicesFilterStatus = "not_paid"
@@ -593,6 +609,7 @@ const (
 	EventsWrite           OAuthScope = "events:write"
 	FilesRead             OAuthScope = "files:read"
 	FilesWrite            OAuthScope = "files:write"
+	ImagesWrite           OAuthScope = "images:write"
 	IssuersRead           OAuthScope = "issuers:read"
 	MemosRead             OAuthScope = "memos:read"
 	MemosWrite            OAuthScope = "memos:write"
@@ -4705,14 +4722,21 @@ type ID string
 
 // Image defines model for Image.
 type Image struct {
-	Bytes    *int32  `json:"bytes,omitempty"`
-	Height   *int32  `json:"height,omitempty"`
-	Image    *string `json:"image,omitempty"`
-	PublicId *string `json:"public_id,omitempty"`
-	Thumb    *string `json:"thumb,omitempty"`
-	Type     *string `json:"type,omitempty"`
-	Width    *int32  `json:"width,omitempty"`
+	Bytes    *int32         `json:"bytes,omitempty"`
+	Height   *int32         `json:"height,omitempty"`
+	Image    *string        `json:"image,omitempty"`
+	Provider *ImageProvider `json:"provider,omitempty"`
+	PublicId *string        `json:"public_id,omitempty"`
+	Thumb    *string        `json:"thumb,omitempty"`
+	Type     *string        `json:"type,omitempty"`
+	Width    *int32         `json:"width,omitempty"`
 }
+
+// ImageFolder defines model for ImageFolder.
+type ImageFolder string
+
+// ImageProvider defines model for ImageProvider.
+type ImageProvider string
 
 // Images defines model for Images.
 type Images []Image
@@ -10038,6 +10062,15 @@ type RefundFiscalizedTransactionParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 }
 
+// UploadImageParams defines parameters for UploadImage.
+type UploadImageParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AdyenCompanyOnboardingStatusParams defines parameters for AdyenCompanyOnboardingStatus.
 type AdyenCompanyOnboardingStatusParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -14432,6 +14465,9 @@ type ClientInterface interface {
 	// RefundFiscalizedTransaction request
 	RefundFiscalizedTransaction(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UploadImage request with any body
+	UploadImageWithBody(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdyenCompanyOnboardingStatus request
 	AdyenCompanyOnboardingStatus(ctx context.Context, companyId string, params *AdyenCompanyOnboardingStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -17098,6 +17134,18 @@ func (c *Client) GetFiscalizedTransactionPDF(ctx context.Context, transactionId 
 
 func (c *Client) RefundFiscalizedTransaction(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRefundFiscalizedTransactionRequest(c.Server, transactionId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UploadImageWithBody(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUploadImageRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -31703,6 +31751,71 @@ func NewRefundFiscalizedTransactionRequest(server string, transactionId string, 
 	return req, nil
 }
 
+// NewUploadImageRequestWithBody generates requests for UploadImage with any type of body
+func NewUploadImageRequestWithBody(server string, params *UploadImageParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/images")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewAdyenCompanyOnboardingStatusRequest generates requests for AdyenCompanyOnboardingStatus
 func NewAdyenCompanyOnboardingStatusRequest(server string, companyId string, params *AdyenCompanyOnboardingStatusParams) (*http.Request, error) {
 	var err error
@@ -44378,6 +44491,9 @@ type ClientWithResponsesInterface interface {
 	// RefundFiscalizedTransaction request
 	RefundFiscalizedTransactionWithResponse(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*RefundFiscalizedTransactionResponse, error)
 
+	// UploadImage request with any body
+	UploadImageWithBodyWithResponse(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadImageResponse, error)
+
 	// AdyenCompanyOnboardingStatus request
 	AdyenCompanyOnboardingStatusWithResponse(ctx context.Context, companyId string, params *AdyenCompanyOnboardingStatusParams, reqEditors ...RequestEditorFn) (*AdyenCompanyOnboardingStatusResponse, error)
 
@@ -48131,6 +48247,28 @@ func (r RefundFiscalizedTransactionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r RefundFiscalizedTransactionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UploadImageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Image
+}
+
+// Status returns HTTPResponse.Status
+func (r UploadImageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UploadImageResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -53280,6 +53418,15 @@ func (c *ClientWithResponses) RefundFiscalizedTransactionWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseRefundFiscalizedTransactionResponse(rsp)
+}
+
+// UploadImageWithBodyWithResponse request with arbitrary body returning *UploadImageResponse
+func (c *ClientWithResponses) UploadImageWithBodyWithResponse(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadImageResponse, error) {
+	rsp, err := c.UploadImageWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUploadImageResponse(rsp)
 }
 
 // AdyenCompanyOnboardingStatusWithResponse request returning *AdyenCompanyOnboardingStatusResponse
@@ -58856,6 +59003,32 @@ func ParseRefundFiscalizedTransactionResponse(rsp *http.Response) (*RefundFiscal
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Transaction
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUploadImageResponse parses an HTTP response from a UploadImageWithResponse call
+func ParseUploadImageResponse(rsp *http.Response) (*UploadImageResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UploadImageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Image
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
