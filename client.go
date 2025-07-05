@@ -3176,7 +3176,7 @@ type Employee struct {
 	// Use `company` instead
 	CompanyId *string `json:"company_id,omitempty"`
 
-	// Whether the employee is connected to teya
+	// Use teya.connected instead
 	ConnectedToTeya      *bool                         `json:"connected_to_teya,omitempty"`
 	CreatedAt            *time.Time                    `json:"created_at,omitempty"`
 	DeletedAt            *time.Time                    `json:"deleted_at,omitempty"`
@@ -7319,6 +7319,10 @@ type TerminalsFilter struct {
 
 // TeyaConnection defines model for TeyaConnection.
 type TeyaConnection struct {
+	// True if the user has an active oAuth connection to Teya
+	Connected *bool `json:"connected,omitempty"`
+
+	// True if the user has a token for Teya direct
 	HasToken *bool `json:"has_token,omitempty"`
 }
 
@@ -7596,6 +7600,7 @@ type User struct {
 // UserConnections defines model for UserConnections.
 type UserConnections struct {
 	Google *UserConnectionsGoogle `json:"google,omitempty"`
+	Teya   *TeyaConnection        `json:"teya,omitempty"`
 }
 
 // UserConnectionsGoogle defines model for UserConnectionsGoogle.
