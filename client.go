@@ -1119,7 +1119,7 @@ const (
 
 // Defines values for UserField.
 const (
-	UserFieldSaltpay UserField = "saltpay"
+	TeyaOauth UserField = "teya_oauth"
 )
 
 // Defines values for VerificationCertificationLevel.
@@ -1282,8 +1282,8 @@ const (
 
 // Defines values for UserOAuthPostParamsProvider.
 const (
-	Google  UserOAuthPostParamsProvider = "google"
-	Saltpay UserOAuthPostParamsProvider = "saltpay"
+	UserOAuthPostParamsProviderGoogle  UserOAuthPostParamsProvider = "google"
+	UserOAuthPostParamsProviderSaltpay UserOAuthPostParamsProvider = "saltpay"
 )
 
 // Defines values for CreateVerificationRequestJSONBodyCertificationLevel.
