@@ -472,6 +472,23 @@ const (
 	Cloudinary ImageProvider = "cloudinary"
 )
 
+// Defines values for ImportJobStatus.
+const (
+	ImportJobStatusCompleted  ImportJobStatus = "completed"
+	ImportJobStatusFailed     ImportJobStatus = "failed"
+	ImportJobStatusPending    ImportJobStatus = "pending"
+	ImportJobStatusProcessing ImportJobStatus = "processing"
+)
+
+// Defines values for ImportJobType.
+const (
+	ImportJobTypeCustomers       ImportJobType = "customers"
+	ImportJobTypeEventTypes      ImportJobType = "event_types"
+	ImportJobTypeEvents          ImportJobType = "events"
+	ImportJobTypeProducts        ImportJobType = "products"
+	ImportJobTypeWaitlistEntries ImportJobType = "waitlist_entries"
+)
+
 // Defines values for InvoicesFilterStatus.
 const (
 	InvoicesFilterStatusNotPaid    InvoicesFilterStatus = "not_paid"
@@ -713,8 +730,8 @@ const (
 
 // Defines values for PaymentMethodInstancesFilterStatus.
 const (
-	Active   PaymentMethodInstancesFilterStatus = "active"
-	Inactive PaymentMethodInstancesFilterStatus = "inactive"
+	PaymentMethodInstancesFilterStatusActive   PaymentMethodInstancesFilterStatus = "active"
+	PaymentMethodInstancesFilterStatusInactive PaymentMethodInstancesFilterStatus = "inactive"
 )
 
 // Defines values for PaymentSettingsPrePaymentType.
@@ -4740,6 +4757,76 @@ type ImageProvider string
 
 // Images defines model for Images.
 type Images []Image
+
+// ImportJob defines model for ImportJob.
+type ImportJob struct {
+	// Mapping of CSV columns to system fields
+	ColumnMapping map[string]string `json:"column_mapping"`
+
+	// ID of the company
+	Company     string     `json:"company"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+
+	// ID of the user who created the import job
+	CreatedBy string `json:"created_by"`
+
+	// List of error messages from processing
+	ErrorMessages *[]string `json:"error_messages,omitempty"`
+
+	// Number of rows that failed processing
+	ErrorRows *int32 `json:"error_rows,omitempty"`
+
+	// Size of the file in bytes
+	FileSize int32   `json:"file_size"`
+	Id       *string `json:"id,omitempty"`
+
+	// Number of rows processed so far
+	ProcessedRows *int32 `json:"processed_rows,omitempty"`
+
+	// Total number of rows in the import file
+	RowCount int32 `json:"row_count"`
+
+	// Status of the import job
+	Status ImportJobStatus `json:"status"`
+
+	// Number of rows processed successfully
+	SuccessRows *int32 `json:"success_rows,omitempty"`
+
+	// Type of data being imported
+	Type      ImportJobType `json:"type"`
+	UpdatedAt *time.Time    `json:"updated_at,omitempty"`
+
+	// When the upload URL expires
+	UploadExpiry time.Time `json:"upload_expiry"`
+
+	// Pre-signed URL for file upload (valid for 15 minutes)
+	UploadUrl string `json:"upload_url"`
+}
+
+// ImportJobCreate defines model for ImportJobCreate.
+type ImportJobCreate struct {
+	// Mapping of CSV columns to system fields
+	ColumnMapping map[string]string `json:"column_mapping"`
+
+	// ID of the company
+	CompanyId string `json:"company_id"`
+
+	// Size of the file in bytes
+	FileSize int32 `json:"file_size"`
+
+	// Number of rows in the import file
+	RowCount int32 `json:"row_count"`
+
+	// Type of data being imported
+	Type ImportJobType `json:"type"`
+}
+
+// Status of the import job
+type ImportJobStatus string
+
+// Type of data being imported
+type ImportJobType string
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type InvoicesFilter struct {
@@ -8915,6 +9002,15 @@ type ListHolidaysParams struct {
 	AcceptLanguage *string        `json:"Accept-Language,omitempty"`
 }
 
+// ListImportJobsParams defines parameters for ListImportJobs.
+type ListImportJobsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListIssuersParams defines parameters for ListIssuers.
 type ListIssuersParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -10064,6 +10160,18 @@ type RefundFiscalizedTransactionParams struct {
 
 // UploadImageParams defines parameters for UploadImage.
 type UploadImageParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// CreateImportJobJSONBody defines parameters for CreateImportJob.
+type CreateImportJobJSONBody ImportJobCreate
+
+// CreateImportJobParams defines parameters for CreateImportJob.
+type CreateImportJobParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -11834,6 +11942,9 @@ type UpsertCompanyFiscalizationDataJSONRequestBody UpsertCompanyFiscalizationDat
 
 // FiscalizeTransactionJSONRequestBody defines body for FiscalizeTransaction for application/json ContentType.
 type FiscalizeTransactionJSONRequestBody FiscalizeTransactionJSONBody
+
+// CreateImportJobJSONRequestBody defines body for CreateImportJob for application/json ContentType.
+type CreateImportJobJSONRequestBody CreateImportJobJSONBody
 
 // AdyenCompanyOnboardingJSONRequestBody defines body for AdyenCompanyOnboarding for application/json ContentType.
 type AdyenCompanyOnboardingJSONRequestBody AdyenCompanyOnboardingJSONBody
@@ -14118,6 +14229,9 @@ type ClientInterface interface {
 	// ListHolidays request
 	ListHolidays(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListImportJobs request
+	ListImportJobs(ctx context.Context, companyId string, params *ListImportJobsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListIssuers request
 	ListIssuers(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -14467,6 +14581,11 @@ type ClientInterface interface {
 
 	// UploadImage request with any body
 	UploadImageWithBody(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateImportJob request with any body
+	CreateImportJobWithBody(ctx context.Context, params *CreateImportJobParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateImportJob(ctx context.Context, params *CreateImportJobParams, body CreateImportJobJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AdyenCompanyOnboardingStatus request
 	AdyenCompanyOnboardingStatus(ctx context.Context, companyId string, params *AdyenCompanyOnboardingStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15658,6 +15777,18 @@ func (c *Client) UploadCompanyFileWithBody(ctx context.Context, companyId string
 
 func (c *Client) ListHolidays(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListHolidaysRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListImportJobs(ctx context.Context, companyId string, params *ListImportJobsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListImportJobsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -17146,6 +17277,30 @@ func (c *Client) RefundFiscalizedTransaction(ctx context.Context, transactionId 
 
 func (c *Client) UploadImageWithBody(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUploadImageRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateImportJobWithBody(ctx context.Context, params *CreateImportJobParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateImportJobRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateImportJob(ctx context.Context, params *CreateImportJobParams, body CreateImportJobJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateImportJobRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -23572,6 +23727,76 @@ func NewListHolidaysRequest(server string, companyId string, params *ListHoliday
 		}
 
 		req.Header.Set("Accept-Language", headerParam0)
+	}
+
+	return req, nil
+}
+
+// NewListImportJobsRequest generates requests for ListImportJobs
+func NewListImportJobsRequest(server string, companyId string, params *ListImportJobsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/imports", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
 	}
 
 	return req, nil
@@ -31761,6 +31986,82 @@ func NewUploadImageRequestWithBody(server string, params *UploadImageParams, con
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/images")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateImportJobRequest calls the generic CreateImportJob builder with application/json body
+func NewCreateImportJobRequest(server string, params *CreateImportJobParams, body CreateImportJobJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateImportJobRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateImportJobRequestWithBody generates requests for CreateImportJob with any type of body
+func NewCreateImportJobRequestWithBody(server string, params *CreateImportJobParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/imports")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -44144,6 +44445,9 @@ type ClientWithResponsesInterface interface {
 	// ListHolidays request
 	ListHolidaysWithResponse(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*ListHolidaysResponse, error)
 
+	// ListImportJobs request
+	ListImportJobsWithResponse(ctx context.Context, companyId string, params *ListImportJobsParams, reqEditors ...RequestEditorFn) (*ListImportJobsResponse, error)
+
 	// ListIssuers request
 	ListIssuersWithResponse(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*ListIssuersResponse, error)
 
@@ -44493,6 +44797,11 @@ type ClientWithResponsesInterface interface {
 
 	// UploadImage request with any body
 	UploadImageWithBodyWithResponse(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadImageResponse, error)
+
+	// CreateImportJob request with any body
+	CreateImportJobWithBodyWithResponse(ctx context.Context, params *CreateImportJobParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateImportJobResponse, error)
+
+	CreateImportJobWithResponse(ctx context.Context, params *CreateImportJobParams, body CreateImportJobJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateImportJobResponse, error)
 
 	// AdyenCompanyOnboardingStatus request
 	AdyenCompanyOnboardingStatusWithResponse(ctx context.Context, companyId string, params *AdyenCompanyOnboardingStatusParams, reqEditors ...RequestEditorFn) (*AdyenCompanyOnboardingStatusResponse, error)
@@ -46037,6 +46346,28 @@ func (r ListHolidaysResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListHolidaysResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListImportJobsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]ImportJob
+}
+
+// Status returns HTTPResponse.Status
+func (r ListImportJobsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListImportJobsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -48269,6 +48600,28 @@ func (r UploadImageResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UploadImageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateImportJobResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ImportJob
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateImportJobResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateImportJobResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -52335,6 +52688,15 @@ func (c *ClientWithResponses) ListHolidaysWithResponse(ctx context.Context, comp
 	return ParseListHolidaysResponse(rsp)
 }
 
+// ListImportJobsWithResponse request returning *ListImportJobsResponse
+func (c *ClientWithResponses) ListImportJobsWithResponse(ctx context.Context, companyId string, params *ListImportJobsParams, reqEditors ...RequestEditorFn) (*ListImportJobsResponse, error) {
+	rsp, err := c.ListImportJobs(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListImportJobsResponse(rsp)
+}
+
 // ListIssuersWithResponse request returning *ListIssuersResponse
 func (c *ClientWithResponses) ListIssuersWithResponse(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*ListIssuersResponse, error) {
 	rsp, err := c.ListIssuers(ctx, companyId, params, reqEditors...)
@@ -53427,6 +53789,23 @@ func (c *ClientWithResponses) UploadImageWithBodyWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParseUploadImageResponse(rsp)
+}
+
+// CreateImportJobWithBodyWithResponse request with arbitrary body returning *CreateImportJobResponse
+func (c *ClientWithResponses) CreateImportJobWithBodyWithResponse(ctx context.Context, params *CreateImportJobParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateImportJobResponse, error) {
+	rsp, err := c.CreateImportJobWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateImportJobResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateImportJobWithResponse(ctx context.Context, params *CreateImportJobParams, body CreateImportJobJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateImportJobResponse, error) {
+	rsp, err := c.CreateImportJob(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateImportJobResponse(rsp)
 }
 
 // AdyenCompanyOnboardingStatusWithResponse request returning *AdyenCompanyOnboardingStatusResponse
@@ -56513,6 +56892,32 @@ func ParseListHolidaysResponse(rsp *http.Response) (*ListHolidaysResponse, error
 	return response, nil
 }
 
+// ParseListImportJobsResponse parses an HTTP response from a ListImportJobsWithResponse call
+func ParseListImportJobsResponse(rsp *http.Response) (*ListImportJobsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListImportJobsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []ImportJob
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListIssuersResponse parses an HTTP response from a ListIssuersWithResponse call
 func ParseListIssuersResponse(rsp *http.Response) (*ListIssuersResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -59029,6 +59434,32 @@ func ParseUploadImageResponse(rsp *http.Response) (*UploadImageResponse, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Image
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateImportJobResponse parses an HTTP response from a CreateImportJobWithResponse call
+func ParseCreateImportJobResponse(rsp *http.Response) (*CreateImportJobResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateImportJobResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ImportJob
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
