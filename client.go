@@ -2402,15 +2402,15 @@ type Company struct {
 	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
-	EnterpriseOrder *int32              `json:"enterprise_order,omitempty"`
-	Google          *GoogleConnection   `json:"google,omitempty"`
-	Id              *string             `json:"id,omitempty"`
-	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
-	Locale          *Locale             `json:"locale,omitempty"`
-	Location        *Location           `json:"location,omitempty"`
-	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
-	Name            *string             `json:"name,omitempty"`
+	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
+	Id              *string                    `json:"id,omitempty"`
+	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
+	Locale          *Locale                    `json:"locale,omitempty"`
+	Location        *Location                  `json:"location,omitempty"`
+	Marketplace     *CompanyMarketplace        `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging          `json:"messaging,omitempty"`
+	Name            *string                    `json:"name,omitempty"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -2454,15 +2454,15 @@ type CompanyCreate struct {
 	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
-	EnterpriseOrder *int32              `json:"enterprise_order,omitempty"`
-	Google          *GoogleConnection   `json:"google,omitempty"`
-	Id              *string             `json:"id,omitempty"`
-	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
-	Locale          *Locale             `json:"locale,omitempty"`
-	Location        LocationCreate      `json:"location"`
-	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
-	Name            string              `json:"name"`
+	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
+	Id              *string                    `json:"id,omitempty"`
+	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
+	Locale          *Locale                    `json:"locale,omitempty"`
+	Location        LocationCreate             `json:"location"`
+	Marketplace     *CompanyMarketplace        `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging          `json:"messaging,omitempty"`
+	Name            string                     `json:"name"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -2755,15 +2755,15 @@ type CompanyResponse struct {
 	Enterprise ExpandableEnterprise `json:"enterprise"`
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
-	EnterpriseOrder *int32             `json:"enterprise_order,omitempty"`
-	Google          *GoogleConnection  `json:"google,omitempty"`
-	Id              *string            `json:"id,omitempty"`
-	LastActiveAt    *time.Time         `json:"last_active_at,omitempty"`
-	Locale          Locale             `json:"locale"`
-	Location        Location           `json:"location"`
-	Marketplace     CompanyMarketplace `json:"marketplace"`
-	Messaging       CompanyMessaging   `json:"messaging"`
-	Name            string             `json:"name"`
+	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
+	Id              *string                    `json:"id,omitempty"`
+	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
+	Locale          Locale                     `json:"locale"`
+	Location        Location                   `json:"location"`
+	Marketplace     CompanyMarketplace         `json:"marketplace"`
+	Messaging       CompanyMessaging           `json:"messaging"`
+	Name            string                     `json:"name"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -2846,15 +2846,15 @@ type CompanyUpdate struct {
 	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
-	EnterpriseOrder *int32              `json:"enterprise_order,omitempty"`
-	Google          *GoogleConnection   `json:"google,omitempty"`
-	Id              *string             `json:"id,omitempty"`
-	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
-	Locale          *Locale             `json:"locale,omitempty"`
-	Location        *Location           `json:"location,omitempty"`
-	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
-	Name            *string             `json:"name,omitempty"`
+	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
+	Id              *string                    `json:"id,omitempty"`
+	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
+	Locale          *Locale                    `json:"locale,omitempty"`
+	Location        *Location                  `json:"location,omitempty"`
+	Marketplace     *CompanyMarketplace        `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging          `json:"messaging,omitempty"`
+	Name            *string                    `json:"name,omitempty"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -4687,6 +4687,15 @@ type GenericStreamFilter struct {
 	EntityTypes []StreamableEntityType `json:"entity_types"`
 }
 
+// GoogleAnalyticsConnection defines model for GoogleAnalyticsConnection.
+type GoogleAnalyticsConnection struct {
+	// The Google Analytics API secret for the company.
+	ApiSecret *string `json:"api_secret,omitempty"`
+
+	// The Google Analytics Measurement ID for the company.
+	MeasurementId *string `json:"measurement_id,omitempty"`
+}
+
 // GoogleCalendarConnection defines model for GoogleCalendarConnection.
 type GoogleCalendarConnection struct {
 	Id   *string `json:"id,omitempty"`
@@ -4700,12 +4709,6 @@ type GoogleCalendarConnection struct {
 
 	// Whether events should be synced between Noona and Google Calendar.
 	SyncEvents *bool `json:"sync_events,omitempty"`
-}
-
-// GoogleConnection defines model for GoogleConnection.
-type GoogleConnection struct {
-	// The Google Analytics ID for the company.
-	GoogleAnalyticsId *string `json:"google_analytics_id,omitempty"`
 }
 
 // GroupProduct defines model for GroupProduct.
