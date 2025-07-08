@@ -14440,12 +14440,12 @@ type ClientInterface interface {
 	CreateEmployee(ctx context.Context, params *CreateEmployeeParams, body CreateEmployeeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetEnterprise request
-	GetEnterprise(ctx context.Context, params *GetEnterpriseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetEnterprise(ctx context.Context, enterpriseId string, params *GetEnterpriseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateEnterprise request with any body
-	UpdateEnterpriseWithBody(ctx context.Context, params *UpdateEnterpriseParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateEnterpriseWithBody(ctx context.Context, enterpriseId string, params *UpdateEnterpriseParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateEnterprise(ctx context.Context, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateEnterprise(ctx context.Context, enterpriseId string, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListEnterpriseCompanies request
 	ListEnterpriseCompanies(ctx context.Context, enterpriseId string, params *ListEnterpriseCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -16654,8 +16654,8 @@ func (c *Client) CreateEmployee(ctx context.Context, params *CreateEmployeeParam
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetEnterprise(ctx context.Context, params *GetEnterpriseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetEnterpriseRequest(c.Server, params)
+func (c *Client) GetEnterprise(ctx context.Context, enterpriseId string, params *GetEnterpriseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEnterpriseRequest(c.Server, enterpriseId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16666,8 +16666,8 @@ func (c *Client) GetEnterprise(ctx context.Context, params *GetEnterpriseParams,
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateEnterpriseWithBody(ctx context.Context, params *UpdateEnterpriseParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateEnterpriseRequestWithBody(c.Server, params, contentType, body)
+func (c *Client) UpdateEnterpriseWithBody(ctx context.Context, enterpriseId string, params *UpdateEnterpriseParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEnterpriseRequestWithBody(c.Server, enterpriseId, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -16678,8 +16678,8 @@ func (c *Client) UpdateEnterpriseWithBody(ctx context.Context, params *UpdateEnt
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateEnterprise(ctx context.Context, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateEnterpriseRequest(c.Server, params, body)
+func (c *Client) UpdateEnterprise(ctx context.Context, enterpriseId string, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEnterpriseRequest(c.Server, enterpriseId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -28985,15 +28985,22 @@ func NewCreateEmployeeRequestWithBody(server string, params *CreateEmployeeParam
 }
 
 // NewGetEnterpriseRequest generates requests for GetEnterprise
-func NewGetEnterpriseRequest(server string, params *GetEnterpriseParams) (*http.Request, error) {
+func NewGetEnterpriseRequest(server string, enterpriseId string, params *GetEnterpriseParams) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "enterprise_id", runtime.ParamLocationPath, enterpriseId)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/hq/enterpise")
+	operationPath := fmt.Sprintf("/v1/hq/enterprise/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -29048,26 +29055,33 @@ func NewGetEnterpriseRequest(server string, params *GetEnterpriseParams) (*http.
 }
 
 // NewUpdateEnterpriseRequest calls the generic UpdateEnterprise builder with application/json body
-func NewUpdateEnterpriseRequest(server string, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody) (*http.Request, error) {
+func NewUpdateEnterpriseRequest(server string, enterpriseId string, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateEnterpriseRequestWithBody(server, params, "application/json", bodyReader)
+	return NewUpdateEnterpriseRequestWithBody(server, enterpriseId, params, "application/json", bodyReader)
 }
 
 // NewUpdateEnterpriseRequestWithBody generates requests for UpdateEnterprise with any type of body
-func NewUpdateEnterpriseRequestWithBody(server string, params *UpdateEnterpriseParams, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateEnterpriseRequestWithBody(server string, enterpriseId string, params *UpdateEnterpriseParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "enterprise_id", runtime.ParamLocationPath, enterpriseId)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/v1/hq/enterpise")
+	operationPath := fmt.Sprintf("/v1/hq/enterprise/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -29129,7 +29143,7 @@ func NewUpdateEnterpriseRequestWithBody(server string, params *UpdateEnterpriseP
 
 	queryURL.RawQuery = queryValues.Encode()
 
-	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -44656,12 +44670,12 @@ type ClientWithResponsesInterface interface {
 	CreateEmployeeWithResponse(ctx context.Context, params *CreateEmployeeParams, body CreateEmployeeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEmployeeResponse, error)
 
 	// GetEnterprise request
-	GetEnterpriseWithResponse(ctx context.Context, params *GetEnterpriseParams, reqEditors ...RequestEditorFn) (*GetEnterpriseResponse, error)
+	GetEnterpriseWithResponse(ctx context.Context, enterpriseId string, params *GetEnterpriseParams, reqEditors ...RequestEditorFn) (*GetEnterpriseResponse, error)
 
 	// UpdateEnterprise request with any body
-	UpdateEnterpriseWithBodyWithResponse(ctx context.Context, params *UpdateEnterpriseParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEnterpriseResponse, error)
+	UpdateEnterpriseWithBodyWithResponse(ctx context.Context, enterpriseId string, params *UpdateEnterpriseParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEnterpriseResponse, error)
 
-	UpdateEnterpriseWithResponse(ctx context.Context, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEnterpriseResponse, error)
+	UpdateEnterpriseWithResponse(ctx context.Context, enterpriseId string, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEnterpriseResponse, error)
 
 	// ListEnterpriseCompanies request
 	ListEnterpriseCompaniesWithResponse(ctx context.Context, enterpriseId string, params *ListEnterpriseCompaniesParams, reqEditors ...RequestEditorFn) (*ListEnterpriseCompaniesResponse, error)
@@ -53331,8 +53345,8 @@ func (c *ClientWithResponses) CreateEmployeeWithResponse(ctx context.Context, pa
 }
 
 // GetEnterpriseWithResponse request returning *GetEnterpriseResponse
-func (c *ClientWithResponses) GetEnterpriseWithResponse(ctx context.Context, params *GetEnterpriseParams, reqEditors ...RequestEditorFn) (*GetEnterpriseResponse, error) {
-	rsp, err := c.GetEnterprise(ctx, params, reqEditors...)
+func (c *ClientWithResponses) GetEnterpriseWithResponse(ctx context.Context, enterpriseId string, params *GetEnterpriseParams, reqEditors ...RequestEditorFn) (*GetEnterpriseResponse, error) {
+	rsp, err := c.GetEnterprise(ctx, enterpriseId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -53340,16 +53354,16 @@ func (c *ClientWithResponses) GetEnterpriseWithResponse(ctx context.Context, par
 }
 
 // UpdateEnterpriseWithBodyWithResponse request with arbitrary body returning *UpdateEnterpriseResponse
-func (c *ClientWithResponses) UpdateEnterpriseWithBodyWithResponse(ctx context.Context, params *UpdateEnterpriseParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEnterpriseResponse, error) {
-	rsp, err := c.UpdateEnterpriseWithBody(ctx, params, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateEnterpriseWithBodyWithResponse(ctx context.Context, enterpriseId string, params *UpdateEnterpriseParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEnterpriseResponse, error) {
+	rsp, err := c.UpdateEnterpriseWithBody(ctx, enterpriseId, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateEnterpriseResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateEnterpriseWithResponse(ctx context.Context, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEnterpriseResponse, error) {
-	rsp, err := c.UpdateEnterprise(ctx, params, body, reqEditors...)
+func (c *ClientWithResponses) UpdateEnterpriseWithResponse(ctx context.Context, enterpriseId string, params *UpdateEnterpriseParams, body UpdateEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEnterpriseResponse, error) {
+	rsp, err := c.UpdateEnterprise(ctx, enterpriseId, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
