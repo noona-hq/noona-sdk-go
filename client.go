@@ -4763,9 +4763,6 @@ type Images []Image
 
 // ImportJob defines model for ImportJob.
 type ImportJob struct {
-	// Array of column mappings between CSV headers and system fields
-	ColumnMapping ImportJobColumnMappings `json:"column_mapping"`
-
 	// ID of the company
 	Company     string     `json:"company"`
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
@@ -4807,38 +4804,8 @@ type ImportJob struct {
 	UploadUrl string `json:"upload_url"`
 }
 
-// Describes column mapping for imported document. Either field or options need to be provided
-type ImportJobColumnMapping struct {
-	// The header from the CSV file
-	Key *string `json:"key,omitempty"`
-
-	// Describes how different values in the column map to the corresponding value in the system
-	Options *ImportJobColumnMappingOptions `json:"options,omitempty"`
-
-	// The value to map to in the system
-	Value *string `json:"value,omitempty"`
-}
-
-// ImportJobColumnMappingOption defines model for ImportJobColumnMappingOption.
-type ImportJobColumnMappingOption struct {
-	// The value from the CSV file
-	Key string `json:"key"`
-
-	// The value to map to in the system
-	Value string `json:"value"`
-}
-
-// Describes how different values in the column map to the corresponding value in the system
-type ImportJobColumnMappingOptions []ImportJobColumnMappingOption
-
-// Array of column mappings between CSV headers and system fields
-type ImportJobColumnMappings []ImportJobColumnMapping
-
 // ImportJobCreate defines model for ImportJobCreate.
 type ImportJobCreate struct {
-	// Array of column mappings between CSV headers and system fields
-	ColumnMapping ImportJobColumnMappings `json:"column_mapping"`
-
 	// ID of the company
 	CompanyId string `json:"company_id"`
 
