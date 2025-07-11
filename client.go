@@ -7520,11 +7520,13 @@ type Tokens []Token
 // Transaction defines model for Transaction.
 type Transaction struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company       *ExpandableCompany    `json:"company,omitempty"`
-	CompletedAt   *time.Time            `json:"completed_at,omitempty"`
-	CreatedAt     *time.Time            `json:"created_at,omitempty"`
-	Currency      *string               `json:"currency,omitempty"`
-	DraftedAt     *time.Time            `json:"drafted_at,omitempty"`
+	Company     *ExpandableCompany `json:"company,omitempty"`
+	CompletedAt *time.Time         `json:"completed_at,omitempty"`
+	CreatedAt   *time.Time         `json:"created_at,omitempty"`
+	Currency    *string            `json:"currency,omitempty"`
+	DraftedAt   *time.Time         `json:"drafted_at,omitempty"`
+
+	// Total amount due
 	DueAmount     *float64              `json:"due_amount,omitempty"`
 	Employees     *[]ExpandableEmployee `json:"employees,omitempty"`
 	Fiscalization *string               `json:"fiscalization,omitempty"`
@@ -7559,12 +7561,17 @@ type Transaction struct {
 	Subtransactions *[]ExpandableSubtransaction `json:"subtransactions,omitempty"`
 
 	// The VAT exemption reason when the VAT amount is equal to 0
-	TaxExemptionReason *string          `json:"tax_exemption_reason,omitempty"`
-	TotalAmount        *float64         `json:"total_amount,omitempty"`
-	Type               *TransactionType `json:"type,omitempty"`
-	UpdatedAt          *time.Time       `json:"updated_at,omitempty"`
+	TaxExemptionReason *string `json:"tax_exemption_reason,omitempty"`
 
-	// The total VAT amount
+	// Total amount with VAT
+	TotalAmount *float64 `json:"total_amount,omitempty"`
+
+	// Total amount without VAT
+	TotalAmountWithoutVat *float64         `json:"total_amount_without_vat,omitempty"`
+	Type                  *TransactionType `json:"type,omitempty"`
+	UpdatedAt             *time.Time       `json:"updated_at,omitempty"`
+
+	// Total VAT amount
 	VatAmount *float64 `json:"vat_amount,omitempty"`
 
 	// Only supported to unset this field. That is done by providing the value as "zero date" (0001-01-01T00:00:00Z)
