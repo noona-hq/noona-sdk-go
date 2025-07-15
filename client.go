@@ -1022,6 +1022,14 @@ const (
 	StreamableEntityTypeTransactions         StreamableEntityType = "transactions"
 )
 
+// Defines values for SubscriptionChurnReason.
+const (
+	ClosingBusiness SubscriptionChurnReason = "closing_business"
+	Other           SubscriptionChurnReason = "other"
+	TakingABreak    SubscriptionChurnReason = "taking_a_break"
+	TooExpensive    SubscriptionChurnReason = "too_expensive"
+)
+
 // Defines values for SubscriptionDiscountApplyOn.
 const (
 	InvoiceAmount     SubscriptionDiscountApplyOn = "invoice_amount"
@@ -7221,6 +7229,18 @@ type StreamEventName string
 // The types of entities that can be streamed for real-time updates.
 type StreamableEntityType string
 
+// SubscriptionCancellation defines model for SubscriptionCancellation.
+type SubscriptionCancellation struct {
+	ChurnElaboration *string                   `json:"churn_elaboration,omitempty"`
+	ChurnReasons     *SubscriptionChurnReasons `json:"churn_reasons,omitempty"`
+}
+
+// SubscriptionChurnReason defines model for SubscriptionChurnReason.
+type SubscriptionChurnReason string
+
+// SubscriptionChurnReasons defines model for SubscriptionChurnReasons.
+type SubscriptionChurnReasons []SubscriptionChurnReason
+
 // SubscriptionCoupon defines model for SubscriptionCoupon.
 type SubscriptionCoupon struct {
 	AppliedCount *int32     `json:"applied_count,omitempty"`
@@ -11334,6 +11354,18 @@ type GetSubscriptionParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CancelSubscriptionJSONBody defines parameters for CancelSubscription.
+type CancelSubscriptionJSONBody SubscriptionCancellation
+
+// CancelSubscriptionParams defines parameters for CancelSubscription.
+type CancelSubscriptionParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateSubtransactionJSONBody defines parameters for CreateSubtransaction.
 type CreateSubtransactionJSONBody Subtransaction
 
@@ -12075,6 +12107,9 @@ type CreateSpaceJSONRequestBody CreateSpaceJSONBody
 
 // UpdateSpaceJSONRequestBody defines body for UpdateSpace for application/json ContentType.
 type UpdateSpaceJSONRequestBody UpdateSpaceJSONBody
+
+// CancelSubscriptionJSONRequestBody defines body for CancelSubscription for application/json ContentType.
+type CancelSubscriptionJSONRequestBody CancelSubscriptionJSONBody
 
 // CreateSubtransactionJSONRequestBody defines body for CreateSubtransaction for application/json ContentType.
 type CreateSubtransactionJSONRequestBody CreateSubtransactionJSONBody
@@ -15010,6 +15045,11 @@ type ClientInterface interface {
 
 	// GetSubscription request
 	GetSubscription(ctx context.Context, subscriptionId string, params *GetSubscriptionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CancelSubscription request with any body
+	CancelSubscriptionWithBody(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CancelSubscription(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSubtransaction request with any body
 	CreateSubtransactionWithBody(ctx context.Context, params *CreateSubtransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19153,6 +19193,30 @@ func (c *Client) DeleteSubscription(ctx context.Context, subscriptionId string, 
 
 func (c *Client) GetSubscription(ctx context.Context, subscriptionId string, params *GetSubscriptionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSubscriptionRequest(c.Server, subscriptionId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CancelSubscriptionWithBody(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelSubscriptionRequestWithBody(c.Server, subscriptionId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CancelSubscription(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelSubscriptionRequest(c.Server, subscriptionId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -40489,6 +40553,89 @@ func NewGetSubscriptionRequest(server string, subscriptionId string, params *Get
 	return req, nil
 }
 
+// NewCancelSubscriptionRequest calls the generic CancelSubscription builder with application/json body
+func NewCancelSubscriptionRequest(server string, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCancelSubscriptionRequestWithBody(server, subscriptionId, params, "application/json", bodyReader)
+}
+
+// NewCancelSubscriptionRequestWithBody generates requests for CancelSubscription with any type of body
+func NewCancelSubscriptionRequestWithBody(server string, subscriptionId string, params *CancelSubscriptionParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "subscription_id", runtime.ParamLocationPath, subscriptionId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/subscriptions/%s/cancel", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateSubtransactionRequest calls the generic CreateSubtransaction builder with application/json body
 func NewCreateSubtransactionRequest(server string, params *CreateSubtransactionParams, body CreateSubtransactionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -45247,6 +45394,11 @@ type ClientWithResponsesInterface interface {
 
 	// GetSubscription request
 	GetSubscriptionWithResponse(ctx context.Context, subscriptionId string, params *GetSubscriptionParams, reqEditors ...RequestEditorFn) (*GetSubscriptionResponse, error)
+
+	// CancelSubscription request with any body
+	CancelSubscriptionWithBodyWithResponse(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelSubscriptionResponse, error)
+
+	CancelSubscriptionWithResponse(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelSubscriptionResponse, error)
 
 	// CreateSubtransaction request with any body
 	CreateSubtransactionWithBodyWithResponse(ctx context.Context, params *CreateSubtransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSubtransactionResponse, error)
@@ -51090,6 +51242,27 @@ func (r GetSubscriptionResponse) StatusCode() int {
 	return 0
 }
 
+type CancelSubscriptionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r CancelSubscriptionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CancelSubscriptionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSubtransactionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -55175,6 +55348,23 @@ func (c *ClientWithResponses) GetSubscriptionWithResponse(ctx context.Context, s
 		return nil, err
 	}
 	return ParseGetSubscriptionResponse(rsp)
+}
+
+// CancelSubscriptionWithBodyWithResponse request with arbitrary body returning *CancelSubscriptionResponse
+func (c *ClientWithResponses) CancelSubscriptionWithBodyWithResponse(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelSubscriptionResponse, error) {
+	rsp, err := c.CancelSubscriptionWithBody(ctx, subscriptionId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelSubscriptionResponse(rsp)
+}
+
+func (c *ClientWithResponses) CancelSubscriptionWithResponse(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelSubscriptionResponse, error) {
+	rsp, err := c.CancelSubscription(ctx, subscriptionId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelSubscriptionResponse(rsp)
 }
 
 // CreateSubtransactionWithBodyWithResponse request with arbitrary body returning *CreateSubtransactionResponse
@@ -62120,6 +62310,22 @@ func ParseGetSubscriptionResponse(rsp *http.Response) (*GetSubscriptionResponse,
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseCancelSubscriptionResponse parses an HTTP response from a CancelSubscriptionWithResponse call
+func ParseCancelSubscriptionResponse(rsp *http.Response) (*CancelSubscriptionResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CancelSubscriptionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
