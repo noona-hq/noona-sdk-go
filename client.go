@@ -7720,16 +7720,18 @@ type UpdateVerificationStatus string
 
 // User defines model for User.
 type User struct {
-	Companies    *ExpandableCompanies `json:"companies,omitempty"`
-	Connections  *UserConnections     `json:"connections,omitempty"`
-	Email        *string              `json:"email,omitempty"`
-	Employees    *Employees           `json:"employees,omitempty"`
-	Id           *string              `json:"id,omitempty"`
-	Image        *Image               `json:"image,omitempty"`
-	Locale       *string              `json:"locale,omitempty"`
-	Pos          *UserPOSSettings     `json:"pos,omitempty"`
-	Settings     *UserSettings        `json:"settings,omitempty"`
-	Verification *Verification        `json:"verification,omitempty"`
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	ActiveCompany *ExpandableCompany   `json:"active_company,omitempty"`
+	Companies     *ExpandableCompanies `json:"companies,omitempty"`
+	Connections   *UserConnections     `json:"connections,omitempty"`
+	Email         *string              `json:"email,omitempty"`
+	Employees     *Employees           `json:"employees,omitempty"`
+	Id            *string              `json:"id,omitempty"`
+	Image         *Image               `json:"image,omitempty"`
+	Locale        *string              `json:"locale,omitempty"`
+	Pos           *UserPOSSettings     `json:"pos,omitempty"`
+	Settings      *UserSettings        `json:"settings,omitempty"`
+	Verification  *Verification        `json:"verification,omitempty"`
 }
 
 // UserConnections defines model for UserConnections.
@@ -7786,8 +7788,9 @@ type UserSettings struct {
 
 // UserUpdate defines model for UserUpdate.
 type UserUpdate struct {
-	Pos      *UserPOSSettings `json:"pos,omitempty"`
-	Settings *UserSettings    `json:"settings,omitempty"`
+	ActiveCompanyId *string          `json:"active_company_id,omitempty"`
+	Pos             *UserPOSSettings `json:"pos,omitempty"`
+	Settings        *UserSettings    `json:"settings,omitempty"`
 }
 
 // Users defines model for Users.
