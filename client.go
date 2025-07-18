@@ -1003,7 +1003,7 @@ const (
 	OnProductUpdated             StreamEventName = "onProductUpdated"
 	OnResourceUpdated            StreamEventName = "onResourceUpdated"
 	OnTimeSlotReservationUpdated StreamEventName = "onTimeSlotReservationUpdated"
-	OnTransactionUpdated         StreamEventName = "onTransactionUpdated"
+	OnTransactionCompleted       StreamEventName = "onTransactionCompleted"
 )
 
 // Defines values for StreamableEntityType.
