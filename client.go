@@ -5956,6 +5956,9 @@ type PowerupSubscription struct {
 	// If the powerup is deactivated, this is the date it was deactivated.
 	DeactivatedAt *time.Time `json:"deactivated_at,omitempty"`
 
+	// The subscription ID
+	Id *string `json:"id,omitempty"`
+
 	// Active status of powerup
 	Status *PowerupSubscriptionStatus `json:"status,omitempty"`
 
