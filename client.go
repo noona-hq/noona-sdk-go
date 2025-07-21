@@ -798,43 +798,51 @@ const (
 // Defines values for Powerup.
 const (
 	PowerupAppointmentsPro Powerup = "appointments_pro"
+	PowerupNoshow          Powerup = "noshow"
 	PowerupPos             Powerup = "pos"
 	PowerupRestaurantsPro  Powerup = "restaurants_pro"
 )
 
 // Defines values for PowerupAddon.
 const (
-	AppointmentsProResource PowerupAddon = "appointments_pro_resource"
-	AppointmentsProUser     PowerupAddon = "appointments_pro_user"
-	MetaFee                 PowerupAddon = "meta_fee"
-	PosResource             PowerupAddon = "pos_resource"
-	PosUser                 PowerupAddon = "pos_user"
-	SmsCustom               PowerupAddon = "sms_custom"
-	SmsMarketing            PowerupAddon = "sms_marketing"
-	SmsReminders            PowerupAddon = "sms_reminders"
-	TheMichelinGuideFee     PowerupAddon = "the_michelin_guide_fee"
-	TripadvisorFee          PowerupAddon = "tripadvisor_fee"
-)
-
-// Defines values for PowerupSubscriptionCancelReason.
-const (
-	CurrencyIncompatibleWithGateway PowerupSubscriptionCancelReason = "currency_incompatible_with_gateway"
-	FraudReviewFailed               PowerupSubscriptionCancelReason = "fraud_review_failed"
-	NoCard                          PowerupSubscriptionCancelReason = "no_card"
-	NonCompliantCustomer            PowerupSubscriptionCancelReason = "non_compliant_customer"
-	NonCompliantEuCustomer          PowerupSubscriptionCancelReason = "non_compliant_eu_customer"
-	NotPaid                         PowerupSubscriptionCancelReason = "not_paid"
-	TaxCalculationFailed            PowerupSubscriptionCancelReason = "tax_calculation_failed"
+	PowerupAddonAppointmentsProResource PowerupAddon = "appointments_pro_resource"
+	PowerupAddonAppointmentsProUser     PowerupAddon = "appointments_pro_user"
+	PowerupAddonMetaFee                 PowerupAddon = "meta_fee"
+	PowerupAddonPosResource             PowerupAddon = "pos_resource"
+	PowerupAddonPosUser                 PowerupAddon = "pos_user"
+	PowerupAddonSmsCustom               PowerupAddon = "sms_custom"
+	PowerupAddonSmsMarketing            PowerupAddon = "sms_marketing"
+	PowerupAddonSmsReminders            PowerupAddon = "sms_reminders"
+	PowerupAddonTheMichelinGuideFee     PowerupAddon = "the_michelin_guide_fee"
+	PowerupAddonTripadvisorFee          PowerupAddon = "tripadvisor_fee"
 )
 
 // Defines values for PowerupSubscriptionStatus.
 const (
-	PowerupSubscriptionStatusActive      PowerupSubscriptionStatus = "active"
-	PowerupSubscriptionStatusCancelled   PowerupSubscriptionStatus = "cancelled"
-	PowerupSubscriptionStatusFuture      PowerupSubscriptionStatus = "future"
-	PowerupSubscriptionStatusInTrial     PowerupSubscriptionStatus = "in_trial"
-	PowerupSubscriptionStatusNonRenewing PowerupSubscriptionStatus = "non_renewing"
-	PowerupSubscriptionStatusPaused      PowerupSubscriptionStatus = "paused"
+	Active PowerupSubscriptionStatus = "active"
+	Quit   PowerupSubscriptionStatus = "quit"
+	Trial  PowerupSubscriptionStatus = "trial"
+)
+
+// Defines values for PowerupSubscriptionInfoCancelReason.
+const (
+	CurrencyIncompatibleWithGateway PowerupSubscriptionInfoCancelReason = "currency_incompatible_with_gateway"
+	FraudReviewFailed               PowerupSubscriptionInfoCancelReason = "fraud_review_failed"
+	NoCard                          PowerupSubscriptionInfoCancelReason = "no_card"
+	NonCompliantCustomer            PowerupSubscriptionInfoCancelReason = "non_compliant_customer"
+	NonCompliantEuCustomer          PowerupSubscriptionInfoCancelReason = "non_compliant_eu_customer"
+	NotPaid                         PowerupSubscriptionInfoCancelReason = "not_paid"
+	TaxCalculationFailed            PowerupSubscriptionInfoCancelReason = "tax_calculation_failed"
+)
+
+// Defines values for PowerupSubscriptionInfoStatus.
+const (
+	PowerupSubscriptionInfoStatusActive      PowerupSubscriptionInfoStatus = "active"
+	PowerupSubscriptionInfoStatusCancelled   PowerupSubscriptionInfoStatus = "cancelled"
+	PowerupSubscriptionInfoStatusFuture      PowerupSubscriptionInfoStatus = "future"
+	PowerupSubscriptionInfoStatusInTrial     PowerupSubscriptionInfoStatus = "in_trial"
+	PowerupSubscriptionInfoStatusNonRenewing PowerupSubscriptionInfoStatus = "non_renewing"
+	PowerupSubscriptionInfoStatusPaused      PowerupSubscriptionInfoStatus = "paused"
 )
 
 // Defines values for PrePaymentRuleEventTypesAssociation.
@@ -1121,8 +1129,8 @@ const (
 
 // Defines values for TransactionOrigin.
 const (
-	TransactionOriginMarketplace TransactionOrigin = "marketplace"
-	TransactionOriginPos         TransactionOrigin = "pos"
+	Marketplace TransactionOrigin = "marketplace"
+	Pos         TransactionOrigin = "pos"
 )
 
 // Defines values for TransactionStatus.
@@ -2437,12 +2445,13 @@ type Company struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string          `json:"reference_id,omitempty"`
-	Signup      *CompanySignup   `json:"signup,omitempty"`
-	Teya        *TeyaConnection  `json:"teya,omitempty"`
-	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
-	Vertical    *CompanyVertical `json:"vertical,omitempty"`
-	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      *CompanyVertical      `json:"vertical,omitempty"`
+	Vouchers      *VoucherSettings      `json:"vouchers,omitempty"`
 }
 
 // CompanyCheckin defines model for CompanyCheckin.
@@ -2489,12 +2498,13 @@ type CompanyClone struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string          `json:"reference_id,omitempty"`
-	Signup      *CompanySignup   `json:"signup,omitempty"`
-	Teya        *TeyaConnection  `json:"teya,omitempty"`
-	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
-	Vertical    CompanyVertical  `json:"vertical"`
-	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      CompanyVertical       `json:"vertical"`
+	Vouchers      *VoucherSettings      `json:"vouchers,omitempty"`
 }
 
 // CompanyCloneOverrides defines model for CompanyCloneOverrides.
@@ -2790,12 +2800,13 @@ type CompanyResponse struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string         `json:"reference_id,omitempty"`
-	Signup      *CompanySignup  `json:"signup,omitempty"`
-	Teya        *TeyaConnection `json:"teya,omitempty"`
-	UpdatedAt   *time.Time      `json:"updated_at,omitempty"`
-	Vertical    CompanyVertical `json:"vertical"`
-	Vouchers    VoucherSettings `json:"vouchers"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      CompanyVertical       `json:"vertical"`
+	Vouchers      VoucherSettings       `json:"vouchers"`
 }
 
 // CompanyResponseOverrides defines model for CompanyResponseOverrides.
@@ -2881,12 +2892,13 @@ type CompanyUpdate struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string          `json:"reference_id,omitempty"`
-	Signup      *CompanySignup   `json:"signup,omitempty"`
-	Teya        *TeyaConnection  `json:"teya,omitempty"`
-	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
-	Vertical    *interface{}     `json:"vertical,omitempty"`
-	Vouchers    *VoucherSettings `json:"vouchers,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      *interface{}          `json:"vertical,omitempty"`
+	Vouchers      *VoucherSettings      `json:"vouchers,omitempty"`
 }
 
 // CompanyUpdateOverrides defines model for CompanyUpdateOverrides.
@@ -5938,38 +5950,63 @@ type PowerupPostBody struct {
 
 // PowerupSubscription defines model for PowerupSubscription.
 type PowerupSubscription struct {
-	AutoCloseInvoices *bool                            `json:"auto_close_invoices,omitempty"`
-	CancelReason      *PowerupSubscriptionCancelReason `json:"cancel_reason,omitempty"`
-	CancelledAt       *time.Time                       `json:"cancelled_at,omitempty"`
-	ChargedItems      *ChargedBillingItems             `json:"charged_items,omitempty"`
-	Coupons           *SubscriptionCoupons             `json:"coupons,omitempty"`
-	CreatedAt         *time.Time                       `json:"created_at,omitempty"`
-	CurrencyCode      *string                          `json:"currency_code,omitempty"`
-	CurrentTermEnd    *time.Time                       `json:"current_term_end,omitempty"`
-	CurrentTermStart  *time.Time                       `json:"current_term_start,omitempty"`
-	Customer          *string                          `json:"customer,omitempty"`
-	Deleted           *bool                            `json:"deleted,omitempty"`
-	Discounts         *SubscriptionDiscounts           `json:"discounts,omitempty"`
-	DueInvoicesCount  *int32                           `json:"due_invoices_count,omitempty"`
-	DueSince          *time.Time                       `json:"due_since,omitempty"`
-	ExchangeRate      *float64                         `json:"exchange_rate,omitempty"`
-	Id                *string                          `json:"id,omitempty"`
-	NextBillingAt     *time.Time                       `json:"next_billing_at,omitempty"`
-	StartedAt         *time.Time                       `json:"started_at,omitempty"`
-	Status            *PowerupSubscriptionStatus       `json:"status,omitempty"`
-	SubscriptionItems *SubscriptionItems               `json:"subscription_items,omitempty"`
-	TotalDues         *int32                           `json:"total_dues,omitempty"`
+	// The date the powerup subscription was activated.
+	ActiveSince *time.Time `json:"active_since,omitempty"`
+
+	// If the powerup is deactivated, this is the date it was deactivated.
+	DeactivatedAt *time.Time `json:"deactivated_at,omitempty"`
+
+	// Active status of powerup
+	Status *PowerupSubscriptionStatus `json:"status,omitempty"`
+
+	// Date when the user acknowledged the end of the trial.
+	TrialEndAcknowledgedAt *time.Time `json:"trial_end_acknowledged_at,omitempty"`
+
+	// Date when the trial started.
+	TrialStartedAt *time.Time `json:"trial_started_at,omitempty"`
+	Type           *Powerup   `json:"type,omitempty"`
+}
+
+// Active status of powerup
+type PowerupSubscriptionStatus string
+
+// PowerupSubscriptionInfo defines model for PowerupSubscriptionInfo.
+type PowerupSubscriptionInfo struct {
+	AutoCloseInvoices *bool                                `json:"auto_close_invoices,omitempty"`
+	CancelReason      *PowerupSubscriptionInfoCancelReason `json:"cancel_reason,omitempty"`
+	CancelledAt       *time.Time                           `json:"cancelled_at,omitempty"`
+	ChargedItems      *ChargedBillingItems                 `json:"charged_items,omitempty"`
+	Coupons           *SubscriptionCoupons                 `json:"coupons,omitempty"`
+	CreatedAt         *time.Time                           `json:"created_at,omitempty"`
+	CurrencyCode      *string                              `json:"currency_code,omitempty"`
+	CurrentTermEnd    *time.Time                           `json:"current_term_end,omitempty"`
+	CurrentTermStart  *time.Time                           `json:"current_term_start,omitempty"`
+	Customer          *string                              `json:"customer,omitempty"`
+	Deleted           *bool                                `json:"deleted,omitempty"`
+	Discounts         *SubscriptionDiscounts               `json:"discounts,omitempty"`
+	DueInvoicesCount  *int32                               `json:"due_invoices_count,omitempty"`
+	DueSince          *time.Time                           `json:"due_since,omitempty"`
+	ExchangeRate      *float64                             `json:"exchange_rate,omitempty"`
+	Id                *string                              `json:"id,omitempty"`
+	NextBillingAt     *time.Time                           `json:"next_billing_at,omitempty"`
+	StartedAt         *time.Time                           `json:"started_at,omitempty"`
+	Status            *PowerupSubscriptionInfoStatus       `json:"status,omitempty"`
+	SubscriptionItems *SubscriptionItems                   `json:"subscription_items,omitempty"`
+	TotalDues         *int32                               `json:"total_dues,omitempty"`
 
 	// Start of the trial period for the subscription. Presence of this value for future subscription implies the subscription will go into in_trial state when it starts.
 	TrialStart *time.Time `json:"trial_start,omitempty"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 }
 
-// PowerupSubscriptionCancelReason defines model for PowerupSubscription.CancelReason.
-type PowerupSubscriptionCancelReason string
+// PowerupSubscriptionInfoCancelReason defines model for PowerupSubscriptionInfo.CancelReason.
+type PowerupSubscriptionInfoCancelReason string
 
-// PowerupSubscriptionStatus defines model for PowerupSubscription.Status.
-type PowerupSubscriptionStatus string
+// PowerupSubscriptionInfoStatus defines model for PowerupSubscriptionInfo.Status.
+type PowerupSubscriptionInfoStatus string
+
+// PowerupSubscriptions defines model for PowerupSubscriptions.
+type PowerupSubscriptions []PowerupSubscription
 
 // PrePaymentRule defines model for PrePaymentRule.
 type PrePaymentRule struct {
@@ -47172,7 +47209,7 @@ func (r ListSpacesResponse) StatusCode() int {
 type CreateSubscriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *PowerupSubscription
+	JSON200      *PowerupSubscriptionInfo
 }
 
 // Status returns HTTPResponse.Status
@@ -51226,7 +51263,7 @@ func (r DeleteSubscriptionResponse) StatusCode() int {
 type GetSubscriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *PowerupSubscription
+	JSON200      *PowerupSubscriptionInfo
 }
 
 // Status returns HTTPResponse.Status
@@ -57866,7 +57903,7 @@ func ParseCreateSubscriptionResponse(rsp *http.Response) (*CreateSubscriptionRes
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PowerupSubscription
+		var dest PowerupSubscriptionInfo
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -62307,7 +62344,7 @@ func ParseGetSubscriptionResponse(rsp *http.Response) (*GetSubscriptionResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest PowerupSubscription
+		var dest PowerupSubscriptionInfo
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
