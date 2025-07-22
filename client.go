@@ -1430,6 +1430,22 @@ type Address struct {
 	Street     *string `json:"street,omitempty"`
 }
 
+// AdminCompanies defines model for AdminCompanies.
+type AdminCompanies []AdminCompany
+
+// AdminCompany defines model for AdminCompany.
+type AdminCompany struct {
+	CreatedAt        time.Time       `json:"created_at"`
+	DeletedAt        *time.Time      `json:"deleted_at,omitempty"`
+	Id               string          `json:"id"`
+	LastActive       *time.Time      `json:"last_active,omitempty"`
+	Name             string          `json:"name"`
+	PhoneCountryCode *string         `json:"phone_country_code,omitempty"`
+	PhoneNumber      *string         `json:"phone_number,omitempty"`
+	UpdatedAt        time.Time       `json:"updated_at"`
+	Vertical         CompanyVertical `json:"vertical"`
+}
+
 // AdyenBankAccount defines model for AdyenBankAccount.
 type AdyenBankAccount struct {
 	// The IBAN of the bank account.
@@ -8574,6 +8590,30 @@ type ListPaymentActivitiesParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminListCompaniesParams defines parameters for AdminListCompanies.
+type AdminListCompaniesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// Search companies by name (case-insensitive partial match)
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+
+	// Filter by company vertical
+	Vertical *CompanyVertical `form:"vertical,omitempty" json:"vertical,omitempty"`
+}
+
+// AdminGetCompanyParams defines parameters for AdminGetCompany.
+type AdminGetCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListAmbiencesParams defines parameters for ListAmbiences.
 type ListAmbiencesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -14186,6 +14226,12 @@ type ClientInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminListCompanies request
+	AdminListCompanies(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminGetCompany request
+	AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAmbiences request
 	ListAmbiences(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15337,6 +15383,30 @@ func (c *Client) ListEventActivities(ctx context.Context, eventId string, params
 
 func (c *Client) ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPaymentActivitiesRequest(c.Server, paymentId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminListCompanies(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminListCompaniesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminGetCompanyRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -20386,6 +20456,171 @@ func NewListPaymentActivitiesRequest(server string, paymentId string, params *Li
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/activities/payments/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminListCompaniesRequest generates requests for AdminListCompanies
+func NewAdminListCompaniesRequest(server string, params *AdminListCompaniesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Search != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "search", runtime.ParamLocationQuery, *params.Search); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Vertical != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "vertical", runtime.ParamLocationQuery, *params.Vertical); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminGetCompanyRequest generates requests for AdminGetCompany
+func NewAdminGetCompanyRequest(server string, companyId string, params *AdminGetCompanyParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -44535,6 +44770,12 @@ type ClientWithResponsesInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivitiesWithResponse(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*ListPaymentActivitiesResponse, error)
 
+	// AdminListCompanies request
+	AdminListCompaniesWithResponse(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*AdminListCompaniesResponse, error)
+
+	// AdminGetCompany request
+	AdminGetCompanyWithResponse(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*AdminGetCompanyResponse, error)
+
 	// ListAmbiences request
 	ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error)
 
@@ -45730,6 +45971,50 @@ func (r ListPaymentActivitiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPaymentActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminListCompaniesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminCompanies
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminListCompaniesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminListCompaniesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminGetCompanyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminCompany
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminGetCompanyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminGetCompanyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -52540,6 +52825,24 @@ func (c *ClientWithResponses) ListPaymentActivitiesWithResponse(ctx context.Cont
 	return ParseListPaymentActivitiesResponse(rsp)
 }
 
+// AdminListCompaniesWithResponse request returning *AdminListCompaniesResponse
+func (c *ClientWithResponses) AdminListCompaniesWithResponse(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*AdminListCompaniesResponse, error) {
+	rsp, err := c.AdminListCompanies(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminListCompaniesResponse(rsp)
+}
+
+// AdminGetCompanyWithResponse request returning *AdminGetCompanyResponse
+func (c *ClientWithResponses) AdminGetCompanyWithResponse(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*AdminGetCompanyResponse, error) {
+	rsp, err := c.AdminGetCompany(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminGetCompanyResponse(rsp)
+}
+
 // ListAmbiencesWithResponse request returning *ListAmbiencesResponse
 func (c *ClientWithResponses) ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error) {
 	rsp, err := c.ListAmbiences(ctx, params, reqEditors...)
@@ -56152,6 +56455,58 @@ func ParseListPaymentActivitiesResponse(rsp *http.Response) (*ListPaymentActivit
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Activities
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminListCompaniesResponse parses an HTTP response from a AdminListCompaniesWithResponse call
+func ParseAdminListCompaniesResponse(rsp *http.Response) (*AdminListCompaniesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminListCompaniesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminCompanies
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminGetCompanyResponse parses an HTTP response from a AdminGetCompanyWithResponse call
+func ParseAdminGetCompanyResponse(rsp *http.Response) (*AdminGetCompanyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminGetCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminCompany
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
