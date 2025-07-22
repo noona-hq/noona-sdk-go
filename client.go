@@ -7776,6 +7776,7 @@ type User struct {
 
 // UserConnections defines model for UserConnections.
 type UserConnections struct {
+	Adyen  *AdyenConnection       `json:"adyen,omitempty"`
 	Google *UserConnectionsGoogle `json:"google,omitempty"`
 	Teya   *TeyaConnection        `json:"teya,omitempty"`
 }
