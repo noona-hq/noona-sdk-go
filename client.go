@@ -1446,6 +1446,33 @@ type AdminCompany struct {
 	Vertical         CompanyVertical `json:"vertical"`
 }
 
+// AdminCompanyDetails defines model for AdminCompanyDetails.
+type AdminCompanyDetails struct {
+	CreatedAt        time.Time                 `json:"created_at"`
+	DeletedAt        *time.Time                `json:"deleted_at,omitempty"`
+	Id               string                    `json:"id"`
+	LastActive       *time.Time                `json:"last_active,omitempty"`
+	Name             string                    `json:"name"`
+	PhoneCountryCode *string                   `json:"phone_country_code,omitempty"`
+	PhoneNumber      *string                   `json:"phone_number,omitempty"`
+	SecretaryId      *string                   `json:"secretary_id,omitempty"`
+	Subscriptions    *PowerupSubscriptions     `json:"subscriptions,omitempty"`
+	UpdatedAt        time.Time                 `json:"updated_at"`
+	Users            *AdminCompanyDetailsUsers `json:"users,omitempty"`
+	Vertical         CompanyVertical           `json:"vertical"`
+}
+
+// AdminCompanyDetailsUser defines model for AdminCompanyDetailsUser.
+type AdminCompanyDetailsUser struct {
+	ActiveCompanyId *string `json:"active_company_id,omitempty"`
+	Id              *string `json:"id,omitempty"`
+	Name            *string `json:"name,omitempty"`
+	Role            *string `json:"role,omitempty"`
+}
+
+// AdminCompanyDetailsUsers defines model for AdminCompanyDetailsUsers.
+type AdminCompanyDetailsUsers []AdminCompanyDetailsUser
+
 // AdyenBankAccount defines model for AdyenBankAccount.
 type AdyenBankAccount struct {
 	// The IBAN of the bank account.
@@ -46002,7 +46029,7 @@ func (r AdminListCompaniesResponse) StatusCode() int {
 type AdminGetCompanyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *AdminCompany
+	JSON200      *AdminCompanyDetails
 }
 
 // Status returns HTTPResponse.Status
@@ -56506,7 +56533,7 @@ func ParseAdminGetCompanyResponse(rsp *http.Response) (*AdminGetCompanyResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdminCompany
+		var dest AdminCompanyDetails
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
