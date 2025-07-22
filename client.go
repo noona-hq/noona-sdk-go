@@ -1448,6 +1448,7 @@ type AdminCompany struct {
 
 // AdminCompanyDetails defines model for AdminCompanyDetails.
 type AdminCompanyDetails struct {
+	Country          *Country                  `json:"country,omitempty"`
 	CreatedAt        time.Time                 `json:"created_at"`
 	DeletedAt        *time.Time                `json:"deleted_at,omitempty"`
 	Id               string                    `json:"id"`
