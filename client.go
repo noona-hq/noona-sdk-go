@@ -7155,6 +7155,15 @@ type SaltpayTerminals []SaltpayTerminal
 // The search query.
 type Search string
 
+// Secretaries defines model for Secretaries.
+type Secretaries []Secretary
+
+// Secretary defines model for Secretary.
+type Secretary struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
 // SendCustomerDataRequest defines model for SendCustomerDataRequest.
 type SendCustomerDataRequest struct {
 	Email string `json:"email"`
@@ -8634,6 +8643,15 @@ type AdminListCompaniesParams struct {
 
 // AdminGetCompanyParams defines parameters for AdminGetCompany.
 type AdminGetCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AdminListSecretariesParams defines parameters for AdminListSecretaries.
+type AdminListSecretariesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -14259,6 +14277,9 @@ type ClientInterface interface {
 	// AdminGetCompany request
 	AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminListSecretaries request
+	AdminListSecretaries(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAmbiences request
 	ListAmbiences(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15434,6 +15455,18 @@ func (c *Client) AdminListCompanies(ctx context.Context, params *AdminListCompan
 
 func (c *Client) AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminGetCompanyRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminListSecretaries(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminListSecretariesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -20648,6 +20681,69 @@ func NewAdminGetCompanyRequest(server string, companyId string, params *AdminGet
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminListSecretariesRequest generates requests for AdminListSecretaries
+func NewAdminListSecretariesRequest(server string, params *AdminListSecretariesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/secretaries")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -44803,6 +44899,9 @@ type ClientWithResponsesInterface interface {
 	// AdminGetCompany request
 	AdminGetCompanyWithResponse(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*AdminGetCompanyResponse, error)
 
+	// AdminListSecretaries request
+	AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error)
+
 	// ListAmbiences request
 	ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error)
 
@@ -46042,6 +46141,28 @@ func (r AdminGetCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminGetCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminListSecretariesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Secretaries
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminListSecretariesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminListSecretariesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -52870,6 +52991,15 @@ func (c *ClientWithResponses) AdminGetCompanyWithResponse(ctx context.Context, c
 	return ParseAdminGetCompanyResponse(rsp)
 }
 
+// AdminListSecretariesWithResponse request returning *AdminListSecretariesResponse
+func (c *ClientWithResponses) AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error) {
+	rsp, err := c.AdminListSecretaries(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminListSecretariesResponse(rsp)
+}
+
 // ListAmbiencesWithResponse request returning *ListAmbiencesResponse
 func (c *ClientWithResponses) ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error) {
 	rsp, err := c.ListAmbiences(ctx, params, reqEditors...)
@@ -56534,6 +56664,32 @@ func ParseAdminGetCompanyResponse(rsp *http.Response) (*AdminGetCompanyResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdminCompanyDetails
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminListSecretariesResponse parses an HTTP response from a AdminListSecretariesWithResponse call
+func ParseAdminListSecretariesResponse(rsp *http.Response) (*AdminListSecretariesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminListSecretariesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Secretaries
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
