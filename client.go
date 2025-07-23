@@ -8654,6 +8654,15 @@ type AdminListCompaniesParams struct {
 	Vertical *CompanyVertical `form:"vertical,omitempty" json:"vertical,omitempty"`
 }
 
+// AdminDeleteCompanyParams defines parameters for AdminDeleteCompany.
+type AdminDeleteCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AdminGetCompanyParams defines parameters for AdminGetCompany.
 type AdminGetCompanyParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -14299,6 +14308,9 @@ type ClientInterface interface {
 	// AdminListCompanies request
 	AdminListCompanies(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminDeleteCompany request
+	AdminDeleteCompany(ctx context.Context, companyId string, params *AdminDeleteCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminGetCompany request
 	AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15471,6 +15483,18 @@ func (c *Client) ListPaymentActivities(ctx context.Context, paymentId string, pa
 
 func (c *Client) AdminListCompanies(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminListCompaniesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminDeleteCompany(ctx context.Context, companyId string, params *AdminDeleteCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminDeleteCompanyRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -20697,6 +20721,76 @@ func NewAdminListCompaniesRequest(server string, params *AdminListCompaniesParam
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminDeleteCompanyRequest generates requests for AdminDeleteCompany
+func NewAdminDeleteCompanyRequest(server string, companyId string, params *AdminDeleteCompanyParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -45015,6 +45109,9 @@ type ClientWithResponsesInterface interface {
 	// AdminListCompanies request
 	AdminListCompaniesWithResponse(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*AdminListCompaniesResponse, error)
 
+	// AdminDeleteCompany request
+	AdminDeleteCompanyWithResponse(ctx context.Context, companyId string, params *AdminDeleteCompanyParams, reqEditors ...RequestEditorFn) (*AdminDeleteCompanyResponse, error)
+
 	// AdminGetCompany request
 	AdminGetCompanyWithResponse(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*AdminGetCompanyResponse, error)
 
@@ -46241,6 +46338,27 @@ func (r AdminListCompaniesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminListCompaniesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminDeleteCompanyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminDeleteCompanyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminDeleteCompanyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -53126,6 +53244,15 @@ func (c *ClientWithResponses) AdminListCompaniesWithResponse(ctx context.Context
 	return ParseAdminListCompaniesResponse(rsp)
 }
 
+// AdminDeleteCompanyWithResponse request returning *AdminDeleteCompanyResponse
+func (c *ClientWithResponses) AdminDeleteCompanyWithResponse(ctx context.Context, companyId string, params *AdminDeleteCompanyParams, reqEditors ...RequestEditorFn) (*AdminDeleteCompanyResponse, error) {
+	rsp, err := c.AdminDeleteCompany(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminDeleteCompanyResponse(rsp)
+}
+
 // AdminGetCompanyWithResponse request returning *AdminGetCompanyResponse
 func (c *ClientWithResponses) AdminGetCompanyWithResponse(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*AdminGetCompanyResponse, error) {
 	rsp, err := c.AdminGetCompany(ctx, companyId, params, reqEditors...)
@@ -56796,6 +56923,22 @@ func ParseAdminListCompaniesResponse(rsp *http.Response) (*AdminListCompaniesRes
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseAdminDeleteCompanyResponse parses an HTTP response from a AdminDeleteCompanyWithResponse call
+func ParseAdminDeleteCompanyResponse(rsp *http.Response) (*AdminDeleteCompanyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminDeleteCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
