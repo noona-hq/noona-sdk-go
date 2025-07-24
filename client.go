@@ -2480,6 +2480,7 @@ type Company struct {
 	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
 	Locale          *Locale                    `json:"locale,omitempty"`
 	Location        *Location                  `json:"location,omitempty"`
+	LockedSections  *LockedSections            `json:"locked_sections,omitempty"`
 	Marketplace     *CompanyMarketplace        `json:"marketplace,omitempty"`
 	Messaging       *CompanyMessaging          `json:"messaging,omitempty"`
 	Name            *string                    `json:"name,omitempty"`
@@ -2533,6 +2534,7 @@ type CompanyClone struct {
 	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
 	Locale          *Locale                    `json:"locale,omitempty"`
 	Location        LocationCreate             `json:"location"`
+	LockedSections  *LockedSections            `json:"locked_sections,omitempty"`
 	Marketplace     *CompanyMarketplace        `json:"marketplace,omitempty"`
 	Messaging       *CompanyMessaging          `json:"messaging,omitempty"`
 	Name            string                     `json:"name"`
@@ -2835,6 +2837,7 @@ type CompanyResponse struct {
 	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
 	Locale          Locale                     `json:"locale"`
 	Location        Location                   `json:"location"`
+	LockedSections  *LockedSections            `json:"locked_sections,omitempty"`
 	Marketplace     CompanyMarketplace         `json:"marketplace"`
 	Messaging       CompanyMessaging           `json:"messaging"`
 	Name            string                     `json:"name"`
@@ -2927,6 +2930,7 @@ type CompanyUpdate struct {
 	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
 	Locale          *Locale                    `json:"locale,omitempty"`
 	Location        *Location                  `json:"location,omitempty"`
+	LockedSections  *LockedSections            `json:"locked_sections,omitempty"`
 	Marketplace     *CompanyMarketplace        `json:"marketplace,omitempty"`
 	Messaging       *CompanyMessaging          `json:"messaging,omitempty"`
 	Name            *string                    `json:"name,omitempty"`
@@ -5111,6 +5115,16 @@ type LocationCreateOverrides struct {
 type LocationLatLng struct {
 	Lat float64 `json:"lat"`
 	Lng float64 `json:"lng"`
+}
+
+// LockedSections defines model for LockedSections.
+type LockedSections struct {
+	Dashboard     *bool   `json:"dashboard,omitempty"`
+	Pin           *string `json:"pin,omitempty"`
+	PinExpiryTime *int32  `json:"pin_expiry_time,omitempty"`
+	PinHash       *string `json:"pin_hash,omitempty"`
+	Reports       *bool   `json:"reports,omitempty"`
+	Transactions  *bool   `json:"transactions,omitempty"`
 }
 
 // MarketplaceUser defines model for MarketplaceUser.
