@@ -9644,6 +9644,9 @@ type ListTimeSlotsParams struct {
 
 	// Duration is by default inferred from event type(s) but can be overwritten with this parameter.
 	Duration *int32 `form:"duration,omitempty" json:"duration,omitempty"`
+
+	// If true, skips checking if employees and resources can perform the event types and returns all available timeslots
+	SkipCanPerform *bool `form:"skip_can_perform,omitempty" json:"skip_can_perform,omitempty"`
 }
 
 // ListTransactionsParams defines parameters for ListTransactions.
@@ -27651,6 +27654,22 @@ func NewListTimeSlotsRequest(server string, companyId string, params *ListTimeSl
 	if params.Duration != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "duration", runtime.ParamLocationQuery, *params.Duration); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.SkipCanPerform != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "skip_can_perform", runtime.ParamLocationQuery, *params.SkipCanPerform); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
