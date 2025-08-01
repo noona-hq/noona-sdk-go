@@ -3469,8 +3469,9 @@ type EnterpriseFields []EnterpriseField
 
 // EnterpriseProfile defines model for EnterpriseProfile.
 type EnterpriseProfile struct {
-	Image *Image  `json:"image,omitempty"`
-	Name  *string `json:"name,omitempty"`
+	CoverImages *Images `json:"cover_images,omitempty"`
+	Image       *Image  `json:"image,omitempty"`
+	Name        *string `json:"name,omitempty"`
 }
 
 // Enterprises defines model for Enterprises.
