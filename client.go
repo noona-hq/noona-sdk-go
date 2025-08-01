@@ -276,9 +276,10 @@ const (
 
 // Defines values for CompanyField.
 const (
-	CompanyFieldClaimantId     CompanyField = "claimant_id"
-	CompanyFieldCustomReminder CompanyField = "custom_reminder"
-	CompanyFieldImage          CompanyField = "image"
+	CompanyFieldClaimantId            CompanyField = "claimant_id"
+	CompanyFieldCustomReminder        CompanyField = "custom_reminder"
+	CompanyFieldImage                 CompanyField = "image"
+	CompanyFieldInviteDecisionPending CompanyField = "invite_decision_pending"
 )
 
 // Defines values for CompanyPOSSettingsCheckoutFirstTab.
