@@ -446,9 +446,18 @@ const (
 	EventUpdateBehaviorTypeInplace EventUpdateBehaviorType = "inplace"
 )
 
-// Defines values for FiscalizationProviderSaltPay.
+// Defines values for FiscalizationOnboardingStatus.
 const (
-	SaltPay FiscalizationProviderSaltPay = "SaltPay"
+	FiscalizationOnboardingStatusCompleted  FiscalizationOnboardingStatus = "completed"
+	FiscalizationOnboardingStatusError      FiscalizationOnboardingStatus = "error"
+	FiscalizationOnboardingStatusProcessing FiscalizationOnboardingStatus = "processing"
+)
+
+// Defines values for FiscalizationProvider.
+const (
+	Invopop       FiscalizationProvider = "Invopop"
+	SaltPay       FiscalizationProvider = "SaltPay"
+	SpaceInvoices FiscalizationProvider = "SpaceInvoices"
 )
 
 // Defines values for FiscalizeTransactionErrorCode.
@@ -820,9 +829,9 @@ const (
 
 // Defines values for PowerupSubscriptionStatus.
 const (
-	Active PowerupSubscriptionStatus = "active"
-	Quit   PowerupSubscriptionStatus = "quit"
-	Trial  PowerupSubscriptionStatus = "trial"
+	PowerupSubscriptionStatusActive PowerupSubscriptionStatus = "active"
+	PowerupSubscriptionStatusQuit   PowerupSubscriptionStatus = "quit"
+	PowerupSubscriptionStatusTrial  PowerupSubscriptionStatus = "trial"
 )
 
 // Defines values for PowerupSubscriptionInfoCancelReason.
@@ -2656,6 +2665,9 @@ type CompanyPOSSettings struct {
 
 	// Extra information to include on invoices.
 	ExtraInvoiceInfo *string `json:"extra_invoice_info,omitempty"`
+
+	// Whether fiscalization is enabled for this company.
+	FiscalizationEnabled *bool `json:"fiscalization_enabled,omitempty"`
 
 	// The initial invoice number for the company.
 	InitialInvoiceNumber *int64 `json:"initial_invoice_number,omitempty"`
@@ -4709,10 +4721,45 @@ type FiscalizationOnboardingData struct {
 	union json.RawMessage
 }
 
+// FiscalizationOnboardingDataInvopop defines model for FiscalizationOnboardingDataInvopop.
+type FiscalizationOnboardingDataInvopop struct {
+	// City
+	City string `json:"city"`
+
+	// Company name for invoices
+	CompanyName string `json:"company_name"`
+
+	// Contact email for invoices
+	ContactEmail *openapi_types.Email `json:"contact_email,omitempty"`
+
+	// Country code
+	Country *string `json:"country,omitempty"`
+
+	// List of onboarding errors from Invopop
+	OnboardingErrors *[]string `json:"onboarding_errors,omitempty"`
+
+	// Status of the fiscalization onboarding process
+	OnboardingStatus *FiscalizationOnboardingStatus `json:"onboarding_status,omitempty"`
+
+	// Postal code
+	PostalCode string `json:"postal_code"`
+
+	// Fiscalization provider type
+	Provider FiscalizationProvider `json:"provider"`
+
+	// Street address
+	StreetAddress string `json:"street_address"`
+
+	// VAT number with country prefix
+	VatNumber string `json:"vat_number"`
+}
+
 // FiscalizationOnboardingDataSaltPay defines model for FiscalizationOnboardingDataSaltPay.
 type FiscalizationOnboardingDataSaltPay struct {
-	FiscalCode *string                      `json:"fiscal_code,omitempty"`
-	Provider   FiscalizationProviderSaltPay `json:"provider"`
+	FiscalCode *string `json:"fiscal_code,omitempty"`
+
+	// Fiscalization provider type
+	Provider FiscalizationProvider `json:"provider"`
 
 	// The Saltpay company that is being onboarded.
 	SaltpayCompany *string `json:"saltpay_company,omitempty"`
@@ -4724,8 +4771,11 @@ type FiscalizationOnboardingDataSaltPay struct {
 	TaxCredentialsUsername *string   `json:"tax_credentials_username,omitempty"`
 }
 
-// FiscalizationProviderSaltPay defines model for FiscalizationProviderSaltPay.
-type FiscalizationProviderSaltPay string
+// Status of the fiscalization onboarding process
+type FiscalizationOnboardingStatus string
+
+// Fiscalization provider type
+type FiscalizationProvider string
 
 // FiscalizationRecord defines model for FiscalizationRecord.
 type FiscalizationRecord struct {
@@ -4741,10 +4791,21 @@ type FiscalizationRecordData struct {
 	union json.RawMessage
 }
 
+// FiscalizationRecordDataInvopop defines model for FiscalizationRecordDataInvopop.
+type FiscalizationRecordDataInvopop struct {
+	// Invopop document ID
+	DocumentId string `json:"document_id"`
+
+	// Fiscalization provider type
+	Provider FiscalizationProvider `json:"provider"`
+}
+
 // FiscalizationRecordDataSaltPay defines model for FiscalizationRecordDataSaltPay.
 type FiscalizationRecordDataSaltPay struct {
-	ExternalId *string                      `json:"external_id,omitempty"`
-	Provider   FiscalizationProviderSaltPay `json:"provider"`
+	ExternalId *string `json:"external_id,omitempty"`
+
+	// Fiscalization provider type
+	Provider FiscalizationProvider `json:"provider"`
 }
 
 // FiscalizeTransactionError defines model for FiscalizeTransactionError.
@@ -13841,9 +13902,46 @@ func (t FiscalizationOnboardingData) AsFiscalizationOnboardingDataSaltPay() (Fis
 }
 
 func (t *FiscalizationOnboardingData) FromFiscalizationOnboardingDataSaltPay(v FiscalizationOnboardingDataSaltPay) error {
+	v.Provider = "SaltPay"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
+}
+
+func (t FiscalizationOnboardingData) AsFiscalizationOnboardingDataInvopop() (FiscalizationOnboardingDataInvopop, error) {
+	var body FiscalizationOnboardingDataInvopop
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *FiscalizationOnboardingData) FromFiscalizationOnboardingDataInvopop(v FiscalizationOnboardingDataInvopop) error {
+	v.Provider = "Invopop"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t FiscalizationOnboardingData) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"provider"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t FiscalizationOnboardingData) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "Invopop":
+		return t.AsFiscalizationOnboardingDataInvopop()
+	case "SaltPay":
+		return t.AsFiscalizationOnboardingDataSaltPay()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t FiscalizationOnboardingData) MarshalJSON() ([]byte, error) {
@@ -13863,9 +13961,46 @@ func (t FiscalizationRecordData) AsFiscalizationRecordDataSaltPay() (Fiscalizati
 }
 
 func (t *FiscalizationRecordData) FromFiscalizationRecordDataSaltPay(v FiscalizationRecordDataSaltPay) error {
+	v.Provider = "SaltPay"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
+}
+
+func (t FiscalizationRecordData) AsFiscalizationRecordDataInvopop() (FiscalizationRecordDataInvopop, error) {
+	var body FiscalizationRecordDataInvopop
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *FiscalizationRecordData) FromFiscalizationRecordDataInvopop(v FiscalizationRecordDataInvopop) error {
+	v.Provider = "Invopop"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t FiscalizationRecordData) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"provider"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t FiscalizationRecordData) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "Invopop":
+		return t.AsFiscalizationRecordDataInvopop()
+	case "SaltPay":
+		return t.AsFiscalizationRecordDataSaltPay()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t FiscalizationRecordData) MarshalJSON() ([]byte, error) {
