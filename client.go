@@ -8750,6 +8750,30 @@ type AdminGetCompanyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminRemoveSecretaryFromCompanyParams defines parameters for AdminRemoveSecretaryFromCompany.
+type AdminRemoveSecretaryFromCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AdminAssignSecretaryToCompanyJSONBody defines parameters for AdminAssignSecretaryToCompany.
+type AdminAssignSecretaryToCompanyJSONBody struct {
+	// ID of the secretary company
+	SecretaryId string `json:"secretary_id"`
+}
+
+// AdminAssignSecretaryToCompanyParams defines parameters for AdminAssignSecretaryToCompany.
+type AdminAssignSecretaryToCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AdminListSecretariesParams defines parameters for AdminListSecretaries.
 type AdminListSecretariesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -12139,6 +12163,9 @@ type UpdateWebhookParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminAssignSecretaryToCompanyJSONRequestBody defines body for AdminAssignSecretaryToCompany for application/json ContentType.
+type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJSONBody
+
 // CreateBlockedTimeJSONRequestBody defines body for CreateBlockedTime for application/json ContentType.
 type CreateBlockedTimeJSONRequestBody CreateBlockedTimeJSONBody
 
@@ -14469,6 +14496,14 @@ type ClientInterface interface {
 	// AdminGetCompany request
 	AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminRemoveSecretaryFromCompany request
+	AdminRemoveSecretaryFromCompany(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminAssignSecretaryToCompany request with any body
+	AdminAssignSecretaryToCompanyWithBody(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminListSecretaries request
 	AdminListSecretaries(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15662,6 +15697,42 @@ func (c *Client) AdminDeleteCompany(ctx context.Context, companyId string, param
 
 func (c *Client) AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminGetCompanyRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminRemoveSecretaryFromCompany(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminRemoveSecretaryFromCompanyRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminAssignSecretaryToCompanyWithBody(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminAssignSecretaryToCompanyRequestWithBody(c.Server, companyId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminAssignSecretaryToCompanyRequest(c.Server, companyId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -21019,6 +21090,159 @@ func NewAdminGetCompanyRequest(server string, companyId string, params *AdminGet
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewAdminRemoveSecretaryFromCompanyRequest generates requests for AdminRemoveSecretaryFromCompany
+func NewAdminRemoveSecretaryFromCompanyRequest(server string, companyId string, params *AdminRemoveSecretaryFromCompanyParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/secretary", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminAssignSecretaryToCompanyRequest calls the generic AdminAssignSecretaryToCompany builder with application/json body
+func NewAdminAssignSecretaryToCompanyRequest(server string, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminAssignSecretaryToCompanyRequestWithBody(server, companyId, params, "application/json", bodyReader)
+}
+
+// NewAdminAssignSecretaryToCompanyRequestWithBody generates requests for AdminAssignSecretaryToCompany with any type of body
+func NewAdminAssignSecretaryToCompanyRequestWithBody(server string, companyId string, params *AdminAssignSecretaryToCompanyParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/secretary", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -45286,6 +45510,14 @@ type ClientWithResponsesInterface interface {
 	// AdminGetCompany request
 	AdminGetCompanyWithResponse(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*AdminGetCompanyResponse, error)
 
+	// AdminRemoveSecretaryFromCompany request
+	AdminRemoveSecretaryFromCompanyWithResponse(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*AdminRemoveSecretaryFromCompanyResponse, error)
+
+	// AdminAssignSecretaryToCompany request with any body
+	AdminAssignSecretaryToCompanyWithBodyWithResponse(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminAssignSecretaryToCompanyResponse, error)
+
+	AdminAssignSecretaryToCompanyWithResponse(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminAssignSecretaryToCompanyResponse, error)
+
 	// AdminListSecretaries request
 	AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error)
 
@@ -46552,6 +46784,48 @@ func (r AdminGetCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminGetCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminRemoveSecretaryFromCompanyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminRemoveSecretaryFromCompanyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminRemoveSecretaryFromCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminAssignSecretaryToCompanyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminAssignSecretaryToCompanyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminAssignSecretaryToCompanyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -53433,6 +53707,32 @@ func (c *ClientWithResponses) AdminGetCompanyWithResponse(ctx context.Context, c
 	return ParseAdminGetCompanyResponse(rsp)
 }
 
+// AdminRemoveSecretaryFromCompanyWithResponse request returning *AdminRemoveSecretaryFromCompanyResponse
+func (c *ClientWithResponses) AdminRemoveSecretaryFromCompanyWithResponse(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*AdminRemoveSecretaryFromCompanyResponse, error) {
+	rsp, err := c.AdminRemoveSecretaryFromCompany(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminRemoveSecretaryFromCompanyResponse(rsp)
+}
+
+// AdminAssignSecretaryToCompanyWithBodyWithResponse request with arbitrary body returning *AdminAssignSecretaryToCompanyResponse
+func (c *ClientWithResponses) AdminAssignSecretaryToCompanyWithBodyWithResponse(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminAssignSecretaryToCompanyResponse, error) {
+	rsp, err := c.AdminAssignSecretaryToCompanyWithBody(ctx, companyId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminAssignSecretaryToCompanyResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminAssignSecretaryToCompanyWithResponse(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminAssignSecretaryToCompanyResponse, error) {
+	rsp, err := c.AdminAssignSecretaryToCompany(ctx, companyId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminAssignSecretaryToCompanyResponse(rsp)
+}
+
 // AdminListSecretariesWithResponse request returning *AdminListSecretariesResponse
 func (c *ClientWithResponses) AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error) {
 	rsp, err := c.AdminListSecretaries(ctx, params, reqEditors...)
@@ -57136,6 +57436,38 @@ func ParseAdminGetCompanyResponse(rsp *http.Response) (*AdminGetCompanyResponse,
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseAdminRemoveSecretaryFromCompanyResponse parses an HTTP response from a AdminRemoveSecretaryFromCompanyWithResponse call
+func ParseAdminRemoveSecretaryFromCompanyResponse(rsp *http.Response) (*AdminRemoveSecretaryFromCompanyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminRemoveSecretaryFromCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminAssignSecretaryToCompanyResponse parses an HTTP response from a AdminAssignSecretaryToCompanyWithResponse call
+func ParseAdminAssignSecretaryToCompanyResponse(rsp *http.Response) (*AdminAssignSecretaryToCompanyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminAssignSecretaryToCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
