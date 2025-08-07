@@ -449,7 +449,7 @@ const (
 // Defines values for FiscalizationOnboardingStatus.
 const (
 	FiscalizationOnboardingStatusCompleted  FiscalizationOnboardingStatus = "completed"
-	FiscalizationOnboardingStatusError      FiscalizationOnboardingStatus = "error"
+	FiscalizationOnboardingStatusFailed     FiscalizationOnboardingStatus = "failed"
 	FiscalizationOnboardingStatusProcessing FiscalizationOnboardingStatus = "processing"
 )
 
@@ -4724,16 +4724,17 @@ type FiscalizationOnboardingData struct {
 // FiscalizationOnboardingDataInvopop defines model for FiscalizationOnboardingDataInvopop.
 type FiscalizationOnboardingDataInvopop struct {
 	// City
-	City string `json:"city"`
+	City *string `json:"city,omitempty"`
 
 	// Company name for invoices
-	CompanyName string `json:"company_name"`
+	CompanyName *string `json:"company_name,omitempty"`
 
 	// Contact email for invoices
 	ContactEmail *openapi_types.Email `json:"contact_email,omitempty"`
 
 	// Country code
-	Country *string `json:"country,omitempty"`
+	Country               *string    `json:"country,omitempty"`
+	OnboardingCompletedAt *time.Time `json:"onboarding_completed_at,omitempty"`
 
 	// List of onboarding errors from Invopop
 	OnboardingErrors *[]string `json:"onboarding_errors,omitempty"`
@@ -4742,16 +4743,16 @@ type FiscalizationOnboardingDataInvopop struct {
 	OnboardingStatus *FiscalizationOnboardingStatus `json:"onboarding_status,omitempty"`
 
 	// Postal code
-	PostalCode string `json:"postal_code"`
+	PostalCode *string `json:"postal_code,omitempty"`
 
 	// Fiscalization provider type
 	Provider FiscalizationProvider `json:"provider"`
 
 	// Street address
-	StreetAddress string `json:"street_address"`
+	StreetAddress *string `json:"street_address,omitempty"`
 
 	// VAT number with country prefix
-	VatNumber string `json:"vat_number"`
+	VatNumber *string `json:"vat_number,omitempty"`
 }
 
 // FiscalizationOnboardingDataSaltPay defines model for FiscalizationOnboardingDataSaltPay.
