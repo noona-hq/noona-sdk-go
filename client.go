@@ -2718,11 +2718,13 @@ type CompanyProfile struct {
 	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
 	//
 	// A booking interval is set on the company level but can be overridden on the resource/employee level.
-	BookingInterval       *BookingInterval `json:"booking_interval,omitempty"`
-	BookingRedirectUrl    *string          `json:"booking_redirect_url,omitempty"`
-	BookingSuccessMessage *string          `json:"booking_success_message,omitempty"`
-	CompanyTypes          *[]string        `json:"company_types,omitempty"`
-	ContactEmail          *string          `json:"contact_email,omitempty"`
+	BookingInterval          *BookingInterval `json:"booking_interval,omitempty"`
+	BookingRedirectUrl       *string          `json:"booking_redirect_url,omitempty"`
+	BookingSuccessMessage    *string          `json:"booking_success_message,omitempty"`
+	ClientCancelDisabled     *bool            `json:"client_cancel_disabled,omitempty"`
+	ClientRescheduleDisabled *bool            `json:"client_reschedule_disabled,omitempty"`
+	CompanyTypes             *[]string        `json:"company_types,omitempty"`
+	ContactEmail             *string          `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
 	CoverImages *[]Image    `json:"cover_images,omitempty"`
@@ -2788,11 +2790,13 @@ type CompanyProfileCreate struct {
 	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
 	//
 	// A booking interval is set on the company level but can be overridden on the resource/employee level.
-	BookingInterval       *BookingInterval `json:"booking_interval,omitempty"`
-	BookingRedirectUrl    *string          `json:"booking_redirect_url,omitempty"`
-	BookingSuccessMessage *string          `json:"booking_success_message,omitempty"`
-	CompanyTypes          *[]string        `json:"company_types,omitempty"`
-	ContactEmail          *string          `json:"contact_email,omitempty"`
+	BookingInterval          *BookingInterval `json:"booking_interval,omitempty"`
+	BookingRedirectUrl       *string          `json:"booking_redirect_url,omitempty"`
+	BookingSuccessMessage    *string          `json:"booking_success_message,omitempty"`
+	ClientCancelDisabled     *bool            `json:"client_cancel_disabled,omitempty"`
+	ClientRescheduleDisabled *bool            `json:"client_reschedule_disabled,omitempty"`
+	CompanyTypes             *[]string        `json:"company_types,omitempty"`
+	ContactEmail             *string          `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
 	CoverImages *[]Image    `json:"cover_images,omitempty"`
