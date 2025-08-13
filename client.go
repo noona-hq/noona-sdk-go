@@ -1484,6 +1484,27 @@ type AdminCompanyDetailsUser struct {
 // AdminCompanyDetailsUsers defines model for AdminCompanyDetailsUsers.
 type AdminCompanyDetailsUsers []AdminCompanyDetailsUser
 
+// AdminMoveUserRequest defines model for AdminMoveUserRequest.
+type AdminMoveUserRequest struct {
+	// ID of the company to move the user to
+	DestinationCompanyId string `json:"destination_company_id"`
+
+	// Whether to move customer relationships associated with the user
+	MoveCustomers *bool `json:"move_customers,omitempty"`
+
+	// Whether to move free time blocks associated with the user
+	MoveFreeTimes *bool `json:"move_free_times,omitempty"`
+
+	// Whether to move future events associated with the user
+	MoveFutureEvents *bool `json:"move_future_events,omitempty"`
+
+	// Whether to move past events associated with the user
+	MovePastEvents *bool `json:"move_past_events,omitempty"`
+
+	// ID of the company to move the user from
+	SourceCompanyId string `json:"source_company_id"`
+}
+
 // AdminUser defines model for AdminUser.
 type AdminUser struct {
 	Companies *AdminCompanies `json:"companies,omitempty"`
@@ -8795,6 +8816,18 @@ type AdminListUsersParams struct {
 	Email *string `form:"email,omitempty" json:"email,omitempty"`
 }
 
+// AdminMoveUserJSONBody defines parameters for AdminMoveUser.
+type AdminMoveUserJSONBody AdminMoveUserRequest
+
+// AdminMoveUserParams defines parameters for AdminMoveUser.
+type AdminMoveUserParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListAmbiencesParams defines parameters for ListAmbiences.
 type ListAmbiencesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -12166,6 +12199,9 @@ type UpdateWebhookParams struct {
 // AdminAssignSecretaryToCompanyJSONRequestBody defines body for AdminAssignSecretaryToCompany for application/json ContentType.
 type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJSONBody
 
+// AdminMoveUserJSONRequestBody defines body for AdminMoveUser for application/json ContentType.
+type AdminMoveUserJSONRequestBody AdminMoveUserJSONBody
+
 // CreateBlockedTimeJSONRequestBody defines body for CreateBlockedTime for application/json ContentType.
 type CreateBlockedTimeJSONRequestBody CreateBlockedTimeJSONBody
 
@@ -14510,6 +14546,11 @@ type ClientInterface interface {
 	// AdminListUsers request
 	AdminListUsers(ctx context.Context, params *AdminListUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminMoveUser request with any body
+	AdminMoveUserWithBody(ctx context.Context, userId string, params *AdminMoveUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminMoveUser(ctx context.Context, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAmbiences request
 	ListAmbiences(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15757,6 +15798,30 @@ func (c *Client) AdminListSecretaries(ctx context.Context, params *AdminListSecr
 
 func (c *Client) AdminListUsers(ctx context.Context, params *AdminListUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminListUsersRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminMoveUserWithBody(ctx context.Context, userId string, params *AdminMoveUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminMoveUserRequestWithBody(c.Server, userId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminMoveUser(ctx context.Context, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminMoveUserRequest(c.Server, userId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -21385,6 +21450,89 @@ func NewAdminListUsersRequest(server string, params *AdminListUsersParams) (*htt
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewAdminMoveUserRequest calls the generic AdminMoveUser builder with application/json body
+func NewAdminMoveUserRequest(server string, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminMoveUserRequestWithBody(server, userId, params, "application/json", bodyReader)
+}
+
+// NewAdminMoveUserRequestWithBody generates requests for AdminMoveUser with any type of body
+func NewAdminMoveUserRequestWithBody(server string, userId string, params *AdminMoveUserParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_id", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/users/%s/move-company", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -45524,6 +45672,11 @@ type ClientWithResponsesInterface interface {
 	// AdminListUsers request
 	AdminListUsersWithResponse(ctx context.Context, params *AdminListUsersParams, reqEditors ...RequestEditorFn) (*AdminListUsersResponse, error)
 
+	// AdminMoveUser request with any body
+	AdminMoveUserWithBodyWithResponse(ctx context.Context, userId string, params *AdminMoveUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminMoveUserResponse, error)
+
+	AdminMoveUserWithResponse(ctx context.Context, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminMoveUserResponse, error)
+
 	// ListAmbiences request
 	ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error)
 
@@ -46870,6 +47023,27 @@ func (r AdminListUsersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminListUsersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminMoveUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminMoveUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminMoveUserResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -53751,6 +53925,23 @@ func (c *ClientWithResponses) AdminListUsersWithResponse(ctx context.Context, pa
 	return ParseAdminListUsersResponse(rsp)
 }
 
+// AdminMoveUserWithBodyWithResponse request with arbitrary body returning *AdminMoveUserResponse
+func (c *ClientWithResponses) AdminMoveUserWithBodyWithResponse(ctx context.Context, userId string, params *AdminMoveUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminMoveUserResponse, error) {
+	rsp, err := c.AdminMoveUserWithBody(ctx, userId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminMoveUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminMoveUserWithResponse(ctx context.Context, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminMoveUserResponse, error) {
+	rsp, err := c.AdminMoveUser(ctx, userId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminMoveUserResponse(rsp)
+}
+
 // ListAmbiencesWithResponse request returning *ListAmbiencesResponse
 func (c *ClientWithResponses) ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error) {
 	rsp, err := c.ListAmbiences(ctx, params, reqEditors...)
@@ -57520,6 +57711,22 @@ func ParseAdminListUsersResponse(rsp *http.Response) (*AdminListUsersResponse, e
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseAdminMoveUserResponse parses an HTTP response from a AdminMoveUserWithResponse call
+func ParseAdminMoveUserResponse(rsp *http.Response) (*AdminMoveUserResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminMoveUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
