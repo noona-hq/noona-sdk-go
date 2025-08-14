@@ -7861,6 +7861,11 @@ type TransactionsFilter struct {
 // The key is the language code, and the value is the translated string.
 type TranslationMap map[string]string
 
+// TrialAcknowledgment defines model for TrialAcknowledgment.
+type TrialAcknowledgment struct {
+	SubscriptionType Powerup `json:"subscription_type"`
+}
+
 // UnavailableResource defines model for UnavailableResource.
 type UnavailableResource struct {
 	// The reason why the resource is unavailable.
@@ -9684,6 +9689,18 @@ type CreateSubscriptionJSONBody PowerupPostBody
 
 // CreateSubscriptionParams defines parameters for CreateSubscription.
 type CreateSubscriptionParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AcknowledgeTrialEndJSONBody defines parameters for AcknowledgeTrialEnd.
+type AcknowledgeTrialEndJSONBody TrialAcknowledgment
+
+// AcknowledgeTrialEndParams defines parameters for AcknowledgeTrialEnd.
+type AcknowledgeTrialEndParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -12226,6 +12243,9 @@ type UpdateEmployeeJSONRequestBody UpdateEmployeeJSONBody
 
 // CreateSubscriptionJSONRequestBody defines body for CreateSubscription for application/json ContentType.
 type CreateSubscriptionJSONRequestBody CreateSubscriptionJSONBody
+
+// AcknowledgeTrialEndJSONRequestBody defines body for AcknowledgeTrialEnd for application/json ContentType.
+type AcknowledgeTrialEndJSONRequestBody AcknowledgeTrialEndJSONBody
 
 // UpdateBillingInfoJSONRequestBody defines body for UpdateBillingInfo for application/json ContentType.
 type UpdateBillingInfoJSONRequestBody UpdateBillingInfoJSONBody
@@ -14773,6 +14793,11 @@ type ClientInterface interface {
 
 	CreateSubscription(ctx context.Context, companyId string, params *CreateSubscriptionParams, body CreateSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AcknowledgeTrialEnd request with any body
+	AcknowledgeTrialEndWithBody(ctx context.Context, companyId string, params *AcknowledgeTrialEndParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AcknowledgeTrialEnd(ctx context.Context, companyId string, params *AcknowledgeTrialEndParams, body AcknowledgeTrialEndJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetSubscriptionBillingInfo request
 	GetSubscriptionBillingInfo(ctx context.Context, companyId string, params *GetSubscriptionBillingInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -16726,6 +16751,30 @@ func (c *Client) CreateSubscriptionWithBody(ctx context.Context, companyId strin
 
 func (c *Client) CreateSubscription(ctx context.Context, companyId string, params *CreateSubscriptionParams, body CreateSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSubscriptionRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AcknowledgeTrialEndWithBody(ctx context.Context, companyId string, params *AcknowledgeTrialEndParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcknowledgeTrialEndRequestWithBody(c.Server, companyId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AcknowledgeTrialEnd(ctx context.Context, companyId string, params *AcknowledgeTrialEndParams, body AcknowledgeTrialEndJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAcknowledgeTrialEndRequest(c.Server, companyId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -27407,6 +27456,89 @@ func NewCreateSubscriptionRequestWithBody(server string, companyId string, param
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/subscriptions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAcknowledgeTrialEndRequest calls the generic AcknowledgeTrialEnd builder with application/json body
+func NewAcknowledgeTrialEndRequest(server string, companyId string, params *AcknowledgeTrialEndParams, body AcknowledgeTrialEndJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAcknowledgeTrialEndRequestWithBody(server, companyId, params, "application/json", bodyReader)
+}
+
+// NewAcknowledgeTrialEndRequestWithBody generates requests for AcknowledgeTrialEnd with any type of body
+func NewAcknowledgeTrialEndRequestWithBody(server string, companyId string, params *AcknowledgeTrialEndParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/subscriptions/acknowledge-trial-end", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -45899,6 +46031,11 @@ type ClientWithResponsesInterface interface {
 
 	CreateSubscriptionWithResponse(ctx context.Context, companyId string, params *CreateSubscriptionParams, body CreateSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSubscriptionResponse, error)
 
+	// AcknowledgeTrialEnd request with any body
+	AcknowledgeTrialEndWithBodyWithResponse(ctx context.Context, companyId string, params *AcknowledgeTrialEndParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcknowledgeTrialEndResponse, error)
+
+	AcknowledgeTrialEndWithResponse(ctx context.Context, companyId string, params *AcknowledgeTrialEndParams, body AcknowledgeTrialEndJSONRequestBody, reqEditors ...RequestEditorFn) (*AcknowledgeTrialEndResponse, error)
+
 	// GetSubscriptionBillingInfo request
 	GetSubscriptionBillingInfoWithResponse(ctx context.Context, companyId string, params *GetSubscriptionBillingInfoParams, reqEditors ...RequestEditorFn) (*GetSubscriptionBillingInfoResponse, error)
 
@@ -48544,6 +48681,27 @@ func (r CreateSubscriptionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateSubscriptionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AcknowledgeTrialEndResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AcknowledgeTrialEndResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AcknowledgeTrialEndResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -54614,6 +54772,23 @@ func (c *ClientWithResponses) CreateSubscriptionWithResponse(ctx context.Context
 	return ParseCreateSubscriptionResponse(rsp)
 }
 
+// AcknowledgeTrialEndWithBodyWithResponse request with arbitrary body returning *AcknowledgeTrialEndResponse
+func (c *ClientWithResponses) AcknowledgeTrialEndWithBodyWithResponse(ctx context.Context, companyId string, params *AcknowledgeTrialEndParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AcknowledgeTrialEndResponse, error) {
+	rsp, err := c.AcknowledgeTrialEndWithBody(ctx, companyId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcknowledgeTrialEndResponse(rsp)
+}
+
+func (c *ClientWithResponses) AcknowledgeTrialEndWithResponse(ctx context.Context, companyId string, params *AcknowledgeTrialEndParams, body AcknowledgeTrialEndJSONRequestBody, reqEditors ...RequestEditorFn) (*AcknowledgeTrialEndResponse, error) {
+	rsp, err := c.AcknowledgeTrialEnd(ctx, companyId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAcknowledgeTrialEndResponse(rsp)
+}
+
 // GetSubscriptionBillingInfoWithResponse request returning *GetSubscriptionBillingInfoResponse
 func (c *ClientWithResponses) GetSubscriptionBillingInfoWithResponse(ctx context.Context, companyId string, params *GetSubscriptionBillingInfoParams, reqEditors ...RequestEditorFn) (*GetSubscriptionBillingInfoResponse, error) {
 	rsp, err := c.GetSubscriptionBillingInfo(ctx, companyId, params, reqEditors...)
@@ -59487,6 +59662,22 @@ func ParseCreateSubscriptionResponse(rsp *http.Response) (*CreateSubscriptionRes
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseAcknowledgeTrialEndResponse parses an HTTP response from a AcknowledgeTrialEndWithResponse call
+func ParseAcknowledgeTrialEndResponse(rsp *http.Response) (*AcknowledgeTrialEndResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AcknowledgeTrialEndResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
