@@ -4309,6 +4309,12 @@ type EventTypePreference struct {
 
 	// If true, resource can not service this event type.
 	Skip *bool `json:"skip,omitempty"`
+
+	// If true, resource can not service this event type on the calendar.
+	SkipCalendar *bool `json:"skip_calendar,omitempty"`
+
+	// If true, resource can not service this event type on the marketplace.
+	SkipMarketplace *bool `json:"skip_marketplace,omitempty"`
 }
 
 // EventTypePreferences defines model for EventTypePreferences.
