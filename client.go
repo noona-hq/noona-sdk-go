@@ -1191,10 +1191,11 @@ const (
 
 // Defines values for VerificationCertificationType.
 const (
-	VerificationCertificationTypeCosmetology    VerificationCertificationType = "cosmetology"
-	VerificationCertificationTypeHairdressing   VerificationCertificationType = "hairdressing"
-	VerificationCertificationTypeMassageTherapy VerificationCertificationType = "massage_therapy"
-	VerificationCertificationTypePodiatry       VerificationCertificationType = "podiatry"
+	VerificationCertificationTypeCosmetology               VerificationCertificationType = "cosmetology"
+	VerificationCertificationTypeHairdressing              VerificationCertificationType = "hairdressing"
+	VerificationCertificationTypeMassageTherapy            VerificationCertificationType = "massage_therapy"
+	VerificationCertificationTypePodiatry                  VerificationCertificationType = "podiatry"
+	VerificationCertificationTypeTherapeuticMassageTherapy VerificationCertificationType = "therapeutic_massage_therapy"
 )
 
 // Defines values for VerificationStatus.
@@ -1355,10 +1356,11 @@ const (
 
 // Defines values for CreateVerificationRequestJSONBodyCertificationType.
 const (
-	CreateVerificationRequestJSONBodyCertificationTypeCosmetology    CreateVerificationRequestJSONBodyCertificationType = "cosmetology"
-	CreateVerificationRequestJSONBodyCertificationTypeHairdressing   CreateVerificationRequestJSONBodyCertificationType = "hairdressing"
-	CreateVerificationRequestJSONBodyCertificationTypeMassageTherapy CreateVerificationRequestJSONBodyCertificationType = "massage_therapy"
-	CreateVerificationRequestJSONBodyCertificationTypePodiatry       CreateVerificationRequestJSONBodyCertificationType = "podiatry"
+	CreateVerificationRequestJSONBodyCertificationTypeCosmetology               CreateVerificationRequestJSONBodyCertificationType = "cosmetology"
+	CreateVerificationRequestJSONBodyCertificationTypeHairdressing              CreateVerificationRequestJSONBodyCertificationType = "hairdressing"
+	CreateVerificationRequestJSONBodyCertificationTypeMassageTherapy            CreateVerificationRequestJSONBodyCertificationType = "massage_therapy"
+	CreateVerificationRequestJSONBodyCertificationTypePodiatry                  CreateVerificationRequestJSONBodyCertificationType = "podiatry"
+	CreateVerificationRequestJSONBodyCertificationTypeTherapeuticMassageTherapy CreateVerificationRequestJSONBodyCertificationType = "therapeutic_massage_therapy"
 )
 
 // Activities defines model for Activities.
