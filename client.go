@@ -7889,6 +7889,11 @@ type TrialAcknowledgment struct {
 	SubscriptionType Powerup `json:"subscription_type"`
 }
 
+// TrialStart defines model for TrialStart.
+type TrialStart struct {
+	SubscriptionType Powerup `json:"subscription_type"`
+}
+
 // UnavailableResource defines model for UnavailableResource.
 type UnavailableResource struct {
 	// The reason why the resource is unavailable.
@@ -9773,6 +9778,18 @@ type CreatePaymentIntentParams struct {
 
 // GetSubscriptionPricingParams defines parameters for GetSubscriptionPricing.
 type GetSubscriptionPricingParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// StartTrialJSONBody defines parameters for StartTrial.
+type StartTrialJSONBody TrialStart
+
+// StartTrialParams defines parameters for StartTrial.
+type StartTrialParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -12272,6 +12289,9 @@ type AcknowledgeTrialEndJSONRequestBody AcknowledgeTrialEndJSONBody
 
 // UpdateBillingInfoJSONRequestBody defines body for UpdateBillingInfo for application/json ContentType.
 type UpdateBillingInfoJSONRequestBody UpdateBillingInfoJSONBody
+
+// StartTrialJSONRequestBody defines body for StartTrial for application/json ContentType.
+type StartTrialJSONRequestBody StartTrialJSONBody
 
 // CreateCustomerGroupJSONRequestBody defines body for CreateCustomerGroup for application/json ContentType.
 type CreateCustomerGroupJSONRequestBody CreateCustomerGroupJSONBody
@@ -14838,6 +14858,11 @@ type ClientInterface interface {
 	// GetSubscriptionPricing request
 	GetSubscriptionPricing(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// StartTrial request with any body
+	StartTrialWithBody(ctx context.Context, companyId string, params *StartTrialParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	StartTrial(ctx context.Context, companyId string, params *StartTrialParams, body StartTrialJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListTerminals request
 	ListTerminals(ctx context.Context, companyId string, params *ListTerminalsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -16870,6 +16895,30 @@ func (c *Client) CreatePaymentIntent(ctx context.Context, companyId string, para
 
 func (c *Client) GetSubscriptionPricing(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSubscriptionPricingRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) StartTrialWithBody(ctx context.Context, companyId string, params *StartTrialParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartTrialRequestWithBody(c.Server, companyId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) StartTrial(ctx context.Context, companyId string, params *StartTrialParams, body StartTrialJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartTrialRequest(c.Server, companyId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -27986,6 +28035,89 @@ func NewGetSubscriptionPricingRequest(server string, companyId string, params *G
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewStartTrialRequest calls the generic StartTrial builder with application/json body
+func NewStartTrialRequest(server string, companyId string, params *StartTrialParams, body StartTrialJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewStartTrialRequestWithBody(server, companyId, params, "application/json", bodyReader)
+}
+
+// NewStartTrialRequestWithBody generates requests for StartTrial with any type of body
+func NewStartTrialRequestWithBody(server string, companyId string, params *StartTrialParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/subscriptions/start-trial", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -46076,6 +46208,11 @@ type ClientWithResponsesInterface interface {
 	// GetSubscriptionPricing request
 	GetSubscriptionPricingWithResponse(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*GetSubscriptionPricingResponse, error)
 
+	// StartTrial request with any body
+	StartTrialWithBodyWithResponse(ctx context.Context, companyId string, params *StartTrialParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*StartTrialResponse, error)
+
+	StartTrialWithResponse(ctx context.Context, companyId string, params *StartTrialParams, body StartTrialJSONRequestBody, reqEditors ...RequestEditorFn) (*StartTrialResponse, error)
+
 	// ListTerminals request
 	ListTerminalsWithResponse(ctx context.Context, companyId string, params *ListTerminalsParams, reqEditors ...RequestEditorFn) (*ListTerminalsResponse, error)
 
@@ -48835,6 +48972,27 @@ func (r GetSubscriptionPricingResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSubscriptionPricingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type StartTrialResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r StartTrialResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StartTrialResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -54865,6 +55023,23 @@ func (c *ClientWithResponses) GetSubscriptionPricingWithResponse(ctx context.Con
 	return ParseGetSubscriptionPricingResponse(rsp)
 }
 
+// StartTrialWithBodyWithResponse request with arbitrary body returning *StartTrialResponse
+func (c *ClientWithResponses) StartTrialWithBodyWithResponse(ctx context.Context, companyId string, params *StartTrialParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*StartTrialResponse, error) {
+	rsp, err := c.StartTrialWithBody(ctx, companyId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartTrialResponse(rsp)
+}
+
+func (c *ClientWithResponses) StartTrialWithResponse(ctx context.Context, companyId string, params *StartTrialParams, body StartTrialJSONRequestBody, reqEditors ...RequestEditorFn) (*StartTrialResponse, error) {
+	rsp, err := c.StartTrial(ctx, companyId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartTrialResponse(rsp)
+}
+
 // ListTerminalsWithResponse request returning *ListTerminalsResponse
 func (c *ClientWithResponses) ListTerminalsWithResponse(ctx context.Context, companyId string, params *ListTerminalsParams, reqEditors ...RequestEditorFn) (*ListTerminalsResponse, error) {
 	rsp, err := c.ListTerminals(ctx, companyId, params, reqEditors...)
@@ -59831,6 +60006,22 @@ func ParseGetSubscriptionPricingResponse(rsp *http.Response) (*GetSubscriptionPr
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseStartTrialResponse parses an HTTP response from a StartTrialWithResponse call
+func ParseStartTrialResponse(rsp *http.Response) (*StartTrialResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StartTrialResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
