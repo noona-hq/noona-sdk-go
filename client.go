@@ -302,7 +302,12 @@ const (
 
 // Defines values for CreatePaymentErrorCode.
 const (
-	UnableToProcessPayment CreatePaymentErrorCode = "unable_to_process_payment"
+	ExpiredCard            CreatePaymentErrorCode = "expiredCard"
+	InvalidCard            CreatePaymentErrorCode = "invalidCard"
+	InvalidCardNumber      CreatePaymentErrorCode = "invalidCardNumber"
+	NotSufficientFunds     CreatePaymentErrorCode = "notSufficientFunds"
+	UnableToProcessPayment CreatePaymentErrorCode = "unableToProcessPayment"
+	UnknownPaymentError    CreatePaymentErrorCode = "unknownPaymentError"
 )
 
 // Defines values for CustomMessageRuleType.
@@ -3035,6 +3040,11 @@ type CreatePaymentError struct {
 	// The error code. Only populated for certain errors.
 	//
 	// - `unable_to_process_payment`: Charging the card for the noshow fee failed.
+	// - `not_sufficient_funds`: The card has insufficient funds.
+	// - `invalid_card`: The card is invalid.
+	// - `invalid_card_number`: The card number is invalid.
+	// - `expired_card`: The card is expired.
+	// - `unknown_payment_error`: An unknown payment error occurred.
 	Code    *CreatePaymentErrorCode `json:"code,omitempty"`
 	Message string                  `json:"message"`
 }
@@ -3042,6 +3052,11 @@ type CreatePaymentError struct {
 // The error code. Only populated for certain errors.
 //
 // - `unable_to_process_payment`: Charging the card for the noshow fee failed.
+// - `not_sufficient_funds`: The card has insufficient funds.
+// - `invalid_card`: The card is invalid.
+// - `invalid_card_number`: The card number is invalid.
+// - `expired_card`: The card is expired.
+// - `unknown_payment_error`: An unknown payment error occurred.
 type CreatePaymentErrorCode string
 
 // CreatePaymentMethodInstanceRequest defines model for CreatePaymentMethodInstanceRequest.
