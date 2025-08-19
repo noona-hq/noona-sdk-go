@@ -166,6 +166,7 @@ const (
 // Defines values for BookingInterval.
 const (
 	N10  BookingInterval = 10
+	N105 BookingInterval = 105
 	N120 BookingInterval = 120
 	N15  BookingInterval = 15
 	N160 BookingInterval = 160
