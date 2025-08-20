@@ -2541,13 +2541,16 @@ type Company struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId   *string               `json:"reference_id,omitempty"`
-	Signup        *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya          *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
-	Vertical      *CompanyVertical      `json:"vertical,omitempty"`
-	Vouchers      *VoucherSettings      `json:"vouchers,omitempty"`
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
+	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
+	Signup         *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya           *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
+	Vertical       *CompanyVertical      `json:"vertical,omitempty"`
+	Vouchers       *VoucherSettings      `json:"vouchers,omitempty"`
 }
 
 // CompanyCheckin defines model for CompanyCheckin.
@@ -2595,13 +2598,16 @@ type CompanyClone struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId   *string               `json:"reference_id,omitempty"`
-	Signup        *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya          *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
-	Vertical      CompanyVertical       `json:"vertical"`
-	Vouchers      *VoucherSettings      `json:"vouchers,omitempty"`
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
+	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
+	Signup         *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya           *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
+	Vertical       CompanyVertical       `json:"vertical"`
+	Vouchers       *VoucherSettings      `json:"vouchers,omitempty"`
 }
 
 // CompanyCloneOverrides defines model for CompanyCloneOverrides.
@@ -2749,8 +2755,10 @@ type CompanyProfile struct {
 	ExceedMaxGuestsMessage *string `json:"exceed_max_guests_message,omitempty"`
 
 	// The number of favorites/likes on the company.
-	Favorites                *int32 `json:"favorites,omitempty"`
-	Image                    *Image `json:"image,omitempty"`
+	Favorites *int32 `json:"favorites,omitempty"`
+	Image     *Image `json:"image,omitempty"`
+
+	// DEPRECATED: Use required_fields.license_plate instead. This field will be removed in a future version.
 	LicensePlate             *bool  `json:"license_plate,omitempty"`
 	MaxBookableFutureDays    *int32 `json:"max_bookable_future_days,omitempty"`
 	MaxGuestsPerBooking      *int32 `json:"max_guests_per_booking,omitempty"`
@@ -2774,7 +2782,9 @@ type CompanyProfile struct {
 	Prefer12Hours *bool `json:"prefer_12_hours,omitempty"`
 
 	// The price category of the company.
-	PriceCategory  *int32          `json:"price_category,omitempty"`
+	PriceCategory *int32 `json:"price_category,omitempty"`
+
+	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
 	ServiceBuffer  *int32          `json:"service_buffer,omitempty"`
 
@@ -2821,8 +2831,10 @@ type CompanyProfileCreate struct {
 	ExceedMaxGuestsMessage *string `json:"exceed_max_guests_message,omitempty"`
 
 	// The number of favorites/likes on the company.
-	Favorites                *int32 `json:"favorites,omitempty"`
-	Image                    *Image `json:"image,omitempty"`
+	Favorites *int32 `json:"favorites,omitempty"`
+	Image     *Image `json:"image,omitempty"`
+
+	// DEPRECATED: Use required_fields.license_plate instead. This field will be removed in a future version.
 	LicensePlate             *bool  `json:"license_plate,omitempty"`
 	MaxBookableFutureDays    *int32 `json:"max_bookable_future_days,omitempty"`
 	MaxGuestsPerBooking      *int32 `json:"max_guests_per_booking,omitempty"`
@@ -2846,7 +2858,9 @@ type CompanyProfileCreate struct {
 	Prefer12Hours *bool `json:"prefer_12_hours,omitempty"`
 
 	// The price category of the company.
-	PriceCategory  *int32          `json:"price_category,omitempty"`
+	PriceCategory *int32 `json:"price_category,omitempty"`
+
+	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 	RequiredFields *RequiredFields `json:"required_fields,omitempty"`
 	ServiceBuffer  *int32          `json:"service_buffer,omitempty"`
 
@@ -2905,13 +2919,16 @@ type CompanyResponse struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId   *string               `json:"reference_id,omitempty"`
-	Signup        *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya          *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
-	Vertical      CompanyVertical       `json:"vertical"`
-	Vouchers      VoucherSettings       `json:"vouchers"`
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
+	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
+	Signup         *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya           *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
+	Vertical       CompanyVertical       `json:"vertical"`
+	Vouchers       VoucherSettings       `json:"vouchers"`
 }
 
 // CompanyResponseOverrides defines model for CompanyResponseOverrides.
@@ -2998,13 +3015,16 @@ type CompanyUpdate struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId   *string               `json:"reference_id,omitempty"`
-	Signup        *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya          *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
-	Vertical      *interface{}          `json:"vertical,omitempty"`
-	Vouchers      *VoucherSettings      `json:"vouchers,omitempty"`
+	ReferenceId *string `json:"reference_id,omitempty"`
+
+	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
+	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
+	Signup         *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya           *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
+	Vertical       *interface{}          `json:"vertical,omitempty"`
+	Vouchers       *VoucherSettings      `json:"vouchers,omitempty"`
 }
 
 // CompanyUpdateOverrides defines model for CompanyUpdateOverrides.
@@ -6470,10 +6490,16 @@ type RefundMarketplaceSaleError struct {
 // - `sale_has_been_mutated`: The sale has been mutated and cannot be refunded automatically.
 type RefundMarketplaceSaleErrorCode string
 
-// RequiredFields defines model for RequiredFields.
+// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 type RequiredFields struct {
-	Email     *bool `json:"email,omitempty"`
+	// Whether email field is configured
+	Email *bool `json:"email,omitempty"`
+
+	// Whether kennitala/SSN field is configured
 	Kennitala *bool `json:"kennitala,omitempty"`
+
+	// Whether license plate field is configured
+	LicensePlate *bool `json:"license_plate,omitempty"`
 }
 
 // Resource defines model for Resource.
