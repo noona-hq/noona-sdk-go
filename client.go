@@ -1537,8 +1537,10 @@ type AdyenBankAccountType string
 
 // AdyenConnection defines model for AdyenConnection.
 type AdyenConnection struct {
-	OnboardedAt      *time.Time             `json:"onboarded_at,omitempty"`
-	OnboardingStatus *AdyenOnboardingStatus `json:"onboarding_status,omitempty"`
+	// Adyen transfer instrument is required for payouts to work
+	HasTransferInstrument *bool                  `json:"has_transfer_instrument,omitempty"`
+	OnboardedAt           *time.Time             `json:"onboarded_at,omitempty"`
+	OnboardingStatus      *AdyenOnboardingStatus `json:"onboarding_status,omitempty"`
 }
 
 // AdyenOnboardingInfo defines model for AdyenOnboardingInfo.
@@ -2515,14 +2517,17 @@ type Company struct {
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
-	Id              *string                    `json:"id,omitempty"`
-	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
-	Locale          *Locale                    `json:"locale,omitempty"`
-	Location        *Location                  `json:"location,omitempty"`
-	LockedSections  *LockedSections            `json:"locked_sections,omitempty"`
-	Marketplace     *CompanyMarketplace        `json:"marketplace,omitempty"`
-	Messaging       *CompanyMessaging          `json:"messaging,omitempty"`
-	Name            *string                    `json:"name,omitempty"`
+
+	// Whether the company has secretary services linked to it
+	HasSecretary   *bool               `json:"has_secretary,omitempty"`
+	Id             *string             `json:"id,omitempty"`
+	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
+	Locale         *Locale             `json:"locale,omitempty"`
+	Location       *Location           `json:"location,omitempty"`
+	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
+	Name           *string             `json:"name,omitempty"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -2572,14 +2577,17 @@ type CompanyClone struct {
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
-	Id              *string                    `json:"id,omitempty"`
-	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
-	Locale          *Locale                    `json:"locale,omitempty"`
-	Location        LocationCreate             `json:"location"`
-	LockedSections  *LockedSections            `json:"locked_sections,omitempty"`
-	Marketplace     *CompanyMarketplace        `json:"marketplace,omitempty"`
-	Messaging       *CompanyMessaging          `json:"messaging,omitempty"`
-	Name            string                     `json:"name"`
+
+	// Whether the company has secretary services linked to it
+	HasSecretary   *bool               `json:"has_secretary,omitempty"`
+	Id             *string             `json:"id,omitempty"`
+	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
+	Locale         *Locale             `json:"locale,omitempty"`
+	Location       LocationCreate      `json:"location"`
+	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
+	Name           string              `json:"name"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -2684,6 +2692,9 @@ type CompanyMessaging struct {
 	// Whether to enable SMS reminders for the company.
 	EnableReminders     *bool `json:"enable_reminders,omitempty"`
 	SendSmsFromEmployee *bool `json:"send_sms_from_employee,omitempty"`
+
+	// The SMS sender name
+	SenderName *string `json:"sender_name,omitempty"`
 
 	// Whether the company wants to show the booking end time/duration in booking confirmation messages and reminders.
 	ShowBookingEndsAt *bool `json:"show_booking_ends_at,omitempty"`
@@ -2893,14 +2904,17 @@ type CompanyResponse struct {
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
-	Id              *string                    `json:"id,omitempty"`
-	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
-	Locale          Locale                     `json:"locale"`
-	Location        Location                   `json:"location"`
-	LockedSections  *LockedSections            `json:"locked_sections,omitempty"`
-	Marketplace     CompanyMarketplace         `json:"marketplace"`
-	Messaging       CompanyMessaging           `json:"messaging"`
-	Name            string                     `json:"name"`
+
+	// Whether the company has secretary services linked to it
+	HasSecretary   *bool              `json:"has_secretary,omitempty"`
+	Id             *string            `json:"id,omitempty"`
+	LastActiveAt   *time.Time         `json:"last_active_at,omitempty"`
+	Locale         Locale             `json:"locale"`
+	Location       Location           `json:"location"`
+	LockedSections *LockedSections    `json:"locked_sections,omitempty"`
+	Marketplace    CompanyMarketplace `json:"marketplace"`
+	Messaging      CompanyMessaging   `json:"messaging"`
+	Name           string             `json:"name"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -2989,14 +3003,17 @@ type CompanyUpdate struct {
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
-	Id              *string                    `json:"id,omitempty"`
-	LastActiveAt    *time.Time                 `json:"last_active_at,omitempty"`
-	Locale          *Locale                    `json:"locale,omitempty"`
-	Location        *Location                  `json:"location,omitempty"`
-	LockedSections  *LockedSections            `json:"locked_sections,omitempty"`
-	Marketplace     *CompanyMarketplace        `json:"marketplace,omitempty"`
-	Messaging       *CompanyMessaging          `json:"messaging,omitempty"`
-	Name            *string                    `json:"name,omitempty"`
+
+	// Whether the company has secretary services linked to it
+	HasSecretary   *bool               `json:"has_secretary,omitempty"`
+	Id             *string             `json:"id,omitempty"`
+	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
+	Locale         *Locale             `json:"locale,omitempty"`
+	Location       *Location           `json:"location,omitempty"`
+	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
+	Name           *string             `json:"name,omitempty"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
