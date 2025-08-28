@@ -1001,6 +1001,11 @@ const (
 	SMSMessageTypeVoucher             SMSMessageType = "voucher"
 )
 
+// Defines values for SaleField.
+const (
+	SaleFieldCustomer SaleField = "customer"
+)
+
 // Defines values for SortOrder.
 const (
 	Asc  SortOrder = "asc"
@@ -7265,6 +7270,12 @@ type Sale struct {
 	UpdatedAt    *time.Time               `json:"updated_at,omitempty"`
 }
 
+// SaleField defines model for SaleField.
+type SaleField string
+
+// SaleFields defines model for SaleFields.
+type SaleFields []SaleField
+
 // Sales defines model for Sales.
 type Sales []Sale
 
@@ -11540,7 +11551,8 @@ type UpdateSaleParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand     `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *SaleFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // RefundMarketplaceSaleParams defines parameters for RefundMarketplaceSale.
@@ -40317,6 +40329,22 @@ func NewUpdateSaleRequestWithBody(server string, saleId string, params *UpdateSa
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
