@@ -9898,6 +9898,9 @@ type ListTimeSlotsParams struct {
 
 	// If true, skips checking if employees and resources can perform the event types and returns all available timeslots
 	SkipCanPerform *bool `form:"skip_can_perform,omitempty" json:"skip_can_perform,omitempty"`
+
+	// Override the booking interval used for generating timeslots. This overrides the intervals set on the company, employees, and resources.
+	OverrideBookingInterval *BookingInterval `form:"override_booking_interval,omitempty" json:"override_booking_interval,omitempty"`
 }
 
 // ListTransactionsParams defines parameters for ListTransactions.
@@ -28541,6 +28544,22 @@ func NewListTimeSlotsRequest(server string, companyId string, params *ListTimeSl
 	if params.SkipCanPerform != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "skip_can_perform", runtime.ParamLocationQuery, *params.SkipCanPerform); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.OverrideBookingInterval != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "override_booking_interval", runtime.ParamLocationQuery, *params.OverrideBookingInterval); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
