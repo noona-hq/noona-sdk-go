@@ -2551,16 +2551,16 @@ type Company struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string `json:"reference_id,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      *CompanyVertical      `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
-	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
-	Signup         *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya           *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
-	Vertical       *CompanyVertical      `json:"vertical,omitempty"`
-	Vouchers       *VoucherSettings      `json:"vouchers,omitempty"`
+	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
+	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
 }
 
 // CompanyCheckin defines model for CompanyCheckin.
@@ -2611,16 +2611,16 @@ type CompanyClone struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string `json:"reference_id,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      CompanyVertical       `json:"vertical"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
-	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
-	Signup         *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya           *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
-	Vertical       CompanyVertical       `json:"vertical"`
-	Vouchers       *VoucherSettings      `json:"vouchers,omitempty"`
+	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
+	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
 }
 
 // CompanyCloneOverrides defines model for CompanyCloneOverrides.
@@ -2938,16 +2938,16 @@ type CompanyResponse struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string `json:"reference_id,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      CompanyVertical       `json:"vertical"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
-	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
-	Signup         *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya           *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
-	Vertical       CompanyVertical       `json:"vertical"`
-	Vouchers       VoucherSettings       `json:"vouchers"`
+	VisibleFields *RequiredFields `json:"visible_fields,omitempty"`
+	Vouchers      VoucherSettings `json:"vouchers"`
 }
 
 // CompanyResponseOverrides defines model for CompanyResponseOverrides.
@@ -3037,16 +3037,16 @@ type CompanyUpdate struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string `json:"reference_id,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      *interface{}          `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
-	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
-	Signup         *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya           *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
-	Vertical       *interface{}          `json:"vertical,omitempty"`
-	Vouchers       *VoucherSettings      `json:"vouchers,omitempty"`
+	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
+	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
 }
 
 // CompanyUpdateOverrides defines model for CompanyUpdateOverrides.
