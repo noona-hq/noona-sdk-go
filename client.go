@@ -291,6 +291,9 @@ const (
 
 // Defines values for CompanySize.
 const (
+	Large      CompanySize = "large"
+	Medium     CompanySize = "medium"
+	Small      CompanySize = "small"
 	Solo       CompanySize = "solo"
 	WithOthers CompanySize = "with_others"
 )
@@ -1004,6 +1007,14 @@ const (
 // Defines values for SaleField.
 const (
 	SaleFieldCustomer SaleField = "customer"
+)
+
+// Defines values for SignupGoalOption.
+const (
+	AttractMoreOnlineBookings SignupGoalOption = "attract_more_online_bookings"
+	KeepClientsComingBack     SignupGoalOption = "keep_clients_coming_back"
+	ManageSalesAndProducts    SignupGoalOption = "manage_sales_and_products"
+	StayOnTopOfAppointments   SignupGoalOption = "stay_on_top_of_appointments"
 )
 
 // Defines values for SortOrder.
@@ -2631,6 +2642,31 @@ type CompanyCloneOverrides struct {
 	Vertical CompanyVertical      `json:"vertical"`
 }
 
+// CompanyCreate defines model for CompanyCreate.
+type CompanyCreate struct {
+	// The name of the company to create
+	CompanyName string `json:"company_name"`
+
+	// Selected event type category Ids for service companies
+	EventTypeCategoryGroupIds *[]string `json:"event_type_category_group_ids,omitempty"`
+	Location                  Location  `json:"location"`
+
+	// Information about how the user heard about Noona
+	Referer *Referer `json:"referer,omitempty"`
+
+	// What the user needs help with
+	SignupGoal *[]SignupGoalOption `json:"signup_goal,omitempty"`
+
+	// Company size category:
+	// - `solo`: Just me (1 person)
+	// - `with_others`: Legacy option (will be migrated)
+	// - `small`: 2-4 People
+	// - `medium`: 5-15 People
+	// - `large`: 16+ People
+	Size     CompanySize     `json:"size"`
+	Vertical CompanyVertical `json:"vertical"`
+}
+
 // CompanyDefaultCurrency defines model for CompanyDefaultCurrency.
 type CompanyDefaultCurrency struct {
 	Code   *string `json:"code,omitempty"`
@@ -2974,11 +3010,22 @@ type CompanyResponseOverrides struct {
 
 // CompanySignup defines model for CompanySignup.
 type CompanySignup struct {
+	// Company size category:
+	// - `solo`: Just me (1 person)
+	// - `with_others`: Legacy option (will be migrated)
+	// - `small`: 2-4 People
+	// - `medium`: 5-15 People
+	// - `large`: 16+ People
 	CompanySize *CompanySize `json:"company_size,omitempty"`
 	Completed   *bool        `json:"completed,omitempty"`
 }
 
-// CompanySize defines model for CompanySize.
+// Company size category:
+// - `solo`: Just me (1 person)
+// - `with_others`: Legacy option (will be migrated)
+// - `small`: 2-4 People
+// - `medium`: 5-15 People
+// - `large`: 16+ People
 type CompanySize string
 
 // CompanyType defines model for CompanyType.
@@ -6494,6 +6541,18 @@ type PushTokenPlatform string
 // Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
 type RRuleString string
 
+// Information about how the user heard about Noona
+type Referer struct {
+	// Affiliate link if applicable
+	AffiliateLink *string `json:"affiliate_link,omitempty"`
+
+	// Additional details about the referer
+	Detail *string `json:"detail,omitempty"`
+
+	// How the user heard about Noona
+	Type *string `json:"type,omitempty"`
+}
+
 // RefundMarketplaceSaleError defines model for RefundMarketplaceSaleError.
 type RefundMarketplaceSaleError struct {
 	// The error code. Only populated for certain errors.
@@ -7418,6 +7477,9 @@ type SettlementLineItems []SettlementLineItem
 
 // Settlements defines model for Settlements.
 type Settlements []Settlement
+
+// What the user needs help with
+type SignupGoalOption string
 
 // Sort defines model for Sort.
 type Sort struct {
@@ -9024,6 +9086,18 @@ type GetCompaniesParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// CreateCompanyJSONBody defines parameters for CreateCompany.
+type CreateCompanyJSONBody CompanyCreate
+
+// CreateCompanyParams defines parameters for CreateCompany.
+type CreateCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // GetCompanyParams defines parameters for GetCompany.
@@ -12343,6 +12417,9 @@ type UpdateBlockedTimeJSONRequestBody UpdateBlockedTimeJSONBody
 // CreateClaimJSONRequestBody defines body for CreateClaim for application/json ContentType.
 type CreateClaimJSONRequestBody CreateClaimJSONBody
 
+// CreateCompanyJSONRequestBody defines body for CreateCompany for application/json ContentType.
+type CreateCompanyJSONRequestBody CreateCompanyJSONBody
+
 // UpdateCompanyJSONRequestBody defines body for UpdateCompany for application/json ContentType.
 type UpdateCompanyJSONRequestBody UpdateCompanyJSONBody
 
@@ -14722,6 +14799,11 @@ type ClientInterface interface {
 	// GetCompanies request
 	GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateCompany request with any body
+	CreateCompanyWithBody(ctx context.Context, params *CreateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateCompany(ctx context.Context, params *CreateCompanyParams, body CreateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCompany request
 	GetCompany(ctx context.Context, companyId string, params *GetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -16117,6 +16199,30 @@ func (c *Client) CreateClaim(ctx context.Context, params *CreateClaimParams, bod
 
 func (c *Client) GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCompaniesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCompanyWithBody(ctx context.Context, params *CreateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCompanyRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCompany(ctx context.Context, params *CreateCompanyParams, body CreateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCompanyRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -22462,6 +22568,82 @@ func NewGetCompaniesRequest(server string, params *GetCompaniesParams) (*http.Re
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewCreateCompanyRequest calls the generic CreateCompany builder with application/json body
+func NewCreateCompanyRequest(server string, params *CreateCompanyParams, body CreateCompanyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateCompanyRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateCompanyRequestWithBody generates requests for CreateCompany with any type of body
+func NewCreateCompanyRequestWithBody(server string, params *CreateCompanyParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -46192,6 +46374,11 @@ type ClientWithResponsesInterface interface {
 	// GetCompanies request
 	GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error)
 
+	// CreateCompany request with any body
+	CreateCompanyWithBodyWithResponse(ctx context.Context, params *CreateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCompanyResponse, error)
+
+	CreateCompanyWithResponse(ctx context.Context, params *CreateCompanyParams, body CreateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCompanyResponse, error)
+
 	// GetCompany request
 	GetCompanyWithResponse(ctx context.Context, companyId string, params *GetCompanyParams, reqEditors ...RequestEditorFn) (*GetCompanyResponse, error)
 
@@ -47740,6 +47927,28 @@ func (r GetCompaniesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetCompaniesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateCompanyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CompanyResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateCompanyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateCompanyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -54606,6 +54815,23 @@ func (c *ClientWithResponses) GetCompaniesWithResponse(ctx context.Context, para
 	return ParseGetCompaniesResponse(rsp)
 }
 
+// CreateCompanyWithBodyWithResponse request with arbitrary body returning *CreateCompanyResponse
+func (c *ClientWithResponses) CreateCompanyWithBodyWithResponse(ctx context.Context, params *CreateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCompanyResponse, error) {
+	rsp, err := c.CreateCompanyWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCompanyResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateCompanyWithResponse(ctx context.Context, params *CreateCompanyParams, body CreateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCompanyResponse, error) {
+	rsp, err := c.CreateCompany(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCompanyResponse(rsp)
+}
+
 // GetCompanyWithResponse request returning *GetCompanyResponse
 func (c *ClientWithResponses) GetCompanyWithResponse(ctx context.Context, companyId string, params *GetCompanyParams, reqEditors ...RequestEditorFn) (*GetCompanyResponse, error) {
 	rsp, err := c.GetCompany(ctx, companyId, params, reqEditors...)
@@ -58579,6 +58805,32 @@ func ParseGetCompaniesResponse(rsp *http.Response) (*GetCompaniesResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CompaniesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateCompanyResponse parses an HTTP response from a CreateCompanyWithResponse call
+func ParseCreateCompanyResponse(rsp *http.Response) (*CreateCompanyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CompanyResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
