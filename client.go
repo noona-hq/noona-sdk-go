@@ -2579,79 +2579,17 @@ type CompanyCheckin struct {
 	SuccessMessage *string `json:"success_message,omitempty"`
 }
 
-// CompanyClone defines model for CompanyClone.
-type CompanyClone struct {
-	Adyen     *AdyenConnection        `json:"adyen,omitempty"`
-	Checkin   *CompanyCheckin         `json:"checkin,omitempty"`
-	Claims    *ClaimsConnection       `json:"claims,omitempty"`
-	CreatedAt *time.Time              `json:"created_at,omitempty"`
-	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
-
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
-
-	// The order/position of this company within its enterprise. Used for custom sorting of companies.
-	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
-	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
-
-	// Whether the company has secretary services linked to it
-	HasSecretary   *bool               `json:"has_secretary,omitempty"`
-	Id             *string             `json:"id,omitempty"`
-	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
-	Locale         *Locale             `json:"locale,omitempty"`
-	Location       LocationCreate      `json:"location"`
-	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
-	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
-	Name           string              `json:"name"`
-
-	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
-	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
-
-	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
-	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
-	Payments    *PaymentSettings `json:"payments,omitempty"`
-
-	// Deprecated, use profile.phone_country_code instead
-	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
-
-	// Deprecated, use profile.phone_number instead
-	PhoneNumber *string              `json:"phone_number,omitempty"`
-	Pos         *CompanyPOSSettings  `json:"pos,omitempty"`
-	Profile     CompanyProfileCreate `json:"profile"`
-
-	// An ID that can be used to reference the company in an external system.
-	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId   *string               `json:"reference_id,omitempty"`
-	Signup        *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya          *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
-	Vertical      CompanyVertical       `json:"vertical"`
-
-	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
-	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
-	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
-}
-
-// CompanyCloneOverrides defines model for CompanyCloneOverrides.
-type CompanyCloneOverrides struct {
-	Location LocationCreate       `json:"location"`
-	Name     string               `json:"name"`
-	Profile  CompanyProfileCreate `json:"profile"`
-	Vertical CompanyVertical      `json:"vertical"`
-}
-
 // CompanyCreate defines model for CompanyCreate.
 type CompanyCreate struct {
 	// The name of the company to create
 	CompanyName string `json:"company_name"`
 
 	// Selected event type category Ids for service companies
-	EventTypeCategoryGroupIds *[]string `json:"event_type_category_group_ids,omitempty"`
-	Location                  Location  `json:"location"`
-	PhoneCountryCode          *string   `json:"phone_country_code,omitempty"`
-	PhoneNumber               *string   `json:"phone_number,omitempty"`
+	EventTypeCategoryGroupIds *[]string      `json:"event_type_category_group_ids,omitempty"`
+	Location                  LocationCreate `json:"location"`
+	PhoneCountryCode          *string        `json:"phone_country_code,omitempty"`
+	PhoneNumber               *string        `json:"phone_number,omitempty"`
+	ProfileImage              *Image         `json:"profile_image,omitempty"`
 
 	// Information about how the user heard about Noona
 	Referer *Referer `json:"referer,omitempty"`
@@ -2665,7 +2603,7 @@ type CompanyCreate struct {
 	// - `small`: 2-4 People
 	// - `medium`: 5-15 People
 	// - `large`: 16+ People
-	Size     CompanySize     `json:"size"`
+	Size     *CompanySize    `json:"size,omitempty"`
 	Vertical CompanyVertical `json:"vertical"`
 }
 
@@ -5303,15 +5241,6 @@ type LocationCreate struct {
 	Country          Country        `json:"country"`
 	FormattedAddress string         `json:"formatted_address"`
 	GooglePlaceId    *string        `json:"google_place_id,omitempty"`
-	LatLng           LocationLatLng `json:"lat_lng"`
-	TimeZone         string         `json:"time_zone"`
-}
-
-// LocationCreateOverrides defines model for LocationCreateOverrides.
-type LocationCreateOverrides struct {
-	Address          Address        `json:"address"`
-	Country          Country        `json:"country"`
-	FormattedAddress string         `json:"formatted_address"`
 	LatLng           LocationLatLng `json:"lat_lng"`
 }
 
@@ -9241,7 +9170,7 @@ type ListClaimsParams struct {
 }
 
 // CloneCompanyJSONBody defines parameters for CloneCompany.
-type CloneCompanyJSONBody CompanyClone
+type CloneCompanyJSONBody CompanyCreate
 
 // CloneCompanyParams defines parameters for CloneCompany.
 type CloneCompanyParams struct {
