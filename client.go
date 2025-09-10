@@ -2650,6 +2650,8 @@ type CompanyCreate struct {
 	// Selected event type category Ids for service companies
 	EventTypeCategoryGroupIds *[]string `json:"event_type_category_group_ids,omitempty"`
 	Location                  Location  `json:"location"`
+	PhoneCountryCode          *string   `json:"phone_country_code,omitempty"`
+	PhoneNumber               *string   `json:"phone_number,omitempty"`
 
 	// Information about how the user heard about Noona
 	Referer *Referer `json:"referer,omitempty"`
