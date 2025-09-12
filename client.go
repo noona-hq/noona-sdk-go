@@ -6615,12 +6615,17 @@ type Resource struct {
 	BookingInterval *BookingInterval `json:"booking_interval,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company              *ExpandableCompany    `json:"company,omitempty"`
-	CreatedAt            *time.Time            `json:"created_at,omitempty"`
-	Description          *string               `json:"description,omitempty"`
-	EventTypePreferences *EventTypePreferences `json:"event_type_preferences,omitempty"`
-	Id                   *string               `json:"id,omitempty"`
-	Image                *Image                `json:"image,omitempty"`
+	Company     *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt   *time.Time         `json:"created_at,omitempty"`
+	Description *string            `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap       `json:"description_translations,omitempty"`
+	EventTypePreferences    *EventTypePreferences `json:"event_type_preferences,omitempty"`
+	Id                      *string               `json:"id,omitempty"`
+	Image                   *Image                `json:"image,omitempty"`
 
 	// If true, resource is visible on the marketplace.
 	Marketplace *bool `json:"marketplace,omitempty"`
@@ -6631,6 +6636,11 @@ type Resource struct {
 	// The mininum capacity of the resource, for example how many people can occupy a table at minimum.
 	MinCapacity *int32  `json:"min_capacity,omitempty"`
 	Name        *string `json:"name,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
 
 	// The order of the resource in the list of resources on the marketplace and in the HQ UI.
 	Order *int32 `json:"order,omitempty"`
