@@ -2792,8 +2792,11 @@ type CompanyProfile struct {
 	StoreName     *string `json:"store_name,omitempty"`
 
 	// Controls at what hour in the day the calendar starts to be bookable. Can be restriced with blocked times.
-	StoreOpensAt  *int32 `json:"store_opens_at,omitempty"`
-	WebAuthOptOut *bool  `json:"web_auth_opt_out,omitempty"`
+	StoreOpensAt *int32 `json:"store_opens_at,omitempty"`
+
+	// Whether the company has unconfirmed or confirmed opening hours.
+	UnconfirmedOpeningHours *bool `json:"unconfirmed_opening_hours,omitempty"`
+	WebAuthOptOut           *bool `json:"web_auth_opt_out,omitempty"`
 }
 
 // CompanyProfileCreate defines model for CompanyProfileCreate.
@@ -2868,8 +2871,11 @@ type CompanyProfileCreate struct {
 	StoreName     *string `json:"store_name,omitempty"`
 
 	// Controls at what hour in the day the calendar starts to be bookable. Can be restriced with blocked times.
-	StoreOpensAt  *int32 `json:"store_opens_at,omitempty"`
-	WebAuthOptOut *bool  `json:"web_auth_opt_out,omitempty"`
+	StoreOpensAt *int32 `json:"store_opens_at,omitempty"`
+
+	// Whether the company has unconfirmed or confirmed opening hours.
+	UnconfirmedOpeningHours *bool `json:"unconfirmed_opening_hours,omitempty"`
+	WebAuthOptOut           *bool `json:"web_auth_opt_out,omitempty"`
 }
 
 // CompanyProfileCreateOverrides defines model for CompanyProfileCreateOverrides.
