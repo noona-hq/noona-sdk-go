@@ -8108,12 +8108,15 @@ type User struct {
 	Connections   *UserConnections     `json:"connections,omitempty"`
 	Email         *string              `json:"email,omitempty"`
 	Employees     *Employees           `json:"employees,omitempty"`
-	Id            *string              `json:"id,omitempty"`
-	Image         *Image               `json:"image,omitempty"`
-	Locale        *string              `json:"locale,omitempty"`
-	Pos           *UserPOSSettings     `json:"pos,omitempty"`
-	Settings      *UserSettings        `json:"settings,omitempty"`
-	Verification  *Verification        `json:"verification,omitempty"`
+
+	// Indicates whether the user has ever been associated with any company
+	HasOnboarded *bool            `json:"has_onboarded,omitempty"`
+	Id           *string          `json:"id,omitempty"`
+	Image        *Image           `json:"image,omitempty"`
+	Locale       *string          `json:"locale,omitempty"`
+	Pos          *UserPOSSettings `json:"pos,omitempty"`
+	Settings     *UserSettings    `json:"settings,omitempty"`
+	Verification *Verification    `json:"verification,omitempty"`
 }
 
 // UserConnections defines model for UserConnections.
