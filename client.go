@@ -314,6 +314,13 @@ const (
 	UnknownPaymentError    CreatePaymentErrorCode = "unknownPaymentError"
 )
 
+// Defines values for CreateSMSErrorType.
+const (
+	NonWhitelistedUrls CreateSMSErrorType = "non_whitelisted_urls"
+	QuotaExceeded      CreateSMSErrorType = "quota_exceeded"
+	Validation         CreateSMSErrorType = "validation"
+)
+
 // Defines values for CustomMessageRuleType.
 const (
 	CustomMessage CustomMessageRuleType = "custom_message"
@@ -3129,6 +3136,30 @@ type CreatePaymentMethodInstanceRequest struct {
 	Enabled       *bool  `json:"enabled,omitempty"`
 	PaymentMethod string `json:"payment_method"`
 	Title         string `json:"title"`
+}
+
+// CreateSMSError defines model for CreateSMSError.
+type CreateSMSError struct {
+	Message string             `json:"message"`
+	Type    CreateSMSErrorType `json:"type"`
+}
+
+// CreateSMSErrorType defines model for CreateSMSError.Type.
+type CreateSMSErrorType string
+
+// CreateSMSMessage defines model for CreateSMSMessage.
+type CreateSMSMessage struct {
+	// Company ID
+	CompanyId string `json:"company_id"`
+
+	// Customer ID to send SMS to
+	CustomerId string `json:"customer_id"`
+
+	// The event the SMS is linked to
+	EventId *string `json:"event_id,omitempty"`
+
+	// SMS message content
+	Message string `json:"message"`
 }
 
 // CustomDuration defines model for CustomDuration.
@@ -11737,6 +11768,18 @@ type DeprecatedGetSubtransactionParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateSMSMessageJSONBody defines parameters for CreateSMSMessage.
+type CreateSMSMessageJSONBody CreateSMSMessage
+
+// CreateSMSMessageParams defines parameters for CreateSMSMessage.
+type CreateSMSMessageParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateSpaceJSONBody defines parameters for CreateSpace.
 type CreateSpaceJSONBody Space
 
@@ -12683,6 +12726,9 @@ type UpdateSaleJSONRequestBody UpdateSaleJSONBody
 
 // SendTransactionReceiptJSONRequestBody defines body for SendTransactionReceipt for application/json ContentType.
 type SendTransactionReceiptJSONRequestBody SendTransactionReceiptJSONBody
+
+// CreateSMSMessageJSONRequestBody defines body for CreateSMSMessage for application/json ContentType.
+type CreateSMSMessageJSONRequestBody CreateSMSMessageJSONBody
 
 // CreateSpaceJSONRequestBody defines body for CreateSpace for application/json ContentType.
 type CreateSpaceJSONRequestBody CreateSpaceJSONBody
@@ -15697,6 +15743,11 @@ type ClientInterface interface {
 
 	// DeprecatedGetSubtransaction request
 	DeprecatedGetSubtransaction(ctx context.Context, saleId string, transactionId string, id string, params *DeprecatedGetSubtransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateSMSMessage request with any body
+	CreateSMSMessageWithBody(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateSMSMessage(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSpace request with any body
 	CreateSpaceWithBody(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19909,6 +19960,30 @@ func (c *Client) DeprecatedListSubtransactions(ctx context.Context, saleId strin
 
 func (c *Client) DeprecatedGetSubtransaction(ctx context.Context, saleId string, transactionId string, id string, params *DeprecatedGetSubtransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeprecatedGetSubtransactionRequest(c.Server, saleId, transactionId, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSMSMessageWithBody(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSMSMessageRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSMSMessage(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSMSMessageRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -41354,6 +41429,82 @@ func NewDeprecatedGetSubtransactionRequest(server string, saleId string, transac
 	return req, nil
 }
 
+// NewCreateSMSMessageRequest calls the generic CreateSMSMessage builder with application/json body
+func NewCreateSMSMessageRequest(server string, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSMSMessageRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateSMSMessageRequestWithBody generates requests for CreateSMSMessage with any type of body
+func NewCreateSMSMessageRequestWithBody(server string, params *CreateSMSMessageParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/sms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateSpaceRequest calls the generic CreateSpace builder with application/json body
 func NewCreateSpaceRequest(server string, params *CreateSpaceParams, body CreateSpaceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -47611,6 +47762,11 @@ type ClientWithResponsesInterface interface {
 	// DeprecatedGetSubtransaction request
 	DeprecatedGetSubtransactionWithResponse(ctx context.Context, saleId string, transactionId string, id string, params *DeprecatedGetSubtransactionParams, reqEditors ...RequestEditorFn) (*DeprecatedGetSubtransactionResponse, error)
 
+	// CreateSMSMessage request with any body
+	CreateSMSMessageWithBodyWithResponse(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error)
+
+	CreateSMSMessageWithResponse(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error)
+
 	// CreateSpace request with any body
 	CreateSpaceWithBodyWithResponse(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSpaceResponse, error)
 
@@ -53443,6 +53599,31 @@ func (r DeprecatedGetSubtransactionResponse) StatusCode() int {
 	return 0
 }
 
+type CreateSMSMessageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SMSMessage
+	JSON400      *CreateSMSError
+	JSON404      *CreateSMSError
+	JSON429      *CreateSMSError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSMSMessageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSMSMessageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSpaceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -57970,6 +58151,23 @@ func (c *ClientWithResponses) DeprecatedGetSubtransactionWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseDeprecatedGetSubtransactionResponse(rsp)
+}
+
+// CreateSMSMessageWithBodyWithResponse request with arbitrary body returning *CreateSMSMessageResponse
+func (c *ClientWithResponses) CreateSMSMessageWithBodyWithResponse(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error) {
+	rsp, err := c.CreateSMSMessageWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSMSMessageResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSMSMessageWithResponse(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error) {
+	rsp, err := c.CreateSMSMessage(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSMSMessageResponse(rsp)
 }
 
 // CreateSpaceWithBodyWithResponse request with arbitrary body returning *CreateSpaceResponse
@@ -65110,6 +65308,53 @@ func ParseDeprecatedGetSubtransactionResponse(rsp *http.Response) (*DeprecatedGe
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateSMSMessageResponse parses an HTTP response from a CreateSMSMessageWithResponse call
+func ParseCreateSMSMessageResponse(rsp *http.Response) (*CreateSMSMessageResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSMSMessageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SMSMessage
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest CreateSMSError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest CreateSMSError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest CreateSMSError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	}
 
