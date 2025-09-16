@@ -3441,19 +3441,24 @@ type Employee struct {
 	CompanyId *string `json:"company_id,omitempty"`
 
 	// Use teya.connected instead
-	ConnectedToTeya      *bool                         `json:"connected_to_teya,omitempty"`
-	CreatedAt            *time.Time                    `json:"created_at,omitempty"`
-	DeletedAt            *time.Time                    `json:"deleted_at,omitempty"`
-	Description          *string                       `json:"description,omitempty"`
-	DisabledAt           *time.Time                    `json:"disabled_at,omitempty"`
-	Email                *string                       `json:"email,omitempty"`
-	EmailVerified        *bool                         `json:"email_verified,omitempty"`
-	EventTypePreferences *EventTypePreferences         `json:"event_type_preferences,omitempty"`
-	Id                   *string                       `json:"id,omitempty"`
-	Image                *Image                        `json:"image,omitempty"`
-	Marketplace          *EmployeeMarketplaceSettings  `json:"marketplace,omitempty"`
-	Name                 *string                       `json:"name,omitempty"`
-	Notifications        *EmployeeNotificationSettings `json:"notifications,omitempty"`
+	ConnectedToTeya *bool      `json:"connected_to_teya,omitempty"`
+	CreatedAt       *time.Time `json:"created_at,omitempty"`
+	DeletedAt       *time.Time `json:"deleted_at,omitempty"`
+	Description     *string    `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap               `json:"description_translations,omitempty"`
+	DisabledAt              *time.Time                    `json:"disabled_at,omitempty"`
+	Email                   *string                       `json:"email,omitempty"`
+	EmailVerified           *bool                         `json:"email_verified,omitempty"`
+	EventTypePreferences    *EventTypePreferences         `json:"event_type_preferences,omitempty"`
+	Id                      *string                       `json:"id,omitempty"`
+	Image                   *Image                        `json:"image,omitempty"`
+	Marketplace             *EmployeeMarketplaceSettings  `json:"marketplace,omitempty"`
+	Name                    *string                       `json:"name,omitempty"`
+	Notifications           *EmployeeNotificationSettings `json:"notifications,omitempty"`
 
 	// The order of the employee in the list of employees on the marketplace.
 	Order *int32 `json:"order,omitempty"`
