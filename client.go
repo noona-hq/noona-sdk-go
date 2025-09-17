@@ -515,13 +515,6 @@ const (
 	ImportJobTypeWaitlistEntries ImportJobType = "waitlist_entries"
 )
 
-// Defines values for InviteLinkErrorCode.
-const (
-	InviteLinkDeleted InviteLinkErrorCode = "invite_link_deleted"
-	InviteLinkExpired InviteLinkErrorCode = "invite_link_expired"
-	InviteLinkUsed    InviteLinkErrorCode = "invite_link_used"
-)
-
 // Defines values for InvoicesFilterStatus.
 const (
 	InvoicesFilterStatusNotPaid    InvoicesFilterStatus = "not_paid"
@@ -1216,6 +1209,13 @@ const (
 // Defines values for UserField.
 const (
 	TeyaOauth UserField = "teya_oauth"
+)
+
+// Defines values for UserInviteErrorCode.
+const (
+	UserInviteDeleted UserInviteErrorCode = "user_invite_deleted"
+	UserInviteExpired UserInviteErrorCode = "user_invite_expired"
+	UserInviteUsed    UserInviteErrorCode = "user_invite_used"
 )
 
 // Defines values for VerificationCertificationLevel.
@@ -3065,24 +3065,6 @@ type CompanyUpdateOverrides struct {
 // CompanyVertical defines model for CompanyVertical.
 type CompanyVertical string
 
-// Result of validating and consuming an invite link - matches legacy getUserInviteLinkInfo response
-type ConsumeResponse struct {
-	// ID of the company this invite link belongs to
-	CompanyId *string `json:"company_id,omitempty"`
-
-	// Name of the company this invite link belongs to
-	CompanyName *string `json:"company_name,omitempty"`
-
-	// Current user's email address (if logged in)
-	Email *string `json:"email"`
-
-	// Whether the current user's email is verified
-	EmailVerified *bool `json:"email_verified,omitempty"`
-
-	// Whether the current user has logged in before
-	HasLoggedIn *bool `json:"has_logged_in,omitempty"`
-}
-
 // CountMetricsByTimeFrame defines model for CountMetricsByTimeFrame.
 type CountMetricsByTimeFrame struct {
 	// Change in count from previous period in percent (75 = 75%)
@@ -3102,9 +3084,6 @@ type CountryInfo struct {
 	DefaultCurrency         CompanyDefaultCurrency `json:"default_currency"`
 	DefaultPhoneCountryCode string                 `json:"default_phone_country_code"`
 }
-
-// Request to create a new invite link. No parameters are required as the API controls all settings.
-type CreateInviteLinkRequest map[string]interface{}
 
 // CreatePaymentError defines model for CreatePaymentError.
 type CreatePaymentError struct {
@@ -3160,6 +3139,12 @@ type CreateSMSMessage struct {
 
 	// SMS message content
 	Message string `json:"message"`
+}
+
+// Request to create a new user invite. No parameters are required as the API controls all settings.
+type CreateUserInviteRequest struct {
+	// ID of the company this user invite will belong to
+	CompanyId *string `json:"company_id,omitempty"`
 }
 
 // CustomDuration defines model for CustomDuration.
@@ -5116,55 +5101,6 @@ type ImportJobStatus string
 
 // Type of data being imported
 type ImportJobType string
-
-// An invite link for joining a company
-type InviteLink struct {
-	// ID of the company this invite link belongs to
-	CompanyId *string `json:"company_id,omitempty"`
-
-	// When the invite link was created
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-
-	// ID of the employee who created this invite link
-	EmployeeId *string `json:"employee_id,omitempty"`
-
-	// When the invite link expires
-	ExpiresAt *time.Time `json:"expires_at,omitempty"`
-
-	// Unique identifier for the invite link
-	Id *string `json:"id,omitempty"`
-
-	// Whether the invite link has expired
-	IsExpired *bool `json:"is_expired,omitempty"`
-
-	// Whether the invite link has been used
-	IsUsed *bool `json:"is_used,omitempty"`
-
-	// Whether the invite link is still valid (not expired, used, or deleted)
-	IsValid *bool `json:"is_valid,omitempty"`
-
-	// Unique token for the invite link
-	Token *string `json:"token,omitempty"`
-
-	// When the invite link was last updated
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
-
-	// When the invite link was used (null if not used)
-	UsedAt *time.Time `json:"used_at"`
-}
-
-// InviteLinkError defines model for InviteLinkError.
-type InviteLinkError struct {
-	// Specific error codes for invite link validation failures
-	Code    InviteLinkErrorCode `json:"code"`
-	Message string              `json:"message"`
-}
-
-// Specific error codes for invite link validation failures
-type InviteLinkErrorCode string
-
-// InviteLinks defines model for InviteLinks.
-type InviteLinks []InviteLink
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type InvoicesFilter struct {
@@ -8152,7 +8088,10 @@ type User struct {
 	Locale       *string          `json:"locale,omitempty"`
 	Pos          *UserPOSSettings `json:"pos,omitempty"`
 	Settings     *UserSettings    `json:"settings,omitempty"`
-	Verification *Verification    `json:"verification,omitempty"`
+
+	// The profile of the user
+	UserProfile  *UserProfile  `json:"user_profile,omitempty"`
+	Verification *Verification `json:"verification,omitempty"`
 }
 
 // UserConnections defines model for UserConnections.
@@ -8177,6 +8116,73 @@ type UserField string
 // UserFields defines model for UserFields.
 type UserFields []UserField
 
+// A user invite to join a company
+type UserInvite struct {
+	// ID of the company this user invite belongs to
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// When the user invite was used (null if not used)
+	ConsumedAt *time.Time `json:"consumed_at"`
+
+	// When the user invite was created
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// ID of the employee who created this user invite
+	EmployeeId *string `json:"employee_id,omitempty"`
+
+	// When the user invite expires
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
+	// Unique identifier for the user invite
+	Id *string `json:"id,omitempty"`
+
+	// Whether the user invite has expired
+	IsExpired *bool `json:"is_expired,omitempty"`
+
+	// Whether the user invite has been used
+	IsUsed *bool `json:"is_used,omitempty"`
+
+	// Whether the user invite is still valid (not expired, used, or deleted)
+	IsValid *bool `json:"is_valid,omitempty"`
+
+	// Unique token for the user invite
+	Token *string `json:"token,omitempty"`
+
+	// When the user invite was last updated
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// Result of validating a user invite without consuming it
+type UserInviteContextResponse struct {
+	// ID of the company this user invite belongs to
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// Name of the company this user invite belongs to
+	CompanyName *string `json:"company_name,omitempty"`
+
+	// When the user invite expires
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
+	// Name of the user who created this user invite
+	InvitedBy *string `json:"invited_by,omitempty"`
+
+	// Whether the user invite is still valid (not expired, used, or deleted)
+	IsValid *bool `json:"is_valid,omitempty"`
+}
+
+// UserInviteError defines model for UserInviteError.
+type UserInviteError struct {
+	// Specific error codes for user invite validation failures
+	Code    UserInviteErrorCode `json:"code"`
+	Message string              `json:"message"`
+}
+
+// Specific error codes for user invite validation failures
+type UserInviteErrorCode string
+
+// UserInvites defines model for UserInvites.
+type UserInvites []UserInvite
+
 // UserOAuthRedirect defines model for UserOAuthRedirect.
 type UserOAuthRedirect struct {
 	RedirectUrl *string `json:"redirect_url,omitempty"`
@@ -8200,6 +8206,12 @@ type UserPOSSettings struct {
 
 	// VAT Identification Number
 	VatId *string `json:"vat_id,omitempty"`
+}
+
+// The profile of the user
+type UserProfile struct {
+	// The name of the user
+	Name *string `json:"name,omitempty"`
 }
 
 // UserSettings defines model for UserSettings.
@@ -9562,36 +9574,6 @@ type ListImportJobsParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// ListInviteLinksParams defines parameters for ListInviteLinks.
-type ListInviteLinksParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
-// CreateInviteLinkJSONBody defines parameters for CreateInviteLink.
-type CreateInviteLinkJSONBody CreateInviteLinkRequest
-
-// CreateInviteLinkParams defines parameters for CreateInviteLink.
-type CreateInviteLinkParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
-// DeleteInviteLinkParams defines parameters for DeleteInviteLink.
-type DeleteInviteLinkParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
 // ListIssuersParams defines parameters for ListIssuers.
 type ListIssuersParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -10084,6 +10066,15 @@ type ListTransactionsParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// ListUserInvitesParams defines parameters for ListUserInvites.
+type ListUserInvitesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // ListVATsParams defines parameters for ListVATs.
@@ -12288,6 +12279,27 @@ type CreateVerificationRequestJSONBodyCertificationLevel string
 // CreateVerificationRequestJSONBodyCertificationType defines parameters for CreateVerificationRequest.
 type CreateVerificationRequestJSONBodyCertificationType string
 
+// CreateUserInviteJSONBody defines parameters for CreateUserInvite.
+type CreateUserInviteJSONBody CreateUserInviteRequest
+
+// CreateUserInviteParams defines parameters for CreateUserInvite.
+type CreateUserInviteParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteUserInviteParams defines parameters for DeleteUserInvite.
+type DeleteUserInviteParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // GetCountryInfoParams defines parameters for GetCountryInfo.
 type GetCountryInfoParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -12534,9 +12546,6 @@ type CloneCompanyJSONRequestBody CloneCompanyJSONBody
 // UpdateEmployeeJSONRequestBody defines body for UpdateEmployee for application/json ContentType.
 type UpdateEmployeeJSONRequestBody UpdateEmployeeJSONBody
 
-// CreateInviteLinkJSONRequestBody defines body for CreateInviteLink for application/json ContentType.
-type CreateInviteLinkJSONRequestBody CreateInviteLinkJSONBody
-
 // CreateSubscriptionJSONRequestBody defines body for CreateSubscription for application/json ContentType.
 type CreateSubscriptionJSONRequestBody CreateSubscriptionJSONBody
 
@@ -12770,6 +12779,9 @@ type CreateUserTokenJSONRequestBody CreateUserTokenJSONBody
 
 // CreateVerificationRequestJSONRequestBody defines body for CreateVerificationRequest for application/json ContentType.
 type CreateVerificationRequestJSONRequestBody CreateVerificationRequestJSONBody
+
+// CreateUserInviteJSONRequestBody defines body for CreateUserInvite for application/json ContentType.
+type CreateUserInviteJSONRequestBody CreateUserInviteJSONBody
 
 // UpdateVerificationRequestJSONRequestBody defines body for UpdateVerificationRequest for application/json ContentType.
 type UpdateVerificationRequestJSONRequestBody UpdateVerificationRequestJSONBody
@@ -15011,17 +15023,6 @@ type ClientInterface interface {
 	// ListImportJobs request
 	ListImportJobs(ctx context.Context, companyId string, params *ListImportJobsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListInviteLinks request
-	ListInviteLinks(ctx context.Context, companyId string, params *ListInviteLinksParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreateInviteLink request with any body
-	CreateInviteLinkWithBody(ctx context.Context, companyId string, params *CreateInviteLinkParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateInviteLink(ctx context.Context, companyId string, params *CreateInviteLinkParams, body CreateInviteLinkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// DeleteInviteLink request
-	DeleteInviteLink(ctx context.Context, companyId string, inviteLinkId string, params *DeleteInviteLinkParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// ListIssuers request
 	ListIssuers(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15149,6 +15150,9 @@ type ClientInterface interface {
 
 	// ListTransactions request
 	ListTransactions(ctx context.Context, companyId string, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListUserInvites request
+	ListUserInvites(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListVATs request
 	ListVATs(ctx context.Context, companyId string, params *ListVATsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15435,9 +15439,6 @@ type ClientInterface interface {
 	UpdateSaltpayTerminalWithBody(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateSaltpayTerminal(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, body UpdateSaltpayTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetAndConsumeInviteLink request
-	GetAndConsumeInviteLink(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateReport request with any body
 	CreateReportWithBody(ctx context.Context, params *CreateReportParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15936,6 +15937,20 @@ type ClientInterface interface {
 	CreateVerificationRequestWithBody(ctx context.Context, params *CreateVerificationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateVerificationRequest(ctx context.Context, params *CreateVerificationRequestParams, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateUserInvite request with any body
+	CreateUserInviteWithBody(ctx context.Context, params *CreateUserInviteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateUserInvite(ctx context.Context, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUserInviteContext request
+	GetUserInviteContext(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConsumeUserInvite request
+	ConsumeUserInvite(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteUserInvite request
+	DeleteUserInvite(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCountryInfo request
 	GetCountryInfo(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -16759,54 +16774,6 @@ func (c *Client) ListImportJobs(ctx context.Context, companyId string, params *L
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListInviteLinks(ctx context.Context, companyId string, params *ListInviteLinksParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListInviteLinksRequest(c.Server, companyId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateInviteLinkWithBody(ctx context.Context, companyId string, params *CreateInviteLinkParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateInviteLinkRequestWithBody(c.Server, companyId, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateInviteLink(ctx context.Context, companyId string, params *CreateInviteLinkParams, body CreateInviteLinkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateInviteLinkRequest(c.Server, companyId, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteInviteLink(ctx context.Context, companyId string, inviteLinkId string, params *DeleteInviteLinkParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteInviteLinkRequest(c.Server, companyId, inviteLinkId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) ListIssuers(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListIssuersRequest(c.Server, companyId, params)
 	if err != nil {
@@ -17325,6 +17292,18 @@ func (c *Client) ListTimeSlots(ctx context.Context, companyId string, params *Li
 
 func (c *Client) ListTransactions(ctx context.Context, companyId string, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListTransactionsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListUserInvites(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListUserInvitesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -18573,18 +18552,6 @@ func (c *Client) UpdateSaltpayTerminalWithBody(ctx context.Context, storeId stri
 
 func (c *Client) UpdateSaltpayTerminal(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, body UpdateSaltpayTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateSaltpayTerminalRequest(c.Server, storeId, terminalId, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetAndConsumeInviteLink(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetAndConsumeInviteLinkRequest(c.Server, token)
 	if err != nil {
 		return nil, err
 	}
@@ -20769,6 +20736,66 @@ func (c *Client) CreateVerificationRequestWithBody(ctx context.Context, params *
 
 func (c *Client) CreateVerificationRequest(ctx context.Context, params *CreateVerificationRequestParams, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateVerificationRequestRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUserInviteWithBody(ctx context.Context, params *CreateUserInviteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserInviteRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUserInvite(ctx context.Context, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserInviteRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUserInviteContext(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserInviteContextRequest(c.Server, token)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConsumeUserInvite(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConsumeUserInviteRequest(c.Server, token)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteUserInvite(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteUserInviteRequest(c.Server, userInviteId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -25626,236 +25653,6 @@ func NewListImportJobsRequest(server string, companyId string, params *ListImpor
 	return req, nil
 }
 
-// NewListInviteLinksRequest generates requests for ListInviteLinks
-func NewListInviteLinksRequest(server string, companyId string, params *ListInviteLinksParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/companies/%s/invite_links", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewCreateInviteLinkRequest calls the generic CreateInviteLink builder with application/json body
-func NewCreateInviteLinkRequest(server string, companyId string, params *CreateInviteLinkParams, body CreateInviteLinkJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateInviteLinkRequestWithBody(server, companyId, params, "application/json", bodyReader)
-}
-
-// NewCreateInviteLinkRequestWithBody generates requests for CreateInviteLink with any type of body
-func NewCreateInviteLinkRequestWithBody(server string, companyId string, params *CreateInviteLinkParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/companies/%s/invite_links", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewDeleteInviteLinkRequest generates requests for DeleteInviteLink
-func NewDeleteInviteLinkRequest(server string, companyId string, inviteLinkId string, params *DeleteInviteLinkParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "invite_link_id", runtime.ParamLocationPath, inviteLinkId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/companies/%s/invite_links/%s", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewListIssuersRequest generates requests for ListIssuers
 func NewListIssuersRequest(server string, companyId string, params *ListIssuersParams) (*http.Request, error) {
 	var err error
@@ -29322,6 +29119,76 @@ func NewListTransactionsRequest(server string, companyId string, params *ListTra
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListUserInvitesRequest generates requests for ListUserInvites
+func NewListUserInvitesRequest(server string, companyId string, params *ListUserInvitesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/user_invites", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
@@ -35384,40 +35251,6 @@ func NewUpdateSaltpayTerminalRequestWithBody(server string, storeId string, term
 	}
 
 	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewGetAndConsumeInviteLinkRequest generates requests for GetAndConsumeInviteLink
-func NewGetAndConsumeInviteLinkRequest(server string, token string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "token", runtime.ParamLocationPath, token)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/invite_links/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
 
 	return req, nil
 }
@@ -45177,6 +45010,220 @@ func NewCreateVerificationRequestRequestWithBody(server string, params *CreateVe
 	return req, nil
 }
 
+// NewCreateUserInviteRequest calls the generic CreateUserInvite builder with application/json body
+func NewCreateUserInviteRequest(server string, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateUserInviteRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateUserInviteRequestWithBody generates requests for CreateUserInvite with any type of body
+func NewCreateUserInviteRequestWithBody(server string, params *CreateUserInviteParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user_invites")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetUserInviteContextRequest generates requests for GetUserInviteContext
+func NewGetUserInviteContextRequest(server string, token string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "token", runtime.ParamLocationPath, token)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user_invites/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewConsumeUserInviteRequest generates requests for ConsumeUserInvite
+func NewConsumeUserInviteRequest(server string, token string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "token", runtime.ParamLocationPath, token)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user_invites/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteUserInviteRequest generates requests for DeleteUserInvite
+func NewDeleteUserInviteRequest(server string, userInviteId string, params *DeleteUserInviteParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_invite_id", runtime.ParamLocationPath, userInviteId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user_invites/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetCountryInfoRequest generates requests for GetCountryInfo
 func NewGetCountryInfoRequest(server string, countryCode string, params *GetCountryInfoParams) (*http.Request, error) {
 	var err error
@@ -47029,17 +47076,6 @@ type ClientWithResponsesInterface interface {
 	// ListImportJobs request
 	ListImportJobsWithResponse(ctx context.Context, companyId string, params *ListImportJobsParams, reqEditors ...RequestEditorFn) (*ListImportJobsResponse, error)
 
-	// ListInviteLinks request
-	ListInviteLinksWithResponse(ctx context.Context, companyId string, params *ListInviteLinksParams, reqEditors ...RequestEditorFn) (*ListInviteLinksResponse, error)
-
-	// CreateInviteLink request with any body
-	CreateInviteLinkWithBodyWithResponse(ctx context.Context, companyId string, params *CreateInviteLinkParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateInviteLinkResponse, error)
-
-	CreateInviteLinkWithResponse(ctx context.Context, companyId string, params *CreateInviteLinkParams, body CreateInviteLinkJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateInviteLinkResponse, error)
-
-	// DeleteInviteLink request
-	DeleteInviteLinkWithResponse(ctx context.Context, companyId string, inviteLinkId string, params *DeleteInviteLinkParams, reqEditors ...RequestEditorFn) (*DeleteInviteLinkResponse, error)
-
 	// ListIssuers request
 	ListIssuersWithResponse(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*ListIssuersResponse, error)
 
@@ -47167,6 +47203,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListTransactions request
 	ListTransactionsWithResponse(ctx context.Context, companyId string, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*ListTransactionsResponse, error)
+
+	// ListUserInvites request
+	ListUserInvitesWithResponse(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*ListUserInvitesResponse, error)
 
 	// ListVATs request
 	ListVATsWithResponse(ctx context.Context, companyId string, params *ListVATsParams, reqEditors ...RequestEditorFn) (*ListVATsResponse, error)
@@ -47453,9 +47492,6 @@ type ClientWithResponsesInterface interface {
 	UpdateSaltpayTerminalWithBodyWithResponse(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateSaltpayTerminalResponse, error)
 
 	UpdateSaltpayTerminalWithResponse(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, body UpdateSaltpayTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSaltpayTerminalResponse, error)
-
-	// GetAndConsumeInviteLink request
-	GetAndConsumeInviteLinkWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*GetAndConsumeInviteLinkResponse, error)
 
 	// CreateReport request with any body
 	CreateReportWithBodyWithResponse(ctx context.Context, params *CreateReportParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReportResponse, error)
@@ -47954,6 +47990,20 @@ type ClientWithResponsesInterface interface {
 	CreateVerificationRequestWithBodyWithResponse(ctx context.Context, params *CreateVerificationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVerificationRequestResponse, error)
 
 	CreateVerificationRequestWithResponse(ctx context.Context, params *CreateVerificationRequestParams, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVerificationRequestResponse, error)
+
+	// CreateUserInvite request with any body
+	CreateUserInviteWithBodyWithResponse(ctx context.Context, params *CreateUserInviteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error)
+
+	CreateUserInviteWithResponse(ctx context.Context, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error)
+
+	// GetUserInviteContext request
+	GetUserInviteContextWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*GetUserInviteContextResponse, error)
+
+	// ConsumeUserInvite request
+	ConsumeUserInviteWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error)
+
+	// DeleteUserInvite request
+	DeleteUserInviteWithResponse(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*DeleteUserInviteResponse, error)
 
 	// GetCountryInfo request
 	GetCountryInfoWithResponse(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*GetCountryInfoResponse, error)
@@ -49186,71 +49236,6 @@ func (r ListImportJobsResponse) StatusCode() int {
 	return 0
 }
 
-type ListInviteLinksResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *InviteLinks
-}
-
-// Status returns HTTPResponse.Status
-func (r ListInviteLinksResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListInviteLinksResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type CreateInviteLinkResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *InviteLink
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateInviteLinkResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateInviteLinkResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type DeleteInviteLinkResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteInviteLinkResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteInviteLinkResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type ListIssuersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -50122,6 +50107,28 @@ func (r ListTransactionsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListTransactionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListUserInvitesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UserInvites
+}
+
+// Status returns HTTPResponse.Status
+func (r ListUserInvitesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListUserInvitesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -51827,29 +51834,6 @@ func (r UpdateSaltpayTerminalResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateSaltpayTerminalResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetAndConsumeInviteLinkResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ConsumeResponse
-	JSON403      *InviteLinkError
-}
-
-// Status returns HTTPResponse.Status
-func (r GetAndConsumeInviteLinkResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetAndConsumeInviteLinkResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -54771,6 +54755,94 @@ func (r CreateVerificationRequestResponse) StatusCode() int {
 	return 0
 }
 
+type CreateUserInviteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UserInvite
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateUserInviteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateUserInviteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetUserInviteContextResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UserInviteContextResponse
+	JSON403      *UserInviteError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUserInviteContextResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUserInviteContextResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ConsumeUserInviteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON403      *UserInviteError
+}
+
+// Status returns HTTPResponse.Status
+func (r ConsumeUserInviteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConsumeUserInviteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteUserInviteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteUserInviteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteUserInviteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetCountryInfoResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -55812,41 +55884,6 @@ func (c *ClientWithResponses) ListImportJobsWithResponse(ctx context.Context, co
 	return ParseListImportJobsResponse(rsp)
 }
 
-// ListInviteLinksWithResponse request returning *ListInviteLinksResponse
-func (c *ClientWithResponses) ListInviteLinksWithResponse(ctx context.Context, companyId string, params *ListInviteLinksParams, reqEditors ...RequestEditorFn) (*ListInviteLinksResponse, error) {
-	rsp, err := c.ListInviteLinks(ctx, companyId, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListInviteLinksResponse(rsp)
-}
-
-// CreateInviteLinkWithBodyWithResponse request with arbitrary body returning *CreateInviteLinkResponse
-func (c *ClientWithResponses) CreateInviteLinkWithBodyWithResponse(ctx context.Context, companyId string, params *CreateInviteLinkParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateInviteLinkResponse, error) {
-	rsp, err := c.CreateInviteLinkWithBody(ctx, companyId, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateInviteLinkResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateInviteLinkWithResponse(ctx context.Context, companyId string, params *CreateInviteLinkParams, body CreateInviteLinkJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateInviteLinkResponse, error) {
-	rsp, err := c.CreateInviteLink(ctx, companyId, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateInviteLinkResponse(rsp)
-}
-
-// DeleteInviteLinkWithResponse request returning *DeleteInviteLinkResponse
-func (c *ClientWithResponses) DeleteInviteLinkWithResponse(ctx context.Context, companyId string, inviteLinkId string, params *DeleteInviteLinkParams, reqEditors ...RequestEditorFn) (*DeleteInviteLinkResponse, error) {
-	rsp, err := c.DeleteInviteLink(ctx, companyId, inviteLinkId, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteInviteLinkResponse(rsp)
-}
-
 // ListIssuersWithResponse request returning *ListIssuersResponse
 func (c *ClientWithResponses) ListIssuersWithResponse(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*ListIssuersResponse, error) {
 	rsp, err := c.ListIssuers(ctx, companyId, params, reqEditors...)
@@ -56237,6 +56274,15 @@ func (c *ClientWithResponses) ListTransactionsWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseListTransactionsResponse(rsp)
+}
+
+// ListUserInvitesWithResponse request returning *ListUserInvitesResponse
+func (c *ClientWithResponses) ListUserInvitesWithResponse(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*ListUserInvitesResponse, error) {
+	rsp, err := c.ListUserInvites(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListUserInvitesResponse(rsp)
 }
 
 // ListVATsWithResponse request returning *ListVATsResponse
@@ -57147,15 +57193,6 @@ func (c *ClientWithResponses) UpdateSaltpayTerminalWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseUpdateSaltpayTerminalResponse(rsp)
-}
-
-// GetAndConsumeInviteLinkWithResponse request returning *GetAndConsumeInviteLinkResponse
-func (c *ClientWithResponses) GetAndConsumeInviteLinkWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*GetAndConsumeInviteLinkResponse, error) {
-	rsp, err := c.GetAndConsumeInviteLink(ctx, token, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetAndConsumeInviteLinkResponse(rsp)
 }
 
 // CreateReportWithBodyWithResponse request with arbitrary body returning *CreateReportResponse
@@ -58746,6 +58783,50 @@ func (c *ClientWithResponses) CreateVerificationRequestWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseCreateVerificationRequestResponse(rsp)
+}
+
+// CreateUserInviteWithBodyWithResponse request with arbitrary body returning *CreateUserInviteResponse
+func (c *ClientWithResponses) CreateUserInviteWithBodyWithResponse(ctx context.Context, params *CreateUserInviteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error) {
+	rsp, err := c.CreateUserInviteWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUserInviteResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateUserInviteWithResponse(ctx context.Context, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error) {
+	rsp, err := c.CreateUserInvite(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUserInviteResponse(rsp)
+}
+
+// GetUserInviteContextWithResponse request returning *GetUserInviteContextResponse
+func (c *ClientWithResponses) GetUserInviteContextWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*GetUserInviteContextResponse, error) {
+	rsp, err := c.GetUserInviteContext(ctx, token, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUserInviteContextResponse(rsp)
+}
+
+// ConsumeUserInviteWithResponse request returning *ConsumeUserInviteResponse
+func (c *ClientWithResponses) ConsumeUserInviteWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error) {
+	rsp, err := c.ConsumeUserInvite(ctx, token, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConsumeUserInviteResponse(rsp)
+}
+
+// DeleteUserInviteWithResponse request returning *DeleteUserInviteResponse
+func (c *ClientWithResponses) DeleteUserInviteWithResponse(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*DeleteUserInviteResponse, error) {
+	rsp, err := c.DeleteUserInvite(ctx, userInviteId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteUserInviteResponse(rsp)
 }
 
 // GetCountryInfoWithResponse request returning *GetCountryInfoResponse
@@ -60348,74 +60429,6 @@ func ParseListImportJobsResponse(rsp *http.Response) (*ListImportJobsResponse, e
 	return response, nil
 }
 
-// ParseListInviteLinksResponse parses an HTTP response from a ListInviteLinksWithResponse call
-func ParseListInviteLinksResponse(rsp *http.Response) (*ListInviteLinksResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListInviteLinksResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest InviteLinks
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseCreateInviteLinkResponse parses an HTTP response from a CreateInviteLinkWithResponse call
-func ParseCreateInviteLinkResponse(rsp *http.Response) (*CreateInviteLinkResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateInviteLinkResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest InviteLink
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseDeleteInviteLinkResponse parses an HTTP response from a DeleteInviteLinkWithResponse call
-func ParseDeleteInviteLinkResponse(rsp *http.Response) (*DeleteInviteLinkResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteInviteLinkResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
 // ParseListIssuersResponse parses an HTTP response from a ListIssuersWithResponse call
 func ParseListIssuersResponse(rsp *http.Response) (*ListIssuersResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -61413,6 +61426,32 @@ func ParseListTransactionsResponse(rsp *http.Response) (*ListTransactionsRespons
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Transactions
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListUserInvitesResponse parses an HTTP response from a ListUserInvitesWithResponse call
+func ParseListUserInvitesResponse(rsp *http.Response) (*ListUserInvitesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListUserInvitesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UserInvites
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -63332,39 +63371,6 @@ func ParseUpdateSaltpayTerminalResponse(rsp *http.Response) (*UpdateSaltpayTermi
 			return nil, err
 		}
 		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetAndConsumeInviteLinkResponse parses an HTTP response from a GetAndConsumeInviteLinkWithResponse call
-func ParseGetAndConsumeInviteLinkResponse(rsp *http.Response) (*GetAndConsumeInviteLinkResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetAndConsumeInviteLinkResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ConsumeResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest InviteLinkError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
 
 	}
 
@@ -66499,6 +66505,107 @@ func ParseCreateVerificationRequestResponse(rsp *http.Response) (*CreateVerifica
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseCreateUserInviteResponse parses an HTTP response from a CreateUserInviteWithResponse call
+func ParseCreateUserInviteResponse(rsp *http.Response) (*CreateUserInviteResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateUserInviteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UserInvite
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUserInviteContextResponse parses an HTTP response from a GetUserInviteContextWithResponse call
+func ParseGetUserInviteContextResponse(rsp *http.Response) (*GetUserInviteContextResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUserInviteContextResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UserInviteContextResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest UserInviteError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseConsumeUserInviteResponse parses an HTTP response from a ConsumeUserInviteWithResponse call
+func ParseConsumeUserInviteResponse(rsp *http.Response) (*ConsumeUserInviteResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConsumeUserInviteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest UserInviteError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteUserInviteResponse parses an HTTP response from a DeleteUserInviteWithResponse call
+func ParseDeleteUserInviteResponse(rsp *http.Response) (*DeleteUserInviteResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteUserInviteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
