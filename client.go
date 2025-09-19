@@ -2563,15 +2563,16 @@ type Company struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary   *bool               `json:"has_secretary,omitempty"`
-	Id             *string             `json:"id,omitempty"`
-	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
-	Locale         *Locale             `json:"locale,omitempty"`
-	Location       *Location           `json:"location,omitempty"`
-	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
-	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
-	Name           *string             `json:"name,omitempty"`
+	HasSecretary    *bool               `json:"has_secretary,omitempty"`
+	Id              *string             `json:"id,omitempty"`
+	InviteLinkToken *string             `json:"invite_link_token,omitempty"`
+	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
+	Locale          *Locale             `json:"locale,omitempty"`
+	Location        *Location           `json:"location,omitempty"`
+	LockedSections  *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
+	Name            *string             `json:"name,omitempty"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -2928,15 +2929,16 @@ type CompanyResponse struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary   *bool              `json:"has_secretary,omitempty"`
-	Id             *string            `json:"id,omitempty"`
-	LastActiveAt   *time.Time         `json:"last_active_at,omitempty"`
-	Locale         Locale             `json:"locale"`
-	Location       Location           `json:"location"`
-	LockedSections *LockedSections    `json:"locked_sections,omitempty"`
-	Marketplace    CompanyMarketplace `json:"marketplace"`
-	Messaging      CompanyMessaging   `json:"messaging"`
-	Name           string             `json:"name"`
+	HasSecretary    *bool              `json:"has_secretary,omitempty"`
+	Id              *string            `json:"id,omitempty"`
+	InviteLinkToken *string            `json:"invite_link_token,omitempty"`
+	LastActiveAt    *time.Time         `json:"last_active_at,omitempty"`
+	Locale          Locale             `json:"locale"`
+	Location        Location           `json:"location"`
+	LockedSections  *LockedSections    `json:"locked_sections,omitempty"`
+	Marketplace     CompanyMarketplace `json:"marketplace"`
+	Messaging       CompanyMessaging   `json:"messaging"`
+	Name            string             `json:"name"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -3039,15 +3041,16 @@ type CompanyUpdate struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary   *bool               `json:"has_secretary,omitempty"`
-	Id             *string             `json:"id,omitempty"`
-	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
-	Locale         *Locale             `json:"locale,omitempty"`
-	Location       *Location           `json:"location,omitempty"`
-	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
-	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
-	Name           *string             `json:"name,omitempty"`
+	HasSecretary    *bool               `json:"has_secretary,omitempty"`
+	Id              *string             `json:"id,omitempty"`
+	InviteLinkToken *string             `json:"invite_link_token,omitempty"`
+	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
+	Locale          *Locale             `json:"locale,omitempty"`
+	Location        *Location           `json:"location,omitempty"`
+	LockedSections  *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
+	Name            *string             `json:"name,omitempty"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
