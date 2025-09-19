@@ -2548,11 +2548,12 @@ type CompaniesResponse []CompanyResponse
 
 // Company defines model for Company.
 type Company struct {
-	Adyen     *AdyenConnection        `json:"adyen,omitempty"`
-	Checkin   *CompanyCheckin         `json:"checkin,omitempty"`
-	Claims    *ClaimsConnection       `json:"claims,omitempty"`
-	CreatedAt *time.Time              `json:"created_at,omitempty"`
-	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
+	Adyen         *AdyenConnection        `json:"adyen,omitempty"`
+	BillingStatus *CompanyBillingStatus   `json:"billing_status,omitempty"`
+	Checkin       *CompanyCheckin         `json:"checkin,omitempty"`
+	Claims        *ClaimsConnection       `json:"claims,omitempty"`
+	CreatedAt     *time.Time              `json:"created_at,omitempty"`
+	Currency      *CompanyDefaultCurrency `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
@@ -2599,6 +2600,12 @@ type Company struct {
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
 	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
+}
+
+// CompanyBillingStatus defines model for CompanyBillingStatus.
+type CompanyBillingStatus struct {
+	PaidInvoices   *int32 `json:"paid_invoices,omitempty"`
+	UnpaidInvoices *int32 `json:"unpaid_invoices,omitempty"`
 }
 
 // CompanyCheckin defines model for CompanyCheckin.
@@ -2906,11 +2913,12 @@ type CompanyProfileCreateOverrides struct {
 
 // CompanyResponse defines model for CompanyResponse.
 type CompanyResponse struct {
-	Adyen     *AdyenConnection       `json:"adyen,omitempty"`
-	Checkin   *CompanyCheckin        `json:"checkin,omitempty"`
-	Claims    *ClaimsConnection      `json:"claims,omitempty"`
-	CreatedAt *time.Time             `json:"created_at,omitempty"`
-	Currency  CompanyDefaultCurrency `json:"currency"`
+	Adyen         *AdyenConnection       `json:"adyen,omitempty"`
+	BillingStatus *CompanyBillingStatus  `json:"billing_status,omitempty"`
+	Checkin       *CompanyCheckin        `json:"checkin,omitempty"`
+	Claims        *ClaimsConnection      `json:"claims,omitempty"`
+	CreatedAt     *time.Time             `json:"created_at,omitempty"`
+	Currency      CompanyDefaultCurrency `json:"currency"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Enterprise ExpandableEnterprise `json:"enterprise"`
@@ -3016,11 +3024,12 @@ type CompanyTypes []CompanyType
 
 // CompanyUpdate defines model for CompanyUpdate.
 type CompanyUpdate struct {
-	Adyen     *AdyenConnection  `json:"adyen,omitempty"`
-	Checkin   *CompanyCheckin   `json:"checkin,omitempty"`
-	Claims    *ClaimsConnection `json:"claims,omitempty"`
-	CreatedAt *time.Time        `json:"created_at,omitempty"`
-	Currency  *interface{}      `json:"currency,omitempty"`
+	Adyen         *AdyenConnection      `json:"adyen,omitempty"`
+	BillingStatus *CompanyBillingStatus `json:"billing_status,omitempty"`
+	Checkin       *CompanyCheckin       `json:"checkin,omitempty"`
+	Claims        *ClaimsConnection     `json:"claims,omitempty"`
+	CreatedAt     *time.Time            `json:"created_at,omitempty"`
+	Currency      *interface{}          `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
