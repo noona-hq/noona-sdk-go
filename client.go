@@ -1194,10 +1194,12 @@ const (
 
 // Defines values for UnavailableResourceReason.
 const (
-	Booked                UnavailableResourceReason = "booked"
-	Capacity              UnavailableResourceReason = "capacity"
-	CustomBookingInterval UnavailableResourceReason = "custom_booking_interval"
-	OutsideOpeningHours   UnavailableResourceReason = "outside_opening_hours"
+	UnavailableResourceReasonBlockedTime           UnavailableResourceReason = "blocked_time"
+	UnavailableResourceReasonBooking               UnavailableResourceReason = "booking"
+	UnavailableResourceReasonCapacity              UnavailableResourceReason = "capacity"
+	UnavailableResourceReasonCustomBookingInterval UnavailableResourceReason = "custom_booking_interval"
+	UnavailableResourceReasonOutsideOpeningHours   UnavailableResourceReason = "outside_opening_hours"
+	UnavailableResourceReasonTimeslotReservation   UnavailableResourceReason = "timeslot_reservation"
 )
 
 // Defines values for UpdateVerificationStatus.
@@ -7818,7 +7820,7 @@ type TimeSlot struct {
 	// The start time of the time slot
 	Slot *time.Time `json:"slot,omitempty"`
 
-	// Details of the resources that are unavailable for this time slot, including the reason
+	// Details of the resources and employees that are unavailable for this time slot, including the reason
 	UnavailableResources *[]UnavailableResource `json:"unavailable_resources,omitempty"`
 }
 
@@ -8012,13 +8014,15 @@ type UnavailableResource struct {
 	// The reason why the resource is unavailable.
 	//
 	// Possible values:
-	// - `booked` - The resource is booked during this time slot
+	// - `booking` - The resource is occupied by a booking/event during this time slot
+	// - `blocked_time` - The resource is occupied by blocked time during this time slot
+	// - `timeslot_reservation` - The resource is occupied by a timeslot reservation during this time slot
 	// - `outside_opening_hours` - The reservation extends outside the opening hours of the company
 	// - `custom_booking_interval` - The reservation start time does not match the custom booking interval of the resource
 	// - `capacity` - The capacity of the resource does not match number of guests (Too big or too small)
 	//
-	// The above list of reasons is priority ordered. Meaning that if a table does not support number of guests due to
-	// capacity and is also booked, the reason will be `booked`.
+	// The above list of reasons is priority ordered. Meaning that if a resource has multiple occupying factors,
+	// the reason will be the highest priority one (bookings > timeslot reservations > blocked times).
 	Reason *UnavailableResourceReason `json:"reason,omitempty"`
 
 	// The ID of the unavailable resource
@@ -8028,13 +8032,15 @@ type UnavailableResource struct {
 // The reason why the resource is unavailable.
 //
 // Possible values:
-// - `booked` - The resource is booked during this time slot
+// - `booking` - The resource is occupied by a booking/event during this time slot
+// - `blocked_time` - The resource is occupied by blocked time during this time slot
+// - `timeslot_reservation` - The resource is occupied by a timeslot reservation during this time slot
 // - `outside_opening_hours` - The reservation extends outside the opening hours of the company
 // - `custom_booking_interval` - The reservation start time does not match the custom booking interval of the resource
 // - `capacity` - The capacity of the resource does not match number of guests (Too big or too small)
 //
-// The above list of reasons is priority ordered. Meaning that if a table does not support number of guests due to
-// capacity and is also booked, the reason will be `booked`.
+// The above list of reasons is priority ordered. Meaning that if a resource has multiple occupying factors,
+// the reason will be the highest priority one (bookings > timeslot reservations > blocked times).
 type UnavailableResourceReason string
 
 // UnitPrice defines model for UnitPrice.
