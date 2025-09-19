@@ -3452,6 +3452,7 @@ type Employee struct {
 	Email                   *string                       `json:"email,omitempty"`
 	EmailVerified           *bool                         `json:"email_verified,omitempty"`
 	EventTypePreferences    *EventTypePreferences         `json:"event_type_preferences,omitempty"`
+	HasPassword             *bool                         `json:"has_password,omitempty"`
 	Id                      *string                       `json:"id,omitempty"`
 	Image                   *Image                        `json:"image,omitempty"`
 	Marketplace             *EmployeeMarketplaceSettings  `json:"marketplace,omitempty"`
