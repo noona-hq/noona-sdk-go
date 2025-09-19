@@ -367,6 +367,17 @@ const (
 	EmailEventStatusProcessed EmailEventStatus = "processed"
 )
 
+// Defines values for EmployeeCreationErrorCode.
+const (
+	CompanyIdRequired              EmployeeCreationErrorCode = "company_id_required"
+	EmailRequired                  EmployeeCreationErrorCode = "email_required"
+	EmployeeAlreadyExistsInCompany EmployeeCreationErrorCode = "employee_already_exists_in_company"
+	InsufficientPermissions        EmployeeCreationErrorCode = "insufficient_permissions"
+	InvalidEmailFormat             EmployeeCreationErrorCode = "invalid_email_format"
+	InvalidMarketplaceSettings     EmployeeCreationErrorCode = "invalid_marketplace_settings"
+	InvalidRole                    EmployeeCreationErrorCode = "invalid_role"
+)
+
 // Defines values for EmployeeField.
 const (
 	EmployeeFieldCustomReminder EmployeeField = "custom_reminder"
@@ -3486,6 +3497,28 @@ type EmployeeCommissionsPOS struct {
 	Services *CommissionConfig `json:"services,omitempty"`
 	Vouchers *CommissionConfig `json:"vouchers,omitempty"`
 }
+
+// EmployeeCreateRequest defines model for EmployeeCreateRequest.
+type EmployeeCreateRequest struct {
+	// Whether the employee is visible on the calendar
+	AvailableForBookings *bool                         `json:"available_for_bookings,omitempty"`
+	CompanyId            string                        `json:"company_id"`
+	Email                string                        `json:"email"`
+	Marketplace          *EmployeeMarketplaceSettings  `json:"marketplace,omitempty"`
+	Name                 *string                       `json:"name,omitempty"`
+	Notifications        *EmployeeNotificationSettings `json:"notifications,omitempty"`
+	RoleId               *string                       `json:"role_id,omitempty"`
+}
+
+// EmployeeCreationError defines model for EmployeeCreationError.
+type EmployeeCreationError struct {
+	// Specific error codes for employee creation failures
+	Code    EmployeeCreationErrorCode `json:"code"`
+	Message string                    `json:"message"`
+}
+
+// Specific error codes for employee creation failures
+type EmployeeCreationErrorCode string
 
 // EmployeeField defines model for EmployeeField.
 type EmployeeField string
@@ -10349,7 +10382,7 @@ type GetDietaryParams struct {
 }
 
 // CreateEmployeeJSONBody defines parameters for CreateEmployee.
-type CreateEmployeeJSONBody Employee
+type CreateEmployeeJSONBody EmployeeCreateRequest
 
 // CreateEmployeeParams defines parameters for CreateEmployee.
 type CreateEmployeeParams struct {
@@ -50647,6 +50680,7 @@ type CreateEmployeeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Employee
+	JSON400      *EmployeeCreationError
 }
 
 // Status returns HTTPResponse.Status
@@ -62046,6 +62080,13 @@ func ParseCreateEmployeeResponse(rsp *http.Response) (*CreateEmployeeResponse, e
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest EmployeeCreationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
