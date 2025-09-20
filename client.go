@@ -226,6 +226,12 @@ const (
 	BookingSourceGroupPartners    BookingSourceGroup = "partners"
 )
 
+// Defines values for CampaignType.
+const (
+	CampaignTypeEmail CampaignType = "email"
+	CampaignTypeSms   CampaignType = "sms"
+)
+
 // Defines values for CardCardType.
 const (
 	CardCardTypeAmericanExpress CardCardType = "american_express"
@@ -304,6 +310,13 @@ const (
 	Restaurant  CompanyVertical = "restaurant"
 )
 
+// Defines values for CreateCampaignErrorType.
+const (
+	CreateCampaignErrorTypeNonWhitelistedUrls CreateCampaignErrorType = "non_whitelisted_urls"
+	CreateCampaignErrorTypeQuotaExceeded      CreateCampaignErrorType = "quota_exceeded"
+	CreateCampaignErrorTypeValidation         CreateCampaignErrorType = "validation"
+)
+
 // Defines values for CreatePaymentErrorCode.
 const (
 	ExpiredCard            CreatePaymentErrorCode = "expiredCard"
@@ -316,9 +329,9 @@ const (
 
 // Defines values for CreateSMSErrorType.
 const (
-	NonWhitelistedUrls CreateSMSErrorType = "non_whitelisted_urls"
-	QuotaExceeded      CreateSMSErrorType = "quota_exceeded"
-	Validation         CreateSMSErrorType = "validation"
+	CreateSMSErrorTypeNonWhitelistedUrls CreateSMSErrorType = "non_whitelisted_urls"
+	CreateSMSErrorTypeQuotaExceeded      CreateSMSErrorType = "quota_exceeded"
+	CreateSMSErrorTypeValidation         CreateSMSErrorType = "validation"
 )
 
 // Defines values for CustomMessageRuleType.
@@ -2376,6 +2389,108 @@ type CallbackData_Data struct {
 	union json.RawMessage
 }
 
+// Campaign defines model for Campaign.
+type Campaign struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Id        *string            `json:"id,omitempty"`
+	Message   *string            `json:"message,omitempty"`
+	Name      *string            `json:"name,omitempty"`
+
+	// Number of recipients for this campaign
+	RecipientCount *int32        `json:"recipient_count,omitempty"`
+	Type           *CampaignType `json:"type,omitempty"`
+	UpdatedAt      *time.Time    `json:"updated_at,omitempty"`
+}
+
+// CampaignCreate defines model for CampaignCreate.
+type CampaignCreate struct {
+	// Company ID
+	CompanyId string                   `json:"company_id"`
+	Filters   CampaignRecipientFilters `json:"filters"`
+
+	// Campaign message content
+	Message string       `json:"message"`
+	Type    CampaignType `json:"type"`
+}
+
+// CampaignCreateResponse defines model for CampaignCreateResponse.
+type CampaignCreateResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Id        *string            `json:"id,omitempty"`
+	Message   *string            `json:"message,omitempty"`
+	Name      *string            `json:"name,omitempty"`
+
+	// Number of recipients for this campaign
+	RecipientCount *int32              `json:"recipient_count,omitempty"`
+	Recipients     *CampaignRecipients `json:"recipients,omitempty"`
+	Type           *CampaignType       `json:"type,omitempty"`
+	UpdatedAt      *time.Time          `json:"updated_at,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type CampaignFilter struct {
+	// Filter campaigns created after this date
+	CreatedFrom *time.Time `json:"created_from,omitempty"`
+
+	// Filter campaigns created before this date
+	CreatedTo *time.Time    `json:"created_to,omitempty"`
+	Type      *CampaignType `json:"type,omitempty"`
+}
+
+// CampaignPreview defines model for CampaignPreview.
+type CampaignPreview struct {
+	// Currency code for the estimated cost
+	Currency *string `json:"currency,omitempty"`
+
+	// Number of unique recipients
+	RecipientCount *int32 `json:"recipient_count,omitempty"`
+
+	// Estimated total cost in cents for sending the campaign
+	TotalCost *int32 `json:"total_cost,omitempty"`
+}
+
+// CampaignRecipient defines model for CampaignRecipient.
+type CampaignRecipient struct {
+	Email            *string `json:"email,omitempty"`
+	Id               *string `json:"id,omitempty"`
+	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
+	PhoneNumber      *string `json:"phone_number,omitempty"`
+}
+
+// CampaignRecipientFilters defines model for CampaignRecipientFilters.
+type CampaignRecipientFilters struct {
+	// If the campaign should only be sent to clients in specific client groups
+	CustomerGroupIds *[]string `json:"customer_group_ids,omitempty"`
+
+	// If the campaign should only be sent to clients that have booking with specific employees
+	EmployeeIds *[]string `json:"employee_ids,omitempty"`
+
+	// End date for filtering events
+	EndDate *time.Time `json:"end_date,omitempty"`
+
+	// If the campaign should only be sent to clients that have a booking to specific services
+	EventTypeIds *[]string `json:"event_type_ids,omitempty"`
+
+	// Exclude clients with upcoming events after end date
+	ExcludeUpcomingEvents *bool `json:"exclude_upcoming_events,omitempty"`
+
+	// Start date for filtering events
+	StartDate *time.Time `json:"start_date,omitempty"`
+}
+
+// CampaignRecipients defines model for CampaignRecipients.
+type CampaignRecipients []CampaignRecipient
+
+// CampaignType defines model for CampaignType.
+type CampaignType string
+
+// Campaigns defines model for Campaigns.
+type Campaigns []Campaign
+
 // Card defines model for Card.
 type Card struct {
 	CardType    *CardCardType `json:"card_type,omitempty"`
@@ -3109,6 +3224,15 @@ type CountryInfo struct {
 	DefaultCurrency         CompanyDefaultCurrency `json:"default_currency"`
 	DefaultPhoneCountryCode string                 `json:"default_phone_country_code"`
 }
+
+// CreateCampaignError defines model for CreateCampaignError.
+type CreateCampaignError struct {
+	Message string                  `json:"message"`
+	Type    CreateCampaignErrorType `json:"type"`
+}
+
+// CreateCampaignErrorType defines model for CreateCampaignErrorType.
+type CreateCampaignErrorType string
 
 // CreatePaymentError defines model for CreatePaymentError.
 type CreatePaymentError struct {
@@ -9179,6 +9303,30 @@ type UpdateBlockedTimeParams struct {
 	Date     string                     `form:"date" json:"date"`
 }
 
+// CreateCampaignJSONBody defines parameters for CreateCampaign.
+type CreateCampaignJSONBody CampaignCreate
+
+// CreateCampaignParams defines parameters for CreateCampaign.
+type CreateCampaignParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// PreviewCampaignJSONBody defines parameters for PreviewCampaign.
+type PreviewCampaignJSONBody CampaignCreate
+
+// PreviewCampaignParams defines parameters for PreviewCampaign.
+type PreviewCampaignParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListCardTypesParams defines parameters for ListCardTypes.
 type ListCardTypesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -9347,6 +9495,19 @@ type ListBlockedTimesParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// ListCampaignsParams defines parameters for ListCampaigns.
+type ListCampaignsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination     `form:"pagination,omitempty" json:"pagination,omitempty"`
+	Filter     *CampaignFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
 // ListClaimsParams defines parameters for ListClaims.
@@ -12583,6 +12744,12 @@ type CreateBlockedTimeJSONRequestBody CreateBlockedTimeJSONBody
 // UpdateBlockedTimeJSONRequestBody defines body for UpdateBlockedTime for application/json ContentType.
 type UpdateBlockedTimeJSONRequestBody UpdateBlockedTimeJSONBody
 
+// CreateCampaignJSONRequestBody defines body for CreateCampaign for application/json ContentType.
+type CreateCampaignJSONRequestBody CreateCampaignJSONBody
+
+// PreviewCampaignJSONRequestBody defines body for PreviewCampaign for application/json ContentType.
+type PreviewCampaignJSONRequestBody PreviewCampaignJSONBody
+
 // CreateClaimJSONRequestBody defines body for CreateClaim for application/json ContentType.
 type CreateClaimJSONRequestBody CreateClaimJSONBody
 
@@ -14963,6 +15130,16 @@ type ClientInterface interface {
 
 	UpdateBlockedTime(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateCampaign request with any body
+	CreateCampaignWithBody(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateCampaign(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PreviewCampaign request with any body
+	PreviewCampaignWithBody(ctx context.Context, params *PreviewCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PreviewCampaign(ctx context.Context, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListCardTypes request
 	ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15010,6 +15187,9 @@ type ClientInterface interface {
 
 	// ListBlockedTimes request
 	ListBlockedTimes(ctx context.Context, companyId string, params *ListBlockedTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListCampaigns request
+	ListCampaigns(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListClaims request
 	ListClaims(ctx context.Context, companyId string, params *ListClaimsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -16358,6 +16538,54 @@ func (c *Client) UpdateBlockedTime(ctx context.Context, blockedTimeId string, pa
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateCampaignWithBody(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCampaignRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCampaign(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCampaignRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PreviewCampaignWithBody(ctx context.Context, params *PreviewCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPreviewCampaignRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PreviewCampaign(ctx context.Context, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPreviewCampaignRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCardTypesRequest(c.Server, params)
 	if err != nil {
@@ -16552,6 +16780,18 @@ func (c *Client) DisableApp(ctx context.Context, companyId string, appId string,
 
 func (c *Client) ListBlockedTimes(ctx context.Context, companyId string, params *ListBlockedTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListBlockedTimesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListCampaigns(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCampaignsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -22643,6 +22883,158 @@ func NewUpdateBlockedTimeRequestWithBody(server string, blockedTimeId string, pa
 	return req, nil
 }
 
+// NewCreateCampaignRequest calls the generic CreateCampaign builder with application/json body
+func NewCreateCampaignRequest(server string, params *CreateCampaignParams, body CreateCampaignJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateCampaignRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateCampaignRequestWithBody generates requests for CreateCampaign with any type of body
+func NewCreateCampaignRequestWithBody(server string, params *CreateCampaignParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/campaigns")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPreviewCampaignRequest calls the generic PreviewCampaign builder with application/json body
+func NewPreviewCampaignRequest(server string, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPreviewCampaignRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewPreviewCampaignRequestWithBody generates requests for PreviewCampaign with any type of body
+func NewPreviewCampaignRequestWithBody(server string, params *PreviewCampaignParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/campaigns/preview")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListCardTypesRequest generates requests for ListCardTypes
 func NewListCardTypesRequest(server string, params *ListCardTypesParams) (*http.Request, error) {
 	var err error
@@ -23788,6 +24180,96 @@ func NewListBlockedTimesRequest(server string, companyId string, params *ListBlo
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListCampaignsRequest generates requests for ListCampaigns
+func NewListCampaignsRequest(server string, companyId string, params *ListCampaignsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/campaigns", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
@@ -47016,6 +47498,16 @@ type ClientWithResponsesInterface interface {
 
 	UpdateBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBlockedTimeResponse, error)
 
+	// CreateCampaign request with any body
+	CreateCampaignWithBodyWithResponse(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error)
+
+	CreateCampaignWithResponse(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error)
+
+	// PreviewCampaign request with any body
+	PreviewCampaignWithBodyWithResponse(ctx context.Context, params *PreviewCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error)
+
+	PreviewCampaignWithResponse(ctx context.Context, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error)
+
 	// ListCardTypes request
 	ListCardTypesWithResponse(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*ListCardTypesResponse, error)
 
@@ -47063,6 +47555,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListBlockedTimes request
 	ListBlockedTimesWithResponse(ctx context.Context, companyId string, params *ListBlockedTimesParams, reqEditors ...RequestEditorFn) (*ListBlockedTimesResponse, error)
+
+	// ListCampaigns request
+	ListCampaignsWithResponse(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*ListCampaignsResponse, error)
 
 	// ListClaims request
 	ListClaimsWithResponse(ctx context.Context, companyId string, params *ListClaimsParams, reqEditors ...RequestEditorFn) (*ListClaimsResponse, error)
@@ -48542,6 +49037,55 @@ func (r UpdateBlockedTimeResponse) StatusCode() int {
 	return 0
 }
 
+type CreateCampaignResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignCreateResponse
+	JSON400      *CreateCampaignError
+	JSON404      *CreateCampaignError
+	JSON429      *CreateCampaignError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateCampaignResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateCampaignResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PreviewCampaignResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignPreview
+	JSON400      *CreateCampaignError
+	JSON404      *CreateCampaignError
+}
+
+// Status returns HTTPResponse.Status
+func (r PreviewCampaignResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PreviewCampaignResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListCardTypesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -48843,6 +49387,28 @@ func (r ListBlockedTimesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListBlockedTimesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListCampaignsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Campaigns
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCampaignsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCampaignsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -55591,6 +56157,40 @@ func (c *ClientWithResponses) UpdateBlockedTimeWithResponse(ctx context.Context,
 	return ParseUpdateBlockedTimeResponse(rsp)
 }
 
+// CreateCampaignWithBodyWithResponse request with arbitrary body returning *CreateCampaignResponse
+func (c *ClientWithResponses) CreateCampaignWithBodyWithResponse(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error) {
+	rsp, err := c.CreateCampaignWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCampaignResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateCampaignWithResponse(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error) {
+	rsp, err := c.CreateCampaign(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCampaignResponse(rsp)
+}
+
+// PreviewCampaignWithBodyWithResponse request with arbitrary body returning *PreviewCampaignResponse
+func (c *ClientWithResponses) PreviewCampaignWithBodyWithResponse(ctx context.Context, params *PreviewCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error) {
+	rsp, err := c.PreviewCampaignWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePreviewCampaignResponse(rsp)
+}
+
+func (c *ClientWithResponses) PreviewCampaignWithResponse(ctx context.Context, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error) {
+	rsp, err := c.PreviewCampaign(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePreviewCampaignResponse(rsp)
+}
+
 // ListCardTypesWithResponse request returning *ListCardTypesResponse
 func (c *ClientWithResponses) ListCardTypesWithResponse(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*ListCardTypesResponse, error) {
 	rsp, err := c.ListCardTypes(ctx, params, reqEditors...)
@@ -55739,6 +56339,15 @@ func (c *ClientWithResponses) ListBlockedTimesWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseListBlockedTimesResponse(rsp)
+}
+
+// ListCampaignsWithResponse request returning *ListCampaignsResponse
+func (c *ClientWithResponses) ListCampaignsWithResponse(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*ListCampaignsResponse, error) {
+	rsp, err := c.ListCampaigns(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCampaignsResponse(rsp)
 }
 
 // ListClaimsWithResponse request returning *ListClaimsResponse
@@ -59618,6 +60227,93 @@ func ParseUpdateBlockedTimeResponse(rsp *http.Response) (*UpdateBlockedTimeRespo
 	return response, nil
 }
 
+// ParseCreateCampaignResponse parses an HTTP response from a CreateCampaignWithResponse call
+func ParseCreateCampaignResponse(rsp *http.Response) (*CreateCampaignResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateCampaignResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePreviewCampaignResponse parses an HTTP response from a PreviewCampaignWithResponse call
+func ParsePreviewCampaignResponse(rsp *http.Response) (*PreviewCampaignResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PreviewCampaignResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignPreview
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListCardTypesResponse parses an HTTP response from a ListCardTypesWithResponse call
 func ParseListCardTypesResponse(rsp *http.Response) (*ListCardTypesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -59962,6 +60658,32 @@ func ParseListBlockedTimesResponse(rsp *http.Response) (*ListBlockedTimesRespons
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest BlockedTimesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListCampaignsResponse parses an HTTP response from a ListCampaignsWithResponse call
+func ParseListCampaignsResponse(rsp *http.Response) (*ListCampaignsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCampaignsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Campaigns
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
