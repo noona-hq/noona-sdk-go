@@ -2412,7 +2412,7 @@ type CampaignCreate struct {
 	Filter    CampaignRecipientFilter `json:"filter"`
 
 	// Campaign message content
-	Message string       `json:"message"`
+	Message *string      `json:"message,omitempty"`
 	Type    CampaignType `json:"type"`
 }
 
