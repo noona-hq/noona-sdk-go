@@ -312,6 +312,7 @@ const (
 
 // Defines values for CreateCampaignErrorType.
 const (
+	CreateCampaignErrorTypeCampaignsDisabled  CreateCampaignErrorType = "campaigns_disabled"
 	CreateCampaignErrorTypeNonWhitelistedUrls CreateCampaignErrorType = "non_whitelisted_urls"
 	CreateCampaignErrorTypeQuotaExceeded      CreateCampaignErrorType = "quota_exceeded"
 	CreateCampaignErrorTypeValidation         CreateCampaignErrorType = "validation"
@@ -2407,8 +2408,8 @@ type Campaign struct {
 // CampaignCreate defines model for CampaignCreate.
 type CampaignCreate struct {
 	// Company ID
-	CompanyId string                   `json:"company_id"`
-	Filters   CampaignRecipientFilters `json:"filters"`
+	CompanyId string                  `json:"company_id"`
+	Filter    CampaignRecipientFilter `json:"filter"`
 
 	// Campaign message content
 	Message string       `json:"message"`
@@ -2457,12 +2458,13 @@ type CampaignPreview struct {
 type CampaignRecipient struct {
 	Email            *string `json:"email,omitempty"`
 	Id               *string `json:"id,omitempty"`
+	Name             *string `json:"name,omitempty"`
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 	PhoneNumber      *string `json:"phone_number,omitempty"`
 }
 
-// CampaignRecipientFilters defines model for CampaignRecipientFilters.
-type CampaignRecipientFilters struct {
+// CampaignRecipientFilter defines model for CampaignRecipientFilter.
+type CampaignRecipientFilter struct {
 	// If the campaign should only be sent to clients in specific client groups
 	CustomerGroupIds *[]string `json:"customer_group_ids,omitempty"`
 
@@ -9315,18 +9317,6 @@ type CreateCampaignParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// PreviewCampaignJSONBody defines parameters for PreviewCampaign.
-type PreviewCampaignJSONBody CampaignCreate
-
-// PreviewCampaignParams defines parameters for PreviewCampaign.
-type PreviewCampaignParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
 // ListCardTypesParams defines parameters for ListCardTypes.
 type ListCardTypesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -9508,6 +9498,16 @@ type ListCampaignsParams struct {
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination     `form:"pagination,omitempty" json:"pagination,omitempty"`
 	Filter     *CampaignFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// PreviewCampaignParams defines parameters for PreviewCampaign.
+type PreviewCampaignParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand                 `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter CampaignRecipientFilter `form:"filter" json:"filter"`
 }
 
 // ListClaimsParams defines parameters for ListClaims.
@@ -12747,9 +12747,6 @@ type UpdateBlockedTimeJSONRequestBody UpdateBlockedTimeJSONBody
 // CreateCampaignJSONRequestBody defines body for CreateCampaign for application/json ContentType.
 type CreateCampaignJSONRequestBody CreateCampaignJSONBody
 
-// PreviewCampaignJSONRequestBody defines body for PreviewCampaign for application/json ContentType.
-type PreviewCampaignJSONRequestBody PreviewCampaignJSONBody
-
 // CreateClaimJSONRequestBody defines body for CreateClaim for application/json ContentType.
 type CreateClaimJSONRequestBody CreateClaimJSONBody
 
@@ -15135,11 +15132,6 @@ type ClientInterface interface {
 
 	CreateCampaign(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PreviewCampaign request with any body
-	PreviewCampaignWithBody(ctx context.Context, params *PreviewCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PreviewCampaign(ctx context.Context, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// ListCardTypes request
 	ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15190,6 +15182,9 @@ type ClientInterface interface {
 
 	// ListCampaigns request
 	ListCampaigns(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PreviewCampaign request
+	PreviewCampaign(ctx context.Context, companyId string, params *PreviewCampaignParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListClaims request
 	ListClaims(ctx context.Context, companyId string, params *ListClaimsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -16562,30 +16557,6 @@ func (c *Client) CreateCampaign(ctx context.Context, params *CreateCampaignParam
 	return c.Client.Do(req)
 }
 
-func (c *Client) PreviewCampaignWithBody(ctx context.Context, params *PreviewCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPreviewCampaignRequestWithBody(c.Server, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PreviewCampaign(ctx context.Context, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPreviewCampaignRequest(c.Server, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCardTypesRequest(c.Server, params)
 	if err != nil {
@@ -16792,6 +16763,18 @@ func (c *Client) ListBlockedTimes(ctx context.Context, companyId string, params 
 
 func (c *Client) ListCampaigns(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCampaignsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PreviewCampaign(ctx context.Context, companyId string, params *PreviewCampaignParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPreviewCampaignRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -22959,82 +22942,6 @@ func NewCreateCampaignRequestWithBody(server string, params *CreateCampaignParam
 	return req, nil
 }
 
-// NewPreviewCampaignRequest calls the generic PreviewCampaign builder with application/json body
-func NewPreviewCampaignRequest(server string, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPreviewCampaignRequestWithBody(server, params, "application/json", bodyReader)
-}
-
-// NewPreviewCampaignRequestWithBody generates requests for PreviewCampaign with any type of body
-func NewPreviewCampaignRequestWithBody(server string, params *PreviewCampaignParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/campaigns/preview")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewListCardTypesRequest generates requests for ListCardTypes
 func NewListCardTypesRequest(server string, params *ListCardTypesParams) (*http.Request, error) {
 	var err error
@@ -24272,6 +24179,82 @@ func NewListCampaignsRequest(server string, companyId string, params *ListCampai
 			queryValues.Add("filter", string(queryParamBuf))
 		}
 
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPreviewCampaignRequest generates requests for PreviewCampaign
+func NewPreviewCampaignRequest(server string, companyId string, params *PreviewCampaignParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/campaigns/preview", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
@@ -47503,11 +47486,6 @@ type ClientWithResponsesInterface interface {
 
 	CreateCampaignWithResponse(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error)
 
-	// PreviewCampaign request with any body
-	PreviewCampaignWithBodyWithResponse(ctx context.Context, params *PreviewCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error)
-
-	PreviewCampaignWithResponse(ctx context.Context, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error)
-
 	// ListCardTypes request
 	ListCardTypesWithResponse(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*ListCardTypesResponse, error)
 
@@ -47558,6 +47536,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListCampaigns request
 	ListCampaignsWithResponse(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*ListCampaignsResponse, error)
+
+	// PreviewCampaign request
+	PreviewCampaignWithResponse(ctx context.Context, companyId string, params *PreviewCampaignParams, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error)
 
 	// ListClaims request
 	ListClaimsWithResponse(ctx context.Context, companyId string, params *ListClaimsParams, reqEditors ...RequestEditorFn) (*ListClaimsResponse, error)
@@ -49062,30 +49043,6 @@ func (r CreateCampaignResponse) StatusCode() int {
 	return 0
 }
 
-type PreviewCampaignResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *CampaignPreview
-	JSON400      *CreateCampaignError
-	JSON404      *CreateCampaignError
-}
-
-// Status returns HTTPResponse.Status
-func (r PreviewCampaignResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PreviewCampaignResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type ListCardTypesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -49409,6 +49366,30 @@ func (r ListCampaignsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListCampaignsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PreviewCampaignResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignPreview
+	JSON400      *CreateCampaignError
+	JSON404      *CreateCampaignError
+}
+
+// Status returns HTTPResponse.Status
+func (r PreviewCampaignResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PreviewCampaignResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -56174,23 +56155,6 @@ func (c *ClientWithResponses) CreateCampaignWithResponse(ctx context.Context, pa
 	return ParseCreateCampaignResponse(rsp)
 }
 
-// PreviewCampaignWithBodyWithResponse request with arbitrary body returning *PreviewCampaignResponse
-func (c *ClientWithResponses) PreviewCampaignWithBodyWithResponse(ctx context.Context, params *PreviewCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error) {
-	rsp, err := c.PreviewCampaignWithBody(ctx, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePreviewCampaignResponse(rsp)
-}
-
-func (c *ClientWithResponses) PreviewCampaignWithResponse(ctx context.Context, params *PreviewCampaignParams, body PreviewCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error) {
-	rsp, err := c.PreviewCampaign(ctx, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePreviewCampaignResponse(rsp)
-}
-
 // ListCardTypesWithResponse request returning *ListCardTypesResponse
 func (c *ClientWithResponses) ListCardTypesWithResponse(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*ListCardTypesResponse, error) {
 	rsp, err := c.ListCardTypes(ctx, params, reqEditors...)
@@ -56348,6 +56312,15 @@ func (c *ClientWithResponses) ListCampaignsWithResponse(ctx context.Context, com
 		return nil, err
 	}
 	return ParseListCampaignsResponse(rsp)
+}
+
+// PreviewCampaignWithResponse request returning *PreviewCampaignResponse
+func (c *ClientWithResponses) PreviewCampaignWithResponse(ctx context.Context, companyId string, params *PreviewCampaignParams, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error) {
+	rsp, err := c.PreviewCampaign(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePreviewCampaignResponse(rsp)
 }
 
 // ListClaimsWithResponse request returning *ListClaimsResponse
@@ -60274,46 +60247,6 @@ func ParseCreateCampaignResponse(rsp *http.Response) (*CreateCampaignResponse, e
 	return response, nil
 }
 
-// ParsePreviewCampaignResponse parses an HTTP response from a PreviewCampaignWithResponse call
-func ParsePreviewCampaignResponse(rsp *http.Response) (*PreviewCampaignResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PreviewCampaignResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CampaignPreview
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest CreateCampaignError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest CreateCampaignError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseListCardTypesResponse parses an HTTP response from a ListCardTypesWithResponse call
 func ParseListCardTypesResponse(rsp *http.Response) (*ListCardTypesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -60688,6 +60621,46 @@ func ParseListCampaignsResponse(rsp *http.Response) (*ListCampaignsResponse, err
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePreviewCampaignResponse parses an HTTP response from a PreviewCampaignWithResponse call
+func ParsePreviewCampaignResponse(rsp *http.Response) (*PreviewCampaignResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PreviewCampaignResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignPreview
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	}
 
