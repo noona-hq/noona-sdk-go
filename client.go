@@ -4433,8 +4433,9 @@ type EventTypeCategory struct {
 
 // EventTypeCategoryGroup defines model for EventTypeCategoryGroup.
 type EventTypeCategoryGroup struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id         string  `json:"id"`
+	Name       string  `json:"name"`
+	ReadableId *string `json:"readable_id,omitempty"`
 }
 
 // EventTypeCategoryGroups defines model for EventTypeCategoryGroups.
