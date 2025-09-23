@@ -5117,6 +5117,18 @@ type FiscalizationRecordDataSaltPay struct {
 	Provider FiscalizationProvider `json:"provider"`
 }
 
+// FiscalizationStatusUpdateRequest defines model for FiscalizationStatusUpdateRequest.
+type FiscalizationStatusUpdateRequest struct {
+	// The desired fiscalization enabled status
+	FiscalizationEnabled bool `json:"fiscalization_enabled"`
+}
+
+// FiscalizationStatusUpdateResponse defines model for FiscalizationStatusUpdateResponse.
+type FiscalizationStatusUpdateResponse struct {
+	// The new fiscalization enabled status
+	FiscalizationEnabled *bool `json:"fiscalization_enabled,omitempty"`
+}
+
 // FiscalizeTransactionError defines model for FiscalizeTransactionError.
 type FiscalizeTransactionError struct {
 	// The error code. Only populated for certain errors.
@@ -10961,6 +10973,9 @@ type GetFiscalizationReportParams struct {
 	To   time.Time `form:"to" json:"to"`
 }
 
+// UpdateCompanyFiscalizationStatusJSONBody defines parameters for UpdateCompanyFiscalizationStatus.
+type UpdateCompanyFiscalizationStatusJSONBody FiscalizationStatusUpdateRequest
+
 // FiscalizeTransactionJSONBody defines parameters for FiscalizeTransaction.
 type FiscalizeTransactionJSONBody struct {
 	// The customer's country code in the tax authority's system.
@@ -12831,6 +12846,9 @@ type UpdateEventJSONRequestBody UpdateEventJSONBody
 
 // UpsertCompanyFiscalizationDataJSONRequestBody defines body for UpsertCompanyFiscalizationData for application/json ContentType.
 type UpsertCompanyFiscalizationDataJSONRequestBody UpsertCompanyFiscalizationDataJSONBody
+
+// UpdateCompanyFiscalizationStatusJSONRequestBody defines body for UpdateCompanyFiscalizationStatus for application/json ContentType.
+type UpdateCompanyFiscalizationStatusJSONRequestBody UpdateCompanyFiscalizationStatusJSONBody
 
 // FiscalizeTransactionJSONRequestBody defines body for FiscalizeTransaction for application/json ContentType.
 type FiscalizeTransactionJSONRequestBody FiscalizeTransactionJSONBody
@@ -15602,6 +15620,11 @@ type ClientInterface interface {
 
 	// GetFiscalizationReport request
 	GetFiscalizationReport(ctx context.Context, companyId string, params *GetFiscalizationReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateCompanyFiscalizationStatus request with any body
+	UpdateCompanyFiscalizationStatusWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateCompanyFiscalizationStatus(ctx context.Context, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// FiscalizeTransaction request with any body
 	FiscalizeTransactionWithBody(ctx context.Context, transactionId string, params *FiscalizeTransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -18540,6 +18563,30 @@ func (c *Client) UpsertCompanyFiscalizationData(ctx context.Context, companyId s
 
 func (c *Client) GetFiscalizationReport(ctx context.Context, companyId string, params *GetFiscalizationReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetFiscalizationReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCompanyFiscalizationStatusWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCompanyFiscalizationStatusRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCompanyFiscalizationStatus(ctx context.Context, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCompanyFiscalizationStatusRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -34545,6 +34592,53 @@ func NewGetFiscalizationReportRequest(server string, companyId string, params *G
 	return req, nil
 }
 
+// NewUpdateCompanyFiscalizationStatusRequest calls the generic UpdateCompanyFiscalizationStatus builder with application/json body
+func NewUpdateCompanyFiscalizationStatusRequest(server string, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateCompanyFiscalizationStatusRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewUpdateCompanyFiscalizationStatusRequestWithBody generates requests for UpdateCompanyFiscalizationStatus with any type of body
+func NewUpdateCompanyFiscalizationStatusRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/companies/%s/status", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewFiscalizeTransactionRequest calls the generic FiscalizeTransaction builder with application/json body
 func NewFiscalizeTransactionRequest(server string, transactionId string, params *FiscalizeTransactionParams, body FiscalizeTransactionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -47957,6 +48051,11 @@ type ClientWithResponsesInterface interface {
 	// GetFiscalizationReport request
 	GetFiscalizationReportWithResponse(ctx context.Context, companyId string, params *GetFiscalizationReportParams, reqEditors ...RequestEditorFn) (*GetFiscalizationReportResponse, error)
 
+	// UpdateCompanyFiscalizationStatus request with any body
+	UpdateCompanyFiscalizationStatusWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCompanyFiscalizationStatusResponse, error)
+
+	UpdateCompanyFiscalizationStatusWithResponse(ctx context.Context, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCompanyFiscalizationStatusResponse, error)
+
 	// FiscalizeTransaction request with any body
 	FiscalizeTransactionWithBodyWithResponse(ctx context.Context, transactionId string, params *FiscalizeTransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*FiscalizeTransactionResponse, error)
 
@@ -52061,6 +52160,28 @@ func (r GetFiscalizationReportResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetFiscalizationReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateCompanyFiscalizationStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FiscalizationStatusUpdateResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateCompanyFiscalizationStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateCompanyFiscalizationStatusResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -57620,6 +57741,23 @@ func (c *ClientWithResponses) GetFiscalizationReportWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseGetFiscalizationReportResponse(rsp)
+}
+
+// UpdateCompanyFiscalizationStatusWithBodyWithResponse request with arbitrary body returning *UpdateCompanyFiscalizationStatusResponse
+func (c *ClientWithResponses) UpdateCompanyFiscalizationStatusWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCompanyFiscalizationStatusResponse, error) {
+	rsp, err := c.UpdateCompanyFiscalizationStatusWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCompanyFiscalizationStatusResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateCompanyFiscalizationStatusWithResponse(ctx context.Context, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCompanyFiscalizationStatusResponse, error) {
+	rsp, err := c.UpdateCompanyFiscalizationStatus(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCompanyFiscalizationStatusResponse(rsp)
 }
 
 // FiscalizeTransactionWithBodyWithResponse request with arbitrary body returning *FiscalizeTransactionResponse
@@ -63689,6 +63827,32 @@ func ParseGetFiscalizationReportResponse(rsp *http.Response) (*GetFiscalizationR
 	response := &GetFiscalizationReportResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateCompanyFiscalizationStatusResponse parses an HTTP response from a UpdateCompanyFiscalizationStatusWithResponse call
+func ParseUpdateCompanyFiscalizationStatusResponse(rsp *http.Response) (*UpdateCompanyFiscalizationStatusResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateCompanyFiscalizationStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FiscalizationStatusUpdateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
