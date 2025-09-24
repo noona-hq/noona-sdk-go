@@ -34,6 +34,7 @@ const (
 	ActivityFieldDuration           ActivityField = "duration"
 	ActivityFieldEmail              ActivityField = "email"
 	ActivityFieldEmployee           ActivityField = "employee"
+	ActivityFieldEndsAt             ActivityField = "ends_at"
 	ActivityFieldEventTypes         ActivityField = "event_types"
 	ActivityFieldKennitala          ActivityField = "kennitala"
 	ActivityFieldLicensePlate       ActivityField = "license_plate"
@@ -58,10 +59,11 @@ const (
 
 // Defines values for ActivityType.
 const (
-	ActivityTypeCustomer  ActivityType = "customer"
-	ActivityTypeEvent     ActivityType = "event"
-	ActivityTypeEventType ActivityType = "event_type"
-	ActivityTypePayment   ActivityType = "payment"
+	ActivityTypeBlockedTime ActivityType = "blocked_time"
+	ActivityTypeCustomer    ActivityType = "customer"
+	ActivityTypeEvent       ActivityType = "event"
+	ActivityTypeEventType   ActivityType = "event_type"
+	ActivityTypePayment     ActivityType = "payment"
 )
 
 // Defines values for ActorType.
@@ -9122,6 +9124,15 @@ type Expand []string
 // Select defines model for select.
 type Select []string
 
+// ListBlockedTimeActivitiesParams defines parameters for ListBlockedTimeActivities.
+type ListBlockedTimeActivitiesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListCustomerActivitiesParams defines parameters for ListCustomerActivities.
 type ListCustomerActivitiesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15084,6 +15095,9 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListBlockedTimeActivities request
+	ListBlockedTimeActivities(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListCustomerActivities request
 	ListCustomerActivities(ctx context.Context, customerId string, params *ListCustomerActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -16291,6 +16305,18 @@ type ClientInterface interface {
 	UpdateWebhookWithBody(ctx context.Context, webhookId string, params *UpdateWebhookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateWebhook(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) ListBlockedTimeActivities(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBlockedTimeActivitiesRequest(c.Server, blockedTimeId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) ListCustomerActivities(ctx context.Context, customerId string, params *ListCustomerActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -21523,6 +21549,76 @@ func (c *Client) UpdateWebhook(ctx context.Context, webhookId string, params *Up
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewListBlockedTimeActivitiesRequest generates requests for ListBlockedTimeActivities
+func NewListBlockedTimeActivitiesRequest(server string, blockedTimeId string, params *ListBlockedTimeActivitiesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "blocked_time_id", runtime.ParamLocationPath, blockedTimeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/activities/blocked_times/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewListCustomerActivitiesRequest generates requests for ListCustomerActivities
@@ -47514,6 +47610,9 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListBlockedTimeActivities request
+	ListBlockedTimeActivitiesWithResponse(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*ListBlockedTimeActivitiesResponse, error)
+
 	// ListCustomerActivities request
 	ListCustomerActivitiesWithResponse(ctx context.Context, customerId string, params *ListCustomerActivitiesParams, reqEditors ...RequestEditorFn) (*ListCustomerActivitiesResponse, error)
 
@@ -48721,6 +48820,28 @@ type ClientWithResponsesInterface interface {
 	UpdateWebhookWithBodyWithResponse(ctx context.Context, webhookId string, params *UpdateWebhookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWebhookResponse, error)
 
 	UpdateWebhookWithResponse(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWebhookResponse, error)
+}
+
+type ListBlockedTimeActivitiesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Activities
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBlockedTimeActivitiesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBlockedTimeActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type ListCustomerActivitiesResponse struct {
@@ -56066,6 +56187,15 @@ func (r UpdateWebhookResponse) StatusCode() int {
 	return 0
 }
 
+// ListBlockedTimeActivitiesWithResponse request returning *ListBlockedTimeActivitiesResponse
+func (c *ClientWithResponses) ListBlockedTimeActivitiesWithResponse(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*ListBlockedTimeActivitiesResponse, error) {
+	rsp, err := c.ListBlockedTimeActivities(ctx, blockedTimeId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBlockedTimeActivitiesResponse(rsp)
+}
+
 // ListCustomerActivitiesWithResponse request returning *ListCustomerActivitiesResponse
 func (c *ClientWithResponses) ListCustomerActivitiesWithResponse(ctx context.Context, customerId string, params *ListCustomerActivitiesParams, reqEditors ...RequestEditorFn) (*ListCustomerActivitiesResponse, error) {
 	rsp, err := c.ListCustomerActivities(ctx, customerId, params, reqEditors...)
@@ -59888,6 +60018,32 @@ func (c *ClientWithResponses) UpdateWebhookWithResponse(ctx context.Context, web
 		return nil, err
 	}
 	return ParseUpdateWebhookResponse(rsp)
+}
+
+// ParseListBlockedTimeActivitiesResponse parses an HTTP response from a ListBlockedTimeActivitiesWithResponse call
+func ParseListBlockedTimeActivitiesResponse(rsp *http.Response) (*ListBlockedTimeActivitiesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBlockedTimeActivitiesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Activities
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseListCustomerActivitiesResponse parses an HTTP response from a ListCustomerActivitiesWithResponse call
