@@ -2755,8 +2755,8 @@ type CompanyCreate struct {
 	// - `solo`: Just me (1 person)
 	// - `with_others`: Legacy option (will be migrated)
 	// - `small`: 2-4 People
-	// - `medium`: 5-15 People
-	// - `large`: 16+ People
+	// - `medium`: 5-9 People
+	// - `large`: 10+ People
 	Size     *CompanySize    `json:"size,omitempty"`
 	Vertical CompanyVertical `json:"vertical"`
 }
@@ -3116,8 +3116,8 @@ type CompanySignup struct {
 	// - `solo`: Just me (1 person)
 	// - `with_others`: Legacy option (will be migrated)
 	// - `small`: 2-4 People
-	// - `medium`: 5-15 People
-	// - `large`: 16+ People
+	// - `medium`: 5-9 People
+	// - `large`: 10+ People
 	CompanySize *CompanySize `json:"company_size,omitempty"`
 	Completed   *bool        `json:"completed,omitempty"`
 }
@@ -3126,8 +3126,8 @@ type CompanySignup struct {
 // - `solo`: Just me (1 person)
 // - `with_others`: Legacy option (will be migrated)
 // - `small`: 2-4 People
-// - `medium`: 5-15 People
-// - `large`: 16+ People
+// - `medium`: 5-9 People
+// - `large`: 10+ People
 type CompanySize string
 
 // CompanyType defines model for CompanyType.
