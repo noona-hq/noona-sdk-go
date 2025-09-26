@@ -8278,6 +8278,8 @@ type User struct {
 	HasOnboarded *bool            `json:"has_onboarded,omitempty"`
 	Id           *string          `json:"id,omitempty"`
 	Image        *Image           `json:"image,omitempty"`
+	IsAdmin      *bool            `json:"is_admin,omitempty"`
+	IsSecretary  *bool            `json:"is_secretary,omitempty"`
 	Locale       *string          `json:"locale,omitempty"`
 	Pos          *UserPOSSettings `json:"pos,omitempty"`
 	Settings     *UserSettings    `json:"settings,omitempty"`
