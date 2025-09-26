@@ -8653,6 +8653,11 @@ type VoucherTemplate struct {
 	Currency    *string    `json:"currency,omitempty"`
 	Description *string    `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType                     *ExpandableEventType `json:"event_type,omitempty"`
 	ExpirationMonthsAfterPurchase *int32               `json:"expiration_months_after_purchase,omitempty"`
@@ -8663,14 +8668,24 @@ type VoucherTemplate struct {
 	Marketplace            *bool   `json:"marketplace,omitempty"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	MarketplaceDescriptionTranslations *TranslationMap `json:"marketplace_description_translations,omitempty"`
+
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32               `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string              `json:"primary_color,omitempty"`
-	SessionsTotal  *int32               `json:"sessions_total,omitempty"`
-	Title          *string              `json:"title,omitempty"`
-	Type           *VoucherTemplateType `json:"type,omitempty"`
-	UpdatedAt      *time.Time           `json:"updated_at,omitempty"`
-	Value          *float64             `json:"value,omitempty"`
+	NumberOfGuests *int32  `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string `json:"primary_color,omitempty"`
+	SessionsTotal  *int32  `json:"sessions_total,omitempty"`
+	Title          *string `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap      `json:"title_translations,omitempty"`
+	Type              *VoucherTemplateType `json:"type,omitempty"`
+	UpdatedAt         *time.Time           `json:"updated_at,omitempty"`
+	Value             *float64             `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -8687,6 +8702,11 @@ type VoucherTemplateCreate struct {
 	Currency    string     `json:"currency"`
 	Description *string    `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType                     *ExpandableEventType `json:"event_type,omitempty"`
 	ExpirationMonthsAfterPurchase *int32               `json:"expiration_months_after_purchase,omitempty"`
@@ -8697,14 +8717,24 @@ type VoucherTemplateCreate struct {
 	Marketplace            *bool   `json:"marketplace,omitempty"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	MarketplaceDescriptionTranslations *TranslationMap `json:"marketplace_description_translations,omitempty"`
+
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32                     `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string                    `json:"primary_color,omitempty"`
-	SessionsTotal  *int32                     `json:"sessions_total,omitempty"`
-	Title          *string                    `json:"title,omitempty"`
-	Type           *VoucherTemplateCreateType `json:"type,omitempty"`
-	UpdatedAt      *time.Time                 `json:"updated_at,omitempty"`
-	Value          *float64                   `json:"value,omitempty"`
+	NumberOfGuests *int32  `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string `json:"primary_color,omitempty"`
+	SessionsTotal  *int32  `json:"sessions_total,omitempty"`
+	Title          *string `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap            `json:"title_translations,omitempty"`
+	Type              *VoucherTemplateCreateType `json:"type,omitempty"`
+	UpdatedAt         *time.Time                 `json:"updated_at,omitempty"`
+	Value             *float64                   `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -8743,6 +8773,11 @@ type VoucherTemplateResponse struct {
 	Currency    string     `json:"currency"`
 	Description *string    `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType                     *ExpandableEventType `json:"event_type,omitempty"`
 	ExpirationMonthsAfterPurchase *int32               `json:"expiration_months_after_purchase,omitempty"`
@@ -8753,14 +8788,24 @@ type VoucherTemplateResponse struct {
 	Marketplace            bool    `json:"marketplace"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	MarketplaceDescriptionTranslations *TranslationMap `json:"marketplace_description_translations,omitempty"`
+
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32                       `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string                      `json:"primary_color,omitempty"`
-	SessionsTotal  *int32                       `json:"sessions_total,omitempty"`
-	Title          *string                      `json:"title,omitempty"`
-	Type           *VoucherTemplateResponseType `json:"type,omitempty"`
-	UpdatedAt      *time.Time                   `json:"updated_at,omitempty"`
-	Value          float64                      `json:"value"`
+	NumberOfGuests *int32  `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string `json:"primary_color,omitempty"`
+	SessionsTotal  *int32  `json:"sessions_total,omitempty"`
+	Title          *string `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap              `json:"title_translations,omitempty"`
+	Type              *VoucherTemplateResponseType `json:"type,omitempty"`
+	UpdatedAt         *time.Time                   `json:"updated_at,omitempty"`
+	Value             float64                      `json:"value"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -8789,29 +8834,44 @@ type VoucherTemplateResponseOverrides struct {
 
 // VoucherTemplateUpdate defines model for VoucherTemplateUpdate.
 type VoucherTemplateUpdate struct {
-	Amount                        *float64     `json:"amount,omitempty"`
-	Company                       *interface{} `json:"company,omitempty"`
-	CreatedAt                     *time.Time   `json:"created_at,omitempty"`
-	Currency                      *interface{} `json:"currency,omitempty"`
-	Description                   *string      `json:"description,omitempty"`
-	EventType                     *interface{} `json:"event_type,omitempty"`
-	ExpirationMonthsAfterPurchase *int32       `json:"expiration_months_after_purchase,omitempty"`
-	Id                            *string      `json:"id,omitempty"`
-	Images                        *Images      `json:"images,omitempty"`
+	Amount      *float64     `json:"amount,omitempty"`
+	Company     *interface{} `json:"company,omitempty"`
+	CreatedAt   *time.Time   `json:"created_at,omitempty"`
+	Currency    *interface{} `json:"currency,omitempty"`
+	Description *string      `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations       *TranslationMap `json:"description_translations,omitempty"`
+	EventType                     *interface{}    `json:"event_type,omitempty"`
+	ExpirationMonthsAfterPurchase *int32          `json:"expiration_months_after_purchase,omitempty"`
+	Id                            *string         `json:"id,omitempty"`
+	Images                        *Images         `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace            *bool   `json:"marketplace,omitempty"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	MarketplaceDescriptionTranslations *TranslationMap `json:"marketplace_description_translations,omitempty"`
+
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32                     `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string                    `json:"primary_color,omitempty"`
-	SessionsTotal  *int32                     `json:"sessions_total,omitempty"`
-	Title          *string                    `json:"title,omitempty"`
-	Type           *VoucherTemplateUpdateType `json:"type,omitempty"`
-	UpdatedAt      *time.Time                 `json:"updated_at,omitempty"`
-	Value          *float64                   `json:"value,omitempty"`
-	VariationId    *interface{}               `json:"variation_id,omitempty"`
+	NumberOfGuests *int32  `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string `json:"primary_color,omitempty"`
+	SessionsTotal  *int32  `json:"sessions_total,omitempty"`
+	Title          *string `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap            `json:"title_translations,omitempty"`
+	Type              *VoucherTemplateUpdateType `json:"type,omitempty"`
+	UpdatedAt         *time.Time                 `json:"updated_at,omitempty"`
+	Value             *float64                   `json:"value,omitempty"`
+	VariationId       *interface{}               `json:"variation_id,omitempty"`
 }
 
 // VoucherTemplateUpdateType defines model for VoucherTemplateUpdate.Type.
