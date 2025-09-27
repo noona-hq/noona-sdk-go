@@ -5331,6 +5331,12 @@ type IssuersFilter struct {
 	TerminalAttachable *bool `json:"terminal_attachable,omitempty"`
 }
 
+// KindeUserMigration defines model for KindeUserMigration.
+type KindeUserMigration struct {
+	EmailVerified *bool   `json:"email_verified,omitempty"`
+	Name          *string `json:"name,omitempty"`
+}
+
 // This schema is deprecated. Use `booking_question_answers` instead.
 type LegacyBookingQuestion struct {
 	Answer   *string `json:"answer,omitempty"`
@@ -16220,6 +16226,9 @@ type ClientInterface interface {
 
 	CreateGoogleCalendarConnection(ctx context.Context, body CreateGoogleCalendarConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KindeUserMigration request
+	KindeUserMigration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// UserOAuth request
 	UserOAuth(ctx context.Context, params *UserOAuthParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -20955,6 +20964,18 @@ func (c *Client) CreateGoogleCalendarConnectionWithBody(ctx context.Context, con
 
 func (c *Client) CreateGoogleCalendarConnection(ctx context.Context, body CreateGoogleCalendarConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateGoogleCalendarConnectionRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) KindeUserMigration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKindeUserMigrationRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -44895,6 +44916,33 @@ func NewCreateGoogleCalendarConnectionRequestWithBody(server string, contentType
 	return req, nil
 }
 
+// NewKindeUserMigrationRequest generates requests for KindeUserMigration
+func NewKindeUserMigrationRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user/kinde")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewUserOAuthRequest generates requests for UserOAuth
 func NewUserOAuthRequest(server string, params *UserOAuthParams) (*http.Request, error) {
 	var err error
@@ -48734,6 +48782,9 @@ type ClientWithResponsesInterface interface {
 	CreateGoogleCalendarConnectionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateGoogleCalendarConnectionResponse, error)
 
 	CreateGoogleCalendarConnectionWithResponse(ctx context.Context, body CreateGoogleCalendarConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateGoogleCalendarConnectionResponse, error)
+
+	// KindeUserMigration request
+	KindeUserMigrationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*KindeUserMigrationResponse, error)
 
 	// UserOAuth request
 	UserOAuthWithResponse(ctx context.Context, params *UserOAuthParams, reqEditors ...RequestEditorFn) (*UserOAuthResponse, error)
@@ -55378,6 +55429,28 @@ func (r CreateGoogleCalendarConnectionResponse) StatusCode() int {
 	return 0
 }
 
+type KindeUserMigrationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *KindeUserMigration
+}
+
+// Status returns HTTPResponse.Status
+func (r KindeUserMigrationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KindeUserMigrationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type UserOAuthResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -59608,6 +59681,15 @@ func (c *ClientWithResponses) CreateGoogleCalendarConnectionWithResponse(ctx con
 		return nil, err
 	}
 	return ParseCreateGoogleCalendarConnectionResponse(rsp)
+}
+
+// KindeUserMigrationWithResponse request returning *KindeUserMigrationResponse
+func (c *ClientWithResponses) KindeUserMigrationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*KindeUserMigrationResponse, error) {
+	rsp, err := c.KindeUserMigration(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKindeUserMigrationResponse(rsp)
 }
 
 // UserOAuthWithResponse request returning *UserOAuthResponse
@@ -67340,6 +67422,32 @@ func ParseCreateGoogleCalendarConnectionResponse(rsp *http.Response) (*CreateGoo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest GoogleCalendarConnection
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseKindeUserMigrationResponse parses an HTTP response from a KindeUserMigrationWithResponse call
+func ParseKindeUserMigrationResponse(rsp *http.Response) (*KindeUserMigrationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KindeUserMigrationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest KindeUserMigration
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
