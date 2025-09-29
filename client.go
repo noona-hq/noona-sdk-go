@@ -2786,6 +2786,11 @@ type CompanyMarketplace struct {
 	// The custom message to be sent with booking offers
 	BookingOfferMessage *string `json:"booking_offer_message,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingOfferMessageTranslations *TranslationMap `json:"booking_offer_message_translations,omitempty"`
+
 	// Indicates if the company should receive email notifications upon booking confirmation. Notifications are sent to the company's primary email address.
 	//
 	// This feature is especially beneficial for businesses without dedicated employees, relying solely on resources.
@@ -2823,6 +2828,11 @@ type CompanyMarketplace struct {
 // CompanyMessaging defines model for CompanyMessaging.
 type CompanyMessaging struct {
 	CustomReminder *string `json:"custom_reminder,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	CustomReminderTranslations *TranslationMap `json:"custom_reminder_translations,omitempty"`
 
 	// Whether to enable SMS reminders for the company.
 	EnableReminders     *bool `json:"enable_reminders,omitempty"`
@@ -2878,13 +2888,18 @@ type CompanyProfile struct {
 	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
 	//
 	// A booking interval is set on the company level but can be overridden on the resource/employee level.
-	BookingInterval          *BookingInterval `json:"booking_interval,omitempty"`
-	BookingRedirectUrl       *string          `json:"booking_redirect_url,omitempty"`
-	BookingSuccessMessage    *string          `json:"booking_success_message,omitempty"`
-	ClientCancelDisabled     *bool            `json:"client_cancel_disabled,omitempty"`
-	ClientRescheduleDisabled *bool            `json:"client_reschedule_disabled,omitempty"`
-	CompanyTypes             *[]string        `json:"company_types,omitempty"`
-	ContactEmail             *string          `json:"contact_email,omitempty"`
+	BookingInterval       *BookingInterval `json:"booking_interval,omitempty"`
+	BookingRedirectUrl    *string          `json:"booking_redirect_url,omitempty"`
+	BookingSuccessMessage *string          `json:"booking_success_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingSuccessMessageTranslations *TranslationMap `json:"booking_success_message_translations,omitempty"`
+	ClientCancelDisabled              *bool           `json:"client_cancel_disabled,omitempty"`
+	ClientRescheduleDisabled          *bool           `json:"client_reschedule_disabled,omitempty"`
+	CompanyTypes                      *[]string       `json:"company_types,omitempty"`
+	ContactEmail                      *string         `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
 	CoverImages *[]Image    `json:"cover_images,omitempty"`
@@ -2957,13 +2972,18 @@ type CompanyProfileCreate struct {
 	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
 	//
 	// A booking interval is set on the company level but can be overridden on the resource/employee level.
-	BookingInterval          *BookingInterval `json:"booking_interval,omitempty"`
-	BookingRedirectUrl       *string          `json:"booking_redirect_url,omitempty"`
-	BookingSuccessMessage    *string          `json:"booking_success_message,omitempty"`
-	ClientCancelDisabled     *bool            `json:"client_cancel_disabled,omitempty"`
-	ClientRescheduleDisabled *bool            `json:"client_reschedule_disabled,omitempty"`
-	CompanyTypes             *[]string        `json:"company_types,omitempty"`
-	ContactEmail             *string          `json:"contact_email,omitempty"`
+	BookingInterval       *BookingInterval `json:"booking_interval,omitempty"`
+	BookingRedirectUrl    *string          `json:"booking_redirect_url,omitempty"`
+	BookingSuccessMessage *string          `json:"booking_success_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingSuccessMessageTranslations *TranslationMap `json:"booking_success_message_translations,omitempty"`
+	ClientCancelDisabled              *bool           `json:"client_cancel_disabled,omitempty"`
+	ClientRescheduleDisabled          *bool           `json:"client_reschedule_disabled,omitempty"`
+	CompanyTypes                      *[]string       `json:"company_types,omitempty"`
+	ContactEmail                      *string         `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
 	CoverImages *[]Image    `json:"cover_images,omitempty"`
