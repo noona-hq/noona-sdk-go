@@ -3832,6 +3832,11 @@ type EmployeeSMSSettings struct {
 	// Custom text for SMS messages
 	CustomText *string `json:"custom_text,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	CustomTextTranslations *TranslationMap `json:"custom_text_translations,omitempty"`
+
 	// The sender name for SMS messages
 	From *string `json:"from,omitempty"`
 }
