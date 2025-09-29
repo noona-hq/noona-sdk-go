@@ -1551,6 +1551,69 @@ type AdminCompanyDetailsUser struct {
 // AdminCompanyDetailsUsers defines model for AdminCompanyDetailsUsers.
 type AdminCompanyDetailsUsers []AdminCompanyDetailsUser
 
+// AdminCompanyUpdate defines model for AdminCompanyUpdate.
+type AdminCompanyUpdate struct {
+	Adyen         *AdyenConnection      `json:"adyen,omitempty"`
+	BillingStatus *CompanyBillingStatus `json:"billing_status,omitempty"`
+	Checkin       *CompanyCheckin       `json:"checkin,omitempty"`
+	Claims        *ClaimsConnection     `json:"claims,omitempty"`
+	CreatedAt     *time.Time            `json:"created_at,omitempty"`
+	Currency      *interface{}          `json:"currency,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
+
+	// The order/position of this company within its enterprise. Used for custom sorting of companies.
+	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
+
+	// Whether the company has secretary services linked to it
+	HasSecretary    *bool               `json:"has_secretary,omitempty"`
+	Id              *string             `json:"id,omitempty"`
+	InviteLinkToken *string             `json:"invite_link_token,omitempty"`
+	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
+	Locale          *Locale             `json:"locale,omitempty"`
+	Location        *Location           `json:"location,omitempty"`
+	LockedSections  *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
+	Name            *string             `json:"name,omitempty"`
+
+	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
+	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+
+	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
+	Payments    *PaymentSettings `json:"payments,omitempty"`
+
+	// Deprecated, use profile.phone_country_code instead
+	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
+
+	// Deprecated, use profile.phone_number instead
+	PhoneNumber *string             `json:"phone_number,omitempty"`
+	Pos         *CompanyPOSSettings `json:"pos,omitempty"`
+	Profile     *CompanyProfile     `json:"profile,omitempty"`
+
+	// An ID that can be used to reference the company in an external system.
+	// This ID is not used by Noona and is not guaranteed to be unique.
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      *interface{}          `json:"vertical,omitempty"`
+
+	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
+	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
+	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
+}
+
+// AdminCompanyUpdateFields defines model for AdminCompanyUpdateFields.
+type AdminCompanyUpdateFields struct {
+	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
+	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+}
+
 // AdminMoveUserRequest defines model for AdminMoveUserRequest.
 type AdminMoveUserRequest struct {
 	// ID of the company to move the user to
@@ -2713,9 +2776,6 @@ type Company struct {
 	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
 	Name            *string             `json:"name,omitempty"`
 
-	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
-	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
-
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
@@ -3099,9 +3159,6 @@ type CompanyResponse struct {
 	Messaging       CompanyMessaging   `json:"messaging"`
 	Name            string             `json:"name"`
 
-	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
-	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
-
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
@@ -3210,9 +3267,6 @@ type CompanyUpdate struct {
 	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
 	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
 	Name            *string             `json:"name,omitempty"`
-
-	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
-	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -9310,6 +9364,19 @@ type AdminGetCompanyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminUpdateCompanyJSONBody defines parameters for AdminUpdateCompany.
+type AdminUpdateCompanyJSONBody AdminCompanyUpdate
+
+// AdminUpdateCompanyParams defines parameters for AdminUpdateCompany.
+type AdminUpdateCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand        `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *CompanyFields `form:"unset,omitempty" json:"unset,omitempty"`
+}
+
 // AdminRemoveSecretaryFromCompanyParams defines parameters for AdminRemoveSecretaryFromCompany.
 type AdminRemoveSecretaryFromCompanyParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -12867,6 +12934,9 @@ type UpdateWebhookParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminUpdateCompanyJSONRequestBody defines body for AdminUpdateCompany for application/json ContentType.
+type AdminUpdateCompanyJSONRequestBody AdminUpdateCompanyJSONBody
+
 // AdminAssignSecretaryToCompanyJSONRequestBody defines body for AdminAssignSecretaryToCompany for application/json ContentType.
 type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJSONBody
 
@@ -15227,6 +15297,11 @@ type ClientInterface interface {
 	// AdminGetCompany request
 	AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminUpdateCompany request with any body
+	AdminUpdateCompanyWithBody(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminUpdateCompany(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminRemoveSecretaryFromCompany request
 	AdminRemoveSecretaryFromCompany(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -16504,6 +16579,30 @@ func (c *Client) AdminDeleteCompany(ctx context.Context, companyId string, param
 
 func (c *Client) AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminGetCompanyRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateCompanyWithBody(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateCompanyRequestWithBody(c.Server, companyId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateCompany(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateCompanyRequest(c.Server, companyId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -22255,6 +22354,105 @@ func NewAdminGetCompanyRequest(server string, companyId string, params *AdminGet
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewAdminUpdateCompanyRequest calls the generic AdminUpdateCompany builder with application/json body
+func NewAdminUpdateCompanyRequest(server string, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminUpdateCompanyRequestWithBody(server, companyId, params, "application/json", bodyReader)
+}
+
+// NewAdminUpdateCompanyRequestWithBody generates requests for AdminUpdateCompany with any type of body
+func NewAdminUpdateCompanyRequestWithBody(server string, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -47784,6 +47982,11 @@ type ClientWithResponsesInterface interface {
 	// AdminGetCompany request
 	AdminGetCompanyWithResponse(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*AdminGetCompanyResponse, error)
 
+	// AdminUpdateCompany request with any body
+	AdminUpdateCompanyWithBodyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error)
+
+	AdminUpdateCompanyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error)
+
 	// AdminRemoveSecretaryFromCompany request
 	AdminRemoveSecretaryFromCompanyWithResponse(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*AdminRemoveSecretaryFromCompanyResponse, error)
 
@@ -49144,6 +49347,28 @@ func (r AdminGetCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminGetCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminUpdateCompanyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CompanyResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminUpdateCompanyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminUpdateCompanyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -56434,6 +56659,23 @@ func (c *ClientWithResponses) AdminGetCompanyWithResponse(ctx context.Context, c
 	return ParseAdminGetCompanyResponse(rsp)
 }
 
+// AdminUpdateCompanyWithBodyWithResponse request with arbitrary body returning *AdminUpdateCompanyResponse
+func (c *ClientWithResponses) AdminUpdateCompanyWithBodyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error) {
+	rsp, err := c.AdminUpdateCompanyWithBody(ctx, companyId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateCompanyResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminUpdateCompanyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error) {
+	rsp, err := c.AdminUpdateCompany(ctx, companyId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateCompanyResponse(rsp)
+}
+
 // AdminRemoveSecretaryFromCompanyWithResponse request returning *AdminRemoveSecretaryFromCompanyResponse
 func (c *ClientWithResponses) AdminRemoveSecretaryFromCompanyWithResponse(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*AdminRemoveSecretaryFromCompanyResponse, error) {
 	rsp, err := c.AdminRemoveSecretaryFromCompany(ctx, companyId, params, reqEditors...)
@@ -60392,6 +60634,32 @@ func ParseAdminGetCompanyResponse(rsp *http.Response) (*AdminGetCompanyResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdminCompanyDetails
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminUpdateCompanyResponse parses an HTTP response from a AdminUpdateCompanyWithResponse call
+func ParseAdminUpdateCompanyResponse(rsp *http.Response) (*AdminUpdateCompanyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminUpdateCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CompanyResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
