@@ -2276,11 +2276,21 @@ type BookingQuestion struct {
 	// Additional details about the question.
 	Description *string `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// Unique identifier for the booking question.
 	Id *string `json:"id,omitempty"`
 
 	// The title of the booking question.
 	Title string `json:"title"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap `json:"title_translations,omitempty"`
 }
 
 // The type of answer expected.
@@ -2300,11 +2310,21 @@ type BookingQuestionAnswer struct {
 	// Additional details about the question.
 	Description *string `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// Unique identifier for the booking question.
 	Id *string `json:"id,omitempty"`
 
 	// The title of the booking question.
 	Title string `json:"title"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap `json:"title_translations,omitempty"`
 }
 
 // The answer provided by the user.
