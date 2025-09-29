@@ -479,7 +479,9 @@ const (
 
 // Defines values for EventTypeGroupField.
 const (
-	EventTypeGroupFieldImage EventTypeGroupField = "image"
+	EventTypeGroupFieldDescription EventTypeGroupField = "description"
+	EventTypeGroupFieldImage       EventTypeGroupField = "image"
+	EventTypeGroupFieldTitle       EventTypeGroupField = "title"
 )
 
 // Defines values for EventUpdateBehaviorType.
