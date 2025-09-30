@@ -4554,6 +4554,11 @@ type EventTypeConnections struct {
 	// For a successful booking, this message is displayed for each event type booked.
 	BookingSuccessMessage *string `json:"booking_success_message,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingSuccessMessageTranslations *TranslationMap `json:"booking_success_message_translations,omitempty"`
+
 	// For this event type, does the customer select the employee/space or is it selected automatically at random?
 	CustomerSelects *EventTypeConnectionsCustomerSelects `json:"customer_selects,omitempty"`
 	Hidden          *bool                                `json:"hidden,omitempty"`
