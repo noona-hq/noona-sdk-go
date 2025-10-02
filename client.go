@@ -4721,11 +4721,21 @@ type EventTypePriceRanges []EventTypePriceRange
 // EventTypeVariation defines model for EventTypeVariation.
 type EventTypeVariation struct {
 	// [Expandable](#section/Expandable-attributes)
-	CustomerGroup *ExpandableCustomerGroup   `json:"customer_group,omitempty"`
-	Description   *string                    `json:"description,omitempty"`
-	Id            *string                    `json:"id,omitempty"`
-	Label         *string                    `json:"label,omitempty"`
-	Prices        *[]EventTypeVariationPrice `json:"prices,omitempty"`
+	CustomerGroup *ExpandableCustomerGroup `json:"customer_group,omitempty"`
+	Description   *string                  `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	Id                      *string         `json:"id,omitempty"`
+	Label                   *string         `json:"label,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap            `json:"label_translations,omitempty"`
+	Prices            *[]EventTypeVariationPrice `json:"prices,omitempty"`
 
 	// Whether this variation is selectable in the marketplace
 	SelectableInMarketplace *bool `json:"selectable_in_marketplace,omitempty"`
