@@ -473,13 +473,14 @@ const (
 
 // Defines values for EventTypeField.
 const (
-	EventTypeFieldBufferAfterService  EventTypeField = "buffer_after_service"
-	EventTypeFieldColor               EventTypeField = "color"
-	EventTypeFieldDescription         EventTypeField = "description"
-	EventTypeFieldImage               EventTypeField = "image"
-	EventTypeFieldMaxGuestsPerBooking EventTypeField = "max_guests_per_booking"
-	EventTypeFieldMinGuestsPerBooking EventTypeField = "min_guests_per_booking"
-	EventTypeFieldPayments            EventTypeField = "payments"
+	EventTypeFieldBookingSuccessMessage EventTypeField = "booking_success_message"
+	EventTypeFieldBufferAfterService    EventTypeField = "buffer_after_service"
+	EventTypeFieldColor                 EventTypeField = "color"
+	EventTypeFieldDescription           EventTypeField = "description"
+	EventTypeFieldImage                 EventTypeField = "image"
+	EventTypeFieldMaxGuestsPerBooking   EventTypeField = "max_guests_per_booking"
+	EventTypeFieldMinGuestsPerBooking   EventTypeField = "min_guests_per_booking"
+	EventTypeFieldPayments              EventTypeField = "payments"
 )
 
 // Defines values for EventTypeGroupField.
