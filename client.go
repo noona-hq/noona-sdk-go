@@ -400,6 +400,7 @@ const (
 // Defines values for EmployeeField.
 const (
 	EmployeeFieldCustomReminder EmployeeField = "custom_reminder"
+	EmployeeFieldDescription    EmployeeField = "description"
 	EmployeeFieldDisabledAt     EmployeeField = "disabled_at"
 	EmployeeFieldImage          EmployeeField = "image"
 )
