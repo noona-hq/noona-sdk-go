@@ -285,8 +285,11 @@ const (
 
 // Defines values for CompanyField.
 const (
+	CompanyFieldBookingOfferMessage   CompanyField = "booking_offer_message"
+	CompanyFieldBookingSuccessMessage CompanyField = "booking_success_message"
 	CompanyFieldClaimantId            CompanyField = "claimant_id"
 	CompanyFieldCustomReminder        CompanyField = "custom_reminder"
+	CompanyFieldDescription           CompanyField = "description"
 	CompanyFieldImage                 CompanyField = "image"
 	CompanyFieldInviteDecisionPending CompanyField = "invite_decision_pending"
 )
