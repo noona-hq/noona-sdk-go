@@ -955,7 +955,9 @@ const (
 
 // Defines values for ResourceField.
 const (
-	ResourceFieldImage ResourceField = "image"
+	ResourceFieldDescription ResourceField = "description"
+	ResourceFieldImage       ResourceField = "image"
+	ResourceFieldName        ResourceField = "name"
 )
 
 // Defines values for ResourcePriority.
