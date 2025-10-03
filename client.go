@@ -1335,6 +1335,12 @@ const (
 	VoucherTemplateCreateOverridesTypeService VoucherTemplateCreateOverridesType = "service"
 )
 
+// Defines values for VoucherTemplateField.
+const (
+	VoucherTemplateFieldDescription            VoucherTemplateField = "description"
+	VoucherTemplateFieldMarketplaceDescription VoucherTemplateField = "marketplace_description"
+)
+
 // Defines values for VoucherTemplateResponseType.
 const (
 	VoucherTemplateResponseTypeAmount  VoucherTemplateResponseType = "amount"
@@ -8879,6 +8885,12 @@ type VoucherTemplateCreateOverrides struct {
 // VoucherTemplateCreateOverridesType defines model for VoucherTemplateCreateOverrides.Type.
 type VoucherTemplateCreateOverridesType string
 
+// VoucherTemplateField defines model for VoucherTemplateField.
+type VoucherTemplateField string
+
+// VoucherTemplateFields defines model for VoucherTemplateFields.
+type VoucherTemplateFields []VoucherTemplateField
+
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type VoucherTemplateFilter struct {
 	Companies  *[]string `json:"companies,omitempty"`
@@ -12805,7 +12817,8 @@ type UpdateVoucherTemplateJSONBody VoucherTemplateUpdate
 // UpdateVoucherTemplateParams defines parameters for UpdateVoucherTemplate.
 type UpdateVoucherTemplateParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+	Select *Select                `form:"select,omitempty" json:"select,omitempty"`
+	Unset  *VoucherTemplateFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // DeleteVoucherParams defines parameters for DeleteVoucher.
@@ -46822,6 +46835,22 @@ func NewUpdateVoucherTemplateRequestWithBody(server string, voucherTemplateId st
 	if params.Select != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
