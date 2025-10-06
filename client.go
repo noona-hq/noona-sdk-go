@@ -1253,9 +1253,10 @@ const (
 
 // Defines values for UserInviteErrorCode.
 const (
-	UserInviteDeleted UserInviteErrorCode = "user_invite_deleted"
-	UserInviteExpired UserInviteErrorCode = "user_invite_expired"
-	UserInviteUsed    UserInviteErrorCode = "user_invite_used"
+	UserInviteDeleted   UserInviteErrorCode = "user_invite_deleted"
+	UserInviteExpired   UserInviteErrorCode = "user_invite_expired"
+	UserInviteUsed      UserInviteErrorCode = "user_invite_used"
+	UserInviteWrongUser UserInviteErrorCode = "user_invite_wrong_user"
 )
 
 // Defines values for VerificationCertificationLevel.
@@ -8487,6 +8488,9 @@ type UserInvite struct {
 
 	// When the user invite was last updated
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+
+	// ID of the specific user who can consume this invite (empty for general invites)
+	UserId *string `json:"user_id"`
 }
 
 // Result of validating a user invite without consuming it
