@@ -473,6 +473,7 @@ const (
 
 // Defines values for EventTypeField.
 const (
+	EventTypeFieldBookingQuestion       EventTypeField = "booking_question"
 	EventTypeFieldBookingSuccessMessage EventTypeField = "booking_success_message"
 	EventTypeFieldBufferAfterService    EventTypeField = "buffer_after_service"
 	EventTypeFieldColor                 EventTypeField = "color"
@@ -4561,8 +4562,13 @@ type EventTypeCategoryGroups []EventTypeCategoryGroup
 // EventTypeConnections defines model for EventTypeConnections.
 type EventTypeConnections struct {
 	// Deprecated, use `booking_questions` instead.
-	BookingQuestion  *string           `json:"booking_question,omitempty"`
-	BookingQuestions *BookingQuestions `json:"booking_questions,omitempty"`
+	BookingQuestion *string `json:"booking_question,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingQuestionTranslations *TranslationMap   `json:"booking_question_translations,omitempty"`
+	BookingQuestions            *BookingQuestions `json:"booking_questions,omitempty"`
 
 	// For a successful booking, this message is displayed for each event type booked.
 	BookingSuccessMessage *string `json:"booking_success_message,omitempty"`
