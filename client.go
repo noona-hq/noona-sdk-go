@@ -627,6 +627,22 @@ const (
 	NotificationBookingOfferTypeBookingOffer NotificationBookingOfferType = "bookingOffer"
 )
 
+// Defines values for NotificationCategory.
+const (
+	NotificationCategoryBookingOffers  NotificationCategory = "booking_offers"
+	NotificationCategoryOnlineBookings NotificationCategory = "online_bookings"
+	NotificationCategoryPayments       NotificationCategory = "payments"
+	NotificationCategoryStaffBookings  NotificationCategory = "staff_bookings"
+	NotificationCategoryWaitlist       NotificationCategory = "waitlist"
+)
+
+// Defines values for NotificationChannel.
+const (
+	NotificationChannelEmail NotificationChannel = "email"
+	NotificationChannelHq    NotificationChannel = "hq"
+	NotificationChannelPush  NotificationChannel = "push"
+)
+
 // Defines values for NotificationEventStatus.
 const (
 	NotificationEventStatusCancelled   NotificationEventStatus = "cancelled"
@@ -656,6 +672,19 @@ const (
 // Defines values for NotificationLegacyType.
 const (
 	Legacy NotificationLegacyType = "legacy"
+)
+
+// Defines values for NotificationSubcategory.
+const (
+	NotificationSubcategoryApproved              NotificationSubcategory = "approved"
+	NotificationSubcategoryCancellations         NotificationSubcategory = "cancellations"
+	NotificationSubcategoryDeclined              NotificationSubcategory = "declined"
+	NotificationSubcategoryFailedSettlements     NotificationSubcategory = "failed_settlements"
+	NotificationSubcategoryNewAppointments       NotificationSubcategory = "new_appointments"
+	NotificationSubcategoryNewRequests           NotificationSubcategory = "new_requests"
+	NotificationSubcategoryReschedules           NotificationSubcategory = "reschedules"
+	NotificationSubcategoryResourceOnly          NotificationSubcategory = "resource_only"
+	NotificationSubcategorySuccessfulSettlements NotificationSubcategory = "successful_settlements"
 )
 
 // Defines values for NotificationSurveyType.
@@ -774,7 +803,7 @@ const (
 
 // Defines values for OnlineBookingsRuleType.
 const (
-	OnlineBookings OnlineBookingsRuleType = "online_bookings"
+	OnlineBookingsRuleTypeOnlineBookings OnlineBookingsRuleType = "online_bookings"
 )
 
 // Defines values for PaymentProvider.
@@ -1161,10 +1190,10 @@ const (
 
 // Defines values for SubtransactionFailureState.
 const (
-	Busy      SubtransactionFailureState = "busy"
-	Cancelled SubtransactionFailureState = "cancelled"
-	Declined  SubtransactionFailureState = "declined"
-	Unknown   SubtransactionFailureState = "unknown"
+	SubtransactionFailureStateBusy      SubtransactionFailureState = "busy"
+	SubtransactionFailureStateCancelled SubtransactionFailureState = "cancelled"
+	SubtransactionFailureStateDeclined  SubtransactionFailureState = "declined"
+	SubtransactionFailureStateUnknown   SubtransactionFailureState = "unknown"
 )
 
 // Defines values for SubtransactionOrigin.
@@ -1222,8 +1251,8 @@ const (
 
 // Defines values for TransactionOrigin.
 const (
-	Marketplace TransactionOrigin = "marketplace"
-	Pos         TransactionOrigin = "pos"
+	TransactionOriginMarketplace TransactionOrigin = "marketplace"
+	TransactionOriginPos         TransactionOrigin = "pos"
 )
 
 // Defines values for TransactionStatus.
@@ -2357,6 +2386,12 @@ type BookingOffer struct {
 	// The start time of the event.
 	StartsAt  *time.Time `json:"starts_at,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// Notification settings for booking offer events
+type BookingOfferNotifications struct {
+	Approved *NotificationChannelSettings `json:"approved,omitempty"`
+	Declined *NotificationChannelSettings `json:"declined,omitempty"`
 }
 
 // BookingOffers defines model for BookingOffers.
@@ -3856,6 +3891,21 @@ type EmployeeMarketplaceSettings struct {
 type EmployeeNotificationSettings struct {
 	// Whether the employee should receive emails when a booking is made
 	BookingEmail *bool `json:"booking_email,omitempty"`
+
+	// Notification settings for booking offer events
+	BookingOffers *BookingOfferNotifications `json:"booking_offers,omitempty"`
+
+	// Notification settings for customer-initiated bookings
+	OnlineBookings *OnlineBookingNotifications `json:"online_bookings,omitempty"`
+
+	// Notification settings for payment events
+	Payments *PaymentNotifications `json:"payments,omitempty"`
+
+	// Notification settings for staff-initiated bookings
+	StaffBookings *StaffBookingNotifications `json:"staff_bookings,omitempty"`
+
+	// Notification settings for waitlist events
+	Waitlist *WaitlistNotifications `json:"waitlist,omitempty"`
 }
 
 // EmployeeSMSSettings defines model for EmployeeSMSSettings.
@@ -5973,6 +6023,39 @@ type NotificationBookingOfferStatus string
 // NotificationBookingOfferType defines model for NotificationBookingOffer.Type.
 type NotificationBookingOfferType string
 
+// NotificationCategory defines model for NotificationCategory.
+type NotificationCategory string
+
+// NotificationCategoryMetadata defines model for NotificationCategoryMetadata.
+type NotificationCategoryMetadata struct {
+	Id            *string                            `json:"id,omitempty"`
+	ReadableId    *NotificationCategory              `json:"readable_id,omitempty"`
+	Subcategories *[]NotificationSubcategoryMetadata `json:"subcategories,omitempty"`
+	Title         *string                            `json:"title,omitempty"`
+}
+
+// NotificationChannel defines model for NotificationChannel.
+type NotificationChannel string
+
+// NotificationChannelMetadata defines model for NotificationChannelMetadata.
+type NotificationChannelMetadata struct {
+	Id         *string              `json:"id,omitempty"`
+	ReadableId *NotificationChannel `json:"readable_id,omitempty"`
+	Title      *string              `json:"title,omitempty"`
+}
+
+// NotificationChannelSettings defines model for NotificationChannelSettings.
+type NotificationChannelSettings struct {
+	// Whether to receive email notifications
+	Email *bool `json:"email,omitempty"`
+
+	// Whether to receive notifications in HQ
+	Hq *bool `json:"hq,omitempty"`
+
+	// Whether to receive push notifications on mobile
+	Push *bool `json:"push,omitempty"`
+}
+
 // NotificationCreate defines model for NotificationCreate.
 type NotificationCreate struct {
 	Company  string `json:"company"`
@@ -6109,6 +6192,17 @@ type NotificationPreferences struct {
 	Sms   *bool `json:"sms,omitempty"`
 }
 
+// NotificationSubcategory defines model for NotificationSubcategory.
+type NotificationSubcategory string
+
+// NotificationSubcategoryMetadata defines model for NotificationSubcategoryMetadata.
+type NotificationSubcategoryMetadata struct {
+	Channels   *[]NotificationChannelMetadata `json:"channels,omitempty"`
+	Id         *string                        `json:"id,omitempty"`
+	ReadableId *NotificationSubcategory       `json:"readable_id,omitempty"`
+	Title      *string                        `json:"title,omitempty"`
+}
+
 // NotificationSurvey defines model for NotificationSurvey.
 type NotificationSurvey struct {
 	CreatedAt *time.Time             `json:"created_at,omitempty"`
@@ -6209,6 +6303,14 @@ type OAuthTokenRequest struct {
 
 // OAuthTokenRequestGrantType defines model for OAuthTokenRequest.GrantType.
 type OAuthTokenRequestGrantType string
+
+// Notification settings for customer-initiated bookings
+type OnlineBookingNotifications struct {
+	Cancellations   *NotificationChannelSettings `json:"cancellations,omitempty"`
+	NewAppointments *NotificationChannelSettings `json:"new_appointments,omitempty"`
+	Reschedules     *NotificationChannelSettings `json:"reschedules,omitempty"`
+	ResourceOnly    *NotificationChannelSettings `json:"resource_only,omitempty"`
+}
 
 // OnlineBookingsRule defines model for OnlineBookingsRule.
 type OnlineBookingsRule struct {
@@ -6486,6 +6588,12 @@ type PaymentMethodInstancesFilterStatus string
 
 // PaymentMethods defines model for PaymentMethods.
 type PaymentMethods []PaymentMethod
+
+// Notification settings for payment events
+type PaymentNotifications struct {
+	FailedSettlements     *NotificationChannelSettings `json:"failed_settlements,omitempty"`
+	SuccessfulSettlements *NotificationChannelSettings `json:"successful_settlements,omitempty"`
+}
 
 // PaymentReceiptRecipient defines model for PaymentReceiptRecipient.
 type PaymentReceiptRecipient struct {
@@ -7931,6 +8039,14 @@ type SpacesFilter struct {
 	Types *[]SpaceType `json:"types,omitempty"`
 }
 
+// Notification settings for staff-initiated bookings
+type StaffBookingNotifications struct {
+	Cancellations   *NotificationChannelSettings `json:"cancellations,omitempty"`
+	NewAppointments *NotificationChannelSettings `json:"new_appointments,omitempty"`
+	Reschedules     *NotificationChannelSettings `json:"reschedules,omitempty"`
+	ResourceOnly    *NotificationChannelSettings `json:"resource_only,omitempty"`
+}
+
 // The Server-Sent Event names that will be emitted by the generic stream endpoint.
 //
 // **Usage with JavaScript EventSource:**
@@ -9302,6 +9418,11 @@ type WaitlistFilter struct {
 	PreferredDateTo *string `json:"preferred_date_to,omitempty"`
 }
 
+// Notification settings for waitlist events
+type WaitlistNotifications struct {
+	NewRequests *NotificationChannelSettings `json:"new_requests,omitempty"`
+}
+
 // Webhook defines model for Webhook.
 type Webhook struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -10131,6 +10252,15 @@ type GetEventsMetricsParams struct {
 
 // GetSalesMetricsParams defines parameters for GetSalesMetrics.
 type GetSalesMetricsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListNotificationMetadataParams defines parameters for ListNotificationMetadata.
+type ListNotificationMetadataParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -15598,6 +15728,9 @@ type ClientInterface interface {
 	// GetSalesMetrics request
 	GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListNotificationMetadata request
+	ListNotificationMetadata(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteNotifications request
 	DeleteNotifications(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -17467,6 +17600,18 @@ func (c *Client) GetEventsMetrics(ctx context.Context, companyId string, params 
 
 func (c *Client) GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSalesMetricsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListNotificationMetadata(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListNotificationMetadataRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -27032,6 +27177,76 @@ func NewGetSalesMetricsRequest(server string, companyId string, params *GetSales
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/metrics/sales", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListNotificationMetadataRequest generates requests for ListNotificationMetadata
+func NewListNotificationMetadataRequest(server string, companyId string, params *ListNotificationMetadataParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/notification_metadata", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -48299,6 +48514,9 @@ type ClientWithResponsesInterface interface {
 	// GetSalesMetrics request
 	GetSalesMetricsWithResponse(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*GetSalesMetricsResponse, error)
 
+	// ListNotificationMetadata request
+	ListNotificationMetadataWithResponse(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*ListNotificationMetadataResponse, error)
+
 	// DeleteNotifications request
 	DeleteNotificationsWithResponse(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*DeleteNotificationsResponse, error)
 
@@ -50652,6 +50870,28 @@ func (r GetSalesMetricsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSalesMetricsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListNotificationMetadataResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]NotificationCategoryMetadata
+}
+
+// Status returns HTTPResponse.Status
+func (r ListNotificationMetadataResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListNotificationMetadataResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -57360,6 +57600,15 @@ func (c *ClientWithResponses) GetSalesMetricsWithResponse(ctx context.Context, c
 	return ParseGetSalesMetricsResponse(rsp)
 }
 
+// ListNotificationMetadataWithResponse request returning *ListNotificationMetadataResponse
+func (c *ClientWithResponses) ListNotificationMetadataWithResponse(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*ListNotificationMetadataResponse, error) {
+	rsp, err := c.ListNotificationMetadata(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListNotificationMetadataResponse(rsp)
+}
+
 // DeleteNotificationsWithResponse request returning *DeleteNotificationsResponse
 func (c *ClientWithResponses) DeleteNotificationsWithResponse(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*DeleteNotificationsResponse, error) {
 	rsp, err := c.DeleteNotifications(ctx, companyId, params, reqEditors...)
@@ -62154,6 +62403,32 @@ func ParseGetSalesMetricsResponse(rsp *http.Response) (*GetSalesMetricsResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest SalesMetrics
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListNotificationMetadataResponse parses an HTTP response from a ListNotificationMetadataWithResponse call
+func ParseListNotificationMetadataResponse(rsp *http.Response) (*ListNotificationMetadataResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListNotificationMetadataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []NotificationCategoryMetadata
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
