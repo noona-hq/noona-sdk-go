@@ -616,6 +616,17 @@ const (
 	NoticeVariantWarning NoticeVariant = "warning"
 )
 
+// Defines values for NotificationBookingOfferStatus.
+const (
+	NotificationBookingOfferStatusApproved NotificationBookingOfferStatus = "approved"
+	NotificationBookingOfferStatusDeclined NotificationBookingOfferStatus = "declined"
+)
+
+// Defines values for NotificationBookingOfferType.
+const (
+	NotificationBookingOfferTypeBookingOffer NotificationBookingOfferType = "bookingOffer"
+)
+
 // Defines values for NotificationEventStatus.
 const (
 	NotificationEventStatusCancelled   NotificationEventStatus = "cancelled"
@@ -650,6 +661,11 @@ const (
 // Defines values for NotificationSurveyType.
 const (
 	Survey NotificationSurveyType = "survey"
+)
+
+// Defines values for NotificationWaitlistEntryStatus.
+const (
+	Withdrawn NotificationWaitlistEntryStatus = "withdrawn"
 )
 
 // Defines values for NotificationWaitlistEntryType.
@@ -1277,9 +1293,9 @@ const (
 
 // Defines values for VerificationStatus.
 const (
-	Approved VerificationStatus = "approved"
-	Pending  VerificationStatus = "pending"
-	Rejected VerificationStatus = "rejected"
+	VerificationStatusApproved VerificationStatus = "approved"
+	VerificationStatusPending  VerificationStatus = "pending"
+	VerificationStatusRejected VerificationStatus = "rejected"
 )
 
 // Defines values for VoucherStatus.
@@ -5924,6 +5940,39 @@ type Notification struct {
 	union json.RawMessage
 }
 
+// NotificationBookingOffer defines model for NotificationBookingOffer.
+type NotificationBookingOffer struct {
+	// The booking offer ID
+	BookingOffer *string    `json:"booking_offer,omitempty"`
+	Company      *string    `json:"company,omitempty"`
+	CreatedAt    *time.Time `json:"created_at,omitempty"`
+	Customer     *string    `json:"customer,omitempty"`
+	CustomerName *string    `json:"customer_name,omitempty"`
+	Employee     *string    `json:"employee,omitempty"`
+	EmployeeName *string    `json:"employee_name,omitempty"`
+
+	// The event ID
+	Event *string `json:"event,omitempty"`
+
+	// The names of the event types
+	EventTypeNames *[]string `json:"event_type_names,omitempty"`
+	Id             *string   `json:"id,omitempty"`
+
+	// When the booking offer appointment starts
+	StartsAt *time.Time `json:"starts_at,omitempty"`
+
+	// The status of the booking offer notification
+	Status    *NotificationBookingOfferStatus `json:"status,omitempty"`
+	Type      NotificationBookingOfferType    `json:"type"`
+	UpdatedAt *time.Time                      `json:"updated_at,omitempty"`
+}
+
+// The status of the booking offer notification
+type NotificationBookingOfferStatus string
+
+// NotificationBookingOfferType defines model for NotificationBookingOffer.Type.
+type NotificationBookingOfferType string
+
 // NotificationCreate defines model for NotificationCreate.
 type NotificationCreate struct {
 	Company  string `json:"company"`
@@ -6086,12 +6135,18 @@ type NotificationWaitlistEntry struct {
 	EventTypeNames *[]string `json:"event_type_names,omitempty"`
 
 	// The time when the waitlist entry expires
-	ExpiresAt     *time.Time                    `json:"expires_at,omitempty"`
-	Id            *string                       `json:"id,omitempty"`
-	Type          NotificationWaitlistEntryType `json:"type"`
-	UpdatedAt     *time.Time                    `json:"updated_at,omitempty"`
-	WaitlistEntry *string                       `json:"waitlist_entry,omitempty"`
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	Id        *string    `json:"id,omitempty"`
+
+	// The status of the waitlist entry notification. If not set, the entry was created.
+	Status        *NotificationWaitlistEntryStatus `json:"status,omitempty"`
+	Type          NotificationWaitlistEntryType    `json:"type"`
+	UpdatedAt     *time.Time                       `json:"updated_at,omitempty"`
+	WaitlistEntry *string                          `json:"waitlist_entry,omitempty"`
 }
+
+// The status of the waitlist entry notification. If not set, the entry was created.
+type NotificationWaitlistEntryStatus string
 
 // NotificationWaitlistEntryType defines model for NotificationWaitlistEntry.Type.
 type NotificationWaitlistEntryType string
@@ -14981,6 +15036,18 @@ func (t Notification) AsNotificationWaitlistEntry() (NotificationWaitlistEntry, 
 }
 
 func (t *Notification) FromNotificationWaitlistEntry(v NotificationWaitlistEntry) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Notification) AsNotificationBookingOffer() (NotificationBookingOffer, error) {
+	var body NotificationBookingOffer
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Notification) FromNotificationBookingOffer(v NotificationBookingOffer) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
