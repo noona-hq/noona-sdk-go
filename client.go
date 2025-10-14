@@ -5503,6 +5503,37 @@ type InvoicesFilter struct {
 // InvoicesFilterStatus defines model for InvoicesFilter.Status.
 type InvoicesFilterStatus string
 
+// Cryptographic digest of the invoice document
+type InvopopDigest struct {
+	// Hash algorithm used
+	Algorithm *string `json:"algorithm,omitempty"`
+
+	// Hash value (hex encoded)
+	Value *string `json:"value,omitempty"`
+}
+
+// Invopop fiscalization header information extracted from GOBL envelope
+type InvopopHeader struct {
+	// Full invoice identifier
+	Code *string `json:"code,omitempty"`
+
+	// Cryptographic digest of the invoice document
+	Digest *InvopopDigest  `json:"digest,omitempty"`
+	Stamps *[]InvopopStamp `json:"stamps,omitempty"`
+
+	// GOBL envelope UUID
+	Uuid *string `json:"uuid,omitempty"`
+}
+
+// Fiscal stamp from tax authority
+type InvopopStamp struct {
+	// Stamp provider code (e.g., at-atcud, at-qr, at-hash)
+	Provider *string `json:"provider,omitempty"`
+
+	// Stamp value from the authority
+	Value *string `json:"value,omitempty"`
+}
+
 // Issuer defines model for Issuer.
 type Issuer struct {
 	// Business Identification Number
@@ -8399,9 +8430,12 @@ type Transaction struct {
 	Fiscalization *string               `json:"fiscalization,omitempty"`
 	Id            *string               `json:"id,omitempty"`
 	InvoiceNumber *int64                `json:"invoice_number,omitempty"`
-	Issuer        *Issuer               `json:"issuer,omitempty"`
-	LineItems     *ExpandableLineItems  `json:"line_items,omitempty"`
-	Note          *string               `json:"note,omitempty"`
+
+	// Invopop fiscalization header information extracted from GOBL envelope
+	InvopopHeader *InvopopHeader       `json:"invopop_header,omitempty"`
+	Issuer        *Issuer              `json:"issuer,omitempty"`
+	LineItems     *ExpandableLineItems `json:"line_items,omitempty"`
+	Note          *string              `json:"note,omitempty"`
 
 	// The origin of the transaction.
 	//
