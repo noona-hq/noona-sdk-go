@@ -638,9 +638,8 @@ const (
 
 // Defines values for NotificationChannel.
 const (
+	NotificationChannelApp   NotificationChannel = "app"
 	NotificationChannelEmail NotificationChannel = "email"
-	NotificationChannelHq    NotificationChannel = "hq"
-	NotificationChannelPush  NotificationChannel = "push"
 )
 
 // Defines values for NotificationEventStatus.
@@ -1251,8 +1250,8 @@ const (
 
 // Defines values for TransactionOrigin.
 const (
-	TransactionOriginMarketplace TransactionOrigin = "marketplace"
-	TransactionOriginPos         TransactionOrigin = "pos"
+	Marketplace TransactionOrigin = "marketplace"
+	Pos         TransactionOrigin = "pos"
 )
 
 // Defines values for TransactionStatus.
@@ -6070,21 +6069,21 @@ type NotificationChannel string
 
 // NotificationChannelMetadata defines model for NotificationChannelMetadata.
 type NotificationChannelMetadata struct {
-	Id         *string              `json:"id,omitempty"`
+	Id *string `json:"id,omitempty"`
+
+	// Whether this channel is locked for this notification type
+	Locked     *bool                `json:"locked,omitempty"`
 	ReadableId *NotificationChannel `json:"readable_id,omitempty"`
 	Title      *string              `json:"title,omitempty"`
 }
 
 // NotificationChannelSettings defines model for NotificationChannelSettings.
 type NotificationChannelSettings struct {
+	// Whether to receive notifications in the app (includes in-app and push notifications)
+	App *bool `json:"app,omitempty"`
+
 	// Whether to receive email notifications
 	Email *bool `json:"email,omitempty"`
-
-	// Whether to receive notifications in HQ
-	Hq *bool `json:"hq,omitempty"`
-
-	// Whether to receive push notifications on mobile
-	Push *bool `json:"push,omitempty"`
 }
 
 // NotificationCreate defines model for NotificationCreate.
