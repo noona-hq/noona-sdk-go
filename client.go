@@ -518,6 +518,11 @@ const (
 	TaxExemptionCodeMissingError FiscalizeTransactionErrorCode = "tax_exemption_code_missing_error"
 )
 
+// Defines values for GoalTemplate.
+const (
+	GoalFirstOnlineBooking GoalTemplate = "goal_first_online_booking"
+)
+
 // Defines values for ImageFolder.
 const (
 	ImageFolderCompanyCover    ImageFolder = "company_cover"
@@ -1242,6 +1247,27 @@ const (
 	SubtransactionDataVoucherTypeVoucher SubtransactionDataVoucherType = "voucher"
 )
 
+// Defines values for TaskActionType.
+const (
+	Copy     TaskActionType = "copy"
+	Navigate TaskActionType = "navigate"
+)
+
+// Defines values for TaskCompletionMethod.
+const (
+	Computed TaskCompletionMethod = "computed"
+	Manual   TaskCompletionMethod = "manual"
+)
+
+// Defines values for TaskNavigateTo.
+const (
+	TaskNavigateToCalendarSettings             TaskNavigateTo = "calendar_settings"
+	TaskNavigateToEmployees                    TaskNavigateTo = "employees"
+	TaskNavigateToEventTypes                   TaskNavigateTo = "event_types"
+	TaskNavigateToMarketplaceProfile           TaskNavigateTo = "marketplace_profile"
+	TaskNavigateToMarketplaceProfileOnboarding TaskNavigateTo = "marketplace_profile_onboarding"
+)
+
 // Defines values for TerminalProvider.
 const (
 	Istari TerminalProvider = "Istari"
@@ -1489,6 +1515,12 @@ const (
 	CreateVerificationRequestJSONBodyCertificationTypePodiatry                  CreateVerificationRequestJSONBodyCertificationType = "podiatry"
 	CreateVerificationRequestJSONBodyCertificationTypeTherapeuticMassageTherapy CreateVerificationRequestJSONBodyCertificationType = "therapeutic_massage_therapy"
 )
+
+// ActivateGoalRequest defines model for ActivateGoalRequest.
+type ActivateGoalRequest struct {
+	// The company ID that owns the goal
+	CompanyId string `json:"company_id"`
+}
 
 // Activities defines model for Activities.
 type Activities []Activity
@@ -5355,6 +5387,48 @@ type GenericStreamFilter struct {
 	EntityTypes []StreamableEntityType `json:"entity_types"`
 }
 
+// Goal defines model for Goal.
+type Goal struct {
+	// Whether this is the currently active goal for the company
+	Active    bool    `json:"active"`
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// Set when all tasks in the goal are completed
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+
+	// Number of tasks marked as completed for this goal
+	CompletedTasks *int32     `json:"completed_tasks,omitempty"`
+	CreatedAt      *time.Time `json:"created_at,omitempty"`
+
+	// Localized description from the goal template
+	Description  *string      `json:"description,omitempty"`
+	GoalTemplate GoalTemplate `json:"goal_template"`
+	Id           *string      `json:"id,omitempty"`
+
+	// Tasks belonging to this goal (always included)
+	Tasks *[]Task `json:"tasks,omitempty"`
+
+	// Localized title from the goal template
+	Title *string `json:"title,omitempty"`
+
+	// Total number of tasks belonging to this goal
+	TotalTasks *int32     `json:"total_tasks,omitempty"`
+	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type GoalFilter struct {
+	// Filter by active status
+	Active          *bool           `json:"active,omitempty"`
+	GoalTemplateIds *[]GoalTemplate `json:"goal_template_ids,omitempty"`
+}
+
+// GoalTemplate defines model for GoalTemplate.
+type GoalTemplate string
+
+// Goals defines model for Goals.
+type Goals []Goal
+
 // GoogleAnalyticsConnection defines model for GoogleAnalyticsConnection.
 type GoogleAnalyticsConnection struct {
 	// The Google Analytics API secret for the company.
@@ -8292,6 +8366,84 @@ type SubtransactionDataVoucherType string
 // Subtransactions defines model for Subtransactions.
 type Subtransactions []Subtransaction
 
+// Task defines model for Task.
+type Task struct {
+	// Configuration for the task's call-to-action button
+	Action *TaskAction `json:"action,omitempty"`
+
+	// Whether the task is blocked by incomplete prerequisites
+	Blocked   *bool   `json:"blocked,omitempty"`
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// Set when the task is marked complete (manually or computed)
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+
+	// How the task is completed:
+	// - manual: Explicitly marked complete via a request to the API
+	// - computed: Automatically computed based on company data
+	CompletionMethod *TaskCompletionMethod `json:"completion_method,omitempty"`
+	CreatedAt        *time.Time            `json:"created_at,omitempty"`
+
+	// Localized description from the task template
+	Description  *string `json:"description,omitempty"`
+	GoalInstance *string `json:"goal_instance,omitempty"`
+	Id           *string `json:"id,omitempty"`
+
+	// Display order within the goal
+	Order *int32 `json:"order,omitempty"`
+
+	// Task template IDs that must be completed before this task
+	Prerequisites *[]string `json:"prerequisites,omitempty"`
+	TaskTemplate  *string   `json:"task_template,omitempty"`
+
+	// Localized title from the task template
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// Configuration for the task's call-to-action button
+type TaskAction struct {
+	// Dynamic content based on action type.
+	Content *string `json:"content,omitempty"`
+
+	// Pre-determined navigation destination for the task action.
+	// - marketplace_profile_onboarding: Navigate to marketplace profile onboarding flow
+	// - marketplace_profile: Navigate to marketplace profile settings
+	// - event_types: Navigate to event types/services page
+	// - employees: Navigate to employees/staff page
+	// - calendar_settings: Navigate to calendar settings page
+	NavigateTo *TaskNavigateTo `json:"navigate_to,omitempty"`
+
+	// Localized button text
+	Title *string `json:"title,omitempty"`
+
+	// Type of action:
+	// - navigate: Navigate to a specific pre-determined location in the app
+	// - copy: Copy content to clipboard
+	Type *TaskActionType `json:"type,omitempty"`
+}
+
+// Type of action:
+// - navigate: Navigate to a specific pre-determined location in the app
+// - copy: Copy content to clipboard
+type TaskActionType string
+
+// How the task is completed:
+// - manual: Explicitly marked complete via a request to the API
+// - computed: Automatically computed based on company data
+type TaskCompletionMethod string
+
+// Pre-determined navigation destination for the task action.
+// - marketplace_profile_onboarding: Navigate to marketplace profile onboarding flow
+// - marketplace_profile: Navigate to marketplace profile settings
+// - event_types: Navigate to event types/services page
+// - employees: Navigate to employees/staff page
+// - calendar_settings: Navigate to calendar settings page
+type TaskNavigateTo string
+
+// Tasks defines model for Tasks.
+type Tasks []Task
+
 // Terminal defines model for Terminal.
 type Terminal struct {
 	Brand     *string  `json:"brand,omitempty"`
@@ -8598,6 +8750,15 @@ type UpdatePaymentMethodInstanceRequest struct {
 
 	// Display name of the payment method.
 	Title *string `json:"title,omitempty"`
+}
+
+// UpdateTaskRequest defines model for UpdateTaskRequest.
+type UpdateTaskRequest struct {
+	// The company ID that owns the task
+	CompanyId string `json:"company_id"`
+
+	// Set to true to mark the task as complete. For manual tasks only. Computed tasks are automatically evaluated.
+	Completed *bool `json:"completed,omitempty"`
 }
 
 // UpdateVerificationRequest defines model for UpdateVerificationRequest.
@@ -10227,6 +10388,16 @@ type UploadCompanyFileParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// ListGoalInstancesParams defines parameters for ListGoalInstances.
+type ListGoalInstancesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand     `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *GoalFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
 // ListHolidaysParams defines parameters for ListHolidays.
 type ListHolidaysParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -11457,6 +11628,9 @@ type RefundFiscalizedTransactionParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 }
 
+// ActivateGoalJSONBody defines parameters for ActivateGoal.
+type ActivateGoalJSONBody ActivateGoalRequest
+
 // UploadImageParams defines parameters for UploadImage.
 type UploadImageParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -12685,6 +12859,9 @@ type GetSubtransactionParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// UpdateTaskJSONBody defines parameters for UpdateTask.
+type UpdateTaskJSONBody UpdateTaskRequest
+
 // DeleteTerminalParams defines parameters for DeleteTerminal.
 type DeleteTerminalParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -13313,6 +13490,9 @@ type UpdateCompanyFiscalizationStatusJSONRequestBody UpdateCompanyFiscalizationS
 // FiscalizeTransactionJSONRequestBody defines body for FiscalizeTransaction for application/json ContentType.
 type FiscalizeTransactionJSONRequestBody FiscalizeTransactionJSONBody
 
+// ActivateGoalJSONRequestBody defines body for ActivateGoal for application/json ContentType.
+type ActivateGoalJSONRequestBody ActivateGoalJSONBody
+
 // CreateImportJobJSONRequestBody defines body for CreateImportJob for application/json ContentType.
 type CreateImportJobJSONRequestBody CreateImportJobJSONBody
 
@@ -13450,6 +13630,9 @@ type CancelSubscriptionJSONRequestBody CancelSubscriptionJSONBody
 
 // CreateSubtransactionJSONRequestBody defines body for CreateSubtransaction for application/json ContentType.
 type CreateSubtransactionJSONRequestBody CreateSubtransactionJSONBody
+
+// UpdateTaskJSONRequestBody defines body for UpdateTask for application/json ContentType.
+type UpdateTaskJSONRequestBody UpdateTaskJSONBody
 
 // UpdateTerminalJSONRequestBody defines body for UpdateTerminal for application/json ContentType.
 type UpdateTerminalJSONRequestBody UpdateTerminalJSONBody
@@ -15743,6 +15926,9 @@ type ClientInterface interface {
 	// UploadCompanyFile request with any body
 	UploadCompanyFileWithBody(ctx context.Context, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListGoalInstances request
+	ListGoalInstances(ctx context.Context, companyId string, params *ListGoalInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListHolidays request
 	ListHolidays(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -16119,6 +16305,11 @@ type ClientInterface interface {
 
 	// RefundFiscalizedTransaction request
 	RefundFiscalizedTransaction(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ActivateGoal request with any body
+	ActivateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ActivateGoal(ctx context.Context, goalId string, body ActivateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UploadImage request with any body
 	UploadImageWithBody(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -16568,6 +16759,11 @@ type ClientInterface interface {
 
 	// GetSubtransaction request
 	GetSubtransaction(ctx context.Context, subtransactionId string, params *GetSubtransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateTask request with any body
+	UpdateTaskWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateTask(ctx context.Context, taskId string, body UpdateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteTerminal request
 	DeleteTerminal(ctx context.Context, terminalId string, params *DeleteTerminalParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -17561,6 +17757,18 @@ func (c *Client) CountEvents(ctx context.Context, companyId string, params *Coun
 
 func (c *Client) UploadCompanyFileWithBody(ctx context.Context, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUploadCompanyFileRequestWithBody(c.Server, companyId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListGoalInstances(ctx context.Context, companyId string, params *ListGoalInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListGoalInstancesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -19169,6 +19377,30 @@ func (c *Client) GetFiscalizedTransactionPDF(ctx context.Context, transactionId 
 
 func (c *Client) RefundFiscalizedTransaction(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRefundFiscalizedTransactionRequest(c.Server, transactionId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ActivateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewActivateGoalRequestWithBody(c.Server, goalId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ActivateGoal(ctx context.Context, goalId string, body ActivateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewActivateGoalRequest(c.Server, goalId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -21149,6 +21381,30 @@ func (c *Client) DeleteSubtransaction(ctx context.Context, subtransactionId stri
 
 func (c *Client) GetSubtransaction(ctx context.Context, subtransactionId string, params *GetSubtransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSubtransactionRequest(c.Server, subtransactionId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateTaskWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTaskRequestWithBody(c.Server, taskId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateTask(ctx context.Context, taskId string, body UpdateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTaskRequest(c.Server, taskId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -26772,6 +27028,86 @@ func NewUploadCompanyFileRequestWithBody(server string, companyId string, params
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListGoalInstancesRequest generates requests for ListGoalInstances
+func NewListGoalInstancesRequest(server string, companyId string, params *ListGoalInstancesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/goals", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -35575,6 +35911,53 @@ func NewRefundFiscalizedTransactionRequest(server string, transactionId string, 
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewActivateGoalRequest calls the generic ActivateGoal builder with application/json body
+func NewActivateGoalRequest(server string, goalId string, body ActivateGoalJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewActivateGoalRequestWithBody(server, goalId, "application/json", bodyReader)
+}
+
+// NewActivateGoalRequestWithBody generates requests for ActivateGoal with any type of body
+func NewActivateGoalRequestWithBody(server string, goalId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "goal_id", runtime.ParamLocationPath, goalId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/goals/%s/activate", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -44468,6 +44851,53 @@ func NewGetSubtransactionRequest(server string, subtransactionId string, params 
 	return req, nil
 }
 
+// NewUpdateTaskRequest calls the generic UpdateTask builder with application/json body
+func NewUpdateTaskRequest(server string, taskId string, body UpdateTaskJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateTaskRequestWithBody(server, taskId, "application/json", bodyReader)
+}
+
+// NewUpdateTaskRequestWithBody generates requests for UpdateTask with any type of body
+func NewUpdateTaskRequestWithBody(server string, taskId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "task_id", runtime.ParamLocationPath, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/tasks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteTerminalRequest generates requests for DeleteTerminal
 func NewDeleteTerminalRequest(server string, terminalId string, params *DeleteTerminalParams) (*http.Request, error) {
 	var err error
@@ -48529,6 +48959,9 @@ type ClientWithResponsesInterface interface {
 	// UploadCompanyFile request with any body
 	UploadCompanyFileWithBodyWithResponse(ctx context.Context, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadCompanyFileResponse, error)
 
+	// ListGoalInstances request
+	ListGoalInstancesWithResponse(ctx context.Context, companyId string, params *ListGoalInstancesParams, reqEditors ...RequestEditorFn) (*ListGoalInstancesResponse, error)
+
 	// ListHolidays request
 	ListHolidaysWithResponse(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*ListHolidaysResponse, error)
 
@@ -48905,6 +49338,11 @@ type ClientWithResponsesInterface interface {
 
 	// RefundFiscalizedTransaction request
 	RefundFiscalizedTransactionWithResponse(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*RefundFiscalizedTransactionResponse, error)
+
+	// ActivateGoal request with any body
+	ActivateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error)
+
+	ActivateGoalWithResponse(ctx context.Context, goalId string, body ActivateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error)
 
 	// UploadImage request with any body
 	UploadImageWithBodyWithResponse(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadImageResponse, error)
@@ -49354,6 +49792,11 @@ type ClientWithResponsesInterface interface {
 
 	// GetSubtransaction request
 	GetSubtransactionWithResponse(ctx context.Context, subtransactionId string, params *GetSubtransactionParams, reqEditors ...RequestEditorFn) (*GetSubtransactionResponse, error)
+
+	// UpdateTask request with any body
+	UpdateTaskWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTaskResponse, error)
+
+	UpdateTaskWithResponse(ctx context.Context, taskId string, body UpdateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTaskResponse, error)
 
 	// DeleteTerminal request
 	DeleteTerminalWithResponse(ctx context.Context, terminalId string, params *DeleteTerminalParams, reqEditors ...RequestEditorFn) (*DeleteTerminalResponse, error)
@@ -50771,6 +51214,28 @@ func (r UploadCompanyFileResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UploadCompanyFileResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListGoalInstancesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Goals
+}
+
+// Status returns HTTPResponse.Status
+func (r ListGoalInstancesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListGoalInstancesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -53156,6 +53621,28 @@ func (r RefundFiscalizedTransactionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r RefundFiscalizedTransactionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ActivateGoalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Goal
+}
+
+// Status returns HTTPResponse.Status
+func (r ActivateGoalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ActivateGoalResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -55754,6 +56241,28 @@ func (r GetSubtransactionResponse) StatusCode() int {
 	return 0
 }
 
+type UpdateTaskResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Task
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateTaskResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateTaskResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteTerminalResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -57579,6 +58088,15 @@ func (c *ClientWithResponses) UploadCompanyFileWithBodyWithResponse(ctx context.
 	return ParseUploadCompanyFileResponse(rsp)
 }
 
+// ListGoalInstancesWithResponse request returning *ListGoalInstancesResponse
+func (c *ClientWithResponses) ListGoalInstancesWithResponse(ctx context.Context, companyId string, params *ListGoalInstancesParams, reqEditors ...RequestEditorFn) (*ListGoalInstancesResponse, error) {
+	rsp, err := c.ListGoalInstances(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListGoalInstancesResponse(rsp)
+}
+
 // ListHolidaysWithResponse request returning *ListHolidaysResponse
 func (c *ClientWithResponses) ListHolidaysWithResponse(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*ListHolidaysResponse, error) {
 	rsp, err := c.ListHolidays(ctx, companyId, params, reqEditors...)
@@ -58758,6 +59276,23 @@ func (c *ClientWithResponses) RefundFiscalizedTransactionWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseRefundFiscalizedTransactionResponse(rsp)
+}
+
+// ActivateGoalWithBodyWithResponse request with arbitrary body returning *ActivateGoalResponse
+func (c *ClientWithResponses) ActivateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error) {
+	rsp, err := c.ActivateGoalWithBody(ctx, goalId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseActivateGoalResponse(rsp)
+}
+
+func (c *ClientWithResponses) ActivateGoalWithResponse(ctx context.Context, goalId string, body ActivateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error) {
+	rsp, err := c.ActivateGoal(ctx, goalId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseActivateGoalResponse(rsp)
 }
 
 // UploadImageWithBodyWithResponse request with arbitrary body returning *UploadImageResponse
@@ -60197,6 +60732,23 @@ func (c *ClientWithResponses) GetSubtransactionWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseGetSubtransactionResponse(rsp)
+}
+
+// UpdateTaskWithBodyWithResponse request with arbitrary body returning *UpdateTaskResponse
+func (c *ClientWithResponses) UpdateTaskWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTaskResponse, error) {
+	rsp, err := c.UpdateTaskWithBody(ctx, taskId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTaskResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateTaskWithResponse(ctx context.Context, taskId string, body UpdateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTaskResponse, error) {
+	rsp, err := c.UpdateTask(ctx, taskId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTaskResponse(rsp)
 }
 
 // DeleteTerminalWithResponse request returning *DeleteTerminalResponse
@@ -62280,6 +62832,32 @@ func ParseUploadCompanyFileResponse(rsp *http.Response) (*UploadCompanyFileRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest File
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListGoalInstancesResponse parses an HTTP response from a ListGoalInstancesWithResponse call
+func ParseListGoalInstancesResponse(rsp *http.Response) (*ListGoalInstancesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListGoalInstancesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Goals
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -64975,6 +65553,32 @@ func ParseRefundFiscalizedTransactionResponse(rsp *http.Response) (*RefundFiscal
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Transaction
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseActivateGoalResponse parses an HTTP response from a ActivateGoalWithResponse call
+func ParseActivateGoalResponse(rsp *http.Response) (*ActivateGoalResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ActivateGoalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Goal
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -67788,6 +68392,32 @@ func ParseGetSubtransactionResponse(rsp *http.Response) (*GetSubtransactionRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Subtransaction
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateTaskResponse parses an HTTP response from a UpdateTaskWithResponse call
+func ParseUpdateTaskResponse(rsp *http.Response) (*UpdateTaskResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateTaskResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Task
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
