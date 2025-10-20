@@ -649,10 +649,11 @@ const (
 
 // Defines values for NotificationEventStatus.
 const (
-	NotificationEventStatusCancelled   NotificationEventStatus = "cancelled"
-	NotificationEventStatusConfirmed   NotificationEventStatus = "confirmed"
-	NotificationEventStatusRequest     NotificationEventStatus = "request"
-	NotificationEventStatusRescheduled NotificationEventStatus = "rescheduled"
+	NotificationEventStatusCancelled    NotificationEventStatus = "cancelled"
+	NotificationEventStatusConfirmed    NotificationEventStatus = "confirmed"
+	NotificationEventStatusRequest      NotificationEventStatus = "request"
+	NotificationEventStatusRescheduled  NotificationEventStatus = "rescheduled"
+	NotificationEventStatusResourceOnly NotificationEventStatus = "resource_only"
 )
 
 // Defines values for NotificationEventType.
