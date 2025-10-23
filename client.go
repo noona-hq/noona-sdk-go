@@ -8390,6 +8390,7 @@ type Task struct {
 	// Localized description from the task template
 	Description  *string `json:"description,omitempty"`
 	GoalInstance *string `json:"goal_instance,omitempty"`
+	Icon         *string `json:"icon,omitempty"`
 	Id           *string `json:"id,omitempty"`
 
 	// Display order within the goal
