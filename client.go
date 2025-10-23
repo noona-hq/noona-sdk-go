@@ -674,11 +674,6 @@ const (
 	NotificationIconIconVariantWarning NotificationIconIconVariant = "warning"
 )
 
-// Defines values for NotificationLegacyType.
-const (
-	Legacy NotificationLegacyType = "legacy"
-)
-
 // Defines values for NotificationSubcategory.
 const (
 	NotificationSubcategoryApproved              NotificationSubcategory = "approved"
@@ -6261,36 +6256,6 @@ type NotificationIcon struct {
 
 // NotificationIconIconVariant defines model for NotificationIcon.IconVariant.
 type NotificationIconIconVariant string
-
-// NotificationLegacy defines model for NotificationLegacy.
-type NotificationLegacy struct {
-	Company   *string    `json:"company,omitempty"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	Date      *string    `json:"date,omitempty"`
-	Employee  *string    `json:"employee,omitempty"`
-
-	// The event which the notification is for.
-	Event   *string           `json:"event,omitempty"`
-	Icon    *NotificationIcon `json:"icon,omitempty"`
-	Id      *string           `json:"id,omitempty"`
-	Message *string           `json:"message,omitempty"`
-
-	// The amount of the payment if the event has a payment associated with it.
-	PaymentAmount *float64 `json:"payment_amount,omitempty"`
-
-	// The currency of the payment if the event has a payment associated with it.
-	PaymentCurrency *string                `json:"payment_currency,omitempty"`
-	PaymentStatus   *PaymentStatus         `json:"payment_status,omitempty"`
-	Priority        *int32                 `json:"priority,omitempty"`
-	SideMessage     *string                `json:"side_message,omitempty"`
-	Space           *string                `json:"space,omitempty"`
-	Title           *string                `json:"title,omitempty"`
-	Type            NotificationLegacyType `json:"type"`
-	UpdatedAt       *time.Time             `json:"updated_at,omitempty"`
-}
-
-// NotificationLegacyType defines model for NotificationLegacy.Type.
-type NotificationLegacyType string
 
 // NotificationPreferences defines model for NotificationPreferences.
 type NotificationPreferences struct {
@@ -15328,18 +15293,6 @@ func (t LineItemVoucherData) MarshalJSON() ([]byte, error) {
 
 func (t *LineItemVoucherData) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-func (t Notification) AsNotificationLegacy() (NotificationLegacy, error) {
-	var body NotificationLegacy
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *Notification) FromNotificationLegacy(v NotificationLegacy) error {
-	b, err := json.Marshal(v)
-	t.union = b
 	return err
 }
 
