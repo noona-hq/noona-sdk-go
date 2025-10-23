@@ -1137,6 +1137,7 @@ const (
 	OnProductGroupUpdated        StreamEventName = "onProductGroupUpdated"
 	OnProductUpdated             StreamEventName = "onProductUpdated"
 	OnResourceUpdated            StreamEventName = "onResourceUpdated"
+	OnTaskInstanceUpdated        StreamEventName = "onTaskInstanceUpdated"
 	OnTimeSlotReservationUpdated StreamEventName = "onTimeSlotReservationUpdated"
 	OnTransactionCompleted       StreamEventName = "onTransactionCompleted"
 )
@@ -1153,6 +1154,7 @@ const (
 	StreamableEntityTypeProductGroups        StreamableEntityType = "product_groups"
 	StreamableEntityTypeProducts             StreamableEntityType = "products"
 	StreamableEntityTypeResources            StreamableEntityType = "resources"
+	StreamableEntityTypeTaskInstances        StreamableEntityType = "task_instances"
 	StreamableEntityTypeTimeSlotReservations StreamableEntityType = "time_slot_reservations"
 	StreamableEntityTypeTransactions         StreamableEntityType = "transactions"
 )
