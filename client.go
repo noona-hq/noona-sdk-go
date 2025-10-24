@@ -5290,6 +5290,9 @@ type FiscalizationOnboardingDataInvopop struct {
 	// Fiscalization provider type
 	Provider FiscalizationProvider `json:"provider"`
 
+	// URL for completing supplier registration
+	RegistrationUrl *string `json:"registration_url,omitempty"`
+
 	// Street address
 	StreetAddress *string `json:"street_address,omitempty"`
 
