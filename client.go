@@ -3041,6 +3041,9 @@ type CompanyPOSSettings struct {
 	// The initial invoice number for the company.
 	InitialInvoiceNumber *int64 `json:"initial_invoice_number,omitempty"`
 
+	// The invoice series prefix for fiscalization.
+	InvoiceSeries *string `json:"invoice_series,omitempty"`
+
 	// The kennitala for the company.
 	Kennitala    *string `json:"kennitala,omitempty"`
 	LegalAddress *string `json:"legal_address,omitempty"`
