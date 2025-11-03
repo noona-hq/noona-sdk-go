@@ -5278,7 +5278,10 @@ type FiscalizationOnboardingDataInvopop struct {
 	ContactEmail *openapi_types.Email `json:"contact_email,omitempty"`
 
 	// Country code
-	Country               *string    `json:"country,omitempty"`
+	Country *string `json:"country,omitempty"`
+
+	// Invoice series prefix for Spain fiscalization.
+	InvoiceSeries         *string    `json:"invoice_series,omitempty"`
 	OnboardingCompletedAt *time.Time `json:"onboarding_completed_at,omitempty"`
 
 	// List of onboarding errors from Invopop
@@ -16250,6 +16253,9 @@ type ClientInterface interface {
 
 	UpsertCompanyFiscalizationData(ctx context.Context, companyId string, body UpsertCompanyFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MigratePortugalCompanyToATProvider request
+	MigratePortugalCompanyToATProvider(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetFiscalizationReport request
 	GetFiscalizationReport(ctx context.Context, companyId string, params *GetFiscalizationReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19256,6 +19262,18 @@ func (c *Client) UpsertCompanyFiscalizationDataWithBody(ctx context.Context, com
 
 func (c *Client) UpsertCompanyFiscalizationData(ctx context.Context, companyId string, body UpsertCompanyFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpsertCompanyFiscalizationDataRequest(c.Server, companyId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MigratePortugalCompanyToATProvider(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMigratePortugalCompanyToATProviderRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -35614,6 +35632,40 @@ func NewUpsertCompanyFiscalizationDataRequestWithBody(server string, companyId s
 	return req, nil
 }
 
+// NewMigratePortugalCompanyToATProviderRequest generates requests for MigratePortugalCompanyToATProvider
+func NewMigratePortugalCompanyToATProviderRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/companies/%s/portugal/migrate_provider", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetFiscalizationReportRequest generates requests for GetFiscalizationReport
 func NewGetFiscalizationReportRequest(server string, companyId string, params *GetFiscalizationReportParams) (*http.Request, error) {
 	var err error
@@ -49283,6 +49335,9 @@ type ClientWithResponsesInterface interface {
 
 	UpsertCompanyFiscalizationDataWithResponse(ctx context.Context, companyId string, body UpsertCompanyFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertCompanyFiscalizationDataResponse, error)
 
+	// MigratePortugalCompanyToATProvider request
+	MigratePortugalCompanyToATProviderWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigratePortugalCompanyToATProviderResponse, error)
+
 	// GetFiscalizationReport request
 	GetFiscalizationReportWithResponse(ctx context.Context, companyId string, params *GetFiscalizationReportParams, reqEditors ...RequestEditorFn) (*GetFiscalizationReportResponse, error)
 
@@ -53475,6 +53530,28 @@ func (r UpsertCompanyFiscalizationDataResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpsertCompanyFiscalizationDataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MigratePortugalCompanyToATProviderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FiscalizationOnboarding
+}
+
+// Status returns HTTPResponse.Status
+func (r MigratePortugalCompanyToATProviderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MigratePortugalCompanyToATProviderResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -59178,6 +59255,15 @@ func (c *ClientWithResponses) UpsertCompanyFiscalizationDataWithResponse(ctx con
 		return nil, err
 	}
 	return ParseUpsertCompanyFiscalizationDataResponse(rsp)
+}
+
+// MigratePortugalCompanyToATProviderWithResponse request returning *MigratePortugalCompanyToATProviderResponse
+func (c *ClientWithResponses) MigratePortugalCompanyToATProviderWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigratePortugalCompanyToATProviderResponse, error) {
+	rsp, err := c.MigratePortugalCompanyToATProvider(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMigratePortugalCompanyToATProviderResponse(rsp)
 }
 
 // GetFiscalizationReportWithResponse request returning *GetFiscalizationReportResponse
@@ -65392,6 +65478,32 @@ func ParseUpsertCompanyFiscalizationDataResponse(rsp *http.Response) (*UpsertCom
 	}
 
 	response := &UpsertCompanyFiscalizationDataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FiscalizationOnboarding
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMigratePortugalCompanyToATProviderResponse parses an HTTP response from a MigratePortugalCompanyToATProviderWithResponse call
+func ParseMigratePortugalCompanyToATProviderResponse(rsp *http.Response) (*MigratePortugalCompanyToATProviderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MigratePortugalCompanyToATProviderResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
