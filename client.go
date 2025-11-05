@@ -8381,6 +8381,9 @@ type Task struct {
 
 // Configuration for the task's call-to-action button
 type TaskAction struct {
+	// Localized button text when the task has been completed
+	CompletedTitle *string `json:"completed_title,omitempty"`
+
 	// Dynamic content based on action type.
 	Content *string `json:"content,omitempty"`
 
