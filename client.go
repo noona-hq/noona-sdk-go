@@ -645,6 +645,7 @@ const (
 const (
 	NotificationChannelApp   NotificationChannel = "app"
 	NotificationChannelEmail NotificationChannel = "email"
+	NotificationChannelSms   NotificationChannel = "sms"
 )
 
 // Defines values for NotificationEventStatus.
@@ -751,6 +752,8 @@ const (
 	PropertiesRead        OAuthScope = "properties:read"
 	PropertiesWrite       OAuthScope = "properties:write"
 	PushNotificationsRead OAuthScope = "push_notifications:read"
+	RemindersRead         OAuthScope = "reminders:read"
+	RemindersWrite        OAuthScope = "reminders:write"
 	ReportsWrite          OAuthScope = "reports:write"
 	ResourcesRead         OAuthScope = "resources:read"
 	ResourcesWrite        OAuthScope = "resources:write"
@@ -7133,6 +7136,96 @@ type RefundMarketplaceSaleError struct {
 // - `sale_has_been_mutated`: The sale has been mutated and cannot be refunded automatically.
 type RefundMarketplaceSaleErrorCode string
 
+// Reminder defines model for Reminder.
+type Reminder struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+
+	// Whether or not this is a default reminder
+	Default *bool `json:"default,omitempty"`
+
+	// Employee IDs for employee-specific reminders. If empty or null, reminder applies to all employees.
+	Employees *[]string `json:"employees,omitempty"`
+
+	// Event type IDs for event-specific reminders. If empty or null, reminder applies to all event types.
+	EventTypes *[]string `json:"event_types,omitempty"`
+	Id         *string   `json:"id,omitempty"`
+
+	// How many minutes before the event to send the reminder (e.g., 1440 = 24 hours)
+	MinutesBefore *int32 `json:"minutes_before,omitempty"`
+
+	// Channels through which the reminder should be sent
+	NotificationChannels *[]NotificationChannel `json:"notification_channels,omitempty"`
+
+	// Inline SMS content with {{variable}} placeholders
+	SmsContent *string `json:"sms_content,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	SmsContentTranslations *TranslationMap `json:"sms_content_translations,omitempty"`
+	Title                  *string         `json:"title,omitempty"`
+	UpdatedAt              *time.Time      `json:"updated_at,omitempty"`
+}
+
+// ReminderCreate defines model for ReminderCreate.
+type ReminderCreate struct {
+	// Company ID
+	CompanyId string `json:"company_id"`
+
+	// Employee IDs for employee-specific reminders
+	Employees *[]string `json:"employees,omitempty"`
+
+	// Event type IDs for event-specific reminders
+	EventTypes *[]string `json:"event_types,omitempty"`
+
+	// How many minutes before the event to send the reminder
+	MinutesBefore int32 `json:"minutes_before"`
+
+	// Channels through which the reminder should be sent
+	NotificationChannels []NotificationChannel `json:"notification_channels"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	SmsContentTranslations *TranslationMap `json:"sms_content_translations,omitempty"`
+	Title                  *string         `json:"title,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type ReminderFilter struct {
+	// Filter by minutes before the event
+	MinutesBefore *int32 `json:"minutes_before,omitempty"`
+
+	// Filter by notification channels
+	NotificationChannels *[]NotificationChannel `json:"notification_channels,omitempty"`
+}
+
+// ReminderUpdate defines model for ReminderUpdate.
+type ReminderUpdate struct {
+	// Employee IDs for employee-specific reminders
+	Employees *[]string `json:"employees,omitempty"`
+
+	// Event type IDs for event-specific reminders
+	EventTypes *[]string `json:"event_types,omitempty"`
+
+	// How many minutes before the event to send the reminder
+	MinutesBefore *int32 `json:"minutes_before,omitempty"`
+
+	// Channels through which the reminder should be sent
+	NotificationChannels *[]NotificationChannel `json:"notification_channels,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	SmsContentTranslations *TranslationMap `json:"sms_content_translations,omitempty"`
+	Title                  *string         `json:"title,omitempty"`
+}
+
+// Reminders defines model for Reminders.
+type Reminders []Reminder
+
 // Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 type RequiredFields struct {
 	// Whether email field is configured
@@ -10607,6 +10700,22 @@ type ListPushNotificationsParams struct {
 	Filter *PushNotificationFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
+// ListRemindersParams defines parameters for ListReminders.
+type ListRemindersParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand         `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *ReminderFilter `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
 // ListResourceGroupsParams defines parameters for ListResourceGroups.
 type ListResourceGroupsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -12314,6 +12423,48 @@ type UpdateCustomPropertyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateReminderJSONBody defines parameters for CreateReminder.
+type CreateReminderJSONBody ReminderCreate
+
+// CreateReminderParams defines parameters for CreateReminder.
+type CreateReminderParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteReminderParams defines parameters for DeleteReminder.
+type DeleteReminderParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetReminderParams defines parameters for GetReminder.
+type GetReminderParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateReminderJSONBody defines parameters for UpdateReminder.
+type UpdateReminderJSONBody ReminderUpdate
+
+// UpdateReminderParams defines parameters for UpdateReminder.
+type UpdateReminderParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateResourceGroupJSONBody defines parameters for CreateResourceGroup.
 type CreateResourceGroupJSONBody ResourceGroupCreate
 
@@ -13557,6 +13708,12 @@ type CreateCustomPropertyJSONRequestBody CreateCustomPropertyJSONBody
 
 // UpdateCustomPropertyJSONRequestBody defines body for UpdateCustomProperty for application/json ContentType.
 type UpdateCustomPropertyJSONRequestBody UpdateCustomPropertyJSONBody
+
+// CreateReminderJSONRequestBody defines body for CreateReminder for application/json ContentType.
+type CreateReminderJSONRequestBody CreateReminderJSONBody
+
+// UpdateReminderJSONRequestBody defines body for UpdateReminder for application/json ContentType.
+type UpdateReminderJSONRequestBody UpdateReminderJSONBody
 
 // CreateResourceGroupJSONRequestBody defines body for CreateResourceGroup for application/json ContentType.
 type CreateResourceGroupJSONRequestBody CreateResourceGroupJSONBody
@@ -15961,6 +16118,9 @@ type ClientInterface interface {
 	// ListPushNotifications request
 	ListPushNotifications(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListReminders request
+	ListReminders(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListResourceGroups request
 	ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -16536,6 +16696,22 @@ type ClientInterface interface {
 	UpdateCustomPropertyWithBody(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateCustomProperty(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, body UpdateCustomPropertyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateReminder request with any body
+	CreateReminderWithBody(ctx context.Context, params *CreateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateReminder(ctx context.Context, params *CreateReminderParams, body CreateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteReminder request
+	DeleteReminder(ctx context.Context, reminderId string, params *DeleteReminderParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetReminder request
+	GetReminder(ctx context.Context, reminderId string, params *GetReminderParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateReminder request with any body
+	UpdateReminderWithBody(ctx context.Context, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateReminder(ctx context.Context, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateResourceGroup request with any body
 	CreateResourceGroupWithBody(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -17993,6 +18169,18 @@ func (c *Client) ListCustomProperties(ctx context.Context, companyId string, par
 
 func (c *Client) ListPushNotifications(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPushNotificationsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListReminders(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRemindersRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -20513,6 +20701,78 @@ func (c *Client) UpdateCustomPropertyWithBody(ctx context.Context, propertyId st
 
 func (c *Client) UpdateCustomProperty(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, body UpdateCustomPropertyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateCustomPropertyRequest(c.Server, propertyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateReminderWithBody(ctx context.Context, params *CreateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReminderRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateReminder(ctx context.Context, params *CreateReminderParams, body CreateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReminderRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteReminder(ctx context.Context, reminderId string, params *DeleteReminderParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteReminderRequest(c.Server, reminderId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetReminder(ctx context.Context, reminderId string, params *GetReminderParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetReminderRequest(c.Server, reminderId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateReminderWithBody(ctx context.Context, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateReminderRequestWithBody(c.Server, reminderId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateReminder(ctx context.Context, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateReminderRequest(c.Server, reminderId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -28743,6 +29003,106 @@ func NewListPushNotificationsRequest(server string, companyId string, params *Li
 			return nil, err
 		} else {
 			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListRemindersRequest generates requests for ListReminders
+func NewListRemindersRequest(server string, companyId string, params *ListRemindersParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reminders", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
 		}
 
 	}
@@ -40954,6 +41314,305 @@ func NewUpdateCustomPropertyRequestWithBody(server string, propertyId string, pa
 	return req, nil
 }
 
+// NewCreateReminderRequest calls the generic CreateReminder builder with application/json body
+func NewCreateReminderRequest(server string, params *CreateReminderParams, body CreateReminderJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateReminderRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateReminderRequestWithBody generates requests for CreateReminder with any type of body
+func NewCreateReminderRequestWithBody(server string, params *CreateReminderParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/reminders")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteReminderRequest generates requests for DeleteReminder
+func NewDeleteReminderRequest(server string, reminderId string, params *DeleteReminderParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "reminder_id", runtime.ParamLocationPath, reminderId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/reminders/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetReminderRequest generates requests for GetReminder
+func NewGetReminderRequest(server string, reminderId string, params *GetReminderParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "reminder_id", runtime.ParamLocationPath, reminderId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/reminders/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateReminderRequest calls the generic UpdateReminder builder with application/json body
+func NewUpdateReminderRequest(server string, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateReminderRequestWithBody(server, reminderId, params, "application/json", bodyReader)
+}
+
+// NewUpdateReminderRequestWithBody generates requests for UpdateReminder with any type of body
+func NewUpdateReminderRequestWithBody(server string, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "reminder_id", runtime.ParamLocationPath, reminderId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/reminders/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateResourceGroupRequest calls the generic CreateResourceGroup builder with application/json body
 func NewCreateResourceGroupRequest(server string, params *CreateResourceGroupParams, body CreateResourceGroupJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -49043,6 +49702,9 @@ type ClientWithResponsesInterface interface {
 	// ListPushNotifications request
 	ListPushNotificationsWithResponse(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*ListPushNotificationsResponse, error)
 
+	// ListReminders request
+	ListRemindersWithResponse(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*ListRemindersResponse, error)
+
 	// ListResourceGroups request
 	ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error)
 
@@ -49618,6 +50280,22 @@ type ClientWithResponsesInterface interface {
 	UpdateCustomPropertyWithBodyWithResponse(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCustomPropertyResponse, error)
 
 	UpdateCustomPropertyWithResponse(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, body UpdateCustomPropertyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomPropertyResponse, error)
+
+	// CreateReminder request with any body
+	CreateReminderWithBodyWithResponse(ctx context.Context, params *CreateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReminderResponse, error)
+
+	CreateReminderWithResponse(ctx context.Context, params *CreateReminderParams, body CreateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReminderResponse, error)
+
+	// DeleteReminder request
+	DeleteReminderWithResponse(ctx context.Context, reminderId string, params *DeleteReminderParams, reqEditors ...RequestEditorFn) (*DeleteReminderResponse, error)
+
+	// GetReminder request
+	GetReminderWithResponse(ctx context.Context, reminderId string, params *GetReminderParams, reqEditors ...RequestEditorFn) (*GetReminderResponse, error)
+
+	// UpdateReminder request with any body
+	UpdateReminderWithBodyWithResponse(ctx context.Context, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateReminderResponse, error)
+
+	UpdateReminderWithResponse(ctx context.Context, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateReminderResponse, error)
 
 	// CreateResourceGroup request with any body
 	CreateResourceGroupWithBodyWithResponse(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
@@ -51718,6 +52396,28 @@ func (r ListPushNotificationsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPushNotificationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListRemindersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Reminders
+}
+
+// Status returns HTTPResponse.Status
+func (r ListRemindersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListRemindersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -55135,6 +55835,93 @@ func (r UpdateCustomPropertyResponse) StatusCode() int {
 	return 0
 }
 
+type CreateReminderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Reminder
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateReminderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateReminderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteReminderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteReminderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteReminderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetReminderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Reminder
+}
+
+// Status returns HTTPResponse.Status
+func (r GetReminderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetReminderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateReminderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Reminder
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateReminderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateReminderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateResourceGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -58329,6 +59116,15 @@ func (c *ClientWithResponses) ListPushNotificationsWithResponse(ctx context.Cont
 	return ParseListPushNotificationsResponse(rsp)
 }
 
+// ListRemindersWithResponse request returning *ListRemindersResponse
+func (c *ClientWithResponses) ListRemindersWithResponse(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*ListRemindersResponse, error) {
+	rsp, err := c.ListReminders(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRemindersResponse(rsp)
+}
+
 // ListResourceGroupsWithResponse request returning *ListResourceGroupsResponse
 func (c *ClientWithResponses) ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error) {
 	rsp, err := c.ListResourceGroups(ctx, companyId, params, reqEditors...)
@@ -60163,6 +60959,58 @@ func (c *ClientWithResponses) UpdateCustomPropertyWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseUpdateCustomPropertyResponse(rsp)
+}
+
+// CreateReminderWithBodyWithResponse request with arbitrary body returning *CreateReminderResponse
+func (c *ClientWithResponses) CreateReminderWithBodyWithResponse(ctx context.Context, params *CreateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReminderResponse, error) {
+	rsp, err := c.CreateReminderWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateReminderResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateReminderWithResponse(ctx context.Context, params *CreateReminderParams, body CreateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReminderResponse, error) {
+	rsp, err := c.CreateReminder(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateReminderResponse(rsp)
+}
+
+// DeleteReminderWithResponse request returning *DeleteReminderResponse
+func (c *ClientWithResponses) DeleteReminderWithResponse(ctx context.Context, reminderId string, params *DeleteReminderParams, reqEditors ...RequestEditorFn) (*DeleteReminderResponse, error) {
+	rsp, err := c.DeleteReminder(ctx, reminderId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteReminderResponse(rsp)
+}
+
+// GetReminderWithResponse request returning *GetReminderResponse
+func (c *ClientWithResponses) GetReminderWithResponse(ctx context.Context, reminderId string, params *GetReminderParams, reqEditors ...RequestEditorFn) (*GetReminderResponse, error) {
+	rsp, err := c.GetReminder(ctx, reminderId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetReminderResponse(rsp)
+}
+
+// UpdateReminderWithBodyWithResponse request with arbitrary body returning *UpdateReminderResponse
+func (c *ClientWithResponses) UpdateReminderWithBodyWithResponse(ctx context.Context, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateReminderResponse, error) {
+	rsp, err := c.UpdateReminderWithBody(ctx, reminderId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateReminderResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateReminderWithResponse(ctx context.Context, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateReminderResponse, error) {
+	rsp, err := c.UpdateReminder(ctx, reminderId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateReminderResponse(rsp)
 }
 
 // CreateResourceGroupWithBodyWithResponse request with arbitrary body returning *CreateResourceGroupResponse
@@ -63446,6 +64294,32 @@ func ParseListPushNotificationsResponse(rsp *http.Response) (*ListPushNotificati
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PushNotifications
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListRemindersResponse parses an HTTP response from a ListRemindersWithResponse call
+func ParseListRemindersResponse(rsp *http.Response) (*ListRemindersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListRemindersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Reminders
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -67280,6 +68154,100 @@ func ParseUpdateCustomPropertyResponse(rsp *http.Response) (*UpdateCustomPropert
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CustomProperty
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateReminderResponse parses an HTTP response from a CreateReminderWithResponse call
+func ParseCreateReminderResponse(rsp *http.Response) (*CreateReminderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateReminderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Reminder
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteReminderResponse parses an HTTP response from a DeleteReminderWithResponse call
+func ParseDeleteReminderResponse(rsp *http.Response) (*DeleteReminderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteReminderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetReminderResponse parses an HTTP response from a GetReminderWithResponse call
+func ParseGetReminderResponse(rsp *http.Response) (*GetReminderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetReminderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Reminder
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateReminderResponse parses an HTTP response from a UpdateReminderWithResponse call
+func ParseUpdateReminderResponse(rsp *http.Response) (*UpdateReminderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateReminderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Reminder
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
