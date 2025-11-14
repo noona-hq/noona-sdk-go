@@ -3016,8 +3016,11 @@ type CompanyMessaging struct {
 	CustomReminderTranslations *TranslationMap `json:"custom_reminder_translations,omitempty"`
 
 	// Whether to enable SMS reminders for the company.
-	EnableReminders     *bool `json:"enable_reminders,omitempty"`
-	SendSmsFromEmployee *bool `json:"send_sms_from_employee,omitempty"`
+	EnableReminders *bool `json:"enable_reminders,omitempty"`
+
+	// Whether the company has opted into the new SMS reminders feature. When enabled, the new reminder system is used instead of the legacy solution.
+	NewSmsRemindersEnabled *bool `json:"new_sms_reminders_enabled,omitempty"`
+	SendSmsFromEmployee    *bool `json:"send_sms_from_employee,omitempty"`
 
 	// The SMS sender name
 	SenderName *string `json:"sender_name,omitempty"`
