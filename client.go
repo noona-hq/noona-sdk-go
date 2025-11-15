@@ -8090,6 +8090,11 @@ type SendCustomerDataRequest struct {
 	Email string `json:"email"`
 }
 
+// SendTransactionReceiptRequest defines model for SendTransactionReceiptRequest.
+type SendTransactionReceiptRequest struct {
+	Email string `json:"email"`
+}
+
 // Settlement defines model for Settlement.
 type Settlement struct {
 	CreatedAt    *time.Time           `json:"created_at,omitempty"`
@@ -12732,13 +12737,7 @@ type RefundMarketplaceSaleParams struct {
 }
 
 // SendTransactionReceiptJSONBody defines parameters for SendTransactionReceipt.
-type SendTransactionReceiptJSONBody struct {
-	Email *string `json:"email,omitempty"`
-	Phone *struct {
-		PhoneCountryCode *string `json:"phone_country_code,omitempty"`
-		PhoneNumber      *string `json:"phone_number,omitempty"`
-	} `json:"phone,omitempty"`
-}
+type SendTransactionReceiptJSONBody SendTransactionReceiptRequest
 
 // DeprecatedListSubtransactionsParams defines parameters for DeprecatedListSubtransactions.
 type DeprecatedListSubtransactionsParams struct {
