@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -16447,6 +16448,9 @@ type ClientInterface interface {
 	// RefundFiscalizedTransaction request
 	RefundFiscalizedTransaction(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetFiscalizedTransactionXML request
+	GetFiscalizedTransactionXML(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ActivateGoal request with any body
 	ActivateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19558,6 +19562,18 @@ func (c *Client) GetFiscalizedTransactionPDF(ctx context.Context, transactionId 
 
 func (c *Client) RefundFiscalizedTransaction(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRefundFiscalizedTransactionRequest(c.Server, transactionId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetFiscalizedTransactionXML(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetFiscalizedTransactionXMLRequest(c.Server, transactionId)
 	if err != nil {
 		return nil, err
 	}
@@ -36302,6 +36318,40 @@ func NewRefundFiscalizedTransactionRequest(server string, transactionId string, 
 	return req, nil
 }
 
+// NewGetFiscalizedTransactionXMLRequest generates requests for GetFiscalizedTransactionXML
+func NewGetFiscalizedTransactionXMLRequest(server string, transactionId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "transaction_id", runtime.ParamLocationPath, transactionId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/transactions/%s/xml", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewActivateGoalRequest calls the generic ActivateGoal builder with application/json body
 func NewActivateGoalRequest(server string, goalId string, body ActivateGoalJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -50031,6 +50081,9 @@ type ClientWithResponsesInterface interface {
 	// RefundFiscalizedTransaction request
 	RefundFiscalizedTransactionWithResponse(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*RefundFiscalizedTransactionResponse, error)
 
+	// GetFiscalizedTransactionXML request
+	GetFiscalizedTransactionXMLWithResponse(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*GetFiscalizedTransactionXMLResponse, error)
+
 	// ActivateGoal request with any body
 	ActivateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error)
 
@@ -54373,6 +54426,28 @@ func (r RefundFiscalizedTransactionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r RefundFiscalizedTransactionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetFiscalizedTransactionXMLResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	XML200       *string
+}
+
+// Status returns HTTPResponse.Status
+func (r GetFiscalizedTransactionXMLResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetFiscalizedTransactionXMLResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -60133,6 +60208,15 @@ func (c *ClientWithResponses) RefundFiscalizedTransactionWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseRefundFiscalizedTransactionResponse(rsp)
+}
+
+// GetFiscalizedTransactionXMLWithResponse request returning *GetFiscalizedTransactionXMLResponse
+func (c *ClientWithResponses) GetFiscalizedTransactionXMLWithResponse(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*GetFiscalizedTransactionXMLResponse, error) {
+	rsp, err := c.GetFiscalizedTransactionXML(ctx, transactionId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetFiscalizedTransactionXMLResponse(rsp)
 }
 
 // ActivateGoalWithBodyWithResponse request with arbitrary body returning *ActivateGoalResponse
@@ -66518,6 +66602,32 @@ func ParseRefundFiscalizedTransactionResponse(rsp *http.Response) (*RefundFiscal
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetFiscalizedTransactionXMLResponse parses an HTTP response from a GetFiscalizedTransactionXMLWithResponse call
+func ParseGetFiscalizedTransactionXMLResponse(rsp *http.Response) (*GetFiscalizedTransactionXMLResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetFiscalizedTransactionXMLResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "xml") && rsp.StatusCode == 200:
+		var dest string
+		if err := xml.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.XML200 = &dest
 
 	}
 
