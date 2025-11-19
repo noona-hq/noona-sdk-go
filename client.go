@@ -1008,6 +1008,15 @@ const (
 	SaleHasBeenMutated    RefundMarketplaceSaleErrorCode = "sale_has_been_mutated"
 )
 
+// Defines values for ReminderErrorType.
+const (
+	AllEmployeesSelected    ReminderErrorType = "all_employees_selected"
+	AllEventTypesSelected   ReminderErrorType = "all_event_types_selected"
+	DuplicateGlobalReminder ReminderErrorType = "duplicate_global_reminder"
+	NonWhitelistedUrls      ReminderErrorType = "non_whitelisted_urls"
+	Validation              ReminderErrorType = "validation"
+)
+
 // Defines values for ResourceField.
 const (
 	ResourceFieldDescription ResourceField = "description"
@@ -7146,6 +7155,9 @@ type RefundMarketplaceSaleErrorCode string
 
 // Reminder defines model for Reminder.
 type Reminder struct {
+	// Whether the reminder is active or inactive
+	Active *bool `json:"active,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   *ExpandableCompany `json:"company,omitempty"`
 	CreatedAt *time.Time         `json:"created_at,omitempty"`
@@ -7201,6 +7213,21 @@ type ReminderCreate struct {
 	Title                  *string         `json:"title,omitempty"`
 }
 
+// ReminderError defines model for ReminderError.
+type ReminderError struct {
+	// English error message for logging/debugging
+	Message string `json:"message"`
+
+	// The specific error code for the reminder validation error
+	Type ReminderErrorType `json:"type"`
+
+	// A human readable error message that is translated according to the user's locale
+	UserMessage *string `json:"user_message,omitempty"`
+}
+
+// The specific error code for the reminder validation error
+type ReminderErrorType string
+
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type ReminderFilter struct {
 	// Filter by minutes before the event
@@ -7212,6 +7239,9 @@ type ReminderFilter struct {
 
 // ReminderUpdate defines model for ReminderUpdate.
 type ReminderUpdate struct {
+	// Whether the reminder is active or inactive
+	Active *bool `json:"active,omitempty"`
+
 	// Employee IDs for employee-specific reminders
 	Employees *[]string `json:"employees,omitempty"`
 
@@ -55923,6 +55953,7 @@ type CreateReminderResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Reminder
+	JSON400      *ReminderError
 }
 
 // Status returns HTTPResponse.Status
@@ -55988,6 +56019,7 @@ type UpdateReminderResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Reminder
+	JSON400      *ReminderError
 }
 
 // Status returns HTTPResponse.Status
@@ -68304,6 +68336,13 @@ func ParseCreateReminderResponse(rsp *http.Response) (*CreateReminderResponse, e
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ReminderError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	}
 
 	return response, nil
@@ -68371,6 +68410,13 @@ func ParseUpdateReminderResponse(rsp *http.Response) (*UpdateReminderResponse, e
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ReminderError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
