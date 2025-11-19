@@ -3324,6 +3324,10 @@ type CompanySignup struct {
 	// - `large`: 10+ People
 	CompanySize *CompanySize `json:"company_size,omitempty"`
 	Completed   *bool        `json:"completed,omitempty"`
+
+	// Information about how the user heard about Noona
+	Referer    *Referer           `json:"referer,omitempty"`
+	SignupGoal *SignupGoalOptions `json:"signup_goal,omitempty"`
 }
 
 // Company size category:
@@ -8153,6 +8157,9 @@ type Settlements []Settlement
 
 // What the user needs help with
 type SignupGoalOption string
+
+// SignupGoalOptions defines model for SignupGoalOptions.
+type SignupGoalOptions []SignupGoalOption
 
 // Sort defines model for Sort.
 type Sort struct {
