@@ -5428,9 +5428,12 @@ type Goal struct {
 	CreatedAt      *time.Time `json:"created_at,omitempty"`
 
 	// Localized description from the goal template
-	Description  *string      `json:"description,omitempty"`
-	GoalTemplate GoalTemplate `json:"goal_template"`
-	Id           *string      `json:"id,omitempty"`
+	Description *string `json:"description,omitempty"`
+
+	// Indicates whether the user has acknowledged the goal completion
+	GoalCompletionAcknowledged *bool        `json:"goal_completion_acknowledged,omitempty"`
+	GoalTemplate               GoalTemplate `json:"goal_template"`
+	Id                         *string      `json:"id,omitempty"`
 
 	// Tasks belonging to this goal (always included)
 	Tasks *[]Task `json:"tasks,omitempty"`
@@ -8860,6 +8863,12 @@ type UnitPrice struct {
 	OriginalAmount *float64 `json:"original_amount,omitempty"`
 }
 
+// UpdateGoalRequest defines model for UpdateGoalRequest.
+type UpdateGoalRequest struct {
+	// Whether the goal completion has been acknowledged
+	GoalCompletionAcknowledged *bool `json:"goal_completion_acknowledged,omitempty"`
+}
+
 // UpdatePaymentMethodInstanceRequest defines model for UpdatePaymentMethodInstanceRequest.
 type UpdatePaymentMethodInstanceRequest struct {
 	// Whether this payment method is enabled for the company.
@@ -11764,6 +11773,9 @@ type RefundFiscalizedTransactionParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 }
 
+// UpdateGoalJSONBody defines parameters for UpdateGoal.
+type UpdateGoalJSONBody UpdateGoalRequest
+
 // ActivateGoalJSONBody defines parameters for ActivateGoal.
 type ActivateGoalJSONBody ActivateGoalRequest
 
@@ -13661,6 +13673,9 @@ type UpdateCompanyFiscalizationStatusJSONRequestBody UpdateCompanyFiscalizationS
 
 // FiscalizeTransactionJSONRequestBody defines body for FiscalizeTransaction for application/json ContentType.
 type FiscalizeTransactionJSONRequestBody FiscalizeTransactionJSONBody
+
+// UpdateGoalJSONRequestBody defines body for UpdateGoal for application/json ContentType.
+type UpdateGoalJSONRequestBody UpdateGoalJSONBody
 
 // ActivateGoalJSONRequestBody defines body for ActivateGoal for application/json ContentType.
 type ActivateGoalJSONRequestBody ActivateGoalJSONBody
@@ -16480,6 +16495,11 @@ type ClientInterface interface {
 
 	// GetFiscalizedTransactionXML request
 	GetFiscalizedTransactionXML(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateGoal request with any body
+	UpdateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateGoal(ctx context.Context, goalId string, body UpdateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ActivateGoal request with any body
 	ActivateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19604,6 +19624,30 @@ func (c *Client) RefundFiscalizedTransaction(ctx context.Context, transactionId 
 
 func (c *Client) GetFiscalizedTransactionXML(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetFiscalizedTransactionXMLRequest(c.Server, transactionId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateGoalRequestWithBody(c.Server, goalId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateGoal(ctx context.Context, goalId string, body UpdateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateGoalRequest(c.Server, goalId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -36382,6 +36426,53 @@ func NewGetFiscalizedTransactionXMLRequest(server string, transactionId string) 
 	return req, nil
 }
 
+// NewUpdateGoalRequest calls the generic UpdateGoal builder with application/json body
+func NewUpdateGoalRequest(server string, goalId string, body UpdateGoalJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateGoalRequestWithBody(server, goalId, "application/json", bodyReader)
+}
+
+// NewUpdateGoalRequestWithBody generates requests for UpdateGoal with any type of body
+func NewUpdateGoalRequestWithBody(server string, goalId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "goal_id", runtime.ParamLocationPath, goalId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/goals/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewActivateGoalRequest calls the generic ActivateGoal builder with application/json body
 func NewActivateGoalRequest(server string, goalId string, body ActivateGoalJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -50114,6 +50205,11 @@ type ClientWithResponsesInterface interface {
 	// GetFiscalizedTransactionXML request
 	GetFiscalizedTransactionXMLWithResponse(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*GetFiscalizedTransactionXMLResponse, error)
 
+	// UpdateGoal request with any body
+	UpdateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateGoalResponse, error)
+
+	UpdateGoalWithResponse(ctx context.Context, goalId string, body UpdateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateGoalResponse, error)
+
 	// ActivateGoal request with any body
 	ActivateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error)
 
@@ -54478,6 +54574,28 @@ func (r GetFiscalizedTransactionXMLResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetFiscalizedTransactionXMLResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateGoalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Goal
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateGoalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateGoalResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -60249,6 +60367,23 @@ func (c *ClientWithResponses) GetFiscalizedTransactionXMLWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseGetFiscalizedTransactionXMLResponse(rsp)
+}
+
+// UpdateGoalWithBodyWithResponse request with arbitrary body returning *UpdateGoalResponse
+func (c *ClientWithResponses) UpdateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateGoalResponse, error) {
+	rsp, err := c.UpdateGoalWithBody(ctx, goalId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateGoalResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateGoalWithResponse(ctx context.Context, goalId string, body UpdateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateGoalResponse, error) {
+	rsp, err := c.UpdateGoal(ctx, goalId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateGoalResponse(rsp)
 }
 
 // ActivateGoalWithBodyWithResponse request with arbitrary body returning *ActivateGoalResponse
@@ -66660,6 +66795,32 @@ func ParseGetFiscalizedTransactionXMLResponse(rsp *http.Response) (*GetFiscalize
 			return nil, err
 		}
 		response.XML200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateGoalResponse parses an HTTP response from a UpdateGoalWithResponse call
+func ParseUpdateGoalResponse(rsp *http.Response) (*UpdateGoalResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateGoalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Goal
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
