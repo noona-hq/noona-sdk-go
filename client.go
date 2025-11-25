@@ -7194,6 +7194,9 @@ type Reminder struct {
 
 // ReminderCreate defines model for ReminderCreate.
 type ReminderCreate struct {
+	// Whether the reminder is active or inactive. Defaults to true if not provided.
+	Active *bool `json:"active,omitempty"`
+
 	// Company ID
 	CompanyId string `json:"company_id"`
 
