@@ -5423,6 +5423,9 @@ type Goal struct {
 	// Set when all tasks in the goal are completed
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
 
+	// Localized description shown when the goal is completed
+	CompletedDescription *string `json:"completed_description,omitempty"`
+
 	// Number of tasks marked as completed for this goal
 	CompletedTasks *int32     `json:"completed_tasks,omitempty"`
 	CreatedAt      *time.Time `json:"created_at,omitempty"`
