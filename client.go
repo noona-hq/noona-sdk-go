@@ -1349,6 +1349,7 @@ const (
 
 // Defines values for VerificationCertificationType.
 const (
+	VerificationCertificationTypeChiropractic              VerificationCertificationType = "chiropractic"
 	VerificationCertificationTypeCosmetology               VerificationCertificationType = "cosmetology"
 	VerificationCertificationTypeHairdressing              VerificationCertificationType = "hairdressing"
 	VerificationCertificationTypeMassageTherapy            VerificationCertificationType = "massage_therapy"
@@ -1520,6 +1521,7 @@ const (
 
 // Defines values for CreateVerificationRequestJSONBodyCertificationType.
 const (
+	CreateVerificationRequestJSONBodyCertificationTypeChiropractic              CreateVerificationRequestJSONBodyCertificationType = "chiropractic"
 	CreateVerificationRequestJSONBodyCertificationTypeCosmetology               CreateVerificationRequestJSONBodyCertificationType = "cosmetology"
 	CreateVerificationRequestJSONBodyCertificationTypeHairdressing              CreateVerificationRequestJSONBodyCertificationType = "hairdressing"
 	CreateVerificationRequestJSONBodyCertificationTypeMassageTherapy            CreateVerificationRequestJSONBodyCertificationType = "massage_therapy"
