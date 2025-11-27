@@ -16136,6 +16136,9 @@ type ClientInterface interface {
 	// GetSalesMetrics request
 	GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MigrateCompanyReminders request
+	MigrateCompanyReminders(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListNotificationMetadata request
 	ListNotificationMetadata(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18060,6 +18063,18 @@ func (c *Client) GetEventsMetrics(ctx context.Context, companyId string, params 
 
 func (c *Client) GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSalesMetricsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MigrateCompanyReminders(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMigrateCompanyRemindersRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -27943,6 +27958,40 @@ func NewGetSalesMetricsRequest(server string, companyId string, params *GetSales
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMigrateCompanyRemindersRequest generates requests for MigrateCompanyReminders
+func NewMigrateCompanyRemindersRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/migrate-reminders", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -49845,6 +49894,9 @@ type ClientWithResponsesInterface interface {
 	// GetSalesMetrics request
 	GetSalesMetricsWithResponse(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*GetSalesMetricsResponse, error)
 
+	// MigrateCompanyReminders request
+	MigrateCompanyRemindersWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyRemindersResponse, error)
+
 	// ListNotificationMetadata request
 	ListNotificationMetadataWithResponse(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*ListNotificationMetadataResponse, error)
 
@@ -52263,6 +52315,27 @@ func (r GetSalesMetricsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSalesMetricsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MigrateCompanyRemindersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r MigrateCompanyRemindersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MigrateCompanyRemindersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -59223,6 +59296,15 @@ func (c *ClientWithResponses) GetSalesMetricsWithResponse(ctx context.Context, c
 	return ParseGetSalesMetricsResponse(rsp)
 }
 
+// MigrateCompanyRemindersWithResponse request returning *MigrateCompanyRemindersResponse
+func (c *ClientWithResponses) MigrateCompanyRemindersWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyRemindersResponse, error) {
+	rsp, err := c.MigrateCompanyReminders(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMigrateCompanyRemindersResponse(rsp)
+}
+
 // ListNotificationMetadataWithResponse request returning *ListNotificationMetadataResponse
 func (c *ClientWithResponses) ListNotificationMetadataWithResponse(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*ListNotificationMetadataResponse, error) {
 	rsp, err := c.ListNotificationMetadata(ctx, companyId, params, reqEditors...)
@@ -64187,6 +64269,22 @@ func ParseGetSalesMetricsResponse(rsp *http.Response) (*GetSalesMetricsResponse,
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseMigrateCompanyRemindersResponse parses an HTTP response from a MigrateCompanyRemindersWithResponse call
+func ParseMigrateCompanyRemindersResponse(rsp *http.Response) (*MigrateCompanyRemindersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MigrateCompanyRemindersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
