@@ -175,6 +175,7 @@ const (
 	N160 BookingInterval = 160
 	N180 BookingInterval = 180
 	N20  BookingInterval = 20
+	N240 BookingInterval = 240
 	N30  BookingInterval = 30
 	N45  BookingInterval = 45
 	N5   BookingInterval = 5
