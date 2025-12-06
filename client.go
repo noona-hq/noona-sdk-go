@@ -4580,10 +4580,7 @@ type EventType struct {
 	Color *string `json:"color,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company *ExpandableCompany `json:"company,omitempty"`
-
-	// Deprecated, please use company instead
-	CompanyId   *string               `json:"company_id,omitempty"`
+	Company     *ExpandableCompany    `json:"company,omitempty"`
 	Connections *EventTypeConnections `json:"connections,omitempty"`
 	CreatedAt   *time.Time            `json:"created_at,omitempty"`
 
