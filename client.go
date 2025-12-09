@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
@@ -34,6 +35,7 @@ const (
 	ActivityFieldDuration           ActivityField = "duration"
 	ActivityFieldEmail              ActivityField = "email"
 	ActivityFieldEmployee           ActivityField = "employee"
+	ActivityFieldEndsAt             ActivityField = "ends_at"
 	ActivityFieldEventTypes         ActivityField = "event_types"
 	ActivityFieldKennitala          ActivityField = "kennitala"
 	ActivityFieldLicensePlate       ActivityField = "license_plate"
@@ -58,10 +60,11 @@ const (
 
 // Defines values for ActivityType.
 const (
-	ActivityTypeCustomer  ActivityType = "customer"
-	ActivityTypeEvent     ActivityType = "event"
-	ActivityTypeEventType ActivityType = "event_type"
-	ActivityTypePayment   ActivityType = "payment"
+	ActivityTypeBlockedTime ActivityType = "blocked_time"
+	ActivityTypeCustomer    ActivityType = "customer"
+	ActivityTypeEvent       ActivityType = "event"
+	ActivityTypeEventType   ActivityType = "event_type"
+	ActivityTypePayment     ActivityType = "payment"
 )
 
 // Defines values for ActorType.
@@ -172,6 +175,7 @@ const (
 	N160 BookingInterval = 160
 	N180 BookingInterval = 180
 	N20  BookingInterval = 20
+	N240 BookingInterval = 240
 	N30  BookingInterval = 30
 	N45  BookingInterval = 45
 	N5   BookingInterval = 5
@@ -226,6 +230,12 @@ const (
 	BookingSourceGroupPartners    BookingSourceGroup = "partners"
 )
 
+// Defines values for CampaignType.
+const (
+	CampaignTypeEmail CampaignType = "email"
+	CampaignTypeSms   CampaignType = "sms"
+)
+
 // Defines values for CardCardType.
 const (
 	CardCardTypeAmericanExpress CardCardType = "american_express"
@@ -277,8 +287,11 @@ const (
 
 // Defines values for CompanyField.
 const (
+	CompanyFieldBookingOfferMessage   CompanyField = "booking_offer_message"
+	CompanyFieldBookingSuccessMessage CompanyField = "booking_success_message"
 	CompanyFieldClaimantId            CompanyField = "claimant_id"
 	CompanyFieldCustomReminder        CompanyField = "custom_reminder"
+	CompanyFieldDescription           CompanyField = "description"
 	CompanyFieldImage                 CompanyField = "image"
 	CompanyFieldInviteDecisionPending CompanyField = "invite_decision_pending"
 )
@@ -291,6 +304,9 @@ const (
 
 // Defines values for CompanySize.
 const (
+	Large      CompanySize = "large"
+	Medium     CompanySize = "medium"
+	Small      CompanySize = "small"
 	Solo       CompanySize = "solo"
 	WithOthers CompanySize = "with_others"
 )
@@ -301,6 +317,14 @@ const (
 	Restaurant  CompanyVertical = "restaurant"
 )
 
+// Defines values for CreateCampaignErrorType.
+const (
+	CreateCampaignErrorTypeCampaignsDisabled  CreateCampaignErrorType = "campaigns_disabled"
+	CreateCampaignErrorTypeNonWhitelistedUrls CreateCampaignErrorType = "non_whitelisted_urls"
+	CreateCampaignErrorTypeQuotaExceeded      CreateCampaignErrorType = "quota_exceeded"
+	CreateCampaignErrorTypeValidation         CreateCampaignErrorType = "validation"
+)
+
 // Defines values for CreatePaymentErrorCode.
 const (
 	ExpiredCard            CreatePaymentErrorCode = "expiredCard"
@@ -309,6 +333,13 @@ const (
 	NotSufficientFunds     CreatePaymentErrorCode = "notSufficientFunds"
 	UnableToProcessPayment CreatePaymentErrorCode = "unableToProcessPayment"
 	UnknownPaymentError    CreatePaymentErrorCode = "unknownPaymentError"
+)
+
+// Defines values for CreateSMSErrorType.
+const (
+	CreateSMSErrorTypeNonWhitelistedUrls CreateSMSErrorType = "non_whitelisted_urls"
+	CreateSMSErrorTypeQuotaExceeded      CreateSMSErrorType = "quota_exceeded"
+	CreateSMSErrorTypeValidation         CreateSMSErrorType = "validation"
 )
 
 // Defines values for CustomMessageRuleType.
@@ -357,9 +388,21 @@ const (
 	EmailEventStatusProcessed EmailEventStatus = "processed"
 )
 
+// Defines values for EmployeeCreationErrorCode.
+const (
+	CompanyIdRequired              EmployeeCreationErrorCode = "company_id_required"
+	EmailRequired                  EmployeeCreationErrorCode = "email_required"
+	EmployeeAlreadyExistsInCompany EmployeeCreationErrorCode = "employee_already_exists_in_company"
+	InsufficientPermissions        EmployeeCreationErrorCode = "insufficient_permissions"
+	InvalidEmailFormat             EmployeeCreationErrorCode = "invalid_email_format"
+	InvalidMarketplaceSettings     EmployeeCreationErrorCode = "invalid_marketplace_settings"
+	InvalidRole                    EmployeeCreationErrorCode = "invalid_role"
+)
+
 // Defines values for EmployeeField.
 const (
 	EmployeeFieldCustomReminder EmployeeField = "custom_reminder"
+	EmployeeFieldDescription    EmployeeField = "description"
 	EmployeeFieldDisabledAt     EmployeeField = "disabled_at"
 	EmployeeFieldImage          EmployeeField = "image"
 )
@@ -432,17 +475,22 @@ const (
 
 // Defines values for EventTypeField.
 const (
-	EventTypeFieldBufferAfterService  EventTypeField = "buffer_after_service"
-	EventTypeFieldColor               EventTypeField = "color"
-	EventTypeFieldImage               EventTypeField = "image"
-	EventTypeFieldMaxGuestsPerBooking EventTypeField = "max_guests_per_booking"
-	EventTypeFieldMinGuestsPerBooking EventTypeField = "min_guests_per_booking"
-	EventTypeFieldPayments            EventTypeField = "payments"
+	EventTypeFieldBookingQuestion       EventTypeField = "booking_question"
+	EventTypeFieldBookingSuccessMessage EventTypeField = "booking_success_message"
+	EventTypeFieldBufferAfterService    EventTypeField = "buffer_after_service"
+	EventTypeFieldColor                 EventTypeField = "color"
+	EventTypeFieldDescription           EventTypeField = "description"
+	EventTypeFieldImage                 EventTypeField = "image"
+	EventTypeFieldMaxGuestsPerBooking   EventTypeField = "max_guests_per_booking"
+	EventTypeFieldMinGuestsPerBooking   EventTypeField = "min_guests_per_booking"
+	EventTypeFieldPayments              EventTypeField = "payments"
 )
 
 // Defines values for EventTypeGroupField.
 const (
-	EventTypeGroupFieldImage EventTypeGroupField = "image"
+	EventTypeGroupFieldDescription EventTypeGroupField = "description"
+	EventTypeGroupFieldImage       EventTypeGroupField = "image"
+	EventTypeGroupFieldTitle       EventTypeGroupField = "title"
 )
 
 // Defines values for EventUpdateBehaviorType.
@@ -470,6 +518,11 @@ const (
 const (
 	CustomerOnboardingError      FiscalizeTransactionErrorCode = "customer_onboarding_error"
 	TaxExemptionCodeMissingError FiscalizeTransactionErrorCode = "tax_exemption_code_missing_error"
+)
+
+// Defines values for GoalTemplate.
+const (
+	GoalFirstOnlineBooking GoalTemplate = "goal_first_online_booking"
 )
 
 // Defines values for ImageFolder.
@@ -570,12 +623,40 @@ const (
 	NoticeVariantWarning NoticeVariant = "warning"
 )
 
+// Defines values for NotificationBookingOfferStatus.
+const (
+	NotificationBookingOfferStatusApproved NotificationBookingOfferStatus = "approved"
+	NotificationBookingOfferStatusDeclined NotificationBookingOfferStatus = "declined"
+)
+
+// Defines values for NotificationBookingOfferType.
+const (
+	NotificationBookingOfferTypeBookingOffer NotificationBookingOfferType = "bookingOffer"
+)
+
+// Defines values for NotificationCategory.
+const (
+	NotificationCategoryBookingOffers  NotificationCategory = "booking_offers"
+	NotificationCategoryOnlineBookings NotificationCategory = "online_bookings"
+	NotificationCategoryPayments       NotificationCategory = "payments"
+	NotificationCategoryStaffBookings  NotificationCategory = "staff_bookings"
+	NotificationCategoryWaitlist       NotificationCategory = "waitlist"
+)
+
+// Defines values for NotificationChannel.
+const (
+	NotificationChannelApp   NotificationChannel = "app"
+	NotificationChannelEmail NotificationChannel = "email"
+	NotificationChannelSms   NotificationChannel = "sms"
+)
+
 // Defines values for NotificationEventStatus.
 const (
-	NotificationEventStatusCancelled   NotificationEventStatus = "cancelled"
-	NotificationEventStatusConfirmed   NotificationEventStatus = "confirmed"
-	NotificationEventStatusRequest     NotificationEventStatus = "request"
-	NotificationEventStatusRescheduled NotificationEventStatus = "rescheduled"
+	NotificationEventStatusCancelled    NotificationEventStatus = "cancelled"
+	NotificationEventStatusConfirmed    NotificationEventStatus = "confirmed"
+	NotificationEventStatusRequest      NotificationEventStatus = "request"
+	NotificationEventStatusRescheduled  NotificationEventStatus = "rescheduled"
+	NotificationEventStatusResourceOnly NotificationEventStatus = "resource_only"
 )
 
 // Defines values for NotificationEventType.
@@ -596,14 +677,27 @@ const (
 	NotificationIconIconVariantWarning NotificationIconIconVariant = "warning"
 )
 
-// Defines values for NotificationLegacyType.
+// Defines values for NotificationSubcategory.
 const (
-	Legacy NotificationLegacyType = "legacy"
+	NotificationSubcategoryApproved              NotificationSubcategory = "approved"
+	NotificationSubcategoryCancellations         NotificationSubcategory = "cancellations"
+	NotificationSubcategoryDeclined              NotificationSubcategory = "declined"
+	NotificationSubcategoryFailedSettlements     NotificationSubcategory = "failed_settlements"
+	NotificationSubcategoryNewAppointments       NotificationSubcategory = "new_appointments"
+	NotificationSubcategoryNewRequests           NotificationSubcategory = "new_requests"
+	NotificationSubcategoryReschedules           NotificationSubcategory = "reschedules"
+	NotificationSubcategoryResourceOnly          NotificationSubcategory = "resource_only"
+	NotificationSubcategorySuccessfulSettlements NotificationSubcategory = "successful_settlements"
 )
 
 // Defines values for NotificationSurveyType.
 const (
 	Survey NotificationSurveyType = "survey"
+)
+
+// Defines values for NotificationWaitlistEntryStatus.
+const (
+	Withdrawn NotificationWaitlistEntryStatus = "withdrawn"
 )
 
 // Defines values for NotificationWaitlistEntryType.
@@ -660,6 +754,8 @@ const (
 	PropertiesRead        OAuthScope = "properties:read"
 	PropertiesWrite       OAuthScope = "properties:write"
 	PushNotificationsRead OAuthScope = "push_notifications:read"
+	RemindersRead         OAuthScope = "reminders:read"
+	RemindersWrite        OAuthScope = "reminders:write"
 	ReportsWrite          OAuthScope = "reports:write"
 	ResourcesRead         OAuthScope = "resources:read"
 	ResourcesWrite        OAuthScope = "resources:write"
@@ -712,7 +808,7 @@ const (
 
 // Defines values for OnlineBookingsRuleType.
 const (
-	OnlineBookings OnlineBookingsRuleType = "online_bookings"
+	OnlineBookingsRuleTypeOnlineBookings OnlineBookingsRuleType = "online_bookings"
 )
 
 // Defines values for PaymentProvider.
@@ -913,9 +1009,20 @@ const (
 	SaleHasBeenMutated    RefundMarketplaceSaleErrorCode = "sale_has_been_mutated"
 )
 
+// Defines values for ReminderErrorType.
+const (
+	AllEmployeesSelected    ReminderErrorType = "all_employees_selected"
+	AllEventTypesSelected   ReminderErrorType = "all_event_types_selected"
+	DuplicateGlobalReminder ReminderErrorType = "duplicate_global_reminder"
+	NonWhitelistedUrls      ReminderErrorType = "non_whitelisted_urls"
+	Validation              ReminderErrorType = "validation"
+)
+
 // Defines values for ResourceField.
 const (
-	ResourceFieldImage ResourceField = "image"
+	ResourceFieldDescription ResourceField = "description"
+	ResourceFieldImage       ResourceField = "image"
+	ResourceFieldName        ResourceField = "name"
 )
 
 // Defines values for ResourcePriority.
@@ -1006,6 +1113,14 @@ const (
 	SaleFieldCustomer SaleField = "customer"
 )
 
+// Defines values for SignupGoalOption.
+const (
+	AttractMoreOnlineBookings SignupGoalOption = "attract_more_online_bookings"
+	KeepClientsComingBack     SignupGoalOption = "keep_clients_coming_back"
+	ManageSalesAndProducts    SignupGoalOption = "manage_sales_and_products"
+	StayOnTopOfAppointments   SignupGoalOption = "stay_on_top_of_appointments"
+)
+
 // Defines values for SortOrder.
 const (
 	Asc  SortOrder = "asc"
@@ -1031,6 +1146,7 @@ const (
 	OnProductGroupUpdated        StreamEventName = "onProductGroupUpdated"
 	OnProductUpdated             StreamEventName = "onProductUpdated"
 	OnResourceUpdated            StreamEventName = "onResourceUpdated"
+	OnTaskInstanceUpdated        StreamEventName = "onTaskInstanceUpdated"
 	OnTimeSlotReservationUpdated StreamEventName = "onTimeSlotReservationUpdated"
 	OnTransactionCompleted       StreamEventName = "onTransactionCompleted"
 )
@@ -1047,6 +1163,7 @@ const (
 	StreamableEntityTypeProductGroups        StreamableEntityType = "product_groups"
 	StreamableEntityTypeProducts             StreamableEntityType = "products"
 	StreamableEntityTypeResources            StreamableEntityType = "resources"
+	StreamableEntityTypeTaskInstances        StreamableEntityType = "task_instances"
 	StreamableEntityTypeTimeSlotReservations StreamableEntityType = "time_slot_reservations"
 	StreamableEntityTypeTransactions         StreamableEntityType = "transactions"
 )
@@ -1089,10 +1206,10 @@ const (
 
 // Defines values for SubtransactionFailureState.
 const (
-	Busy      SubtransactionFailureState = "busy"
-	Cancelled SubtransactionFailureState = "cancelled"
-	Declined  SubtransactionFailureState = "declined"
-	Unknown   SubtransactionFailureState = "unknown"
+	SubtransactionFailureStateBusy      SubtransactionFailureState = "busy"
+	SubtransactionFailureStateCancelled SubtransactionFailureState = "cancelled"
+	SubtransactionFailureStateDeclined  SubtransactionFailureState = "declined"
+	SubtransactionFailureStateUnknown   SubtransactionFailureState = "unknown"
 )
 
 // Defines values for SubtransactionOrigin.
@@ -1142,6 +1259,27 @@ const (
 	SubtransactionDataVoucherTypeVoucher SubtransactionDataVoucherType = "voucher"
 )
 
+// Defines values for TaskActionType.
+const (
+	Copy     TaskActionType = "copy"
+	Navigate TaskActionType = "navigate"
+)
+
+// Defines values for TaskCompletionMethod.
+const (
+	Computed TaskCompletionMethod = "computed"
+	Manual   TaskCompletionMethod = "manual"
+)
+
+// Defines values for TaskNavigateTo.
+const (
+	TaskNavigateToCalendarSettings             TaskNavigateTo = "calendar_settings"
+	TaskNavigateToEmployees                    TaskNavigateTo = "employees"
+	TaskNavigateToEventTypes                   TaskNavigateTo = "event_types"
+	TaskNavigateToMarketplaceProfile           TaskNavigateTo = "marketplace_profile"
+	TaskNavigateToMarketplaceProfileOnboarding TaskNavigateTo = "marketplace_profile_onboarding"
+)
+
 // Defines values for TerminalProvider.
 const (
 	Istari TerminalProvider = "Istari"
@@ -1176,10 +1314,12 @@ const (
 
 // Defines values for UnavailableResourceReason.
 const (
-	Booked                UnavailableResourceReason = "booked"
-	Capacity              UnavailableResourceReason = "capacity"
-	CustomBookingInterval UnavailableResourceReason = "custom_booking_interval"
-	OutsideOpeningHours   UnavailableResourceReason = "outside_opening_hours"
+	UnavailableResourceReasonBlockedTime           UnavailableResourceReason = "blocked_time"
+	UnavailableResourceReasonBooking               UnavailableResourceReason = "booking"
+	UnavailableResourceReasonCapacity              UnavailableResourceReason = "capacity"
+	UnavailableResourceReasonCustomBookingInterval UnavailableResourceReason = "custom_booking_interval"
+	UnavailableResourceReasonOutsideOpeningHours   UnavailableResourceReason = "outside_opening_hours"
+	UnavailableResourceReasonTimeslotReservation   UnavailableResourceReason = "timeslot_reservation"
 )
 
 // Defines values for UpdateVerificationStatus.
@@ -1193,6 +1333,14 @@ const (
 	TeyaOauth UserField = "teya_oauth"
 )
 
+// Defines values for UserInviteErrorCode.
+const (
+	UserInviteDeleted   UserInviteErrorCode = "user_invite_deleted"
+	UserInviteExpired   UserInviteErrorCode = "user_invite_expired"
+	UserInviteUsed      UserInviteErrorCode = "user_invite_used"
+	UserInviteWrongUser UserInviteErrorCode = "user_invite_wrong_user"
+)
+
 // Defines values for VerificationCertificationLevel.
 const (
 	VerificationCertificationLevelApprentice VerificationCertificationLevel = "apprentice"
@@ -1202,6 +1350,7 @@ const (
 
 // Defines values for VerificationCertificationType.
 const (
+	VerificationCertificationTypeChiropractic              VerificationCertificationType = "chiropractic"
 	VerificationCertificationTypeCosmetology               VerificationCertificationType = "cosmetology"
 	VerificationCertificationTypeHairdressing              VerificationCertificationType = "hairdressing"
 	VerificationCertificationTypeMassageTherapy            VerificationCertificationType = "massage_therapy"
@@ -1211,9 +1360,9 @@ const (
 
 // Defines values for VerificationStatus.
 const (
-	Approved VerificationStatus = "approved"
-	Pending  VerificationStatus = "pending"
-	Rejected VerificationStatus = "rejected"
+	VerificationStatusApproved VerificationStatus = "approved"
+	VerificationStatusPending  VerificationStatus = "pending"
+	VerificationStatusRejected VerificationStatus = "rejected"
 )
 
 // Defines values for VoucherStatus.
@@ -1269,6 +1418,12 @@ const (
 const (
 	VoucherTemplateCreateOverridesTypeAmount  VoucherTemplateCreateOverridesType = "amount"
 	VoucherTemplateCreateOverridesTypeService VoucherTemplateCreateOverridesType = "service"
+)
+
+// Defines values for VoucherTemplateField.
+const (
+	VoucherTemplateFieldDescription            VoucherTemplateField = "description"
+	VoucherTemplateFieldMarketplaceDescription VoucherTemplateField = "marketplace_description"
 )
 
 // Defines values for VoucherTemplateResponseType.
@@ -1367,12 +1522,19 @@ const (
 
 // Defines values for CreateVerificationRequestJSONBodyCertificationType.
 const (
+	CreateVerificationRequestJSONBodyCertificationTypeChiropractic              CreateVerificationRequestJSONBodyCertificationType = "chiropractic"
 	CreateVerificationRequestJSONBodyCertificationTypeCosmetology               CreateVerificationRequestJSONBodyCertificationType = "cosmetology"
 	CreateVerificationRequestJSONBodyCertificationTypeHairdressing              CreateVerificationRequestJSONBodyCertificationType = "hairdressing"
 	CreateVerificationRequestJSONBodyCertificationTypeMassageTherapy            CreateVerificationRequestJSONBodyCertificationType = "massage_therapy"
 	CreateVerificationRequestJSONBodyCertificationTypePodiatry                  CreateVerificationRequestJSONBodyCertificationType = "podiatry"
 	CreateVerificationRequestJSONBodyCertificationTypeTherapeuticMassageTherapy CreateVerificationRequestJSONBodyCertificationType = "therapeutic_massage_therapy"
 )
+
+// ActivateGoalRequest defines model for ActivateGoalRequest.
+type ActivateGoalRequest struct {
+	// The company ID that owns the goal
+	CompanyId string `json:"company_id"`
+}
 
 // Activities defines model for Activities.
 type Activities []Activity
@@ -1496,6 +1658,69 @@ type AdminCompanyDetailsUser struct {
 
 // AdminCompanyDetailsUsers defines model for AdminCompanyDetailsUsers.
 type AdminCompanyDetailsUsers []AdminCompanyDetailsUser
+
+// AdminCompanyUpdate defines model for AdminCompanyUpdate.
+type AdminCompanyUpdate struct {
+	Adyen         *AdyenConnection      `json:"adyen,omitempty"`
+	BillingStatus *CompanyBillingStatus `json:"billing_status,omitempty"`
+	Checkin       *CompanyCheckin       `json:"checkin,omitempty"`
+	Claims        *ClaimsConnection     `json:"claims,omitempty"`
+	CreatedAt     *time.Time            `json:"created_at,omitempty"`
+	Currency      *interface{}          `json:"currency,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
+
+	// The order/position of this company within its enterprise. Used for custom sorting of companies.
+	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
+
+	// Whether the company has secretary services linked to it
+	HasSecretary    *bool               `json:"has_secretary,omitempty"`
+	Id              *string             `json:"id,omitempty"`
+	InviteLinkToken *string             `json:"invite_link_token,omitempty"`
+	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
+	Locale          *Locale             `json:"locale,omitempty"`
+	Location        *Location           `json:"location,omitempty"`
+	LockedSections  *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
+	Name            *string             `json:"name,omitempty"`
+
+	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
+	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+
+	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
+	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
+	Payments    *PaymentSettings `json:"payments,omitempty"`
+
+	// Deprecated, use profile.phone_country_code instead
+	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
+
+	// Deprecated, use profile.phone_number instead
+	PhoneNumber *string             `json:"phone_number,omitempty"`
+	Pos         *CompanyPOSSettings `json:"pos,omitempty"`
+	Profile     *CompanyProfile     `json:"profile,omitempty"`
+
+	// An ID that can be used to reference the company in an external system.
+	// This ID is not used by Noona and is not guaranteed to be unique.
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      *interface{}          `json:"vertical,omitempty"`
+
+	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
+	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
+	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
+}
+
+// AdminCompanyUpdateFields defines model for AdminCompanyUpdateFields.
+type AdminCompanyUpdateFields struct {
+	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
+	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+}
 
 // AdminMoveUserRequest defines model for AdminMoveUserRequest.
 type AdminMoveUserRequest struct {
@@ -2208,6 +2433,12 @@ type BookingOffer struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
+// Notification settings for booking offer events
+type BookingOfferNotifications struct {
+	Approved *NotificationChannelSettings `json:"approved,omitempty"`
+	Declined *NotificationChannelSettings `json:"declined,omitempty"`
+}
+
 // BookingOffers defines model for BookingOffers.
 type BookingOffers []BookingOffer
 
@@ -2222,11 +2453,21 @@ type BookingQuestion struct {
 	// Additional details about the question.
 	Description *string `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// Unique identifier for the booking question.
 	Id *string `json:"id,omitempty"`
 
 	// The title of the booking question.
 	Title string `json:"title"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap `json:"title_translations,omitempty"`
 }
 
 // The type of answer expected.
@@ -2246,11 +2487,21 @@ type BookingQuestionAnswer struct {
 	// Additional details about the question.
 	Description *string `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// Unique identifier for the booking question.
 	Id *string `json:"id,omitempty"`
 
 	// The title of the booking question.
 	Title string `json:"title"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap `json:"title_translations,omitempty"`
 }
 
 // The answer provided by the user.
@@ -2337,6 +2588,109 @@ type CallbackData struct {
 type CallbackData_Data struct {
 	union json.RawMessage
 }
+
+// Campaign defines model for Campaign.
+type Campaign struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Id        *string            `json:"id,omitempty"`
+	Message   *string            `json:"message,omitempty"`
+	Name      *string            `json:"name,omitempty"`
+
+	// Number of recipients for this campaign
+	RecipientCount *int32        `json:"recipient_count,omitempty"`
+	Type           *CampaignType `json:"type,omitempty"`
+	UpdatedAt      *time.Time    `json:"updated_at,omitempty"`
+}
+
+// CampaignCreate defines model for CampaignCreate.
+type CampaignCreate struct {
+	// Company ID
+	CompanyId string                  `json:"company_id"`
+	Filter    CampaignRecipientFilter `json:"filter"`
+
+	// Campaign message content
+	Message *string      `json:"message,omitempty"`
+	Type    CampaignType `json:"type"`
+}
+
+// CampaignCreateResponse defines model for CampaignCreateResponse.
+type CampaignCreateResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Id        *string            `json:"id,omitempty"`
+	Message   *string            `json:"message,omitempty"`
+	Name      *string            `json:"name,omitempty"`
+
+	// Number of recipients for this campaign
+	RecipientCount *int32              `json:"recipient_count,omitempty"`
+	Recipients     *CampaignRecipients `json:"recipients,omitempty"`
+	Type           *CampaignType       `json:"type,omitempty"`
+	UpdatedAt      *time.Time          `json:"updated_at,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type CampaignFilter struct {
+	// Filter campaigns created after this date
+	CreatedFrom *time.Time `json:"created_from,omitempty"`
+
+	// Filter campaigns created before this date
+	CreatedTo *time.Time    `json:"created_to,omitempty"`
+	Type      *CampaignType `json:"type,omitempty"`
+}
+
+// CampaignPreview defines model for CampaignPreview.
+type CampaignPreview struct {
+	// Currency code for the estimated cost
+	Currency *string `json:"currency,omitempty"`
+
+	// Number of unique recipients
+	RecipientCount *int32 `json:"recipient_count,omitempty"`
+
+	// Estimated total cost in cents for sending the campaign
+	TotalCost *int32 `json:"total_cost,omitempty"`
+}
+
+// CampaignRecipient defines model for CampaignRecipient.
+type CampaignRecipient struct {
+	Email            *string `json:"email,omitempty"`
+	Id               *string `json:"id,omitempty"`
+	Name             *string `json:"name,omitempty"`
+	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
+	PhoneNumber      *string `json:"phone_number,omitempty"`
+}
+
+// CampaignRecipientFilter defines model for CampaignRecipientFilter.
+type CampaignRecipientFilter struct {
+	// If the campaign should only be sent to clients in specific client groups
+	CustomerGroupIds *[]string `json:"customer_group_ids,omitempty"`
+
+	// If the campaign should only be sent to clients that have booking with specific employees
+	EmployeeIds *[]string `json:"employee_ids,omitempty"`
+
+	// End date for filtering events
+	EndDate *time.Time `json:"end_date,omitempty"`
+
+	// If the campaign should only be sent to clients that have a booking to specific services
+	EventTypeIds *[]string `json:"event_type_ids,omitempty"`
+
+	// Exclude clients with upcoming events after end date
+	ExcludeUpcomingEvents *bool `json:"exclude_upcoming_events,omitempty"`
+
+	// Start date for filtering events
+	StartDate *time.Time `json:"start_date,omitempty"`
+}
+
+// CampaignRecipients defines model for CampaignRecipients.
+type CampaignRecipients []CampaignRecipient
+
+// CampaignType defines model for CampaignType.
+type CampaignType string
+
+// Campaigns defines model for Campaigns.
+type Campaigns []Campaign
 
 // Card defines model for Card.
 type Card struct {
@@ -2510,11 +2864,12 @@ type CompaniesResponse []CompanyResponse
 
 // Company defines model for Company.
 type Company struct {
-	Adyen     *AdyenConnection        `json:"adyen,omitempty"`
-	Checkin   *CompanyCheckin         `json:"checkin,omitempty"`
-	Claims    *ClaimsConnection       `json:"claims,omitempty"`
-	CreatedAt *time.Time              `json:"created_at,omitempty"`
-	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
+	Adyen         *AdyenConnection        `json:"adyen,omitempty"`
+	BillingStatus *CompanyBillingStatus   `json:"billing_status,omitempty"`
+	Checkin       *CompanyCheckin         `json:"checkin,omitempty"`
+	Claims        *ClaimsConnection       `json:"claims,omitempty"`
+	CreatedAt     *time.Time              `json:"created_at,omitempty"`
+	Currency      *CompanyDefaultCurrency `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
@@ -2524,18 +2879,16 @@ type Company struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary   *bool               `json:"has_secretary,omitempty"`
-	Id             *string             `json:"id,omitempty"`
-	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
-	Locale         *Locale             `json:"locale,omitempty"`
-	Location       *Location           `json:"location,omitempty"`
-	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
-	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
-	Name           *string             `json:"name,omitempty"`
-
-	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
-	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+	HasSecretary    *bool               `json:"has_secretary,omitempty"`
+	Id              *string             `json:"id,omitempty"`
+	InviteLinkToken *string             `json:"invite_link_token,omitempty"`
+	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
+	Locale          *Locale             `json:"locale,omitempty"`
+	Location        *Location           `json:"location,omitempty"`
+	LockedSections  *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
+	Name            *string             `json:"name,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -2551,16 +2904,22 @@ type Company struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string `json:"reference_id,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      *CompanyVertical      `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
-	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
-	Signup         *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya           *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
-	Vertical       *CompanyVertical      `json:"vertical,omitempty"`
-	Vouchers       *VoucherSettings      `json:"vouchers,omitempty"`
+	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
+	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
+}
+
+// CompanyBillingStatus defines model for CompanyBillingStatus.
+type CompanyBillingStatus struct {
+	PaidInvoices   *int32 `json:"paid_invoices,omitempty"`
+	UnpaidInvoices *int32 `json:"unpaid_invoices,omitempty"`
 }
 
 // CompanyCheckin defines model for CompanyCheckin.
@@ -2568,67 +2927,32 @@ type CompanyCheckin struct {
 	SuccessMessage *string `json:"success_message,omitempty"`
 }
 
-// CompanyClone defines model for CompanyClone.
-type CompanyClone struct {
-	Adyen     *AdyenConnection        `json:"adyen,omitempty"`
-	Checkin   *CompanyCheckin         `json:"checkin,omitempty"`
-	Claims    *ClaimsConnection       `json:"claims,omitempty"`
-	CreatedAt *time.Time              `json:"created_at,omitempty"`
-	Currency  *CompanyDefaultCurrency `json:"currency,omitempty"`
+// CompanyCreate defines model for CompanyCreate.
+type CompanyCreate struct {
+	// The name of the company to create
+	CompanyName string `json:"company_name"`
 
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
+	// Selected event type category Ids for service companies
+	EventTypeCategoryGroupIds *[]string      `json:"event_type_category_group_ids,omitempty"`
+	Location                  LocationCreate `json:"location"`
+	PhoneCountryCode          *string        `json:"phone_country_code,omitempty"`
+	PhoneNumber               *string        `json:"phone_number,omitempty"`
+	ProfileImage              *Image         `json:"profile_image,omitempty"`
 
-	// The order/position of this company within its enterprise. Used for custom sorting of companies.
-	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
-	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
+	// Information about how the user heard about Noona
+	Referer *Referer `json:"referer,omitempty"`
 
-	// Whether the company has secretary services linked to it
-	HasSecretary   *bool               `json:"has_secretary,omitempty"`
-	Id             *string             `json:"id,omitempty"`
-	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
-	Locale         *Locale             `json:"locale,omitempty"`
-	Location       LocationCreate      `json:"location"`
-	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
-	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
-	Name           string              `json:"name"`
+	// What the user needs help with
+	SignupGoal *[]SignupGoalOption `json:"signup_goal,omitempty"`
 
-	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
-	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
-
-	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
-	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
-	Payments    *PaymentSettings `json:"payments,omitempty"`
-
-	// Deprecated, use profile.phone_country_code instead
-	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
-
-	// Deprecated, use profile.phone_number instead
-	PhoneNumber *string              `json:"phone_number,omitempty"`
-	Pos         *CompanyPOSSettings  `json:"pos,omitempty"`
-	Profile     CompanyProfileCreate `json:"profile"`
-
-	// An ID that can be used to reference the company in an external system.
-	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string `json:"reference_id,omitempty"`
-
-	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
-	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
-	Signup         *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya           *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
-	Vertical       CompanyVertical       `json:"vertical"`
-	Vouchers       *VoucherSettings      `json:"vouchers,omitempty"`
-}
-
-// CompanyCloneOverrides defines model for CompanyCloneOverrides.
-type CompanyCloneOverrides struct {
-	Location LocationCreate       `json:"location"`
-	Name     string               `json:"name"`
-	Profile  CompanyProfileCreate `json:"profile"`
-	Vertical CompanyVertical      `json:"vertical"`
+	// Company size category:
+	// - `solo`: Just me (1 person)
+	// - `with_others`: Legacy option (will be migrated)
+	// - `small`: 2-4 People
+	// - `medium`: 5-9 People
+	// - `large`: 10+ People
+	Size     *CompanySize    `json:"size,omitempty"`
+	Vertical CompanyVertical `json:"vertical"`
 }
 
 // CompanyDefaultCurrency defines model for CompanyDefaultCurrency.
@@ -2655,6 +2979,11 @@ type CompanyMarketplace struct {
 
 	// The custom message to be sent with booking offers
 	BookingOfferMessage *string `json:"booking_offer_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingOfferMessageTranslations *TranslationMap `json:"booking_offer_message_translations,omitempty"`
 
 	// Indicates if the company should receive email notifications upon booking confirmation. Notifications are sent to the company's primary email address.
 	//
@@ -2694,9 +3023,17 @@ type CompanyMarketplace struct {
 type CompanyMessaging struct {
 	CustomReminder *string `json:"custom_reminder,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	CustomReminderTranslations *TranslationMap `json:"custom_reminder_translations,omitempty"`
+
 	// Whether to enable SMS reminders for the company.
-	EnableReminders     *bool `json:"enable_reminders,omitempty"`
-	SendSmsFromEmployee *bool `json:"send_sms_from_employee,omitempty"`
+	EnableReminders *bool `json:"enable_reminders,omitempty"`
+
+	// Whether the company has opted into the new SMS reminders feature. When enabled, the new reminder system is used instead of the legacy solution.
+	NewSmsRemindersEnabled *bool `json:"new_sms_reminders_enabled,omitempty"`
+	SendSmsFromEmployee    *bool `json:"send_sms_from_employee,omitempty"`
 
 	// The SMS sender name
 	SenderName *string `json:"sender_name,omitempty"`
@@ -2723,6 +3060,9 @@ type CompanyPOSSettings struct {
 	// The initial invoice number for the company.
 	InitialInvoiceNumber *int64 `json:"initial_invoice_number,omitempty"`
 
+	// The invoice series prefix for fiscalization.
+	InvoiceSeries *string `json:"invoice_series,omitempty"`
+
 	// The kennitala for the company.
 	Kennitala    *string `json:"kennitala,omitempty"`
 	LegalAddress *string `json:"legal_address,omitempty"`
@@ -2748,13 +3088,18 @@ type CompanyProfile struct {
 	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
 	//
 	// A booking interval is set on the company level but can be overridden on the resource/employee level.
-	BookingInterval          *BookingInterval `json:"booking_interval,omitempty"`
-	BookingRedirectUrl       *string          `json:"booking_redirect_url,omitempty"`
-	BookingSuccessMessage    *string          `json:"booking_success_message,omitempty"`
-	ClientCancelDisabled     *bool            `json:"client_cancel_disabled,omitempty"`
-	ClientRescheduleDisabled *bool            `json:"client_reschedule_disabled,omitempty"`
-	CompanyTypes             *[]string        `json:"company_types,omitempty"`
-	ContactEmail             *string          `json:"contact_email,omitempty"`
+	BookingInterval       *BookingInterval `json:"booking_interval,omitempty"`
+	BookingRedirectUrl    *string          `json:"booking_redirect_url,omitempty"`
+	BookingSuccessMessage *string          `json:"booking_success_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingSuccessMessageTranslations *TranslationMap `json:"booking_success_message_translations,omitempty"`
+	ClientCancelDisabled              *bool           `json:"client_cancel_disabled,omitempty"`
+	ClientRescheduleDisabled          *bool           `json:"client_reschedule_disabled,omitempty"`
+	CompanyTypes                      *[]string       `json:"company_types,omitempty"`
+	ContactEmail                      *string         `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
 	CoverImages *[]Image    `json:"cover_images,omitempty"`
@@ -2809,8 +3154,11 @@ type CompanyProfile struct {
 	StoreName     *string `json:"store_name,omitempty"`
 
 	// Controls at what hour in the day the calendar starts to be bookable. Can be restriced with blocked times.
-	StoreOpensAt  *int32 `json:"store_opens_at,omitempty"`
-	WebAuthOptOut *bool  `json:"web_auth_opt_out,omitempty"`
+	StoreOpensAt *int32 `json:"store_opens_at,omitempty"`
+
+	// Whether the company has unconfirmed or confirmed opening hours.
+	UnconfirmedOpeningHours *bool `json:"unconfirmed_opening_hours,omitempty"`
+	WebAuthOptOut           *bool `json:"web_auth_opt_out,omitempty"`
 }
 
 // CompanyProfileCreate defines model for CompanyProfileCreate.
@@ -2824,13 +3172,18 @@ type CompanyProfileCreate struct {
 	// A booking interval of 15 would render results like: `10:00`  `10:15`  `10:30`.
 	//
 	// A booking interval is set on the company level but can be overridden on the resource/employee level.
-	BookingInterval          *BookingInterval `json:"booking_interval,omitempty"`
-	BookingRedirectUrl       *string          `json:"booking_redirect_url,omitempty"`
-	BookingSuccessMessage    *string          `json:"booking_success_message,omitempty"`
-	ClientCancelDisabled     *bool            `json:"client_cancel_disabled,omitempty"`
-	ClientRescheduleDisabled *bool            `json:"client_reschedule_disabled,omitempty"`
-	CompanyTypes             *[]string        `json:"company_types,omitempty"`
-	ContactEmail             *string          `json:"contact_email,omitempty"`
+	BookingInterval       *BookingInterval `json:"booking_interval,omitempty"`
+	BookingRedirectUrl    *string          `json:"booking_redirect_url,omitempty"`
+	BookingSuccessMessage *string          `json:"booking_success_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingSuccessMessageTranslations *TranslationMap `json:"booking_success_message_translations,omitempty"`
+	ClientCancelDisabled              *bool           `json:"client_cancel_disabled,omitempty"`
+	ClientRescheduleDisabled          *bool           `json:"client_reschedule_disabled,omitempty"`
+	CompanyTypes                      *[]string       `json:"company_types,omitempty"`
+	ContactEmail                      *string         `json:"contact_email,omitempty"`
 
 	// The marketplace images displayed on a companies profile
 	CoverImages *[]Image    `json:"cover_images,omitempty"`
@@ -2885,8 +3238,11 @@ type CompanyProfileCreate struct {
 	StoreName     *string `json:"store_name,omitempty"`
 
 	// Controls at what hour in the day the calendar starts to be bookable. Can be restriced with blocked times.
-	StoreOpensAt  *int32 `json:"store_opens_at,omitempty"`
-	WebAuthOptOut *bool  `json:"web_auth_opt_out,omitempty"`
+	StoreOpensAt *int32 `json:"store_opens_at,omitempty"`
+
+	// Whether the company has unconfirmed or confirmed opening hours.
+	UnconfirmedOpeningHours *bool `json:"unconfirmed_opening_hours,omitempty"`
+	WebAuthOptOut           *bool `json:"web_auth_opt_out,omitempty"`
 }
 
 // CompanyProfileCreateOverrides defines model for CompanyProfileCreateOverrides.
@@ -2897,11 +3253,12 @@ type CompanyProfileCreateOverrides struct {
 
 // CompanyResponse defines model for CompanyResponse.
 type CompanyResponse struct {
-	Adyen     *AdyenConnection       `json:"adyen,omitempty"`
-	Checkin   *CompanyCheckin        `json:"checkin,omitempty"`
-	Claims    *ClaimsConnection      `json:"claims,omitempty"`
-	CreatedAt *time.Time             `json:"created_at,omitempty"`
-	Currency  CompanyDefaultCurrency `json:"currency"`
+	Adyen         *AdyenConnection       `json:"adyen,omitempty"`
+	BillingStatus *CompanyBillingStatus  `json:"billing_status,omitempty"`
+	Checkin       *CompanyCheckin        `json:"checkin,omitempty"`
+	Claims        *ClaimsConnection      `json:"claims,omitempty"`
+	CreatedAt     *time.Time             `json:"created_at,omitempty"`
+	Currency      CompanyDefaultCurrency `json:"currency"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Enterprise ExpandableEnterprise `json:"enterprise"`
@@ -2911,18 +3268,16 @@ type CompanyResponse struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary   *bool              `json:"has_secretary,omitempty"`
-	Id             *string            `json:"id,omitempty"`
-	LastActiveAt   *time.Time         `json:"last_active_at,omitempty"`
-	Locale         Locale             `json:"locale"`
-	Location       Location           `json:"location"`
-	LockedSections *LockedSections    `json:"locked_sections,omitempty"`
-	Marketplace    CompanyMarketplace `json:"marketplace"`
-	Messaging      CompanyMessaging   `json:"messaging"`
-	Name           string             `json:"name"`
-
-	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
-	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+	HasSecretary    *bool              `json:"has_secretary,omitempty"`
+	Id              *string            `json:"id,omitempty"`
+	InviteLinkToken *string            `json:"invite_link_token,omitempty"`
+	LastActiveAt    *time.Time         `json:"last_active_at,omitempty"`
+	Locale          Locale             `json:"locale"`
+	Location        Location           `json:"location"`
+	LockedSections  *LockedSections    `json:"locked_sections,omitempty"`
+	Marketplace     CompanyMarketplace `json:"marketplace"`
+	Messaging       CompanyMessaging   `json:"messaging"`
+	Name            string             `json:"name"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -2938,16 +3293,16 @@ type CompanyResponse struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string `json:"reference_id,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      CompanyVertical       `json:"vertical"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
-	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
-	Signup         *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya           *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
-	Vertical       CompanyVertical       `json:"vertical"`
-	Vouchers       VoucherSettings       `json:"vouchers"`
+	VisibleFields *RequiredFields `json:"visible_fields,omitempty"`
+	Vouchers      VoucherSettings `json:"vouchers"`
 }
 
 // CompanyResponseOverrides defines model for CompanyResponseOverrides.
@@ -2974,11 +3329,26 @@ type CompanyResponseOverrides struct {
 
 // CompanySignup defines model for CompanySignup.
 type CompanySignup struct {
+	// Company size category:
+	// - `solo`: Just me (1 person)
+	// - `with_others`: Legacy option (will be migrated)
+	// - `small`: 2-4 People
+	// - `medium`: 5-9 People
+	// - `large`: 10+ People
 	CompanySize *CompanySize `json:"company_size,omitempty"`
 	Completed   *bool        `json:"completed,omitempty"`
+
+	// Information about how the user heard about Noona
+	Referer    *Referer           `json:"referer,omitempty"`
+	SignupGoal *SignupGoalOptions `json:"signup_goal,omitempty"`
 }
 
-// CompanySize defines model for CompanySize.
+// Company size category:
+// - `solo`: Just me (1 person)
+// - `with_others`: Legacy option (will be migrated)
+// - `small`: 2-4 People
+// - `medium`: 5-9 People
+// - `large`: 10+ People
 type CompanySize string
 
 // CompanyType defines model for CompanyType.
@@ -2996,11 +3366,12 @@ type CompanyTypes []CompanyType
 
 // CompanyUpdate defines model for CompanyUpdate.
 type CompanyUpdate struct {
-	Adyen     *AdyenConnection  `json:"adyen,omitempty"`
-	Checkin   *CompanyCheckin   `json:"checkin,omitempty"`
-	Claims    *ClaimsConnection `json:"claims,omitempty"`
-	CreatedAt *time.Time        `json:"created_at,omitempty"`
-	Currency  *interface{}      `json:"currency,omitempty"`
+	Adyen         *AdyenConnection      `json:"adyen,omitempty"`
+	BillingStatus *CompanyBillingStatus `json:"billing_status,omitempty"`
+	Checkin       *CompanyCheckin       `json:"checkin,omitempty"`
+	Claims        *ClaimsConnection     `json:"claims,omitempty"`
+	CreatedAt     *time.Time            `json:"created_at,omitempty"`
+	Currency      *interface{}          `json:"currency,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Enterprise *ExpandableEnterprise `json:"enterprise,omitempty"`
@@ -3010,18 +3381,16 @@ type CompanyUpdate struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary   *bool               `json:"has_secretary,omitempty"`
-	Id             *string             `json:"id,omitempty"`
-	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
-	Locale         *Locale             `json:"locale,omitempty"`
-	Location       *Location           `json:"location,omitempty"`
-	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
-	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
-	Name           *string             `json:"name,omitempty"`
-
-	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality.
-	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+	HasSecretary    *bool               `json:"has_secretary,omitempty"`
+	Id              *string             `json:"id,omitempty"`
+	InviteLinkToken *string             `json:"invite_link_token,omitempty"`
+	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
+	Locale          *Locale             `json:"locale,omitempty"`
+	Location        *Location           `json:"location,omitempty"`
+	LockedSections  *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
+	Name            *string             `json:"name,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -3037,16 +3406,16 @@ type CompanyUpdate struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId *string `json:"reference_id,omitempty"`
+	ReferenceId   *string               `json:"reference_id,omitempty"`
+	Signup        *CompanySignup        `json:"signup,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Teya          *TeyaConnection       `json:"teya,omitempty"`
+	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
+	Vertical      *interface{}          `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
-	RequiredFields *RequiredFields       `json:"required_fields,omitempty"`
-	Signup         *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions  *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya           *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt      *time.Time            `json:"updated_at,omitempty"`
-	Vertical       *interface{}          `json:"vertical,omitempty"`
-	Vouchers       *VoucherSettings      `json:"vouchers,omitempty"`
+	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
+	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
 }
 
 // CompanyUpdateOverrides defines model for CompanyUpdateOverrides.
@@ -3078,6 +3447,15 @@ type CountryInfo struct {
 	DefaultPhoneCountryCode string                 `json:"default_phone_country_code"`
 }
 
+// CreateCampaignError defines model for CreateCampaignError.
+type CreateCampaignError struct {
+	Message string                  `json:"message"`
+	Type    CreateCampaignErrorType `json:"type"`
+}
+
+// CreateCampaignErrorType defines model for CreateCampaignErrorType.
+type CreateCampaignErrorType string
+
 // CreatePaymentError defines model for CreatePaymentError.
 type CreatePaymentError struct {
 	// The error code. Only populated for certain errors.
@@ -3108,6 +3486,36 @@ type CreatePaymentMethodInstanceRequest struct {
 	Enabled       *bool  `json:"enabled,omitempty"`
 	PaymentMethod string `json:"payment_method"`
 	Title         string `json:"title"`
+}
+
+// CreateSMSError defines model for CreateSMSError.
+type CreateSMSError struct {
+	Message string             `json:"message"`
+	Type    CreateSMSErrorType `json:"type"`
+}
+
+// CreateSMSErrorType defines model for CreateSMSError.Type.
+type CreateSMSErrorType string
+
+// CreateSMSMessage defines model for CreateSMSMessage.
+type CreateSMSMessage struct {
+	// Company ID
+	CompanyId string `json:"company_id"`
+
+	// Customer ID to send SMS to
+	CustomerId string `json:"customer_id"`
+
+	// The event the SMS is linked to
+	EventId *string `json:"event_id,omitempty"`
+
+	// SMS message content
+	Message string `json:"message"`
+}
+
+// Request to create a new user invite. No parameters are required as the API controls all settings.
+type CreateUserInviteRequest struct {
+	// ID of the company this user invite will belong to
+	CompanyId *string `json:"company_id,omitempty"`
 }
 
 // CustomDuration defines model for CustomDuration.
@@ -3389,19 +3797,25 @@ type Employee struct {
 	CompanyId *string `json:"company_id,omitempty"`
 
 	// Use teya.connected instead
-	ConnectedToTeya      *bool                         `json:"connected_to_teya,omitempty"`
-	CreatedAt            *time.Time                    `json:"created_at,omitempty"`
-	DeletedAt            *time.Time                    `json:"deleted_at,omitempty"`
-	Description          *string                       `json:"description,omitempty"`
-	DisabledAt           *time.Time                    `json:"disabled_at,omitempty"`
-	Email                *string                       `json:"email,omitempty"`
-	EmailVerified        *bool                         `json:"email_verified,omitempty"`
-	EventTypePreferences *EventTypePreferences         `json:"event_type_preferences,omitempty"`
-	Id                   *string                       `json:"id,omitempty"`
-	Image                *Image                        `json:"image,omitempty"`
-	Marketplace          *EmployeeMarketplaceSettings  `json:"marketplace,omitempty"`
-	Name                 *string                       `json:"name,omitempty"`
-	Notifications        *EmployeeNotificationSettings `json:"notifications,omitempty"`
+	ConnectedToTeya *bool      `json:"connected_to_teya,omitempty"`
+	CreatedAt       *time.Time `json:"created_at,omitempty"`
+	DeletedAt       *time.Time `json:"deleted_at,omitempty"`
+	Description     *string    `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap               `json:"description_translations,omitempty"`
+	DisabledAt              *time.Time                    `json:"disabled_at,omitempty"`
+	Email                   *string                       `json:"email,omitempty"`
+	EmailVerified           *bool                         `json:"email_verified,omitempty"`
+	EventTypePreferences    *EventTypePreferences         `json:"event_type_preferences,omitempty"`
+	HasPassword             *bool                         `json:"has_password,omitempty"`
+	Id                      *string                       `json:"id,omitempty"`
+	Image                   *Image                        `json:"image,omitempty"`
+	Marketplace             *EmployeeMarketplaceSettings  `json:"marketplace,omitempty"`
+	Name                    *string                       `json:"name,omitempty"`
+	Notifications           *EmployeeNotificationSettings `json:"notifications,omitempty"`
 
 	// The order of the employee in the list of employees on the marketplace.
 	Order *int32 `json:"order,omitempty"`
@@ -3442,6 +3856,28 @@ type EmployeeCommissionsPOS struct {
 	Services *CommissionConfig `json:"services,omitempty"`
 	Vouchers *CommissionConfig `json:"vouchers,omitempty"`
 }
+
+// EmployeeCreateRequest defines model for EmployeeCreateRequest.
+type EmployeeCreateRequest struct {
+	// Whether the employee is visible on the calendar
+	AvailableForBookings *bool                         `json:"available_for_bookings,omitempty"`
+	CompanyId            string                        `json:"company_id"`
+	Email                string                        `json:"email"`
+	Marketplace          *EmployeeMarketplaceSettings  `json:"marketplace,omitempty"`
+	Name                 *string                       `json:"name,omitempty"`
+	Notifications        *EmployeeNotificationSettings `json:"notifications,omitempty"`
+	RoleId               *string                       `json:"role_id,omitempty"`
+}
+
+// EmployeeCreationError defines model for EmployeeCreationError.
+type EmployeeCreationError struct {
+	// Specific error codes for employee creation failures
+	Code    EmployeeCreationErrorCode `json:"code"`
+	Message string                    `json:"message"`
+}
+
+// Specific error codes for employee creation failures
+type EmployeeCreationErrorCode string
 
 // EmployeeField defines model for EmployeeField.
 type EmployeeField string
@@ -3510,12 +3946,32 @@ type EmployeeMarketplaceSettings struct {
 type EmployeeNotificationSettings struct {
 	// Whether the employee should receive emails when a booking is made
 	BookingEmail *bool `json:"booking_email,omitempty"`
+
+	// Notification settings for booking offer events
+	BookingOffers *BookingOfferNotifications `json:"booking_offers,omitempty"`
+
+	// Notification settings for customer-initiated bookings
+	OnlineBookings *OnlineBookingNotifications `json:"online_bookings,omitempty"`
+
+	// Notification settings for payment events
+	Payments *PaymentNotifications `json:"payments,omitempty"`
+
+	// Notification settings for staff-initiated bookings
+	StaffBookings *StaffBookingNotifications `json:"staff_bookings,omitempty"`
+
+	// Notification settings for waitlist events
+	Waitlist *WaitlistNotifications `json:"waitlist,omitempty"`
 }
 
 // EmployeeSMSSettings defines model for EmployeeSMSSettings.
 type EmployeeSMSSettings struct {
 	// Custom text for SMS messages
 	CustomText *string `json:"custom_text,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	CustomTextTranslations *TranslationMap `json:"custom_text_translations,omitempty"`
 
 	// The sender name for SMS messages
 	From *string `json:"from,omitempty"`
@@ -4124,10 +4580,7 @@ type EventType struct {
 	Color *string `json:"color,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company *ExpandableCompany `json:"company,omitempty"`
-
-	// Deprecated, please use company instead
-	CompanyId   *string               `json:"company_id,omitempty"`
+	Company     *ExpandableCompany    `json:"company,omitempty"`
 	Connections *EventTypeConnections `json:"connections,omitempty"`
 	CreatedAt   *time.Time            `json:"created_at,omitempty"`
 
@@ -4217,8 +4670,9 @@ type EventTypeCategory struct {
 
 // EventTypeCategoryGroup defines model for EventTypeCategoryGroup.
 type EventTypeCategoryGroup struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id         string  `json:"id"`
+	Name       string  `json:"name"`
+	ReadableId *string `json:"readable_id,omitempty"`
 }
 
 // EventTypeCategoryGroups defines model for EventTypeCategoryGroups.
@@ -4227,11 +4681,21 @@ type EventTypeCategoryGroups []EventTypeCategoryGroup
 // EventTypeConnections defines model for EventTypeConnections.
 type EventTypeConnections struct {
 	// Deprecated, use `booking_questions` instead.
-	BookingQuestion  *string           `json:"booking_question,omitempty"`
-	BookingQuestions *BookingQuestions `json:"booking_questions,omitempty"`
+	BookingQuestion *string `json:"booking_question,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingQuestionTranslations *TranslationMap   `json:"booking_question_translations,omitempty"`
+	BookingQuestions            *BookingQuestions `json:"booking_questions,omitempty"`
 
 	// For a successful booking, this message is displayed for each event type booked.
 	BookingSuccessMessage *string `json:"booking_success_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingSuccessMessageTranslations *TranslationMap `json:"booking_success_message_translations,omitempty"`
 
 	// For this event type, does the customer select the employee/space or is it selected automatically at random?
 	CustomerSelects *EventTypeConnectionsCustomerSelects `json:"customer_selects,omitempty"`
@@ -4393,11 +4857,21 @@ type EventTypePriceRanges []EventTypePriceRange
 // EventTypeVariation defines model for EventTypeVariation.
 type EventTypeVariation struct {
 	// [Expandable](#section/Expandable-attributes)
-	CustomerGroup *ExpandableCustomerGroup   `json:"customer_group,omitempty"`
-	Description   *string                    `json:"description,omitempty"`
-	Id            *string                    `json:"id,omitempty"`
-	Label         *string                    `json:"label,omitempty"`
-	Prices        *[]EventTypeVariationPrice `json:"prices,omitempty"`
+	CustomerGroup *ExpandableCustomerGroup `json:"customer_group,omitempty"`
+	Description   *string                  `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	Id                      *string         `json:"id,omitempty"`
+	Label                   *string         `json:"label,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap            `json:"label_translations,omitempty"`
+	Prices            *[]EventTypeVariationPrice `json:"prices,omitempty"`
 
 	// Whether this variation is selectable in the marketplace
 	SelectableInMarketplace *bool `json:"selectable_in_marketplace,omitempty"`
@@ -4824,7 +5298,10 @@ type FiscalizationOnboardingDataInvopop struct {
 	ContactEmail *openapi_types.Email `json:"contact_email,omitempty"`
 
 	// Country code
-	Country               *string    `json:"country,omitempty"`
+	Country *string `json:"country,omitempty"`
+
+	// Invoice series prefix for Spain fiscalization.
+	InvoiceSeries         *string    `json:"invoice_series,omitempty"`
 	OnboardingCompletedAt *time.Time `json:"onboarding_completed_at,omitempty"`
 
 	// List of onboarding errors from Invopop
@@ -4838,6 +5315,9 @@ type FiscalizationOnboardingDataInvopop struct {
 
 	// Fiscalization provider type
 	Provider FiscalizationProvider `json:"provider"`
+
+	// URL for completing supplier registration
+	RegistrationUrl *string `json:"registration_url,omitempty"`
 
 	// Street address
 	StreetAddress *string `json:"street_address,omitempty"`
@@ -4900,6 +5380,18 @@ type FiscalizationRecordDataSaltPay struct {
 	Provider FiscalizationProvider `json:"provider"`
 }
 
+// FiscalizationStatusUpdateRequest defines model for FiscalizationStatusUpdateRequest.
+type FiscalizationStatusUpdateRequest struct {
+	// The desired fiscalization enabled status
+	FiscalizationEnabled bool `json:"fiscalization_enabled"`
+}
+
+// FiscalizationStatusUpdateResponse defines model for FiscalizationStatusUpdateResponse.
+type FiscalizationStatusUpdateResponse struct {
+	// The new fiscalization enabled status
+	FiscalizationEnabled *bool `json:"fiscalization_enabled,omitempty"`
+}
+
 // FiscalizeTransactionError defines model for FiscalizeTransactionError.
 type FiscalizeTransactionError struct {
 	// The error code. Only populated for certain errors.
@@ -4921,6 +5413,54 @@ type GenericStreamFilter struct {
 	// are created, updated, or deleted within the company.
 	EntityTypes []StreamableEntityType `json:"entity_types"`
 }
+
+// Goal defines model for Goal.
+type Goal struct {
+	// Whether this is the currently active goal for the company
+	Active    bool    `json:"active"`
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// Set when all tasks in the goal are completed
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+
+	// Localized description shown when the goal is completed
+	CompletedDescription *string `json:"completed_description,omitempty"`
+
+	// Number of tasks marked as completed for this goal
+	CompletedTasks *int32     `json:"completed_tasks,omitempty"`
+	CreatedAt      *time.Time `json:"created_at,omitempty"`
+
+	// Localized description from the goal template
+	Description *string `json:"description,omitempty"`
+
+	// Indicates whether the user has acknowledged the goal completion
+	GoalCompletionAcknowledged *bool        `json:"goal_completion_acknowledged,omitempty"`
+	GoalTemplate               GoalTemplate `json:"goal_template"`
+	Id                         *string      `json:"id,omitempty"`
+
+	// Tasks belonging to this goal (always included)
+	Tasks *[]Task `json:"tasks,omitempty"`
+
+	// Localized title from the goal template
+	Title *string `json:"title,omitempty"`
+
+	// Total number of tasks belonging to this goal
+	TotalTasks *int32     `json:"total_tasks,omitempty"`
+	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
+}
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type GoalFilter struct {
+	// Filter by active status
+	Active          *bool           `json:"active,omitempty"`
+	GoalTemplateIds *[]GoalTemplate `json:"goal_template_ids,omitempty"`
+}
+
+// GoalTemplate defines model for GoalTemplate.
+type GoalTemplate string
+
+// Goals defines model for Goals.
+type Goals []Goal
 
 // GoogleAnalyticsConnection defines model for GoogleAnalyticsConnection.
 type GoogleAnalyticsConnection struct {
@@ -5069,6 +5609,37 @@ type InvoicesFilter struct {
 // InvoicesFilterStatus defines model for InvoicesFilter.Status.
 type InvoicesFilterStatus string
 
+// Cryptographic digest of the invoice document
+type InvopopDigest struct {
+	// Hash algorithm used
+	Algorithm *string `json:"algorithm,omitempty"`
+
+	// Hash value (hex encoded)
+	Value *string `json:"value,omitempty"`
+}
+
+// Invopop fiscalization header information extracted from GOBL envelope
+type InvopopHeader struct {
+	// Full invoice identifier
+	Code *string `json:"code,omitempty"`
+
+	// Cryptographic digest of the invoice document
+	Digest *InvopopDigest  `json:"digest,omitempty"`
+	Stamps *[]InvopopStamp `json:"stamps,omitempty"`
+
+	// GOBL envelope UUID
+	Uuid *string `json:"uuid,omitempty"`
+}
+
+// Fiscal stamp from tax authority
+type InvopopStamp struct {
+	// Stamp provider code (e.g., at-atcud, at-qr, at-hash)
+	Provider *string `json:"provider,omitempty"`
+
+	// Stamp value from the authority
+	Value *string `json:"value,omitempty"`
+}
+
 // Issuer defines model for Issuer.
 type Issuer struct {
 	// Business Identification Number
@@ -5098,6 +5669,12 @@ type Issuers []Issuer
 type IssuersFilter struct {
 	// Only return Issuers that can be attached to a terminal, from the calling user's perspective.
 	TerminalAttachable *bool `json:"terminal_attachable,omitempty"`
+}
+
+// KindeUserMigration defines model for KindeUserMigration.
+type KindeUserMigration struct {
+	EmailVerified *bool   `json:"email_verified,omitempty"`
+	Name          *string `json:"name,omitempty"`
 }
 
 // This schema is deprecated. Use `booking_question_answers` instead.
@@ -5254,15 +5831,6 @@ type LocationCreate struct {
 	Country          Country        `json:"country"`
 	FormattedAddress string         `json:"formatted_address"`
 	GooglePlaceId    *string        `json:"google_place_id,omitempty"`
-	LatLng           LocationLatLng `json:"lat_lng"`
-	TimeZone         string         `json:"time_zone"`
-}
-
-// LocationCreateOverrides defines model for LocationCreateOverrides.
-type LocationCreateOverrides struct {
-	Address          Address        `json:"address"`
-	Country          Country        `json:"country"`
-	FormattedAddress string         `json:"formatted_address"`
 	LatLng           LocationLatLng `json:"lat_lng"`
 }
 
@@ -5559,6 +6127,72 @@ type Notification struct {
 	union json.RawMessage
 }
 
+// NotificationBookingOffer defines model for NotificationBookingOffer.
+type NotificationBookingOffer struct {
+	// The booking offer ID
+	BookingOffer *string    `json:"booking_offer,omitempty"`
+	Company      *string    `json:"company,omitempty"`
+	CreatedAt    *time.Time `json:"created_at,omitempty"`
+	Customer     *string    `json:"customer,omitempty"`
+	CustomerName *string    `json:"customer_name,omitempty"`
+	Employee     *string    `json:"employee,omitempty"`
+	EmployeeName *string    `json:"employee_name,omitempty"`
+
+	// The event ID
+	Event *string `json:"event,omitempty"`
+
+	// The names of the event types
+	EventTypeNames *[]string `json:"event_type_names,omitempty"`
+	Id             *string   `json:"id,omitempty"`
+
+	// When the booking offer appointment starts
+	StartsAt *time.Time `json:"starts_at,omitempty"`
+
+	// The status of the booking offer notification
+	Status    *NotificationBookingOfferStatus `json:"status,omitempty"`
+	Type      NotificationBookingOfferType    `json:"type"`
+	UpdatedAt *time.Time                      `json:"updated_at,omitempty"`
+}
+
+// The status of the booking offer notification
+type NotificationBookingOfferStatus string
+
+// NotificationBookingOfferType defines model for NotificationBookingOffer.Type.
+type NotificationBookingOfferType string
+
+// NotificationCategory defines model for NotificationCategory.
+type NotificationCategory string
+
+// NotificationCategoryMetadata defines model for NotificationCategoryMetadata.
+type NotificationCategoryMetadata struct {
+	Id            *string                            `json:"id,omitempty"`
+	ReadableId    *NotificationCategory              `json:"readable_id,omitempty"`
+	Subcategories *[]NotificationSubcategoryMetadata `json:"subcategories,omitempty"`
+	Title         *string                            `json:"title,omitempty"`
+}
+
+// NotificationChannel defines model for NotificationChannel.
+type NotificationChannel string
+
+// NotificationChannelMetadata defines model for NotificationChannelMetadata.
+type NotificationChannelMetadata struct {
+	Id *string `json:"id,omitempty"`
+
+	// Whether this channel is locked for this notification type
+	Locked     *bool                `json:"locked,omitempty"`
+	ReadableId *NotificationChannel `json:"readable_id,omitempty"`
+	Title      *string              `json:"title,omitempty"`
+}
+
+// NotificationChannelSettings defines model for NotificationChannelSettings.
+type NotificationChannelSettings struct {
+	// Whether to receive notifications in the app (includes in-app and push notifications)
+	App *bool `json:"app,omitempty"`
+
+	// Whether to receive email notifications
+	Email *bool `json:"email,omitempty"`
+}
+
 // NotificationCreate defines model for NotificationCreate.
 type NotificationCreate struct {
 	Company  string `json:"company"`
@@ -5658,41 +6292,22 @@ type NotificationIcon struct {
 // NotificationIconIconVariant defines model for NotificationIcon.IconVariant.
 type NotificationIconIconVariant string
 
-// NotificationLegacy defines model for NotificationLegacy.
-type NotificationLegacy struct {
-	Company   *string    `json:"company,omitempty"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	Date      *string    `json:"date,omitempty"`
-	Employee  *string    `json:"employee,omitempty"`
-
-	// The event which the notification is for.
-	Event   *string           `json:"event,omitempty"`
-	Icon    *NotificationIcon `json:"icon,omitempty"`
-	Id      *string           `json:"id,omitempty"`
-	Message *string           `json:"message,omitempty"`
-
-	// The amount of the payment if the event has a payment associated with it.
-	PaymentAmount *float64 `json:"payment_amount,omitempty"`
-
-	// The currency of the payment if the event has a payment associated with it.
-	PaymentCurrency *string                `json:"payment_currency,omitempty"`
-	PaymentStatus   *PaymentStatus         `json:"payment_status,omitempty"`
-	Priority        *int32                 `json:"priority,omitempty"`
-	SideMessage     *string                `json:"side_message,omitempty"`
-	Space           *string                `json:"space,omitempty"`
-	Title           *string                `json:"title,omitempty"`
-	Type            NotificationLegacyType `json:"type"`
-	UpdatedAt       *time.Time             `json:"updated_at,omitempty"`
-}
-
-// NotificationLegacyType defines model for NotificationLegacy.Type.
-type NotificationLegacyType string
-
 // NotificationPreferences defines model for NotificationPreferences.
 type NotificationPreferences struct {
 	Email *bool `json:"email,omitempty"`
 	Push  *bool `json:"push,omitempty"`
 	Sms   *bool `json:"sms,omitempty"`
+}
+
+// NotificationSubcategory defines model for NotificationSubcategory.
+type NotificationSubcategory string
+
+// NotificationSubcategoryMetadata defines model for NotificationSubcategoryMetadata.
+type NotificationSubcategoryMetadata struct {
+	Channels   *[]NotificationChannelMetadata `json:"channels,omitempty"`
+	Id         *string                        `json:"id,omitempty"`
+	ReadableId *NotificationSubcategory       `json:"readable_id,omitempty"`
+	Title      *string                        `json:"title,omitempty"`
 }
 
 // NotificationSurvey defines model for NotificationSurvey.
@@ -5721,12 +6336,18 @@ type NotificationWaitlistEntry struct {
 	EventTypeNames *[]string `json:"event_type_names,omitempty"`
 
 	// The time when the waitlist entry expires
-	ExpiresAt     *time.Time                    `json:"expires_at,omitempty"`
-	Id            *string                       `json:"id,omitempty"`
-	Type          NotificationWaitlistEntryType `json:"type"`
-	UpdatedAt     *time.Time                    `json:"updated_at,omitempty"`
-	WaitlistEntry *string                       `json:"waitlist_entry,omitempty"`
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	Id        *string    `json:"id,omitempty"`
+
+	// The status of the waitlist entry notification. If not set, the entry was created.
+	Status        *NotificationWaitlistEntryStatus `json:"status,omitempty"`
+	Type          NotificationWaitlistEntryType    `json:"type"`
+	UpdatedAt     *time.Time                       `json:"updated_at,omitempty"`
+	WaitlistEntry *string                          `json:"waitlist_entry,omitempty"`
 }
+
+// The status of the waitlist entry notification. If not set, the entry was created.
+type NotificationWaitlistEntryStatus string
 
 // NotificationWaitlistEntryType defines model for NotificationWaitlistEntry.Type.
 type NotificationWaitlistEntryType string
@@ -5789,6 +6410,14 @@ type OAuthTokenRequest struct {
 
 // OAuthTokenRequestGrantType defines model for OAuthTokenRequest.GrantType.
 type OAuthTokenRequestGrantType string
+
+// Notification settings for customer-initiated bookings
+type OnlineBookingNotifications struct {
+	Cancellations   *NotificationChannelSettings `json:"cancellations,omitempty"`
+	NewAppointments *NotificationChannelSettings `json:"new_appointments,omitempty"`
+	Reschedules     *NotificationChannelSettings `json:"reschedules,omitempty"`
+	ResourceOnly    *NotificationChannelSettings `json:"resource_only,omitempty"`
+}
 
 // OnlineBookingsRule defines model for OnlineBookingsRule.
 type OnlineBookingsRule struct {
@@ -6066,6 +6695,12 @@ type PaymentMethodInstancesFilterStatus string
 
 // PaymentMethods defines model for PaymentMethods.
 type PaymentMethods []PaymentMethod
+
+// Notification settings for payment events
+type PaymentNotifications struct {
+	FailedSettlements     *NotificationChannelSettings `json:"failed_settlements,omitempty"`
+	SuccessfulSettlements *NotificationChannelSettings `json:"successful_settlements,omitempty"`
+}
 
 // PaymentReceiptRecipient defines model for PaymentReceiptRecipient.
 type PaymentReceiptRecipient struct {
@@ -6494,6 +7129,18 @@ type PushTokenPlatform string
 // Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
 type RRuleString string
 
+// Information about how the user heard about Noona
+type Referer struct {
+	// Affiliate link if applicable
+	AffiliateLink *string `json:"affiliate_link,omitempty"`
+
+	// Additional details about the referer
+	Detail *string `json:"detail,omitempty"`
+
+	// How the user heard about Noona
+	Type *string `json:"type,omitempty"`
+}
+
 // RefundMarketplaceSaleError defines model for RefundMarketplaceSaleError.
 type RefundMarketplaceSaleError struct {
 	// The error code. Only populated for certain errors.
@@ -6511,6 +7158,120 @@ type RefundMarketplaceSaleError struct {
 // - `already_refunded`: The payment has already been refunded.
 // - `sale_has_been_mutated`: The sale has been mutated and cannot be refunded automatically.
 type RefundMarketplaceSaleErrorCode string
+
+// Reminder defines model for Reminder.
+type Reminder struct {
+	// Whether the reminder is active or inactive
+	Active *bool `json:"active,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+
+	// Whether or not this is a default reminder
+	Default *bool `json:"default,omitempty"`
+
+	// Employee IDs for employee-specific reminders. If empty or null, reminder applies to all employees.
+	Employees *[]string `json:"employees,omitempty"`
+
+	// Event type IDs for event-specific reminders. If empty or null, reminder applies to all event types.
+	EventTypes *[]string `json:"event_types,omitempty"`
+	Id         *string   `json:"id,omitempty"`
+
+	// How many minutes before the event to send the reminder (e.g., 1440 = 24 hours)
+	MinutesBefore *int32 `json:"minutes_before,omitempty"`
+
+	// Channels through which the reminder should be sent
+	NotificationChannels *[]NotificationChannel `json:"notification_channels,omitempty"`
+
+	// Inline SMS content with {{variable}} placeholders
+	SmsContent *string `json:"sms_content,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	SmsContentTranslations *TranslationMap `json:"sms_content_translations,omitempty"`
+	Title                  *string         `json:"title,omitempty"`
+	UpdatedAt              *time.Time      `json:"updated_at,omitempty"`
+}
+
+// ReminderCreate defines model for ReminderCreate.
+type ReminderCreate struct {
+	// Whether the reminder is active or inactive. Defaults to true if not provided.
+	Active *bool `json:"active,omitempty"`
+
+	// Company ID
+	CompanyId string `json:"company_id"`
+
+	// Employee IDs for employee-specific reminders
+	Employees *[]string `json:"employees,omitempty"`
+
+	// Event type IDs for event-specific reminders
+	EventTypes *[]string `json:"event_types,omitempty"`
+
+	// How many minutes before the event to send the reminder
+	MinutesBefore int32 `json:"minutes_before"`
+
+	// Channels through which the reminder should be sent
+	NotificationChannels []NotificationChannel `json:"notification_channels"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	SmsContentTranslations *TranslationMap `json:"sms_content_translations,omitempty"`
+	Title                  *string         `json:"title,omitempty"`
+}
+
+// ReminderError defines model for ReminderError.
+type ReminderError struct {
+	// English error message for logging/debugging
+	Message string `json:"message"`
+
+	// The specific error code for the reminder validation error
+	Type ReminderErrorType `json:"type"`
+
+	// A human readable error message that is translated according to the user's locale
+	UserMessage *string `json:"user_message,omitempty"`
+}
+
+// The specific error code for the reminder validation error
+type ReminderErrorType string
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type ReminderFilter struct {
+	// Filter by minutes before the event
+	MinutesBefore *int32 `json:"minutes_before,omitempty"`
+
+	// Filter by notification channels
+	NotificationChannels *[]NotificationChannel `json:"notification_channels,omitempty"`
+}
+
+// ReminderUpdate defines model for ReminderUpdate.
+type ReminderUpdate struct {
+	// Whether the reminder is active or inactive
+	Active *bool `json:"active,omitempty"`
+
+	// Employee IDs for employee-specific reminders
+	Employees *[]string `json:"employees,omitempty"`
+
+	// Event type IDs for event-specific reminders
+	EventTypes *[]string `json:"event_types,omitempty"`
+
+	// How many minutes before the event to send the reminder
+	MinutesBefore *int32 `json:"minutes_before,omitempty"`
+
+	// Channels through which the reminder should be sent
+	NotificationChannels *[]NotificationChannel `json:"notification_channels,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	SmsContentTranslations *TranslationMap `json:"sms_content_translations,omitempty"`
+	Title                  *string         `json:"title,omitempty"`
+}
+
+// Reminders defines model for Reminders.
+type Reminders []Reminder
 
 // Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 type RequiredFields struct {
@@ -6542,12 +7303,17 @@ type Resource struct {
 	BookingInterval *BookingInterval `json:"booking_interval,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company              *ExpandableCompany    `json:"company,omitempty"`
-	CreatedAt            *time.Time            `json:"created_at,omitempty"`
-	Description          *string               `json:"description,omitempty"`
-	EventTypePreferences *EventTypePreferences `json:"event_type_preferences,omitempty"`
-	Id                   *string               `json:"id,omitempty"`
-	Image                *Image                `json:"image,omitempty"`
+	Company     *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt   *time.Time         `json:"created_at,omitempty"`
+	Description *string            `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap       `json:"description_translations,omitempty"`
+	EventTypePreferences    *EventTypePreferences `json:"event_type_preferences,omitempty"`
+	Id                      *string               `json:"id,omitempty"`
+	Image                   *Image                `json:"image,omitempty"`
 
 	// If true, resource is visible on the marketplace.
 	Marketplace *bool `json:"marketplace,omitempty"`
@@ -6558,6 +7324,11 @@ type Resource struct {
 	// The mininum capacity of the resource, for example how many people can occupy a table at minimum.
 	MinCapacity *int32  `json:"min_capacity,omitempty"`
 	Name        *string `json:"name,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
 
 	// The order of the resource in the list of resources on the marketplace and in the HQ UI.
 	Order *int32 `json:"order,omitempty"`
@@ -7363,6 +8134,11 @@ type SendCustomerDataRequest struct {
 	Email string `json:"email"`
 }
 
+// SendTransactionReceiptRequest defines model for SendTransactionReceiptRequest.
+type SendTransactionReceiptRequest struct {
+	Email string `json:"email"`
+}
+
 // Settlement defines model for Settlement.
 type Settlement struct {
 	CreatedAt    *time.Time           `json:"created_at,omitempty"`
@@ -7418,6 +8194,12 @@ type SettlementLineItems []SettlementLineItem
 
 // Settlements defines model for Settlements.
 type Settlements []Settlement
+
+// What the user needs help with
+type SignupGoalOption string
+
+// SignupGoalOptions defines model for SignupGoalOptions.
+type SignupGoalOptions []SignupGoalOption
 
 // Sort defines model for Sort.
 type Sort struct {
@@ -7484,6 +8266,14 @@ type Spaces []Space
 type SpacesFilter struct {
 	// Filter by space IDs
 	Types *[]SpaceType `json:"types,omitempty"`
+}
+
+// Notification settings for staff-initiated bookings
+type StaffBookingNotifications struct {
+	Cancellations   *NotificationChannelSettings `json:"cancellations,omitempty"`
+	NewAppointments *NotificationChannelSettings `json:"new_appointments,omitempty"`
+	Reschedules     *NotificationChannelSettings `json:"reschedules,omitempty"`
+	ResourceOnly    *NotificationChannelSettings `json:"resource_only,omitempty"`
 }
 
 // The Server-Sent Event names that will be emitted by the generic stream endpoint.
@@ -7701,6 +8491,88 @@ type SubtransactionDataVoucherType string
 // Subtransactions defines model for Subtransactions.
 type Subtransactions []Subtransaction
 
+// Task defines model for Task.
+type Task struct {
+	// Configuration for the task's call-to-action button
+	Action *TaskAction `json:"action,omitempty"`
+
+	// Whether the task is blocked by incomplete prerequisites
+	Blocked   *bool   `json:"blocked,omitempty"`
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// Set when the task is marked complete (manually or computed)
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+
+	// How the task is completed:
+	// - manual: Explicitly marked complete via a request to the API
+	// - computed: Automatically computed based on company data
+	CompletionMethod *TaskCompletionMethod `json:"completion_method,omitempty"`
+	CreatedAt        *time.Time            `json:"created_at,omitempty"`
+
+	// Localized description from the task template
+	Description  *string `json:"description,omitempty"`
+	GoalInstance *string `json:"goal_instance,omitempty"`
+	Icon         *string `json:"icon,omitempty"`
+	Id           *string `json:"id,omitempty"`
+
+	// Display order within the goal
+	Order *int32 `json:"order,omitempty"`
+
+	// Task template IDs that must be completed before this task
+	Prerequisites *[]string `json:"prerequisites,omitempty"`
+	TaskTemplate  *string   `json:"task_template,omitempty"`
+
+	// Localized title from the task template
+	Title     *string    `json:"title,omitempty"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// Configuration for the task's call-to-action button
+type TaskAction struct {
+	// Localized button text when the task has been completed
+	CompletedTitle *string `json:"completed_title,omitempty"`
+
+	// Dynamic content based on action type.
+	Content *string `json:"content,omitempty"`
+
+	// Pre-determined navigation destination for the task action.
+	// - marketplace_profile_onboarding: Navigate to marketplace profile onboarding flow
+	// - marketplace_profile: Navigate to marketplace profile settings
+	// - event_types: Navigate to event types/services page
+	// - employees: Navigate to employees/staff page
+	// - calendar_settings: Navigate to calendar settings page
+	NavigateTo *TaskNavigateTo `json:"navigate_to,omitempty"`
+
+	// Localized button text
+	Title *string `json:"title,omitempty"`
+
+	// Type of action:
+	// - navigate: Navigate to a specific pre-determined location in the app
+	// - copy: Copy content to clipboard
+	Type *TaskActionType `json:"type,omitempty"`
+}
+
+// Type of action:
+// - navigate: Navigate to a specific pre-determined location in the app
+// - copy: Copy content to clipboard
+type TaskActionType string
+
+// How the task is completed:
+// - manual: Explicitly marked complete via a request to the API
+// - computed: Automatically computed based on company data
+type TaskCompletionMethod string
+
+// Pre-determined navigation destination for the task action.
+// - marketplace_profile_onboarding: Navigate to marketplace profile onboarding flow
+// - marketplace_profile: Navigate to marketplace profile settings
+// - event_types: Navigate to event types/services page
+// - employees: Navigate to employees/staff page
+// - calendar_settings: Navigate to calendar settings page
+type TaskNavigateTo string
+
+// Tasks defines model for Tasks.
+type Tasks []Task
+
 // Terminal defines model for Terminal.
 type Terminal struct {
 	Brand     *string  `json:"brand,omitempty"`
@@ -7760,7 +8632,7 @@ type TimeSlot struct {
 	// The start time of the time slot
 	Slot *time.Time `json:"slot,omitempty"`
 
-	// Details of the resources that are unavailable for this time slot, including the reason
+	// Details of the resources and employees that are unavailable for this time slot, including the reason
 	UnavailableResources *[]UnavailableResource `json:"unavailable_resources,omitempty"`
 }
 
@@ -7838,9 +8710,12 @@ type Transaction struct {
 	Fiscalization *string               `json:"fiscalization,omitempty"`
 	Id            *string               `json:"id,omitempty"`
 	InvoiceNumber *int64                `json:"invoice_number,omitempty"`
-	Issuer        *Issuer               `json:"issuer,omitempty"`
-	LineItems     *ExpandableLineItems  `json:"line_items,omitempty"`
-	Note          *string               `json:"note,omitempty"`
+
+	// Invopop fiscalization header information extracted from GOBL envelope
+	InvopopHeader *InvopopHeader       `json:"invopop_header,omitempty"`
+	Issuer        *Issuer              `json:"issuer,omitempty"`
+	LineItems     *ExpandableLineItems `json:"line_items,omitempty"`
+	Note          *string              `json:"note,omitempty"`
 
 	// The origin of the transaction.
 	//
@@ -7954,13 +8829,15 @@ type UnavailableResource struct {
 	// The reason why the resource is unavailable.
 	//
 	// Possible values:
-	// - `booked` - The resource is booked during this time slot
+	// - `booking` - The resource is occupied by a booking/event during this time slot
+	// - `blocked_time` - The resource is occupied by blocked time during this time slot
+	// - `timeslot_reservation` - The resource is occupied by a timeslot reservation during this time slot
 	// - `outside_opening_hours` - The reservation extends outside the opening hours of the company
 	// - `custom_booking_interval` - The reservation start time does not match the custom booking interval of the resource
 	// - `capacity` - The capacity of the resource does not match number of guests (Too big or too small)
 	//
-	// The above list of reasons is priority ordered. Meaning that if a table does not support number of guests due to
-	// capacity and is also booked, the reason will be `booked`.
+	// The above list of reasons is priority ordered. Meaning that if a resource has multiple occupying factors,
+	// the reason will be the highest priority one (bookings > timeslot reservations > blocked times).
 	Reason *UnavailableResourceReason `json:"reason,omitempty"`
 
 	// The ID of the unavailable resource
@@ -7970,13 +8847,15 @@ type UnavailableResource struct {
 // The reason why the resource is unavailable.
 //
 // Possible values:
-// - `booked` - The resource is booked during this time slot
+// - `booking` - The resource is occupied by a booking/event during this time slot
+// - `blocked_time` - The resource is occupied by blocked time during this time slot
+// - `timeslot_reservation` - The resource is occupied by a timeslot reservation during this time slot
 // - `outside_opening_hours` - The reservation extends outside the opening hours of the company
 // - `custom_booking_interval` - The reservation start time does not match the custom booking interval of the resource
 // - `capacity` - The capacity of the resource does not match number of guests (Too big or too small)
 //
-// The above list of reasons is priority ordered. Meaning that if a table does not support number of guests due to
-// capacity and is also booked, the reason will be `booked`.
+// The above list of reasons is priority ordered. Meaning that if a resource has multiple occupying factors,
+// the reason will be the highest priority one (bookings > timeslot reservations > blocked times).
 type UnavailableResourceReason string
 
 // UnitPrice defines model for UnitPrice.
@@ -7990,6 +8869,12 @@ type UnitPrice struct {
 	OriginalAmount *float64 `json:"original_amount,omitempty"`
 }
 
+// UpdateGoalRequest defines model for UpdateGoalRequest.
+type UpdateGoalRequest struct {
+	// Whether the goal completion has been acknowledged
+	GoalCompletionAcknowledged *bool `json:"goal_completion_acknowledged,omitempty"`
+}
+
 // UpdatePaymentMethodInstanceRequest defines model for UpdatePaymentMethodInstanceRequest.
 type UpdatePaymentMethodInstanceRequest struct {
 	// Whether this payment method is enabled for the company.
@@ -8000,6 +8885,15 @@ type UpdatePaymentMethodInstanceRequest struct {
 
 	// Display name of the payment method.
 	Title *string `json:"title,omitempty"`
+}
+
+// UpdateTaskRequest defines model for UpdateTaskRequest.
+type UpdateTaskRequest struct {
+	// The company ID that owns the task
+	CompanyId string `json:"company_id"`
+
+	// Set to true to mark the task as complete. For manual tasks only. Computed tasks are automatically evaluated.
+	Completed *bool `json:"completed,omitempty"`
 }
 
 // UpdateVerificationRequest defines model for UpdateVerificationRequest.
@@ -8022,12 +8916,20 @@ type User struct {
 	Connections   *UserConnections     `json:"connections,omitempty"`
 	Email         *string              `json:"email,omitempty"`
 	Employees     *Employees           `json:"employees,omitempty"`
-	Id            *string              `json:"id,omitempty"`
-	Image         *Image               `json:"image,omitempty"`
-	Locale        *string              `json:"locale,omitempty"`
-	Pos           *UserPOSSettings     `json:"pos,omitempty"`
-	Settings      *UserSettings        `json:"settings,omitempty"`
-	Verification  *Verification        `json:"verification,omitempty"`
+
+	// Indicates whether the user has ever been associated with any company
+	HasOnboarded *bool            `json:"has_onboarded,omitempty"`
+	Id           *string          `json:"id,omitempty"`
+	Image        *Image           `json:"image,omitempty"`
+	IsAdmin      *bool            `json:"is_admin,omitempty"`
+	IsSecretary  *bool            `json:"is_secretary,omitempty"`
+	Locale       *string          `json:"locale,omitempty"`
+	Pos          *UserPOSSettings `json:"pos,omitempty"`
+	Settings     *UserSettings    `json:"settings,omitempty"`
+
+	// The profile of the user
+	UserProfile  *UserProfile  `json:"user_profile,omitempty"`
+	Verification *Verification `json:"verification,omitempty"`
 }
 
 // UserConnections defines model for UserConnections.
@@ -8052,6 +8954,76 @@ type UserField string
 // UserFields defines model for UserFields.
 type UserFields []UserField
 
+// A user invite to join a company
+type UserInvite struct {
+	// ID of the company this user invite belongs to
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// When the user invite was used (null if not used)
+	ConsumedAt *time.Time `json:"consumed_at"`
+
+	// When the user invite was created
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// ID of the employee who created this user invite
+	EmployeeId *string `json:"employee_id,omitempty"`
+
+	// When the user invite expires
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
+	// Unique identifier for the user invite
+	Id *string `json:"id,omitempty"`
+
+	// Whether the user invite has expired
+	IsExpired *bool `json:"is_expired,omitempty"`
+
+	// Whether the user invite has been used
+	IsUsed *bool `json:"is_used,omitempty"`
+
+	// Whether the user invite is still valid (not expired, used, or deleted)
+	IsValid *bool `json:"is_valid,omitempty"`
+
+	// Unique token for the user invite
+	Token *string `json:"token,omitempty"`
+
+	// When the user invite was last updated
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+
+	// ID of the specific user who can consume this invite (empty for general invites)
+	UserId *string `json:"user_id"`
+}
+
+// Result of validating a user invite without consuming it
+type UserInviteContextResponse struct {
+	// ID of the company this user invite belongs to
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// Name of the company this user invite belongs to
+	CompanyName *string `json:"company_name,omitempty"`
+
+	// When the user invite expires
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+
+	// Name of the user who created this user invite
+	InvitedBy *string `json:"invited_by,omitempty"`
+
+	// Whether the user invite is still valid (not expired, used, or deleted)
+	IsValid *bool `json:"is_valid,omitempty"`
+}
+
+// UserInviteError defines model for UserInviteError.
+type UserInviteError struct {
+	// Specific error codes for user invite validation failures
+	Code    UserInviteErrorCode `json:"code"`
+	Message string              `json:"message"`
+}
+
+// Specific error codes for user invite validation failures
+type UserInviteErrorCode string
+
+// UserInvites defines model for UserInvites.
+type UserInvites []UserInvite
+
 // UserOAuthRedirect defines model for UserOAuthRedirect.
 type UserOAuthRedirect struct {
 	RedirectUrl *string `json:"redirect_url,omitempty"`
@@ -8075,6 +9047,12 @@ type UserPOSSettings struct {
 
 	// VAT Identification Number
 	VatId *string `json:"vat_id,omitempty"`
+}
+
+// The profile of the user
+type UserProfile struct {
+	// The name of the user
+	Name *string `json:"name,omitempty"`
 }
 
 // UserSettings defines model for UserSettings.
@@ -8321,6 +9299,11 @@ type VoucherTemplate struct {
 	Currency    *string    `json:"currency,omitempty"`
 	Description *string    `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType                     *ExpandableEventType `json:"event_type,omitempty"`
 	ExpirationMonthsAfterPurchase *int32               `json:"expiration_months_after_purchase,omitempty"`
@@ -8331,14 +9314,24 @@ type VoucherTemplate struct {
 	Marketplace            *bool   `json:"marketplace,omitempty"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	MarketplaceDescriptionTranslations *TranslationMap `json:"marketplace_description_translations,omitempty"`
+
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32               `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string              `json:"primary_color,omitempty"`
-	SessionsTotal  *int32               `json:"sessions_total,omitempty"`
-	Title          *string              `json:"title,omitempty"`
-	Type           *VoucherTemplateType `json:"type,omitempty"`
-	UpdatedAt      *time.Time           `json:"updated_at,omitempty"`
-	Value          *float64             `json:"value,omitempty"`
+	NumberOfGuests *int32  `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string `json:"primary_color,omitempty"`
+	SessionsTotal  *int32  `json:"sessions_total,omitempty"`
+	Title          *string `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap      `json:"title_translations,omitempty"`
+	Type              *VoucherTemplateType `json:"type,omitempty"`
+	UpdatedAt         *time.Time           `json:"updated_at,omitempty"`
+	Value             *float64             `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -8355,6 +9348,11 @@ type VoucherTemplateCreate struct {
 	Currency    string     `json:"currency"`
 	Description *string    `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType                     *ExpandableEventType `json:"event_type,omitempty"`
 	ExpirationMonthsAfterPurchase *int32               `json:"expiration_months_after_purchase,omitempty"`
@@ -8365,14 +9363,24 @@ type VoucherTemplateCreate struct {
 	Marketplace            *bool   `json:"marketplace,omitempty"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	MarketplaceDescriptionTranslations *TranslationMap `json:"marketplace_description_translations,omitempty"`
+
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32                     `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string                    `json:"primary_color,omitempty"`
-	SessionsTotal  *int32                     `json:"sessions_total,omitempty"`
-	Title          *string                    `json:"title,omitempty"`
-	Type           *VoucherTemplateCreateType `json:"type,omitempty"`
-	UpdatedAt      *time.Time                 `json:"updated_at,omitempty"`
-	Value          *float64                   `json:"value,omitempty"`
+	NumberOfGuests *int32  `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string `json:"primary_color,omitempty"`
+	SessionsTotal  *int32  `json:"sessions_total,omitempty"`
+	Title          *string `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap            `json:"title_translations,omitempty"`
+	Type              *VoucherTemplateCreateType `json:"type,omitempty"`
+	UpdatedAt         *time.Time                 `json:"updated_at,omitempty"`
+	Value             *float64                   `json:"value,omitempty"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -8397,6 +9405,12 @@ type VoucherTemplateCreateOverrides struct {
 // VoucherTemplateCreateOverridesType defines model for VoucherTemplateCreateOverrides.Type.
 type VoucherTemplateCreateOverridesType string
 
+// VoucherTemplateField defines model for VoucherTemplateField.
+type VoucherTemplateField string
+
+// VoucherTemplateFields defines model for VoucherTemplateFields.
+type VoucherTemplateFields []VoucherTemplateField
+
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type VoucherTemplateFilter struct {
 	Companies  *[]string `json:"companies,omitempty"`
@@ -8411,6 +9425,11 @@ type VoucherTemplateResponse struct {
 	Currency    string     `json:"currency"`
 	Description *string    `json:"description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType                     *ExpandableEventType `json:"event_type,omitempty"`
 	ExpirationMonthsAfterPurchase *int32               `json:"expiration_months_after_purchase,omitempty"`
@@ -8421,14 +9440,24 @@ type VoucherTemplateResponse struct {
 	Marketplace            bool    `json:"marketplace"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	MarketplaceDescriptionTranslations *TranslationMap `json:"marketplace_description_translations,omitempty"`
+
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32                       `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string                      `json:"primary_color,omitempty"`
-	SessionsTotal  *int32                       `json:"sessions_total,omitempty"`
-	Title          *string                      `json:"title,omitempty"`
-	Type           *VoucherTemplateResponseType `json:"type,omitempty"`
-	UpdatedAt      *time.Time                   `json:"updated_at,omitempty"`
-	Value          float64                      `json:"value"`
+	NumberOfGuests *int32  `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string `json:"primary_color,omitempty"`
+	SessionsTotal  *int32  `json:"sessions_total,omitempty"`
+	Title          *string `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap              `json:"title_translations,omitempty"`
+	Type              *VoucherTemplateResponseType `json:"type,omitempty"`
+	UpdatedAt         *time.Time                   `json:"updated_at,omitempty"`
+	Value             float64                      `json:"value"`
 
 	// The ID of the event type variation that the value of the voucher should be calculated from.
 	VariationId *string `json:"variation_id,omitempty"`
@@ -8457,29 +9486,44 @@ type VoucherTemplateResponseOverrides struct {
 
 // VoucherTemplateUpdate defines model for VoucherTemplateUpdate.
 type VoucherTemplateUpdate struct {
-	Amount                        *float64     `json:"amount,omitempty"`
-	Company                       *interface{} `json:"company,omitempty"`
-	CreatedAt                     *time.Time   `json:"created_at,omitempty"`
-	Currency                      *interface{} `json:"currency,omitempty"`
-	Description                   *string      `json:"description,omitempty"`
-	EventType                     *interface{} `json:"event_type,omitempty"`
-	ExpirationMonthsAfterPurchase *int32       `json:"expiration_months_after_purchase,omitempty"`
-	Id                            *string      `json:"id,omitempty"`
-	Images                        *Images      `json:"images,omitempty"`
+	Amount      *float64     `json:"amount,omitempty"`
+	Company     *interface{} `json:"company,omitempty"`
+	CreatedAt   *time.Time   `json:"created_at,omitempty"`
+	Currency    *interface{} `json:"currency,omitempty"`
+	Description *string      `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations       *TranslationMap `json:"description_translations,omitempty"`
+	EventType                     *interface{}    `json:"event_type,omitempty"`
+	ExpirationMonthsAfterPurchase *int32          `json:"expiration_months_after_purchase,omitempty"`
+	Id                            *string         `json:"id,omitempty"`
+	Images                        *Images         `json:"images,omitempty"`
 
 	// If true, voucher is visible on the marketplace.
 	Marketplace            *bool   `json:"marketplace,omitempty"`
 	MarketplaceDescription *string `json:"marketplace_description,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	MarketplaceDescriptionTranslations *TranslationMap `json:"marketplace_description_translations,omitempty"`
+
 	// The number of people this voucher is valid for.
-	NumberOfGuests *int32                     `json:"number_of_guests,omitempty"`
-	PrimaryColor   *string                    `json:"primary_color,omitempty"`
-	SessionsTotal  *int32                     `json:"sessions_total,omitempty"`
-	Title          *string                    `json:"title,omitempty"`
-	Type           *VoucherTemplateUpdateType `json:"type,omitempty"`
-	UpdatedAt      *time.Time                 `json:"updated_at,omitempty"`
-	Value          *float64                   `json:"value,omitempty"`
-	VariationId    *interface{}               `json:"variation_id,omitempty"`
+	NumberOfGuests *int32  `json:"number_of_guests,omitempty"`
+	PrimaryColor   *string `json:"primary_color,omitempty"`
+	SessionsTotal  *int32  `json:"sessions_total,omitempty"`
+	Title          *string `json:"title,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap            `json:"title_translations,omitempty"`
+	Type              *VoucherTemplateUpdateType `json:"type,omitempty"`
+	UpdatedAt         *time.Time                 `json:"updated_at,omitempty"`
+	Value             *float64                   `json:"value,omitempty"`
+	VariationId       *interface{}               `json:"variation_id,omitempty"`
 }
 
 // VoucherTemplateUpdateType defines model for VoucherTemplateUpdate.Type.
@@ -8703,6 +9747,11 @@ type WaitlistFilter struct {
 	PreferredDateTo *string `json:"preferred_date_to,omitempty"`
 }
 
+// Notification settings for waitlist events
+type WaitlistNotifications struct {
+	NewRequests *NotificationChannelSettings `json:"new_requests,omitempty"`
+}
+
 // Webhook defines model for Webhook.
 type Webhook struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -8794,6 +9843,15 @@ type Expand []string
 // Select defines model for select.
 type Select []string
 
+// ListBlockedTimeActivitiesParams defines parameters for ListBlockedTimeActivities.
+type ListBlockedTimeActivitiesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListCustomerActivitiesParams defines parameters for ListCustomerActivities.
 type ListCustomerActivitiesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -8861,6 +9919,19 @@ type AdminGetCompanyParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AdminUpdateCompanyJSONBody defines parameters for AdminUpdateCompany.
+type AdminUpdateCompanyJSONBody AdminCompanyUpdate
+
+// AdminUpdateCompanyParams defines parameters for AdminUpdateCompany.
+type AdminUpdateCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand        `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *CompanyFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // AdminRemoveSecretaryFromCompanyParams defines parameters for AdminRemoveSecretaryFromCompany.
@@ -8990,6 +10061,18 @@ type UpdateBlockedTimeParams struct {
 	Date     string                     `form:"date" json:"date"`
 }
 
+// CreateCampaignJSONBody defines parameters for CreateCampaign.
+type CreateCampaignJSONBody CampaignCreate
+
+// CreateCampaignParams defines parameters for CreateCampaign.
+type CreateCampaignParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListCardTypesParams defines parameters for ListCardTypes.
 type ListCardTypesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -9024,6 +10107,18 @@ type GetCompaniesParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// CreateCompanyJSONBody defines parameters for CreateCompany.
+type CreateCompanyJSONBody CompanyCreate
+
+// CreateCompanyParams defines parameters for CreateCompany.
+type CreateCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // GetCompanyParams defines parameters for GetCompany.
@@ -9148,6 +10243,29 @@ type ListBlockedTimesParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// ListCampaignsParams defines parameters for ListCampaigns.
+type ListCampaignsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination     `form:"pagination,omitempty" json:"pagination,omitempty"`
+	Filter     *CampaignFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// PreviewCampaignParams defines parameters for PreviewCampaign.
+type PreviewCampaignParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand                 `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter CampaignRecipientFilter `form:"filter" json:"filter"`
+}
+
 // ListClaimsParams defines parameters for ListClaims.
 type ListClaimsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -9165,7 +10283,7 @@ type ListClaimsParams struct {
 }
 
 // CloneCompanyJSONBody defines parameters for CloneCompany.
-type CloneCompanyJSONBody CompanyClone
+type CloneCompanyJSONBody CompanyCreate
 
 // CloneCompanyParams defines parameters for CloneCompany.
 type CloneCompanyParams struct {
@@ -9305,8 +10423,8 @@ type ListEventTypeCategoriesParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
-// ListEventTypeCategoryGroupsParams defines parameters for ListEventTypeCategoryGroups.
-type ListEventTypeCategoryGroupsParams struct {
+// ListEventTypeCategoryGroupsForCompanyParams defines parameters for ListEventTypeCategoryGroupsForCompany.
+type ListEventTypeCategoryGroupsForCompanyParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -9405,6 +10523,16 @@ type UploadCompanyFileParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// ListGoalInstancesParams defines parameters for ListGoalInstances.
+type ListGoalInstancesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand     `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *GoalFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
 // ListHolidaysParams defines parameters for ListHolidays.
 type ListHolidaysParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -9463,6 +10591,15 @@ type GetEventsMetricsParams struct {
 
 // GetSalesMetricsParams defines parameters for GetSalesMetrics.
 type GetSalesMetricsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListNotificationMetadataParams defines parameters for ListNotificationMetadata.
+type ListNotificationMetadataParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -9622,6 +10759,22 @@ type ListCustomPropertiesParams struct {
 // ListPushNotificationsParams defines parameters for ListPushNotifications.
 type ListPushNotificationsParams struct {
 	Filter *PushNotificationFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
+// ListRemindersParams defines parameters for ListReminders.
+type ListRemindersParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand         `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter *ReminderFilter `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
 // ListResourceGroupsParams defines parameters for ListResourceGroups.
@@ -9919,6 +11072,15 @@ type ListTransactionsParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// ListUserInvitesParams defines parameters for ListUserInvites.
+type ListUserInvitesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListVATsParams defines parameters for ListVATs.
 type ListVATsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -10185,7 +11347,7 @@ type GetDietaryParams struct {
 }
 
 // CreateEmployeeJSONBody defines parameters for CreateEmployee.
-type CreateEmployeeJSONBody Employee
+type CreateEmployeeJSONBody EmployeeCreateRequest
 
 // CreateEmployeeParams defines parameters for CreateEmployee.
 type CreateEmployeeParams struct {
@@ -10402,6 +11564,18 @@ type UpdateEventStatusParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// ListEventTypeCategoryGroupsParams defines parameters for ListEventTypeCategoryGroups.
+type ListEventTypeCategoryGroupsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+}
+
 // CreateEventTypeGroupJSONBody defines parameters for CreateEventTypeGroup.
 type CreateEventTypeGroupJSONBody EventTypeGroupInput
 
@@ -10577,6 +11751,9 @@ type GetFiscalizationReportParams struct {
 	To   time.Time `form:"to" json:"to"`
 }
 
+// UpdateCompanyFiscalizationStatusJSONBody defines parameters for UpdateCompanyFiscalizationStatus.
+type UpdateCompanyFiscalizationStatusJSONBody FiscalizationStatusUpdateRequest
+
 // FiscalizeTransactionJSONBody defines parameters for FiscalizeTransaction.
 type FiscalizeTransactionJSONBody struct {
 	// The customer's country code in the tax authority's system.
@@ -10601,6 +11778,12 @@ type RefundFiscalizedTransactionParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 }
+
+// UpdateGoalJSONBody defines parameters for UpdateGoal.
+type UpdateGoalJSONBody UpdateGoalRequest
+
+// ActivateGoalJSONBody defines parameters for ActivateGoal.
+type ActivateGoalJSONBody ActivateGoalRequest
 
 // UploadImageParams defines parameters for UploadImage.
 type UploadImageParams struct {
@@ -11304,6 +12487,48 @@ type UpdateCustomPropertyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateReminderJSONBody defines parameters for CreateReminder.
+type CreateReminderJSONBody ReminderCreate
+
+// CreateReminderParams defines parameters for CreateReminder.
+type CreateReminderParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteReminderParams defines parameters for DeleteReminder.
+type DeleteReminderParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetReminderParams defines parameters for GetReminder.
+type GetReminderParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateReminderJSONBody defines parameters for UpdateReminder.
+type UpdateReminderJSONBody ReminderUpdate
+
+// UpdateReminderParams defines parameters for UpdateReminder.
+type UpdateReminderParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateResourceGroupJSONBody defines parameters for CreateResourceGroup.
 type CreateResourceGroupJSONBody ResourceGroupCreate
 
@@ -11568,13 +12793,7 @@ type RefundMarketplaceSaleParams struct {
 }
 
 // SendTransactionReceiptJSONBody defines parameters for SendTransactionReceipt.
-type SendTransactionReceiptJSONBody struct {
-	Email *string `json:"email,omitempty"`
-	Phone *struct {
-		PhoneCountryCode *string `json:"phone_country_code,omitempty"`
-		PhoneNumber      *string `json:"phone_number,omitempty"`
-	} `json:"phone,omitempty"`
-}
+type SendTransactionReceiptJSONBody SendTransactionReceiptRequest
 
 // DeprecatedListSubtransactionsParams defines parameters for DeprecatedListSubtransactions.
 type DeprecatedListSubtransactionsParams struct {
@@ -11587,6 +12806,18 @@ type DeprecatedListSubtransactionsParams struct {
 
 // DeprecatedGetSubtransactionParams defines parameters for DeprecatedGetSubtransaction.
 type DeprecatedGetSubtransactionParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// CreateSMSMessageJSONBody defines parameters for CreateSMSMessage.
+type CreateSMSMessageJSONBody CreateSMSMessage
+
+// CreateSMSMessageParams defines parameters for CreateSMSMessage.
+type CreateSMSMessageParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -11817,6 +13048,9 @@ type GetSubtransactionParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
+
+// UpdateTaskJSONBody defines parameters for UpdateTask.
+type UpdateTaskJSONBody UpdateTaskRequest
 
 // DeleteTerminalParams defines parameters for DeleteTerminal.
 type DeleteTerminalParams struct {
@@ -12097,6 +13331,27 @@ type CreateVerificationRequestJSONBodyCertificationLevel string
 // CreateVerificationRequestJSONBodyCertificationType defines parameters for CreateVerificationRequest.
 type CreateVerificationRequestJSONBodyCertificationType string
 
+// CreateUserInviteJSONBody defines parameters for CreateUserInvite.
+type CreateUserInviteJSONBody CreateUserInviteRequest
+
+// CreateUserInviteParams defines parameters for CreateUserInvite.
+type CreateUserInviteParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteUserInviteParams defines parameters for DeleteUserInvite.
+type DeleteUserInviteParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // GetCountryInfoParams defines parameters for GetCountryInfo.
 type GetCountryInfoParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -12167,7 +13422,8 @@ type UpdateVoucherTemplateJSONBody VoucherTemplateUpdate
 // UpdateVoucherTemplateParams defines parameters for UpdateVoucherTemplate.
 type UpdateVoucherTemplateParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+	Select *Select                `form:"select,omitempty" json:"select,omitempty"`
+	Unset  *VoucherTemplateFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // DeleteVoucherParams defines parameters for DeleteVoucher.
@@ -12316,6 +13572,9 @@ type UpdateWebhookParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminUpdateCompanyJSONRequestBody defines body for AdminUpdateCompany for application/json ContentType.
+type AdminUpdateCompanyJSONRequestBody AdminUpdateCompanyJSONBody
+
 // AdminAssignSecretaryToCompanyJSONRequestBody defines body for AdminAssignSecretaryToCompany for application/json ContentType.
 type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJSONBody
 
@@ -12328,8 +13587,14 @@ type CreateBlockedTimeJSONRequestBody CreateBlockedTimeJSONBody
 // UpdateBlockedTimeJSONRequestBody defines body for UpdateBlockedTime for application/json ContentType.
 type UpdateBlockedTimeJSONRequestBody UpdateBlockedTimeJSONBody
 
+// CreateCampaignJSONRequestBody defines body for CreateCampaign for application/json ContentType.
+type CreateCampaignJSONRequestBody CreateCampaignJSONBody
+
 // CreateClaimJSONRequestBody defines body for CreateClaim for application/json ContentType.
 type CreateClaimJSONRequestBody CreateClaimJSONBody
+
+// CreateCompanyJSONRequestBody defines body for CreateCompany for application/json ContentType.
+type CreateCompanyJSONRequestBody CreateCompanyJSONBody
 
 // UpdateCompanyJSONRequestBody defines body for UpdateCompany for application/json ContentType.
 type UpdateCompanyJSONRequestBody UpdateCompanyJSONBody
@@ -12409,8 +13674,17 @@ type UpdateEventJSONRequestBody UpdateEventJSONBody
 // UpsertCompanyFiscalizationDataJSONRequestBody defines body for UpsertCompanyFiscalizationData for application/json ContentType.
 type UpsertCompanyFiscalizationDataJSONRequestBody UpsertCompanyFiscalizationDataJSONBody
 
+// UpdateCompanyFiscalizationStatusJSONRequestBody defines body for UpdateCompanyFiscalizationStatus for application/json ContentType.
+type UpdateCompanyFiscalizationStatusJSONRequestBody UpdateCompanyFiscalizationStatusJSONBody
+
 // FiscalizeTransactionJSONRequestBody defines body for FiscalizeTransaction for application/json ContentType.
 type FiscalizeTransactionJSONRequestBody FiscalizeTransactionJSONBody
+
+// UpdateGoalJSONRequestBody defines body for UpdateGoal for application/json ContentType.
+type UpdateGoalJSONRequestBody UpdateGoalJSONBody
+
+// ActivateGoalJSONRequestBody defines body for ActivateGoal for application/json ContentType.
+type ActivateGoalJSONRequestBody ActivateGoalJSONBody
 
 // CreateImportJobJSONRequestBody defines body for CreateImportJob for application/json ContentType.
 type CreateImportJobJSONRequestBody CreateImportJobJSONBody
@@ -12496,6 +13770,12 @@ type CreateCustomPropertyJSONRequestBody CreateCustomPropertyJSONBody
 // UpdateCustomPropertyJSONRequestBody defines body for UpdateCustomProperty for application/json ContentType.
 type UpdateCustomPropertyJSONRequestBody UpdateCustomPropertyJSONBody
 
+// CreateReminderJSONRequestBody defines body for CreateReminder for application/json ContentType.
+type CreateReminderJSONRequestBody CreateReminderJSONBody
+
+// UpdateReminderJSONRequestBody defines body for UpdateReminder for application/json ContentType.
+type UpdateReminderJSONRequestBody UpdateReminderJSONBody
+
 // CreateResourceGroupJSONRequestBody defines body for CreateResourceGroup for application/json ContentType.
 type CreateResourceGroupJSONRequestBody CreateResourceGroupJSONBody
 
@@ -12535,6 +13815,9 @@ type UpdateSaleJSONRequestBody UpdateSaleJSONBody
 // SendTransactionReceiptJSONRequestBody defines body for SendTransactionReceipt for application/json ContentType.
 type SendTransactionReceiptJSONRequestBody SendTransactionReceiptJSONBody
 
+// CreateSMSMessageJSONRequestBody defines body for CreateSMSMessage for application/json ContentType.
+type CreateSMSMessageJSONRequestBody CreateSMSMessageJSONBody
+
 // CreateSpaceJSONRequestBody defines body for CreateSpace for application/json ContentType.
 type CreateSpaceJSONRequestBody CreateSpaceJSONBody
 
@@ -12546,6 +13829,9 @@ type CancelSubscriptionJSONRequestBody CancelSubscriptionJSONBody
 
 // CreateSubtransactionJSONRequestBody defines body for CreateSubtransaction for application/json ContentType.
 type CreateSubtransactionJSONRequestBody CreateSubtransactionJSONBody
+
+// UpdateTaskJSONRequestBody defines body for UpdateTask for application/json ContentType.
+type UpdateTaskJSONRequestBody UpdateTaskJSONBody
 
 // UpdateTerminalJSONRequestBody defines body for UpdateTerminal for application/json ContentType.
 type UpdateTerminalJSONRequestBody UpdateTerminalJSONBody
@@ -12570,6 +13856,9 @@ type CreateUserTokenJSONRequestBody CreateUserTokenJSONBody
 
 // CreateVerificationRequestJSONRequestBody defines body for CreateVerificationRequest for application/json ContentType.
 type CreateVerificationRequestJSONRequestBody CreateVerificationRequestJSONBody
+
+// CreateUserInviteJSONRequestBody defines body for CreateUserInvite for application/json ContentType.
+type CreateUserInviteJSONRequestBody CreateUserInviteJSONBody
 
 // UpdateVerificationRequestJSONRequestBody defines body for UpdateVerificationRequest for application/json ContentType.
 type UpdateVerificationRequestJSONRequestBody UpdateVerificationRequestJSONBody
@@ -14237,18 +15526,6 @@ func (t *LineItemVoucherData) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-func (t Notification) AsNotificationLegacy() (NotificationLegacy, error) {
-	var body NotificationLegacy
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *Notification) FromNotificationLegacy(v NotificationLegacy) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
 func (t Notification) AsNotificationSurvey() (NotificationSurvey, error) {
 	var body NotificationSurvey
 	err := json.Unmarshal(t.union, &body)
@@ -14292,6 +15569,18 @@ func (t Notification) AsNotificationWaitlistEntry() (NotificationWaitlistEntry, 
 }
 
 func (t *Notification) FromNotificationWaitlistEntry(v NotificationWaitlistEntry) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Notification) AsNotificationBookingOffer() (NotificationBookingOffer, error) {
+	var body NotificationBookingOffer
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Notification) FromNotificationBookingOffer(v NotificationBookingOffer) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -14637,6 +15926,9 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListBlockedTimeActivities request
+	ListBlockedTimeActivities(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListCustomerActivities request
 	ListCustomerActivities(ctx context.Context, customerId string, params *ListCustomerActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -14657,6 +15949,11 @@ type ClientInterface interface {
 
 	// AdminGetCompany request
 	AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminUpdateCompany request with any body
+	AdminUpdateCompanyWithBody(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminUpdateCompany(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AdminRemoveSecretaryFromCompany request
 	AdminRemoveSecretaryFromCompany(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14699,6 +15996,11 @@ type ClientInterface interface {
 
 	UpdateBlockedTime(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateCampaign request with any body
+	CreateCampaignWithBody(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateCampaign(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListCardTypes request
 	ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -14709,6 +16011,11 @@ type ClientInterface interface {
 
 	// GetCompanies request
 	GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateCompany request with any body
+	CreateCompanyWithBody(ctx context.Context, params *CreateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateCompany(ctx context.Context, params *CreateCompanyParams, body CreateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCompany request
 	GetCompany(ctx context.Context, companyId string, params *GetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14741,6 +16048,12 @@ type ClientInterface interface {
 
 	// ListBlockedTimes request
 	ListBlockedTimes(ctx context.Context, companyId string, params *ListBlockedTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListCampaigns request
+	ListCampaigns(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PreviewCampaign request
+	PreviewCampaign(ctx context.Context, companyId string, params *PreviewCampaignParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListClaims request
 	ListClaims(ctx context.Context, companyId string, params *ListClaimsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14779,8 +16092,8 @@ type ClientInterface interface {
 	// ListEventTypeCategories request
 	ListEventTypeCategories(ctx context.Context, companyId string, params *ListEventTypeCategoriesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListEventTypeCategoryGroups request
-	ListEventTypeCategoryGroups(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListEventTypeCategoryGroupsForCompany request
+	ListEventTypeCategoryGroupsForCompany(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsForCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListEventTypeGroups request
 	ListEventTypeGroups(ctx context.Context, companyId string, params *ListEventTypeGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14800,6 +16113,9 @@ type ClientInterface interface {
 	// UploadCompanyFile request with any body
 	UploadCompanyFileWithBody(ctx context.Context, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListGoalInstances request
+	ListGoalInstances(ctx context.Context, companyId string, params *ListGoalInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListHolidays request
 	ListHolidays(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -14817,6 +16133,12 @@ type ClientInterface interface {
 
 	// GetSalesMetrics request
 	GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MigrateCompanyReminders request
+	MigrateCompanyReminders(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListNotificationMetadata request
+	ListNotificationMetadata(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteNotifications request
 	DeleteNotifications(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14859,6 +16181,9 @@ type ClientInterface interface {
 
 	// ListPushNotifications request
 	ListPushNotifications(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListReminders request
+	ListReminders(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListResourceGroups request
 	ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -14933,6 +16258,9 @@ type ClientInterface interface {
 
 	// ListTransactions request
 	ListTransactions(ctx context.Context, companyId string, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListUserInvites request
+	ListUserInvites(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListVATs request
 	ListVATs(ctx context.Context, companyId string, params *ListVATsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15081,6 +16409,9 @@ type ClientInterface interface {
 
 	UpdateEventStatus(ctx context.Context, eventStatusId string, params *UpdateEventStatusParams, body UpdateEventStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListEventTypeCategoryGroups request
+	ListEventTypeCategoryGroups(ctx context.Context, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateEventTypeGroup request with any body
 	CreateEventTypeGroupWithBody(ctx context.Context, params *CreateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15149,8 +16480,16 @@ type ClientInterface interface {
 
 	UpsertCompanyFiscalizationData(ctx context.Context, companyId string, body UpsertCompanyFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MigratePortugalCompanyToATProvider request
+	MigratePortugalCompanyToATProvider(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetFiscalizationReport request
 	GetFiscalizationReport(ctx context.Context, companyId string, params *GetFiscalizationReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateCompanyFiscalizationStatus request with any body
+	UpdateCompanyFiscalizationStatusWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateCompanyFiscalizationStatus(ctx context.Context, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// FiscalizeTransaction request with any body
 	FiscalizeTransactionWithBody(ctx context.Context, transactionId string, params *FiscalizeTransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15162,6 +16501,19 @@ type ClientInterface interface {
 
 	// RefundFiscalizedTransaction request
 	RefundFiscalizedTransaction(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetFiscalizedTransactionXML request
+	GetFiscalizedTransactionXML(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateGoal request with any body
+	UpdateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateGoal(ctx context.Context, goalId string, body UpdateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ActivateGoal request with any body
+	ActivateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ActivateGoal(ctx context.Context, goalId string, body ActivateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UploadImage request with any body
 	UploadImageWithBody(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15417,6 +16769,22 @@ type ClientInterface interface {
 
 	UpdateCustomProperty(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, body UpdateCustomPropertyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateReminder request with any body
+	CreateReminderWithBody(ctx context.Context, params *CreateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateReminder(ctx context.Context, params *CreateReminderParams, body CreateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteReminder request
+	DeleteReminder(ctx context.Context, reminderId string, params *DeleteReminderParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetReminder request
+	GetReminder(ctx context.Context, reminderId string, params *GetReminderParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateReminder request with any body
+	UpdateReminderWithBody(ctx context.Context, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateReminder(ctx context.Context, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateResourceGroup request with any body
 	CreateResourceGroupWithBody(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15527,6 +16895,11 @@ type ClientInterface interface {
 	// DeprecatedGetSubtransaction request
 	DeprecatedGetSubtransaction(ctx context.Context, saleId string, transactionId string, id string, params *DeprecatedGetSubtransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateSMSMessage request with any body
+	CreateSMSMessageWithBody(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateSMSMessage(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateSpace request with any body
 	CreateSpaceWithBody(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15607,6 +16980,11 @@ type ClientInterface interface {
 	// GetSubtransaction request
 	GetSubtransaction(ctx context.Context, subtransactionId string, params *GetSubtransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UpdateTask request with any body
+	UpdateTaskWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateTask(ctx context.Context, taskId string, body UpdateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteTerminal request
 	DeleteTerminal(ctx context.Context, terminalId string, params *DeleteTerminalParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15665,6 +17043,9 @@ type ClientInterface interface {
 
 	CreateGoogleCalendarConnection(ctx context.Context, body CreateGoogleCalendarConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// KindeUserMigration request
+	KindeUserMigration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// UserOAuth request
 	UserOAuth(ctx context.Context, params *UserOAuthParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -15709,6 +17090,20 @@ type ClientInterface interface {
 	CreateVerificationRequestWithBody(ctx context.Context, params *CreateVerificationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateVerificationRequest(ctx context.Context, params *CreateVerificationRequestParams, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateUserInvite request with any body
+	CreateUserInviteWithBody(ctx context.Context, params *CreateUserInviteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateUserInvite(ctx context.Context, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUserInviteContext request
+	GetUserInviteContext(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConsumeUserInvite request
+	ConsumeUserInvite(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteUserInvite request
+	DeleteUserInvite(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCountryInfo request
 	GetCountryInfo(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -15800,6 +17195,18 @@ type ClientInterface interface {
 	UpdateWebhook(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
+func (c *Client) ListBlockedTimeActivities(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBlockedTimeActivitiesRequest(c.Server, blockedTimeId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListCustomerActivities(ctx context.Context, customerId string, params *ListCustomerActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCustomerActivitiesRequest(c.Server, customerId, params)
 	if err != nil {
@@ -15874,6 +17281,30 @@ func (c *Client) AdminDeleteCompany(ctx context.Context, companyId string, param
 
 func (c *Client) AdminGetCompany(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminGetCompanyRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateCompanyWithBody(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateCompanyRequestWithBody(c.Server, companyId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateCompany(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateCompanyRequest(c.Server, companyId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -16064,6 +17495,30 @@ func (c *Client) UpdateBlockedTime(ctx context.Context, blockedTimeId string, pa
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateCampaignWithBody(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCampaignRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCampaign(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCampaignRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListCardTypes(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCardTypesRequest(c.Server, params)
 	if err != nil {
@@ -16102,6 +17557,30 @@ func (c *Client) CreateClaim(ctx context.Context, params *CreateClaimParams, bod
 
 func (c *Client) GetCompanies(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCompaniesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCompanyWithBody(ctx context.Context, params *CreateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCompanyRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCompany(ctx context.Context, params *CreateCompanyParams, body CreateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCompanyRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -16234,6 +17713,30 @@ func (c *Client) DisableApp(ctx context.Context, companyId string, appId string,
 
 func (c *Client) ListBlockedTimes(ctx context.Context, companyId string, params *ListBlockedTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListBlockedTimesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListCampaigns(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCampaignsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PreviewCampaign(ctx context.Context, companyId string, params *PreviewCampaignParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPreviewCampaignRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16400,8 +17903,8 @@ func (c *Client) ListEventTypeCategories(ctx context.Context, companyId string, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListEventTypeCategoryGroups(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListEventTypeCategoryGroupsRequest(c.Server, companyId, params)
+func (c *Client) ListEventTypeCategoryGroupsForCompany(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsForCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEventTypeCategoryGroupsForCompanyRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16484,6 +17987,18 @@ func (c *Client) UploadCompanyFileWithBody(ctx context.Context, companyId string
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListGoalInstances(ctx context.Context, companyId string, params *ListGoalInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListGoalInstancesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListHolidays(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListHolidaysRequest(c.Server, companyId, params)
 	if err != nil {
@@ -16546,6 +18061,30 @@ func (c *Client) GetEventsMetrics(ctx context.Context, companyId string, params 
 
 func (c *Client) GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSalesMetricsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MigrateCompanyReminders(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMigrateCompanyRemindersRequest(c.Server, companyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListNotificationMetadata(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListNotificationMetadataRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -16714,6 +18253,18 @@ func (c *Client) ListCustomProperties(ctx context.Context, companyId string, par
 
 func (c *Client) ListPushNotifications(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPushNotificationsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListReminders(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRemindersRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -17026,6 +18577,18 @@ func (c *Client) ListTimeSlots(ctx context.Context, companyId string, params *Li
 
 func (c *Client) ListTransactions(ctx context.Context, companyId string, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListTransactionsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListUserInvites(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListUserInvitesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -17672,6 +19235,18 @@ func (c *Client) UpdateEventStatus(ctx context.Context, eventStatusId string, pa
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListEventTypeCategoryGroups(ctx context.Context, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEventTypeCategoryGroupsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateEventTypeGroupWithBody(ctx context.Context, params *CreateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateEventTypeGroupRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
@@ -17972,8 +19547,44 @@ func (c *Client) UpsertCompanyFiscalizationData(ctx context.Context, companyId s
 	return c.Client.Do(req)
 }
 
+func (c *Client) MigratePortugalCompanyToATProvider(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMigratePortugalCompanyToATProviderRequest(c.Server, companyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetFiscalizationReport(ctx context.Context, companyId string, params *GetFiscalizationReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetFiscalizationReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCompanyFiscalizationStatusWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCompanyFiscalizationStatusRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCompanyFiscalizationStatus(ctx context.Context, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCompanyFiscalizationStatusRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -18022,6 +19633,66 @@ func (c *Client) GetFiscalizedTransactionPDF(ctx context.Context, transactionId 
 
 func (c *Client) RefundFiscalizedTransaction(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRefundFiscalizedTransactionRequest(c.Server, transactionId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetFiscalizedTransactionXML(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetFiscalizedTransactionXMLRequest(c.Server, transactionId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateGoalRequestWithBody(c.Server, goalId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateGoal(ctx context.Context, goalId string, body UpdateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateGoalRequest(c.Server, goalId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ActivateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewActivateGoalRequestWithBody(c.Server, goalId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ActivateGoal(ctx context.Context, goalId string, body ActivateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewActivateGoalRequest(c.Server, goalId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -19160,6 +20831,78 @@ func (c *Client) UpdateCustomProperty(ctx context.Context, propertyId string, pa
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateReminderWithBody(ctx context.Context, params *CreateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReminderRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateReminder(ctx context.Context, params *CreateReminderParams, body CreateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateReminderRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteReminder(ctx context.Context, reminderId string, params *DeleteReminderParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteReminderRequest(c.Server, reminderId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetReminder(ctx context.Context, reminderId string, params *GetReminderParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetReminderRequest(c.Server, reminderId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateReminderWithBody(ctx context.Context, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateReminderRequestWithBody(c.Server, reminderId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateReminder(ctx context.Context, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateReminderRequest(c.Server, reminderId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateResourceGroupWithBody(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateResourceGroupRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
@@ -19652,6 +21395,30 @@ func (c *Client) DeprecatedGetSubtransaction(ctx context.Context, saleId string,
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateSMSMessageWithBody(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSMSMessageRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSMSMessage(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSMSMessageRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateSpaceWithBody(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSpaceRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
@@ -19988,6 +21755,30 @@ func (c *Client) GetSubtransaction(ctx context.Context, subtransactionId string,
 	return c.Client.Do(req)
 }
 
+func (c *Client) UpdateTaskWithBody(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTaskRequestWithBody(c.Server, taskId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateTask(ctx context.Context, taskId string, body UpdateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTaskRequest(c.Server, taskId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) DeleteTerminal(ctx context.Context, terminalId string, params *DeleteTerminalParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteTerminalRequest(c.Server, terminalId, params)
 	if err != nil {
@@ -20240,6 +22031,18 @@ func (c *Client) CreateGoogleCalendarConnection(ctx context.Context, body Create
 	return c.Client.Do(req)
 }
 
+func (c *Client) KindeUserMigration(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewKindeUserMigrationRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) UserOAuth(ctx context.Context, params *UserOAuthParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUserOAuthRequest(c.Server, params)
 	if err != nil {
@@ -20422,6 +22225,66 @@ func (c *Client) CreateVerificationRequestWithBody(ctx context.Context, params *
 
 func (c *Client) CreateVerificationRequest(ctx context.Context, params *CreateVerificationRequestParams, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateVerificationRequestRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUserInviteWithBody(ctx context.Context, params *CreateUserInviteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserInviteRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateUserInvite(ctx context.Context, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateUserInviteRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUserInviteContext(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserInviteContextRequest(c.Server, token)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConsumeUserInvite(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConsumeUserInviteRequest(c.Server, token)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteUserInvite(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteUserInviteRequest(c.Server, userInviteId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -20826,6 +22689,76 @@ func (c *Client) UpdateWebhook(ctx context.Context, webhookId string, params *Up
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewListBlockedTimeActivitiesRequest generates requests for ListBlockedTimeActivities
+func NewListBlockedTimeActivitiesRequest(server string, blockedTimeId string, params *ListBlockedTimeActivitiesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "blocked_time_id", runtime.ParamLocationPath, blockedTimeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/activities/blocked_times/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewListCustomerActivitiesRequest generates requests for ListCustomerActivities
@@ -21339,6 +23272,105 @@ func NewAdminGetCompanyRequest(server string, companyId string, params *AdminGet
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewAdminUpdateCompanyRequest calls the generic AdminUpdateCompany builder with application/json body
+func NewAdminUpdateCompanyRequest(server string, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminUpdateCompanyRequestWithBody(server, companyId, params, "application/json", bodyReader)
+}
+
+// NewAdminUpdateCompanyRequestWithBody generates requests for AdminUpdateCompany with any type of body
+func NewAdminUpdateCompanyRequestWithBody(server string, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -22217,6 +24249,82 @@ func NewUpdateBlockedTimeRequestWithBody(server string, blockedTimeId string, pa
 	return req, nil
 }
 
+// NewCreateCampaignRequest calls the generic CreateCampaign builder with application/json body
+func NewCreateCampaignRequest(server string, params *CreateCampaignParams, body CreateCampaignJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateCampaignRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateCampaignRequestWithBody generates requests for CreateCampaign with any type of body
+func NewCreateCampaignRequestWithBody(server string, params *CreateCampaignParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/campaigns")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListCardTypesRequest generates requests for ListCardTypes
 func NewListCardTypesRequest(server string, params *ListCardTypesParams) (*http.Request, error) {
 	var err error
@@ -22435,6 +24543,82 @@ func NewGetCompaniesRequest(server string, params *GetCompaniesParams) (*http.Re
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewCreateCompanyRequest calls the generic CreateCompany builder with application/json body
+func NewCreateCompanyRequest(server string, params *CreateCompanyParams, body CreateCompanyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateCompanyRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateCompanyRequestWithBody generates requests for CreateCompany with any type of body
+func NewCreateCompanyRequestWithBody(server string, params *CreateCompanyParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -23288,6 +25472,172 @@ func NewListBlockedTimesRequest(server string, companyId string, params *ListBlo
 			queryValues.Add("pagination", string(queryParamBuf))
 		}
 
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListCampaignsRequest generates requests for ListCampaigns
+func NewListCampaignsRequest(server string, companyId string, params *ListCampaignsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/campaigns", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPreviewCampaignRequest generates requests for PreviewCampaign
+func NewPreviewCampaignRequest(server string, companyId string, params *PreviewCampaignParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/campaigns/preview", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
@@ -24335,8 +26685,8 @@ func NewListEventTypeCategoriesRequest(server string, companyId string, params *
 	return req, nil
 }
 
-// NewListEventTypeCategoryGroupsRequest generates requests for ListEventTypeCategoryGroups
-func NewListEventTypeCategoryGroupsRequest(server string, companyId string, params *ListEventTypeCategoryGroupsParams) (*http.Request, error) {
+// NewListEventTypeCategoryGroupsForCompanyRequest generates requests for ListEventTypeCategoryGroupsForCompany
+func NewListEventTypeCategoryGroupsForCompanyRequest(server string, companyId string, params *ListEventTypeCategoryGroupsForCompanyParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -25046,6 +27396,86 @@ func NewUploadCompanyFileRequestWithBody(server string, companyId string, params
 	return req, nil
 }
 
+// NewListGoalInstancesRequest generates requests for ListGoalInstances
+func NewListGoalInstancesRequest(server string, companyId string, params *ListGoalInstancesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/goals", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListHolidaysRequest generates requests for ListHolidays
 func NewListHolidaysRequest(server string, companyId string, params *ListHolidaysParams) (*http.Request, error) {
 	var err error
@@ -25480,6 +27910,110 @@ func NewGetSalesMetricsRequest(server string, companyId string, params *GetSales
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/metrics/sales", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMigrateCompanyRemindersRequest generates requests for MigrateCompanyReminders
+func NewMigrateCompanyRemindersRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/migrate-reminders", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListNotificationMetadataRequest generates requests for ListNotificationMetadata
+func NewListNotificationMetadataRequest(server string, companyId string, params *ListNotificationMetadataParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/notification_metadata", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -26623,6 +29157,106 @@ func NewListPushNotificationsRequest(server string, companyId string, params *Li
 			return nil, err
 		} else {
 			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListRemindersRequest generates requests for ListReminders
+func NewListRemindersRequest(server string, companyId string, params *ListRemindersParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reminders", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
 		}
 
 	}
@@ -28669,6 +31303,76 @@ func NewListTransactionsRequest(server string, companyId string, params *ListTra
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListUserInvitesRequest generates requests for ListUserInvites
+func NewListUserInvitesRequest(server string, companyId string, params *ListUserInvitesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/user_invites", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
@@ -32028,6 +34732,79 @@ func NewUpdateEventStatusRequestWithBody(server string, eventStatusId string, pa
 	return req, nil
 }
 
+// NewListEventTypeCategoryGroupsRequest generates requests for ListEventTypeCategoryGroups
+func NewListEventTypeCategoryGroupsRequest(server string, params *ListEventTypeCategoryGroupsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/event_type_category_groups")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateEventTypeGroupRequest calls the generic CreateEventTypeGroup builder with application/json body
 func NewCreateEventTypeGroupRequest(server string, params *CreateEventTypeGroupParams, body CreateEventTypeGroupJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -33372,6 +36149,40 @@ func NewUpsertCompanyFiscalizationDataRequestWithBody(server string, companyId s
 	return req, nil
 }
 
+// NewMigratePortugalCompanyToATProviderRequest generates requests for MigratePortugalCompanyToATProvider
+func NewMigratePortugalCompanyToATProviderRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/companies/%s/portugal/migrate_provider", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetFiscalizationReportRequest generates requests for GetFiscalizationReport
 func NewGetFiscalizationReportRequest(server string, companyId string, params *GetFiscalizationReportParams) (*http.Request, error) {
 	var err error
@@ -33430,6 +36241,53 @@ func NewGetFiscalizationReportRequest(server string, companyId string, params *G
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateCompanyFiscalizationStatusRequest calls the generic UpdateCompanyFiscalizationStatus builder with application/json body
+func NewUpdateCompanyFiscalizationStatusRequest(server string, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateCompanyFiscalizationStatusRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewUpdateCompanyFiscalizationStatusRequestWithBody generates requests for UpdateCompanyFiscalizationStatus with any type of body
+func NewUpdateCompanyFiscalizationStatusRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/companies/%s/status", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -33585,6 +36443,134 @@ func NewRefundFiscalizedTransactionRequest(server string, transactionId string, 
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewGetFiscalizedTransactionXMLRequest generates requests for GetFiscalizedTransactionXML
+func NewGetFiscalizedTransactionXMLRequest(server string, transactionId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "transaction_id", runtime.ParamLocationPath, transactionId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/transactions/%s/xml", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateGoalRequest calls the generic UpdateGoal builder with application/json body
+func NewUpdateGoalRequest(server string, goalId string, body UpdateGoalJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateGoalRequestWithBody(server, goalId, "application/json", bodyReader)
+}
+
+// NewUpdateGoalRequestWithBody generates requests for UpdateGoal with any type of body
+func NewUpdateGoalRequestWithBody(server string, goalId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "goal_id", runtime.ParamLocationPath, goalId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/goals/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewActivateGoalRequest calls the generic ActivateGoal builder with application/json body
+func NewActivateGoalRequest(server string, goalId string, body ActivateGoalJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewActivateGoalRequestWithBody(server, goalId, "application/json", bodyReader)
+}
+
+// NewActivateGoalRequestWithBody generates requests for ActivateGoal with any type of body
+func NewActivateGoalRequestWithBody(server string, goalId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "goal_id", runtime.ParamLocationPath, goalId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/goals/%s/activate", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -38563,6 +41549,305 @@ func NewUpdateCustomPropertyRequestWithBody(server string, propertyId string, pa
 	return req, nil
 }
 
+// NewCreateReminderRequest calls the generic CreateReminder builder with application/json body
+func NewCreateReminderRequest(server string, params *CreateReminderParams, body CreateReminderJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateReminderRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateReminderRequestWithBody generates requests for CreateReminder with any type of body
+func NewCreateReminderRequestWithBody(server string, params *CreateReminderParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/reminders")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteReminderRequest generates requests for DeleteReminder
+func NewDeleteReminderRequest(server string, reminderId string, params *DeleteReminderParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "reminder_id", runtime.ParamLocationPath, reminderId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/reminders/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetReminderRequest generates requests for GetReminder
+func NewGetReminderRequest(server string, reminderId string, params *GetReminderParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "reminder_id", runtime.ParamLocationPath, reminderId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/reminders/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateReminderRequest calls the generic UpdateReminder builder with application/json body
+func NewUpdateReminderRequest(server string, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateReminderRequestWithBody(server, reminderId, params, "application/json", bodyReader)
+}
+
+// NewUpdateReminderRequestWithBody generates requests for UpdateReminder with any type of body
+func NewUpdateReminderRequestWithBody(server string, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "reminder_id", runtime.ParamLocationPath, reminderId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/reminders/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateResourceGroupRequest calls the generic CreateResourceGroup builder with application/json body
 func NewCreateResourceGroupRequest(server string, params *CreateResourceGroupParams, body CreateResourceGroupJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -40674,6 +43959,82 @@ func NewDeprecatedGetSubtransactionRequest(server string, saleId string, transac
 	return req, nil
 }
 
+// NewCreateSMSMessageRequest calls the generic CreateSMSMessage builder with application/json body
+func NewCreateSMSMessageRequest(server string, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSMSMessageRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateSMSMessageRequestWithBody generates requests for CreateSMSMessage with any type of body
+func NewCreateSMSMessageRequestWithBody(server string, params *CreateSMSMessageParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/sms")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateSpaceRequest calls the generic CreateSpace builder with application/json body
 func NewCreateSpaceRequest(server string, params *CreateSpaceParams, body CreateSpaceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -42402,6 +45763,53 @@ func NewGetSubtransactionRequest(server string, subtransactionId string, params 
 	return req, nil
 }
 
+// NewUpdateTaskRequest calls the generic UpdateTask builder with application/json body
+func NewUpdateTaskRequest(server string, taskId string, body UpdateTaskJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateTaskRequestWithBody(server, taskId, "application/json", bodyReader)
+}
+
+// NewUpdateTaskRequestWithBody generates requests for UpdateTask with any type of body
+func NewUpdateTaskRequestWithBody(server string, taskId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "task_id", runtime.ParamLocationPath, taskId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/tasks/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteTerminalRequest generates requests for DeleteTerminal
 func NewDeleteTerminalRequest(server string, terminalId string, params *DeleteTerminalParams) (*http.Request, error) {
 	var err error
@@ -43456,6 +46864,33 @@ func NewCreateGoogleCalendarConnectionRequestWithBody(server string, contentType
 	return req, nil
 }
 
+// NewKindeUserMigrationRequest generates requests for KindeUserMigration
+func NewKindeUserMigrationRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user/kinde")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewUserOAuthRequest generates requests for UserOAuth
 func NewUserOAuthRequest(server string, params *UserOAuthParams) (*http.Request, error) {
 	var err error
@@ -44341,6 +47776,220 @@ func NewCreateVerificationRequestRequestWithBody(server string, params *CreateVe
 	return req, nil
 }
 
+// NewCreateUserInviteRequest calls the generic CreateUserInvite builder with application/json body
+func NewCreateUserInviteRequest(server string, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateUserInviteRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateUserInviteRequestWithBody generates requests for CreateUserInvite with any type of body
+func NewCreateUserInviteRequestWithBody(server string, params *CreateUserInviteParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user_invites")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetUserInviteContextRequest generates requests for GetUserInviteContext
+func NewGetUserInviteContextRequest(server string, token string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "token", runtime.ParamLocationPath, token)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user_invites/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewConsumeUserInviteRequest generates requests for ConsumeUserInvite
+func NewConsumeUserInviteRequest(server string, token string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "token", runtime.ParamLocationPath, token)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user_invites/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteUserInviteRequest generates requests for DeleteUserInvite
+func NewDeleteUserInviteRequest(server string, userInviteId string, params *DeleteUserInviteParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_invite_id", runtime.ParamLocationPath, userInviteId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user_invites/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetCountryInfoRequest generates requests for GetCountryInfo
 func NewGetCountryInfoRequest(server string, countryCode string, params *GetCountryInfoParams) (*http.Request, error) {
 	var err error
@@ -44863,6 +48512,22 @@ func NewUpdateVoucherTemplateRequestWithBody(server string, voucherTemplateId st
 	if params.Select != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
@@ -46019,6 +49684,9 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListBlockedTimeActivities request
+	ListBlockedTimeActivitiesWithResponse(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*ListBlockedTimeActivitiesResponse, error)
+
 	// ListCustomerActivities request
 	ListCustomerActivitiesWithResponse(ctx context.Context, customerId string, params *ListCustomerActivitiesParams, reqEditors ...RequestEditorFn) (*ListCustomerActivitiesResponse, error)
 
@@ -46039,6 +49707,11 @@ type ClientWithResponsesInterface interface {
 
 	// AdminGetCompany request
 	AdminGetCompanyWithResponse(ctx context.Context, companyId string, params *AdminGetCompanyParams, reqEditors ...RequestEditorFn) (*AdminGetCompanyResponse, error)
+
+	// AdminUpdateCompany request with any body
+	AdminUpdateCompanyWithBodyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error)
+
+	AdminUpdateCompanyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error)
 
 	// AdminRemoveSecretaryFromCompany request
 	AdminRemoveSecretaryFromCompanyWithResponse(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*AdminRemoveSecretaryFromCompanyResponse, error)
@@ -46081,6 +49754,11 @@ type ClientWithResponsesInterface interface {
 
 	UpdateBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBlockedTimeResponse, error)
 
+	// CreateCampaign request with any body
+	CreateCampaignWithBodyWithResponse(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error)
+
+	CreateCampaignWithResponse(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error)
+
 	// ListCardTypes request
 	ListCardTypesWithResponse(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*ListCardTypesResponse, error)
 
@@ -46091,6 +49769,11 @@ type ClientWithResponsesInterface interface {
 
 	// GetCompanies request
 	GetCompaniesWithResponse(ctx context.Context, params *GetCompaniesParams, reqEditors ...RequestEditorFn) (*GetCompaniesResponse, error)
+
+	// CreateCompany request with any body
+	CreateCompanyWithBodyWithResponse(ctx context.Context, params *CreateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCompanyResponse, error)
+
+	CreateCompanyWithResponse(ctx context.Context, params *CreateCompanyParams, body CreateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCompanyResponse, error)
 
 	// GetCompany request
 	GetCompanyWithResponse(ctx context.Context, companyId string, params *GetCompanyParams, reqEditors ...RequestEditorFn) (*GetCompanyResponse, error)
@@ -46123,6 +49806,12 @@ type ClientWithResponsesInterface interface {
 
 	// ListBlockedTimes request
 	ListBlockedTimesWithResponse(ctx context.Context, companyId string, params *ListBlockedTimesParams, reqEditors ...RequestEditorFn) (*ListBlockedTimesResponse, error)
+
+	// ListCampaigns request
+	ListCampaignsWithResponse(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*ListCampaignsResponse, error)
+
+	// PreviewCampaign request
+	PreviewCampaignWithResponse(ctx context.Context, companyId string, params *PreviewCampaignParams, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error)
 
 	// ListClaims request
 	ListClaimsWithResponse(ctx context.Context, companyId string, params *ListClaimsParams, reqEditors ...RequestEditorFn) (*ListClaimsResponse, error)
@@ -46161,8 +49850,8 @@ type ClientWithResponsesInterface interface {
 	// ListEventTypeCategories request
 	ListEventTypeCategoriesWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoriesParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoriesResponse, error)
 
-	// ListEventTypeCategoryGroups request
-	ListEventTypeCategoryGroupsWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoryGroupsResponse, error)
+	// ListEventTypeCategoryGroupsForCompany request
+	ListEventTypeCategoryGroupsForCompanyWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsForCompanyParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoryGroupsForCompanyResponse, error)
 
 	// ListEventTypeGroups request
 	ListEventTypeGroupsWithResponse(ctx context.Context, companyId string, params *ListEventTypeGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeGroupsResponse, error)
@@ -46182,6 +49871,9 @@ type ClientWithResponsesInterface interface {
 	// UploadCompanyFile request with any body
 	UploadCompanyFileWithBodyWithResponse(ctx context.Context, companyId string, params *UploadCompanyFileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadCompanyFileResponse, error)
 
+	// ListGoalInstances request
+	ListGoalInstancesWithResponse(ctx context.Context, companyId string, params *ListGoalInstancesParams, reqEditors ...RequestEditorFn) (*ListGoalInstancesResponse, error)
+
 	// ListHolidays request
 	ListHolidaysWithResponse(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*ListHolidaysResponse, error)
 
@@ -46199,6 +49891,12 @@ type ClientWithResponsesInterface interface {
 
 	// GetSalesMetrics request
 	GetSalesMetricsWithResponse(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*GetSalesMetricsResponse, error)
+
+	// MigrateCompanyReminders request
+	MigrateCompanyRemindersWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyRemindersResponse, error)
+
+	// ListNotificationMetadata request
+	ListNotificationMetadataWithResponse(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*ListNotificationMetadataResponse, error)
 
 	// DeleteNotifications request
 	DeleteNotificationsWithResponse(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*DeleteNotificationsResponse, error)
@@ -46241,6 +49939,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListPushNotifications request
 	ListPushNotificationsWithResponse(ctx context.Context, companyId string, params *ListPushNotificationsParams, reqEditors ...RequestEditorFn) (*ListPushNotificationsResponse, error)
+
+	// ListReminders request
+	ListRemindersWithResponse(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*ListRemindersResponse, error)
 
 	// ListResourceGroups request
 	ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error)
@@ -46315,6 +50016,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListTransactions request
 	ListTransactionsWithResponse(ctx context.Context, companyId string, params *ListTransactionsParams, reqEditors ...RequestEditorFn) (*ListTransactionsResponse, error)
+
+	// ListUserInvites request
+	ListUserInvitesWithResponse(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*ListUserInvitesResponse, error)
 
 	// ListVATs request
 	ListVATsWithResponse(ctx context.Context, companyId string, params *ListVATsParams, reqEditors ...RequestEditorFn) (*ListVATsResponse, error)
@@ -46463,6 +50167,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateEventStatusWithResponse(ctx context.Context, eventStatusId string, params *UpdateEventStatusParams, body UpdateEventStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEventStatusResponse, error)
 
+	// ListEventTypeCategoryGroups request
+	ListEventTypeCategoryGroupsWithResponse(ctx context.Context, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoryGroupsResponse, error)
+
 	// CreateEventTypeGroup request with any body
 	CreateEventTypeGroupWithBodyWithResponse(ctx context.Context, params *CreateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEventTypeGroupResponse, error)
 
@@ -46531,8 +50238,16 @@ type ClientWithResponsesInterface interface {
 
 	UpsertCompanyFiscalizationDataWithResponse(ctx context.Context, companyId string, body UpsertCompanyFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertCompanyFiscalizationDataResponse, error)
 
+	// MigratePortugalCompanyToATProvider request
+	MigratePortugalCompanyToATProviderWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigratePortugalCompanyToATProviderResponse, error)
+
 	// GetFiscalizationReport request
 	GetFiscalizationReportWithResponse(ctx context.Context, companyId string, params *GetFiscalizationReportParams, reqEditors ...RequestEditorFn) (*GetFiscalizationReportResponse, error)
+
+	// UpdateCompanyFiscalizationStatus request with any body
+	UpdateCompanyFiscalizationStatusWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCompanyFiscalizationStatusResponse, error)
+
+	UpdateCompanyFiscalizationStatusWithResponse(ctx context.Context, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCompanyFiscalizationStatusResponse, error)
 
 	// FiscalizeTransaction request with any body
 	FiscalizeTransactionWithBodyWithResponse(ctx context.Context, transactionId string, params *FiscalizeTransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*FiscalizeTransactionResponse, error)
@@ -46544,6 +50259,19 @@ type ClientWithResponsesInterface interface {
 
 	// RefundFiscalizedTransaction request
 	RefundFiscalizedTransactionWithResponse(ctx context.Context, transactionId string, params *RefundFiscalizedTransactionParams, reqEditors ...RequestEditorFn) (*RefundFiscalizedTransactionResponse, error)
+
+	// GetFiscalizedTransactionXML request
+	GetFiscalizedTransactionXMLWithResponse(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*GetFiscalizedTransactionXMLResponse, error)
+
+	// UpdateGoal request with any body
+	UpdateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateGoalResponse, error)
+
+	UpdateGoalWithResponse(ctx context.Context, goalId string, body UpdateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateGoalResponse, error)
+
+	// ActivateGoal request with any body
+	ActivateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error)
+
+	ActivateGoalWithResponse(ctx context.Context, goalId string, body ActivateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error)
 
 	// UploadImage request with any body
 	UploadImageWithBodyWithResponse(ctx context.Context, params *UploadImageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UploadImageResponse, error)
@@ -46799,6 +50527,22 @@ type ClientWithResponsesInterface interface {
 
 	UpdateCustomPropertyWithResponse(ctx context.Context, propertyId string, params *UpdateCustomPropertyParams, body UpdateCustomPropertyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCustomPropertyResponse, error)
 
+	// CreateReminder request with any body
+	CreateReminderWithBodyWithResponse(ctx context.Context, params *CreateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReminderResponse, error)
+
+	CreateReminderWithResponse(ctx context.Context, params *CreateReminderParams, body CreateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReminderResponse, error)
+
+	// DeleteReminder request
+	DeleteReminderWithResponse(ctx context.Context, reminderId string, params *DeleteReminderParams, reqEditors ...RequestEditorFn) (*DeleteReminderResponse, error)
+
+	// GetReminder request
+	GetReminderWithResponse(ctx context.Context, reminderId string, params *GetReminderParams, reqEditors ...RequestEditorFn) (*GetReminderResponse, error)
+
+	// UpdateReminder request with any body
+	UpdateReminderWithBodyWithResponse(ctx context.Context, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateReminderResponse, error)
+
+	UpdateReminderWithResponse(ctx context.Context, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateReminderResponse, error)
+
 	// CreateResourceGroup request with any body
 	CreateResourceGroupWithBodyWithResponse(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error)
 
@@ -46909,6 +50653,11 @@ type ClientWithResponsesInterface interface {
 	// DeprecatedGetSubtransaction request
 	DeprecatedGetSubtransactionWithResponse(ctx context.Context, saleId string, transactionId string, id string, params *DeprecatedGetSubtransactionParams, reqEditors ...RequestEditorFn) (*DeprecatedGetSubtransactionResponse, error)
 
+	// CreateSMSMessage request with any body
+	CreateSMSMessageWithBodyWithResponse(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error)
+
+	CreateSMSMessageWithResponse(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error)
+
 	// CreateSpace request with any body
 	CreateSpaceWithBodyWithResponse(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSpaceResponse, error)
 
@@ -46989,6 +50738,11 @@ type ClientWithResponsesInterface interface {
 	// GetSubtransaction request
 	GetSubtransactionWithResponse(ctx context.Context, subtransactionId string, params *GetSubtransactionParams, reqEditors ...RequestEditorFn) (*GetSubtransactionResponse, error)
 
+	// UpdateTask request with any body
+	UpdateTaskWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTaskResponse, error)
+
+	UpdateTaskWithResponse(ctx context.Context, taskId string, body UpdateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTaskResponse, error)
+
 	// DeleteTerminal request
 	DeleteTerminalWithResponse(ctx context.Context, terminalId string, params *DeleteTerminalParams, reqEditors ...RequestEditorFn) (*DeleteTerminalResponse, error)
 
@@ -47047,6 +50801,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateGoogleCalendarConnectionWithResponse(ctx context.Context, body CreateGoogleCalendarConnectionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateGoogleCalendarConnectionResponse, error)
 
+	// KindeUserMigration request
+	KindeUserMigrationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*KindeUserMigrationResponse, error)
+
 	// UserOAuth request
 	UserOAuthWithResponse(ctx context.Context, params *UserOAuthParams, reqEditors ...RequestEditorFn) (*UserOAuthResponse, error)
 
@@ -47091,6 +50848,20 @@ type ClientWithResponsesInterface interface {
 	CreateVerificationRequestWithBodyWithResponse(ctx context.Context, params *CreateVerificationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVerificationRequestResponse, error)
 
 	CreateVerificationRequestWithResponse(ctx context.Context, params *CreateVerificationRequestParams, body CreateVerificationRequestJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateVerificationRequestResponse, error)
+
+	// CreateUserInvite request with any body
+	CreateUserInviteWithBodyWithResponse(ctx context.Context, params *CreateUserInviteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error)
+
+	CreateUserInviteWithResponse(ctx context.Context, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error)
+
+	// GetUserInviteContext request
+	GetUserInviteContextWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*GetUserInviteContextResponse, error)
+
+	// ConsumeUserInvite request
+	ConsumeUserInviteWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error)
+
+	// DeleteUserInvite request
+	DeleteUserInviteWithResponse(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*DeleteUserInviteResponse, error)
 
 	// GetCountryInfo request
 	GetCountryInfoWithResponse(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*GetCountryInfoResponse, error)
@@ -47180,6 +50951,28 @@ type ClientWithResponsesInterface interface {
 	UpdateWebhookWithBodyWithResponse(ctx context.Context, webhookId string, params *UpdateWebhookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWebhookResponse, error)
 
 	UpdateWebhookWithResponse(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWebhookResponse, error)
+}
+
+type ListBlockedTimeActivitiesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Activities
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBlockedTimeActivitiesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBlockedTimeActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type ListCustomerActivitiesResponse struct {
@@ -47329,6 +51122,28 @@ func (r AdminGetCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminGetCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminUpdateCompanyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CompanyResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminUpdateCompanyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminUpdateCompanyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -47577,6 +51392,31 @@ func (r UpdateBlockedTimeResponse) StatusCode() int {
 	return 0
 }
 
+type CreateCampaignResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignCreateResponse
+	JSON400      *CreateCampaignError
+	JSON404      *CreateCampaignError
+	JSON429      *CreateCampaignError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateCampaignResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateCampaignResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListCardTypesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -47637,6 +51477,28 @@ func (r GetCompaniesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetCompaniesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateCompanyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CompanyResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateCompanyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateCompanyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -47856,6 +51718,52 @@ func (r ListBlockedTimesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListBlockedTimesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListCampaignsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Campaigns
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCampaignsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCampaignsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PreviewCampaignResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CampaignPreview
+	JSON400      *CreateCampaignError
+	JSON404      *CreateCampaignError
+}
+
+// Status returns HTTPResponse.Status
+func (r PreviewCampaignResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PreviewCampaignResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -48103,14 +52011,14 @@ func (r ListEventTypeCategoriesResponse) StatusCode() int {
 	return 0
 }
 
-type ListEventTypeCategoryGroupsResponse struct {
+type ListEventTypeCategoryGroupsForCompanyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *EventTypeCategoryGroups
 }
 
 // Status returns HTTPResponse.Status
-func (r ListEventTypeCategoryGroupsResponse) Status() string {
+func (r ListEventTypeCategoryGroupsForCompanyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -48118,7 +52026,7 @@ func (r ListEventTypeCategoryGroupsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListEventTypeCategoryGroupsResponse) StatusCode() int {
+func (r ListEventTypeCategoryGroupsForCompanyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -48257,6 +52165,28 @@ func (r UploadCompanyFileResponse) StatusCode() int {
 	return 0
 }
 
+type ListGoalInstancesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Goals
+}
+
+// Status returns HTTPResponse.Status
+func (r ListGoalInstancesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListGoalInstancesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListHolidaysResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -48383,6 +52313,49 @@ func (r GetSalesMetricsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSalesMetricsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MigrateCompanyRemindersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r MigrateCompanyRemindersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MigrateCompanyRemindersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListNotificationMetadataResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]NotificationCategoryMetadata
+}
+
+// Status returns HTTPResponse.Status
+func (r ListNotificationMetadataResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListNotificationMetadataResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -48690,6 +52663,28 @@ func (r ListPushNotificationsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPushNotificationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListRemindersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Reminders
+}
+
+// Status returns HTTPResponse.Status
+func (r ListRemindersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListRemindersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -49172,6 +53167,28 @@ func (r ListTransactionsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListTransactionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListUserInvitesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UserInvites
+}
+
+// Status returns HTTPResponse.Status
+func (r ListUserInvitesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListUserInvitesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -49684,6 +53701,7 @@ type CreateEmployeeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Employee
+	JSON400      *EmployeeCreationError
 }
 
 // Status returns HTTPResponse.Status
@@ -50068,6 +54086,28 @@ func (r UpdateEventStatusResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateEventStatusResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListEventTypeCategoryGroupsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventTypeCategoryGroups
+}
+
+// Status returns HTTPResponse.Status
+func (r ListEventTypeCategoryGroupsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListEventTypeCategoryGroupsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -50466,6 +54506,28 @@ func (r UpsertCompanyFiscalizationDataResponse) StatusCode() int {
 	return 0
 }
 
+type MigratePortugalCompanyToATProviderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FiscalizationOnboarding
+}
+
+// Status returns HTTPResponse.Status
+func (r MigratePortugalCompanyToATProviderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MigratePortugalCompanyToATProviderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetFiscalizationReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -50481,6 +54543,28 @@ func (r GetFiscalizationReportResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetFiscalizationReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateCompanyFiscalizationStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FiscalizationStatusUpdateResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateCompanyFiscalizationStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateCompanyFiscalizationStatusResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -50547,6 +54631,72 @@ func (r RefundFiscalizedTransactionResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r RefundFiscalizedTransactionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetFiscalizedTransactionXMLResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	XML200       *string
+}
+
+// Status returns HTTPResponse.Status
+func (r GetFiscalizedTransactionXMLResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetFiscalizedTransactionXMLResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateGoalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Goal
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateGoalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateGoalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ActivateGoalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Goal
+}
+
+// Status returns HTTPResponse.Status
+func (r ActivateGoalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ActivateGoalResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -51996,6 +56146,95 @@ func (r UpdateCustomPropertyResponse) StatusCode() int {
 	return 0
 }
 
+type CreateReminderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Reminder
+	JSON400      *ReminderError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateReminderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateReminderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteReminderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteReminderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteReminderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetReminderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Reminder
+}
+
+// Status returns HTTPResponse.Status
+func (r GetReminderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetReminderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateReminderResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Reminder
+	JSON400      *ReminderError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateReminderResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateReminderResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateResourceGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -52609,6 +56848,31 @@ func (r DeprecatedGetSubtransactionResponse) StatusCode() int {
 	return 0
 }
 
+type CreateSMSMessageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SMSMessage
+	JSON400      *CreateSMSError
+	JSON404      *CreateSMSError
+	JSON429      *CreateSMSError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSMSMessageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSMSMessageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSpaceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -53120,6 +57384,28 @@ func (r GetSubtransactionResponse) StatusCode() int {
 	return 0
 }
 
+type UpdateTaskResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Task
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateTaskResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateTaskResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteTerminalResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -53469,6 +57755,28 @@ func (r CreateGoogleCalendarConnectionResponse) StatusCode() int {
 	return 0
 }
 
+type KindeUserMigrationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *KindeUserMigration
+}
+
+// Status returns HTTPResponse.Status
+func (r KindeUserMigrationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r KindeUserMigrationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type UserOAuthResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -53745,6 +58053,94 @@ func (r CreateVerificationRequestResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateVerificationRequestResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateUserInviteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UserInvite
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateUserInviteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateUserInviteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetUserInviteContextResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *UserInviteContextResponse
+	JSON403      *UserInviteError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUserInviteContextResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUserInviteContextResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ConsumeUserInviteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON403      *UserInviteError
+}
+
+// Status returns HTTPResponse.Status
+func (r ConsumeUserInviteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConsumeUserInviteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteUserInviteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteUserInviteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteUserInviteResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -54252,6 +58648,15 @@ func (r UpdateWebhookResponse) StatusCode() int {
 	return 0
 }
 
+// ListBlockedTimeActivitiesWithResponse request returning *ListBlockedTimeActivitiesResponse
+func (c *ClientWithResponses) ListBlockedTimeActivitiesWithResponse(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*ListBlockedTimeActivitiesResponse, error) {
+	rsp, err := c.ListBlockedTimeActivities(ctx, blockedTimeId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBlockedTimeActivitiesResponse(rsp)
+}
+
 // ListCustomerActivitiesWithResponse request returning *ListCustomerActivitiesResponse
 func (c *ClientWithResponses) ListCustomerActivitiesWithResponse(ctx context.Context, customerId string, params *ListCustomerActivitiesParams, reqEditors ...RequestEditorFn) (*ListCustomerActivitiesResponse, error) {
 	rsp, err := c.ListCustomerActivities(ctx, customerId, params, reqEditors...)
@@ -54313,6 +58718,23 @@ func (c *ClientWithResponses) AdminGetCompanyWithResponse(ctx context.Context, c
 		return nil, err
 	}
 	return ParseAdminGetCompanyResponse(rsp)
+}
+
+// AdminUpdateCompanyWithBodyWithResponse request with arbitrary body returning *AdminUpdateCompanyResponse
+func (c *ClientWithResponses) AdminUpdateCompanyWithBodyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error) {
+	rsp, err := c.AdminUpdateCompanyWithBody(ctx, companyId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateCompanyResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminUpdateCompanyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error) {
+	rsp, err := c.AdminUpdateCompany(ctx, companyId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateCompanyResponse(rsp)
 }
 
 // AdminRemoveSecretaryFromCompanyWithResponse request returning *AdminRemoveSecretaryFromCompanyResponse
@@ -54446,6 +58868,23 @@ func (c *ClientWithResponses) UpdateBlockedTimeWithResponse(ctx context.Context,
 	return ParseUpdateBlockedTimeResponse(rsp)
 }
 
+// CreateCampaignWithBodyWithResponse request with arbitrary body returning *CreateCampaignResponse
+func (c *ClientWithResponses) CreateCampaignWithBodyWithResponse(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error) {
+	rsp, err := c.CreateCampaignWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCampaignResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateCampaignWithResponse(ctx context.Context, params *CreateCampaignParams, body CreateCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error) {
+	rsp, err := c.CreateCampaign(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCampaignResponse(rsp)
+}
+
 // ListCardTypesWithResponse request returning *ListCardTypesResponse
 func (c *ClientWithResponses) ListCardTypesWithResponse(ctx context.Context, params *ListCardTypesParams, reqEditors ...RequestEditorFn) (*ListCardTypesResponse, error) {
 	rsp, err := c.ListCardTypes(ctx, params, reqEditors...)
@@ -54479,6 +58918,23 @@ func (c *ClientWithResponses) GetCompaniesWithResponse(ctx context.Context, para
 		return nil, err
 	}
 	return ParseGetCompaniesResponse(rsp)
+}
+
+// CreateCompanyWithBodyWithResponse request with arbitrary body returning *CreateCompanyResponse
+func (c *ClientWithResponses) CreateCompanyWithBodyWithResponse(ctx context.Context, params *CreateCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCompanyResponse, error) {
+	rsp, err := c.CreateCompanyWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCompanyResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateCompanyWithResponse(ctx context.Context, params *CreateCompanyParams, body CreateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCompanyResponse, error) {
+	rsp, err := c.CreateCompany(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCompanyResponse(rsp)
 }
 
 // GetCompanyWithResponse request returning *GetCompanyResponse
@@ -54577,6 +59033,24 @@ func (c *ClientWithResponses) ListBlockedTimesWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseListBlockedTimesResponse(rsp)
+}
+
+// ListCampaignsWithResponse request returning *ListCampaignsResponse
+func (c *ClientWithResponses) ListCampaignsWithResponse(ctx context.Context, companyId string, params *ListCampaignsParams, reqEditors ...RequestEditorFn) (*ListCampaignsResponse, error) {
+	rsp, err := c.ListCampaigns(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCampaignsResponse(rsp)
+}
+
+// PreviewCampaignWithResponse request returning *PreviewCampaignResponse
+func (c *ClientWithResponses) PreviewCampaignWithResponse(ctx context.Context, companyId string, params *PreviewCampaignParams, reqEditors ...RequestEditorFn) (*PreviewCampaignResponse, error) {
+	rsp, err := c.PreviewCampaign(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePreviewCampaignResponse(rsp)
 }
 
 // ListClaimsWithResponse request returning *ListClaimsResponse
@@ -54694,13 +59168,13 @@ func (c *ClientWithResponses) ListEventTypeCategoriesWithResponse(ctx context.Co
 	return ParseListEventTypeCategoriesResponse(rsp)
 }
 
-// ListEventTypeCategoryGroupsWithResponse request returning *ListEventTypeCategoryGroupsResponse
-func (c *ClientWithResponses) ListEventTypeCategoryGroupsWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoryGroupsResponse, error) {
-	rsp, err := c.ListEventTypeCategoryGroups(ctx, companyId, params, reqEditors...)
+// ListEventTypeCategoryGroupsForCompanyWithResponse request returning *ListEventTypeCategoryGroupsForCompanyResponse
+func (c *ClientWithResponses) ListEventTypeCategoryGroupsForCompanyWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsForCompanyParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoryGroupsForCompanyResponse, error) {
+	rsp, err := c.ListEventTypeCategoryGroupsForCompany(ctx, companyId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListEventTypeCategoryGroupsResponse(rsp)
+	return ParseListEventTypeCategoryGroupsForCompanyResponse(rsp)
 }
 
 // ListEventTypeGroupsWithResponse request returning *ListEventTypeGroupsResponse
@@ -54757,6 +59231,15 @@ func (c *ClientWithResponses) UploadCompanyFileWithBodyWithResponse(ctx context.
 	return ParseUploadCompanyFileResponse(rsp)
 }
 
+// ListGoalInstancesWithResponse request returning *ListGoalInstancesResponse
+func (c *ClientWithResponses) ListGoalInstancesWithResponse(ctx context.Context, companyId string, params *ListGoalInstancesParams, reqEditors ...RequestEditorFn) (*ListGoalInstancesResponse, error) {
+	rsp, err := c.ListGoalInstances(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListGoalInstancesResponse(rsp)
+}
+
 // ListHolidaysWithResponse request returning *ListHolidaysResponse
 func (c *ClientWithResponses) ListHolidaysWithResponse(ctx context.Context, companyId string, params *ListHolidaysParams, reqEditors ...RequestEditorFn) (*ListHolidaysResponse, error) {
 	rsp, err := c.ListHolidays(ctx, companyId, params, reqEditors...)
@@ -54809,6 +59292,24 @@ func (c *ClientWithResponses) GetSalesMetricsWithResponse(ctx context.Context, c
 		return nil, err
 	}
 	return ParseGetSalesMetricsResponse(rsp)
+}
+
+// MigrateCompanyRemindersWithResponse request returning *MigrateCompanyRemindersResponse
+func (c *ClientWithResponses) MigrateCompanyRemindersWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyRemindersResponse, error) {
+	rsp, err := c.MigrateCompanyReminders(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMigrateCompanyRemindersResponse(rsp)
+}
+
+// ListNotificationMetadataWithResponse request returning *ListNotificationMetadataResponse
+func (c *ClientWithResponses) ListNotificationMetadataWithResponse(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*ListNotificationMetadataResponse, error) {
+	rsp, err := c.ListNotificationMetadata(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListNotificationMetadataResponse(rsp)
 }
 
 // DeleteNotificationsWithResponse request returning *DeleteNotificationsResponse
@@ -54935,6 +59436,15 @@ func (c *ClientWithResponses) ListPushNotificationsWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseListPushNotificationsResponse(rsp)
+}
+
+// ListRemindersWithResponse request returning *ListRemindersResponse
+func (c *ClientWithResponses) ListRemindersWithResponse(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*ListRemindersResponse, error) {
+	rsp, err := c.ListReminders(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRemindersResponse(rsp)
 }
 
 // ListResourceGroupsWithResponse request returning *ListResourceGroupsResponse
@@ -55165,6 +59675,15 @@ func (c *ClientWithResponses) ListTransactionsWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseListTransactionsResponse(rsp)
+}
+
+// ListUserInvitesWithResponse request returning *ListUserInvitesResponse
+func (c *ClientWithResponses) ListUserInvitesWithResponse(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*ListUserInvitesResponse, error) {
+	rsp, err := c.ListUserInvites(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListUserInvitesResponse(rsp)
 }
 
 // ListVATsWithResponse request returning *ListVATsResponse
@@ -55632,6 +60151,15 @@ func (c *ClientWithResponses) UpdateEventStatusWithResponse(ctx context.Context,
 	return ParseUpdateEventStatusResponse(rsp)
 }
 
+// ListEventTypeCategoryGroupsWithResponse request returning *ListEventTypeCategoryGroupsResponse
+func (c *ClientWithResponses) ListEventTypeCategoryGroupsWithResponse(ctx context.Context, params *ListEventTypeCategoryGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoryGroupsResponse, error) {
+	rsp, err := c.ListEventTypeCategoryGroups(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListEventTypeCategoryGroupsResponse(rsp)
+}
+
 // CreateEventTypeGroupWithBodyWithResponse request with arbitrary body returning *CreateEventTypeGroupResponse
 func (c *ClientWithResponses) CreateEventTypeGroupWithBodyWithResponse(ctx context.Context, params *CreateEventTypeGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEventTypeGroupResponse, error) {
 	rsp, err := c.CreateEventTypeGroupWithBody(ctx, params, contentType, body, reqEditors...)
@@ -55850,6 +60378,15 @@ func (c *ClientWithResponses) UpsertCompanyFiscalizationDataWithResponse(ctx con
 	return ParseUpsertCompanyFiscalizationDataResponse(rsp)
 }
 
+// MigratePortugalCompanyToATProviderWithResponse request returning *MigratePortugalCompanyToATProviderResponse
+func (c *ClientWithResponses) MigratePortugalCompanyToATProviderWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigratePortugalCompanyToATProviderResponse, error) {
+	rsp, err := c.MigratePortugalCompanyToATProvider(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMigratePortugalCompanyToATProviderResponse(rsp)
+}
+
 // GetFiscalizationReportWithResponse request returning *GetFiscalizationReportResponse
 func (c *ClientWithResponses) GetFiscalizationReportWithResponse(ctx context.Context, companyId string, params *GetFiscalizationReportParams, reqEditors ...RequestEditorFn) (*GetFiscalizationReportResponse, error) {
 	rsp, err := c.GetFiscalizationReport(ctx, companyId, params, reqEditors...)
@@ -55857,6 +60394,23 @@ func (c *ClientWithResponses) GetFiscalizationReportWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseGetFiscalizationReportResponse(rsp)
+}
+
+// UpdateCompanyFiscalizationStatusWithBodyWithResponse request with arbitrary body returning *UpdateCompanyFiscalizationStatusResponse
+func (c *ClientWithResponses) UpdateCompanyFiscalizationStatusWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCompanyFiscalizationStatusResponse, error) {
+	rsp, err := c.UpdateCompanyFiscalizationStatusWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCompanyFiscalizationStatusResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateCompanyFiscalizationStatusWithResponse(ctx context.Context, companyId string, body UpdateCompanyFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCompanyFiscalizationStatusResponse, error) {
+	rsp, err := c.UpdateCompanyFiscalizationStatus(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCompanyFiscalizationStatusResponse(rsp)
 }
 
 // FiscalizeTransactionWithBodyWithResponse request with arbitrary body returning *FiscalizeTransactionResponse
@@ -55892,6 +60446,49 @@ func (c *ClientWithResponses) RefundFiscalizedTransactionWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseRefundFiscalizedTransactionResponse(rsp)
+}
+
+// GetFiscalizedTransactionXMLWithResponse request returning *GetFiscalizedTransactionXMLResponse
+func (c *ClientWithResponses) GetFiscalizedTransactionXMLWithResponse(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*GetFiscalizedTransactionXMLResponse, error) {
+	rsp, err := c.GetFiscalizedTransactionXML(ctx, transactionId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetFiscalizedTransactionXMLResponse(rsp)
+}
+
+// UpdateGoalWithBodyWithResponse request with arbitrary body returning *UpdateGoalResponse
+func (c *ClientWithResponses) UpdateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateGoalResponse, error) {
+	rsp, err := c.UpdateGoalWithBody(ctx, goalId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateGoalResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateGoalWithResponse(ctx context.Context, goalId string, body UpdateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateGoalResponse, error) {
+	rsp, err := c.UpdateGoal(ctx, goalId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateGoalResponse(rsp)
+}
+
+// ActivateGoalWithBodyWithResponse request with arbitrary body returning *ActivateGoalResponse
+func (c *ClientWithResponses) ActivateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error) {
+	rsp, err := c.ActivateGoalWithBody(ctx, goalId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseActivateGoalResponse(rsp)
+}
+
+func (c *ClientWithResponses) ActivateGoalWithResponse(ctx context.Context, goalId string, body ActivateGoalJSONRequestBody, reqEditors ...RequestEditorFn) (*ActivateGoalResponse, error) {
+	rsp, err := c.ActivateGoal(ctx, goalId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseActivateGoalResponse(rsp)
 }
 
 // UploadImageWithBodyWithResponse request with arbitrary body returning *UploadImageResponse
@@ -56712,6 +61309,58 @@ func (c *ClientWithResponses) UpdateCustomPropertyWithResponse(ctx context.Conte
 	return ParseUpdateCustomPropertyResponse(rsp)
 }
 
+// CreateReminderWithBodyWithResponse request with arbitrary body returning *CreateReminderResponse
+func (c *ClientWithResponses) CreateReminderWithBodyWithResponse(ctx context.Context, params *CreateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateReminderResponse, error) {
+	rsp, err := c.CreateReminderWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateReminderResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateReminderWithResponse(ctx context.Context, params *CreateReminderParams, body CreateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateReminderResponse, error) {
+	rsp, err := c.CreateReminder(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateReminderResponse(rsp)
+}
+
+// DeleteReminderWithResponse request returning *DeleteReminderResponse
+func (c *ClientWithResponses) DeleteReminderWithResponse(ctx context.Context, reminderId string, params *DeleteReminderParams, reqEditors ...RequestEditorFn) (*DeleteReminderResponse, error) {
+	rsp, err := c.DeleteReminder(ctx, reminderId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteReminderResponse(rsp)
+}
+
+// GetReminderWithResponse request returning *GetReminderResponse
+func (c *ClientWithResponses) GetReminderWithResponse(ctx context.Context, reminderId string, params *GetReminderParams, reqEditors ...RequestEditorFn) (*GetReminderResponse, error) {
+	rsp, err := c.GetReminder(ctx, reminderId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetReminderResponse(rsp)
+}
+
+// UpdateReminderWithBodyWithResponse request with arbitrary body returning *UpdateReminderResponse
+func (c *ClientWithResponses) UpdateReminderWithBodyWithResponse(ctx context.Context, reminderId string, params *UpdateReminderParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateReminderResponse, error) {
+	rsp, err := c.UpdateReminderWithBody(ctx, reminderId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateReminderResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateReminderWithResponse(ctx context.Context, reminderId string, params *UpdateReminderParams, body UpdateReminderJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateReminderResponse, error) {
+	rsp, err := c.UpdateReminder(ctx, reminderId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateReminderResponse(rsp)
+}
+
 // CreateResourceGroupWithBodyWithResponse request with arbitrary body returning *CreateResourceGroupResponse
 func (c *ClientWithResponses) CreateResourceGroupWithBodyWithResponse(ctx context.Context, params *CreateResourceGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateResourceGroupResponse, error) {
 	rsp, err := c.CreateResourceGroupWithBody(ctx, params, contentType, body, reqEditors...)
@@ -57068,6 +61717,23 @@ func (c *ClientWithResponses) DeprecatedGetSubtransactionWithResponse(ctx contex
 	return ParseDeprecatedGetSubtransactionResponse(rsp)
 }
 
+// CreateSMSMessageWithBodyWithResponse request with arbitrary body returning *CreateSMSMessageResponse
+func (c *ClientWithResponses) CreateSMSMessageWithBodyWithResponse(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error) {
+	rsp, err := c.CreateSMSMessageWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSMSMessageResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSMSMessageWithResponse(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error) {
+	rsp, err := c.CreateSMSMessage(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSMSMessageResponse(rsp)
+}
+
 // CreateSpaceWithBodyWithResponse request with arbitrary body returning *CreateSpaceResponse
 func (c *ClientWithResponses) CreateSpaceWithBodyWithResponse(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSpaceResponse, error) {
 	rsp, err := c.CreateSpaceWithBody(ctx, params, contentType, body, reqEditors...)
@@ -57316,6 +61982,23 @@ func (c *ClientWithResponses) GetSubtransactionWithResponse(ctx context.Context,
 	return ParseGetSubtransactionResponse(rsp)
 }
 
+// UpdateTaskWithBodyWithResponse request with arbitrary body returning *UpdateTaskResponse
+func (c *ClientWithResponses) UpdateTaskWithBodyWithResponse(ctx context.Context, taskId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTaskResponse, error) {
+	rsp, err := c.UpdateTaskWithBody(ctx, taskId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTaskResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateTaskWithResponse(ctx context.Context, taskId string, body UpdateTaskJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTaskResponse, error) {
+	rsp, err := c.UpdateTask(ctx, taskId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTaskResponse(rsp)
+}
+
 // DeleteTerminalWithResponse request returning *DeleteTerminalResponse
 func (c *ClientWithResponses) DeleteTerminalWithResponse(ctx context.Context, terminalId string, params *DeleteTerminalParams, reqEditors ...RequestEditorFn) (*DeleteTerminalResponse, error) {
 	rsp, err := c.DeleteTerminal(ctx, terminalId, params, reqEditors...)
@@ -57500,6 +62183,15 @@ func (c *ClientWithResponses) CreateGoogleCalendarConnectionWithResponse(ctx con
 	return ParseCreateGoogleCalendarConnectionResponse(rsp)
 }
 
+// KindeUserMigrationWithResponse request returning *KindeUserMigrationResponse
+func (c *ClientWithResponses) KindeUserMigrationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*KindeUserMigrationResponse, error) {
+	rsp, err := c.KindeUserMigration(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseKindeUserMigrationResponse(rsp)
+}
+
 // UserOAuthWithResponse request returning *UserOAuthResponse
 func (c *ClientWithResponses) UserOAuthWithResponse(ctx context.Context, params *UserOAuthParams, reqEditors ...RequestEditorFn) (*UserOAuthResponse, error) {
 	rsp, err := c.UserOAuth(ctx, params, reqEditors...)
@@ -57639,6 +62331,50 @@ func (c *ClientWithResponses) CreateVerificationRequestWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseCreateVerificationRequestResponse(rsp)
+}
+
+// CreateUserInviteWithBodyWithResponse request with arbitrary body returning *CreateUserInviteResponse
+func (c *ClientWithResponses) CreateUserInviteWithBodyWithResponse(ctx context.Context, params *CreateUserInviteParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error) {
+	rsp, err := c.CreateUserInviteWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUserInviteResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateUserInviteWithResponse(ctx context.Context, params *CreateUserInviteParams, body CreateUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateUserInviteResponse, error) {
+	rsp, err := c.CreateUserInvite(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateUserInviteResponse(rsp)
+}
+
+// GetUserInviteContextWithResponse request returning *GetUserInviteContextResponse
+func (c *ClientWithResponses) GetUserInviteContextWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*GetUserInviteContextResponse, error) {
+	rsp, err := c.GetUserInviteContext(ctx, token, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUserInviteContextResponse(rsp)
+}
+
+// ConsumeUserInviteWithResponse request returning *ConsumeUserInviteResponse
+func (c *ClientWithResponses) ConsumeUserInviteWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error) {
+	rsp, err := c.ConsumeUserInvite(ctx, token, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConsumeUserInviteResponse(rsp)
+}
+
+// DeleteUserInviteWithResponse request returning *DeleteUserInviteResponse
+func (c *ClientWithResponses) DeleteUserInviteWithResponse(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*DeleteUserInviteResponse, error) {
+	rsp, err := c.DeleteUserInvite(ctx, userInviteId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteUserInviteResponse(rsp)
 }
 
 // GetCountryInfoWithResponse request returning *GetCountryInfoResponse
@@ -57928,6 +62664,32 @@ func (c *ClientWithResponses) UpdateWebhookWithResponse(ctx context.Context, web
 	return ParseUpdateWebhookResponse(rsp)
 }
 
+// ParseListBlockedTimeActivitiesResponse parses an HTTP response from a ListBlockedTimeActivitiesWithResponse call
+func ParseListBlockedTimeActivitiesResponse(rsp *http.Response) (*ListBlockedTimeActivitiesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBlockedTimeActivitiesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Activities
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListCustomerActivitiesResponse parses an HTTP response from a ListCustomerActivitiesWithResponse call
 func ParseListCustomerActivitiesResponse(rsp *http.Response) (*ListCustomerActivitiesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -58090,6 +62852,32 @@ func ParseAdminGetCompanyResponse(rsp *http.Response) (*AdminGetCompanyResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdminCompanyDetails
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminUpdateCompanyResponse parses an HTTP response from a AdminUpdateCompanyWithResponse call
+func ParseAdminUpdateCompanyResponse(rsp *http.Response) (*AdminUpdateCompanyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminUpdateCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CompanyResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -58377,6 +63165,53 @@ func ParseUpdateBlockedTimeResponse(rsp *http.Response) (*UpdateBlockedTimeRespo
 	return response, nil
 }
 
+// ParseCreateCampaignResponse parses an HTTP response from a CreateCampaignWithResponse call
+func ParseCreateCampaignResponse(rsp *http.Response) (*CreateCampaignResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateCampaignResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignCreateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListCardTypesResponse parses an HTTP response from a ListCardTypesWithResponse call
 func ParseListCardTypesResponse(rsp *http.Response) (*ListCardTypesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -58445,6 +63280,32 @@ func ParseGetCompaniesResponse(rsp *http.Response) (*GetCompaniesResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CompaniesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateCompanyResponse parses an HTTP response from a CreateCompanyWithResponse call
+func ParseCreateCompanyResponse(rsp *http.Response) (*CreateCompanyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CompanyResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -58699,6 +63560,72 @@ func ParseListBlockedTimesResponse(rsp *http.Response) (*ListBlockedTimesRespons
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListCampaignsResponse parses an HTTP response from a ListCampaignsWithResponse call
+func ParseListCampaignsResponse(rsp *http.Response) (*ListCampaignsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCampaignsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Campaigns
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePreviewCampaignResponse parses an HTTP response from a PreviewCampaignWithResponse call
+func ParsePreviewCampaignResponse(rsp *http.Response) (*PreviewCampaignResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PreviewCampaignResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CampaignPreview
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	}
 
@@ -58981,15 +63908,15 @@ func ParseListEventTypeCategoriesResponse(rsp *http.Response) (*ListEventTypeCat
 	return response, nil
 }
 
-// ParseListEventTypeCategoryGroupsResponse parses an HTTP response from a ListEventTypeCategoryGroupsWithResponse call
-func ParseListEventTypeCategoryGroupsResponse(rsp *http.Response) (*ListEventTypeCategoryGroupsResponse, error) {
+// ParseListEventTypeCategoryGroupsForCompanyResponse parses an HTTP response from a ListEventTypeCategoryGroupsForCompanyWithResponse call
+func ParseListEventTypeCategoryGroupsForCompanyResponse(rsp *http.Response) (*ListEventTypeCategoryGroupsForCompanyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListEventTypeCategoryGroupsResponse{
+	response := &ListEventTypeCategoryGroupsForCompanyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -59163,6 +64090,32 @@ func ParseUploadCompanyFileResponse(rsp *http.Response) (*UploadCompanyFileRespo
 	return response, nil
 }
 
+// ParseListGoalInstancesResponse parses an HTTP response from a ListGoalInstancesWithResponse call
+func ParseListGoalInstancesResponse(rsp *http.Response) (*ListGoalInstancesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListGoalInstancesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Goals
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListHolidaysResponse parses an HTTP response from a ListHolidaysWithResponse call
 func ParseListHolidaysResponse(rsp *http.Response) (*ListHolidaysResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -59309,6 +64262,48 @@ func ParseGetSalesMetricsResponse(rsp *http.Response) (*GetSalesMetricsResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest SalesMetrics
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMigrateCompanyRemindersResponse parses an HTTP response from a MigrateCompanyRemindersWithResponse call
+func ParseMigrateCompanyRemindersResponse(rsp *http.Response) (*MigrateCompanyRemindersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MigrateCompanyRemindersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListNotificationMetadataResponse parses an HTTP response from a ListNotificationMetadataWithResponse call
+func ParseListNotificationMetadataResponse(rsp *http.Response) (*ListNotificationMetadataResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListNotificationMetadataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []NotificationCategoryMetadata
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -59663,6 +64658,32 @@ func ParseListPushNotificationsResponse(rsp *http.Response) (*ListPushNotificati
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PushNotifications
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListRemindersResponse parses an HTTP response from a ListRemindersWithResponse call
+func ParseListRemindersResponse(rsp *http.Response) (*ListRemindersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListRemindersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Reminders
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -60212,6 +65233,32 @@ func ParseListTransactionsResponse(rsp *http.Response) (*ListTransactionsRespons
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Transactions
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListUserInvitesResponse parses an HTTP response from a ListUserInvitesWithResponse call
+func ParseListUserInvitesResponse(rsp *http.Response) (*ListUserInvitesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListUserInvitesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UserInvites
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -60801,6 +65848,13 @@ func ParseCreateEmployeeResponse(rsp *http.Response) (*CreateEmployeeResponse, e
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest EmployeeCreationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	}
 
 	return response, nil
@@ -61218,6 +66272,32 @@ func ParseUpdateEventStatusResponse(rsp *http.Response) (*UpdateEventStatusRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest EventStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListEventTypeCategoryGroupsResponse parses an HTTP response from a ListEventTypeCategoryGroupsWithResponse call
+func ParseListEventTypeCategoryGroupsResponse(rsp *http.Response) (*ListEventTypeCategoryGroupsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListEventTypeCategoryGroupsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventTypeCategoryGroups
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -61656,6 +66736,32 @@ func ParseUpsertCompanyFiscalizationDataResponse(rsp *http.Response) (*UpsertCom
 	return response, nil
 }
 
+// ParseMigratePortugalCompanyToATProviderResponse parses an HTTP response from a MigratePortugalCompanyToATProviderWithResponse call
+func ParseMigratePortugalCompanyToATProviderResponse(rsp *http.Response) (*MigratePortugalCompanyToATProviderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MigratePortugalCompanyToATProviderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FiscalizationOnboarding
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetFiscalizationReportResponse parses an HTTP response from a GetFiscalizationReportWithResponse call
 func ParseGetFiscalizationReportResponse(rsp *http.Response) (*GetFiscalizationReportResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -61667,6 +66773,32 @@ func ParseGetFiscalizationReportResponse(rsp *http.Response) (*GetFiscalizationR
 	response := &GetFiscalizationReportResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseUpdateCompanyFiscalizationStatusResponse parses an HTTP response from a UpdateCompanyFiscalizationStatusWithResponse call
+func ParseUpdateCompanyFiscalizationStatusResponse(rsp *http.Response) (*UpdateCompanyFiscalizationStatusResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateCompanyFiscalizationStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FiscalizationStatusUpdateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
@@ -61737,6 +66869,84 @@ func ParseRefundFiscalizedTransactionResponse(rsp *http.Response) (*RefundFiscal
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Transaction
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetFiscalizedTransactionXMLResponse parses an HTTP response from a GetFiscalizedTransactionXMLWithResponse call
+func ParseGetFiscalizedTransactionXMLResponse(rsp *http.Response) (*GetFiscalizedTransactionXMLResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetFiscalizedTransactionXMLResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "xml") && rsp.StatusCode == 200:
+		var dest string
+		if err := xml.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.XML200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateGoalResponse parses an HTTP response from a UpdateGoalWithResponse call
+func ParseUpdateGoalResponse(rsp *http.Response) (*UpdateGoalResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateGoalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Goal
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseActivateGoalResponse parses an HTTP response from a ActivateGoalWithResponse call
+func ParseActivateGoalResponse(rsp *http.Response) (*ActivateGoalResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ActivateGoalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Goal
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -63370,6 +68580,114 @@ func ParseUpdateCustomPropertyResponse(rsp *http.Response) (*UpdateCustomPropert
 	return response, nil
 }
 
+// ParseCreateReminderResponse parses an HTTP response from a CreateReminderWithResponse call
+func ParseCreateReminderResponse(rsp *http.Response) (*CreateReminderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateReminderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Reminder
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ReminderError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteReminderResponse parses an HTTP response from a DeleteReminderWithResponse call
+func ParseDeleteReminderResponse(rsp *http.Response) (*DeleteReminderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteReminderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetReminderResponse parses an HTTP response from a GetReminderWithResponse call
+func ParseGetReminderResponse(rsp *http.Response) (*GetReminderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetReminderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Reminder
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateReminderResponse parses an HTTP response from a UpdateReminderWithResponse call
+func ParseUpdateReminderResponse(rsp *http.Response) (*UpdateReminderResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateReminderResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Reminder
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ReminderError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateResourceGroupResponse parses an HTTP response from a CreateResourceGroupWithResponse call
 func ParseCreateResourceGroupResponse(rsp *http.Response) (*CreateResourceGroupResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -64059,6 +69377,53 @@ func ParseDeprecatedGetSubtransactionResponse(rsp *http.Response) (*DeprecatedGe
 	return response, nil
 }
 
+// ParseCreateSMSMessageResponse parses an HTTP response from a CreateSMSMessageWithResponse call
+func ParseCreateSMSMessageResponse(rsp *http.Response) (*CreateSMSMessageResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSMSMessageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SMSMessage
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest CreateSMSError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest CreateSMSError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest CreateSMSError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateSpaceResponse parses an HTTP response from a CreateSpaceWithResponse call
 func ParseCreateSpaceResponse(rsp *http.Response) (*CreateSpaceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -64513,6 +69878,32 @@ func ParseGetSubtransactionResponse(rsp *http.Response) (*GetSubtransactionRespo
 	return response, nil
 }
 
+// ParseUpdateTaskResponse parses an HTTP response from a UpdateTaskWithResponse call
+func ParseUpdateTaskResponse(rsp *http.Response) (*UpdateTaskResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateTaskResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Task
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDeleteTerminalResponse parses an HTTP response from a DeleteTerminalWithResponse call
 func ParseDeleteTerminalResponse(rsp *http.Response) (*DeleteTerminalResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -64899,6 +70290,32 @@ func ParseCreateGoogleCalendarConnectionResponse(rsp *http.Response) (*CreateGoo
 	return response, nil
 }
 
+// ParseKindeUserMigrationResponse parses an HTTP response from a KindeUserMigrationWithResponse call
+func ParseKindeUserMigrationResponse(rsp *http.Response) (*KindeUserMigrationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &KindeUserMigrationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest KindeUserMigration
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseUserOAuthResponse parses an HTTP response from a UserOAuthWithResponse call
 func ParseUserOAuthResponse(rsp *http.Response) (*UserOAuthResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -65192,6 +70609,107 @@ func ParseCreateVerificationRequestResponse(rsp *http.Response) (*CreateVerifica
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseCreateUserInviteResponse parses an HTTP response from a CreateUserInviteWithResponse call
+func ParseCreateUserInviteResponse(rsp *http.Response) (*CreateUserInviteResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateUserInviteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UserInvite
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUserInviteContextResponse parses an HTTP response from a GetUserInviteContextWithResponse call
+func ParseGetUserInviteContextResponse(rsp *http.Response) (*GetUserInviteContextResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUserInviteContextResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest UserInviteContextResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest UserInviteError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseConsumeUserInviteResponse parses an HTTP response from a ConsumeUserInviteWithResponse call
+func ParseConsumeUserInviteResponse(rsp *http.Response) (*ConsumeUserInviteResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConsumeUserInviteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest UserInviteError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteUserInviteResponse parses an HTTP response from a DeleteUserInviteWithResponse call
+func ParseDeleteUserInviteResponse(rsp *http.Response) (*DeleteUserInviteResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteUserInviteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil

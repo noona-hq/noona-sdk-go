@@ -8,18 +8,22 @@ import (
 )
 
 const (
-	NoonaBaseURL    = "https://api.noona.is"
-	NoonaAuthHeader = "Authorization"
+	NoonaBaseURL              = "https://api.noona.is"
+	NoonaAuthHeader           = "Authorization"
+	NoonaAcceptLanguageHeader = "Accept-Language"
+	NoonaDefaultLanguage      = "en"
 )
 
 type ClientOptions struct {
 	// Defaults to https://api.noona.is
-	BaseURL string
+	BaseURL        string
+	AcceptLanguage string
 }
 
 func New(token string, options ...ClientOptions) (*ClientWithResponses, error) {
 	opts := ClientOptions{
-		BaseURL: NoonaBaseURL,
+		BaseURL:        NoonaBaseURL,
+		AcceptLanguage: NoonaDefaultLanguage,
 	}
 
 	if len(options) > 0 {
@@ -28,6 +32,7 @@ func New(token string, options ...ClientOptions) (*ClientWithResponses, error) {
 
 	authHeader := WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 		req.Header.Add(NoonaAuthHeader, "Bearer "+token)
+		req.Header.Add(NoonaAcceptLanguageHeader, opts.AcceptLanguage)
 		return nil
 	})
 
