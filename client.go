@@ -293,7 +293,6 @@ const (
 	CompanyFieldCustomReminder        CompanyField = "custom_reminder"
 	CompanyFieldDescription           CompanyField = "description"
 	CompanyFieldImage                 CompanyField = "image"
-	CompanyFieldInviteDecisionPending CompanyField = "invite_decision_pending"
 )
 
 // Defines values for CompanyPOSSettingsCheckoutFirstTab.
@@ -1676,16 +1675,15 @@ type AdminCompanyUpdate struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary    *bool               `json:"has_secretary,omitempty"`
-	Id              *string             `json:"id,omitempty"`
-	InviteLinkToken *string             `json:"invite_link_token,omitempty"`
-	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
-	Locale          *Locale             `json:"locale,omitempty"`
-	Location        *Location           `json:"location,omitempty"`
-	LockedSections  *LockedSections     `json:"locked_sections,omitempty"`
-	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
-	Name            *string             `json:"name,omitempty"`
+	HasSecretary   *bool               `json:"has_secretary,omitempty"`
+	Id             *string             `json:"id,omitempty"`
+	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
+	Locale         *Locale             `json:"locale,omitempty"`
+	Location       *Location           `json:"location,omitempty"`
+	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
+	Name           *string             `json:"name,omitempty"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
@@ -1704,12 +1702,13 @@ type AdminCompanyUpdate struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId   *string               `json:"reference_id,omitempty"`
-	Signup        *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya          *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
-	Vertical      *interface{}          `json:"vertical,omitempty"`
+	ReferenceId         *string                  `json:"reference_id,omitempty"`
+	Signup              *CompanySignup           `json:"signup,omitempty"`
+	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
+	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
+	Teya                *TeyaConnection          `json:"teya,omitempty"`
+	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
+	Vertical            *interface{}             `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
@@ -1856,7 +1855,8 @@ type App struct {
 	// If `true`, the application will appear in the navigation within Noona HQ.
 	//
 	// When clicked, the application's open_uri will be displayed in an iFrame.
-	ShowInNavigation *bool `json:"show_in_navigation,omitempty"`
+	ShowInNavigation *bool   `json:"show_in_navigation,omitempty"`
+	UninstallMessage *string `json:"uninstall_message,omitempty"`
 }
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
@@ -1917,8 +1917,16 @@ type Application struct {
 	// If `true`, the application will appear in the navigation within Noona HQ.
 	//
 	// When clicked, the application's main redirect_uri will be displayed in an iFrame.
-	ShowInNavigation *bool      `json:"show_in_navigation,omitempty"`
-	UpdatedAt        *time.Time `json:"updated_at,omitempty"`
+	ShowInNavigation *bool `json:"show_in_navigation,omitempty"`
+
+	// Short text that is displayed to the user when uninstalling the app.
+	UninstallMessage *string `json:"uninstall_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	UninstallMessageTranslations *TranslationMap `json:"uninstall_message_translations,omitempty"`
+	UpdatedAt                    *time.Time      `json:"updated_at,omitempty"`
 
 	// The verticals the application is available in.
 	//
@@ -2879,16 +2887,15 @@ type Company struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary    *bool               `json:"has_secretary,omitempty"`
-	Id              *string             `json:"id,omitempty"`
-	InviteLinkToken *string             `json:"invite_link_token,omitempty"`
-	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
-	Locale          *Locale             `json:"locale,omitempty"`
-	Location        *Location           `json:"location,omitempty"`
-	LockedSections  *LockedSections     `json:"locked_sections,omitempty"`
-	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
-	Name            *string             `json:"name,omitempty"`
+	HasSecretary   *bool               `json:"has_secretary,omitempty"`
+	Id             *string             `json:"id,omitempty"`
+	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
+	Locale         *Locale             `json:"locale,omitempty"`
+	Location       *Location           `json:"location,omitempty"`
+	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
+	Name           *string             `json:"name,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -2904,12 +2911,13 @@ type Company struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId   *string               `json:"reference_id,omitempty"`
-	Signup        *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya          *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
-	Vertical      *CompanyVertical      `json:"vertical,omitempty"`
+	ReferenceId         *string                  `json:"reference_id,omitempty"`
+	Signup              *CompanySignup           `json:"signup,omitempty"`
+	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
+	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
+	Teya                *TeyaConnection          `json:"teya,omitempty"`
+	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
+	Vertical            *CompanyVertical         `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
@@ -3268,16 +3276,15 @@ type CompanyResponse struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary    *bool              `json:"has_secretary,omitempty"`
-	Id              *string            `json:"id,omitempty"`
-	InviteLinkToken *string            `json:"invite_link_token,omitempty"`
-	LastActiveAt    *time.Time         `json:"last_active_at,omitempty"`
-	Locale          Locale             `json:"locale"`
-	Location        Location           `json:"location"`
-	LockedSections  *LockedSections    `json:"locked_sections,omitempty"`
-	Marketplace     CompanyMarketplace `json:"marketplace"`
-	Messaging       CompanyMessaging   `json:"messaging"`
-	Name            string             `json:"name"`
+	HasSecretary   *bool              `json:"has_secretary,omitempty"`
+	Id             *string            `json:"id,omitempty"`
+	LastActiveAt   *time.Time         `json:"last_active_at,omitempty"`
+	Locale         Locale             `json:"locale"`
+	Location       Location           `json:"location"`
+	LockedSections *LockedSections    `json:"locked_sections,omitempty"`
+	Marketplace    CompanyMarketplace `json:"marketplace"`
+	Messaging      CompanyMessaging   `json:"messaging"`
+	Name           string             `json:"name"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -3293,12 +3300,13 @@ type CompanyResponse struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId   *string               `json:"reference_id,omitempty"`
-	Signup        *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya          *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
-	Vertical      CompanyVertical       `json:"vertical"`
+	ReferenceId         *string                  `json:"reference_id,omitempty"`
+	Signup              *CompanySignup           `json:"signup,omitempty"`
+	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
+	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
+	Teya                *TeyaConnection          `json:"teya,omitempty"`
+	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
+	Vertical            CompanyVertical          `json:"vertical"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 	VisibleFields *RequiredFields `json:"visible_fields,omitempty"`
@@ -3381,16 +3389,15 @@ type CompanyUpdate struct {
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
-	HasSecretary    *bool               `json:"has_secretary,omitempty"`
-	Id              *string             `json:"id,omitempty"`
-	InviteLinkToken *string             `json:"invite_link_token,omitempty"`
-	LastActiveAt    *time.Time          `json:"last_active_at,omitempty"`
-	Locale          *Locale             `json:"locale,omitempty"`
-	Location        *Location           `json:"location,omitempty"`
-	LockedSections  *LockedSections     `json:"locked_sections,omitempty"`
-	Marketplace     *CompanyMarketplace `json:"marketplace,omitempty"`
-	Messaging       *CompanyMessaging   `json:"messaging,omitempty"`
-	Name            *string             `json:"name,omitempty"`
+	HasSecretary   *bool               `json:"has_secretary,omitempty"`
+	Id             *string             `json:"id,omitempty"`
+	LastActiveAt   *time.Time          `json:"last_active_at,omitempty"`
+	Locale         *Locale             `json:"locale,omitempty"`
+	Location       *Location           `json:"location,omitempty"`
+	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
+	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
+	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
+	Name           *string             `json:"name,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -3406,12 +3413,13 @@ type CompanyUpdate struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId   *string               `json:"reference_id,omitempty"`
-	Signup        *CompanySignup        `json:"signup,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Teya          *TeyaConnection       `json:"teya,omitempty"`
-	UpdatedAt     *time.Time            `json:"updated_at,omitempty"`
-	Vertical      *interface{}          `json:"vertical,omitempty"`
+	ReferenceId         *string                  `json:"reference_id,omitempty"`
+	Signup              *CompanySignup           `json:"signup,omitempty"`
+	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
+	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
+	Teya                *TeyaConnection          `json:"teya,omitempty"`
+	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
+	Vertical            *interface{}             `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
@@ -8359,6 +8367,21 @@ type SubscriptionDiscountPeriodUnit string
 // SubscriptionDiscounts defines model for SubscriptionDiscounts.
 type SubscriptionDiscounts []SubscriptionDiscount
 
+// SubscriptionDunningInfo defines model for SubscriptionDunningInfo.
+type SubscriptionDunningInfo struct {
+	Currency *string `json:"currency,omitempty"`
+
+	// Calculated final due date based on payment method dunning period
+	DunningDeadline *time.Time `json:"dunning_deadline,omitempty"`
+
+	// Applied dunning period in days for the payment method
+	DunningPeriodDays *int `json:"dunning_period_days,omitempty"`
+
+	// The date and time of the oldest unpaid invoice in the dunning cycle
+	OldestUnpaidInvoice *time.Time `json:"oldest_unpaid_invoice,omitempty"`
+	UnpaidAmount        *int64     `json:"unpaid_amount,omitempty"`
+}
+
 // SubscriptionItem defines model for SubscriptionItem.
 type SubscriptionItem struct {
 	Amount      *int32                    `json:"amount,omitempty"`
@@ -8948,6 +8971,11 @@ type UserConnectionsGoogle struct {
 	Connected *bool `json:"connected,omitempty"`
 }
 
+// UserEmailVerification defines model for UserEmailVerification.
+type UserEmailVerification struct {
+	Token string `json:"token"`
+}
+
 // UserField defines model for UserField.
 type UserField string
 
@@ -9000,6 +9028,9 @@ type UserInviteContextResponse struct {
 
 	// Name of the company this user invite belongs to
 	CompanyName *string `json:"company_name,omitempty"`
+
+	// Email of the invited user (only present for email invites)
+	Email *string `json:"email,omitempty"`
 
 	// When the user invite expires
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
@@ -13183,6 +13214,9 @@ type UpdateCurrentUserParams struct {
 	Unset  *UserFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
+// ConfirmUserEmailVerificationJSONBody defines parameters for ConfirmUserEmailVerification.
+type ConfirmUserEmailVerificationJSONBody UserEmailVerification
+
 // CreateGoogleCalendarConnectionJSONBody defines parameters for CreateGoogleCalendarConnection.
 type CreateGoogleCalendarConnectionJSONBody GoogleCalendarConnection
 
@@ -13844,6 +13878,9 @@ type UpdateTransactionJSONRequestBody UpdateTransactionJSONBody
 
 // UpdateCurrentUserJSONRequestBody defines body for UpdateCurrentUser for application/json ContentType.
 type UpdateCurrentUserJSONRequestBody UpdateCurrentUserJSONBody
+
+// ConfirmUserEmailVerificationJSONRequestBody defines body for ConfirmUserEmailVerification for application/json ContentType.
+type ConfirmUserEmailVerificationJSONRequestBody ConfirmUserEmailVerificationJSONBody
 
 // CreateGoogleCalendarConnectionJSONRequestBody defines body for CreateGoogleCalendarConnection for application/json ContentType.
 type CreateGoogleCalendarConnectionJSONRequestBody CreateGoogleCalendarConnectionJSONBody
@@ -17031,6 +17068,14 @@ type ClientInterface interface {
 	UpdateCurrentUserWithBody(ctx context.Context, params *UpdateCurrentUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateCurrentUser(ctx context.Context, params *UpdateCurrentUserParams, body UpdateCurrentUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SendUserEmailVerification request
+	SendUserEmailVerification(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConfirmUserEmailVerification request with any body
+	ConfirmUserEmailVerificationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ConfirmUserEmailVerification(ctx context.Context, body ConfirmUserEmailVerificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteGoogleCalendarConnection request
 	DeleteGoogleCalendarConnection(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -21973,6 +22018,42 @@ func (c *Client) UpdateCurrentUserWithBody(ctx context.Context, params *UpdateCu
 
 func (c *Client) UpdateCurrentUser(ctx context.Context, params *UpdateCurrentUserParams, body UpdateCurrentUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateCurrentUserRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SendUserEmailVerification(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendUserEmailVerificationRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmUserEmailVerificationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmUserEmailVerificationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmUserEmailVerification(ctx context.Context, body ConfirmUserEmailVerificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmUserEmailVerificationRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -46770,6 +46851,73 @@ func NewUpdateCurrentUserRequestWithBody(server string, params *UpdateCurrentUse
 	return req, nil
 }
 
+// NewSendUserEmailVerificationRequest generates requests for SendUserEmailVerification
+func NewSendUserEmailVerificationRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user/email-verification")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewConfirmUserEmailVerificationRequest calls the generic ConfirmUserEmailVerification builder with application/json body
+func NewConfirmUserEmailVerificationRequest(server string, body ConfirmUserEmailVerificationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConfirmUserEmailVerificationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewConfirmUserEmailVerificationRequestWithBody generates requests for ConfirmUserEmailVerification with any type of body
+func NewConfirmUserEmailVerificationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user/email-verification/confirm")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteGoogleCalendarConnectionRequest generates requests for DeleteGoogleCalendarConnection
 func NewDeleteGoogleCalendarConnectionRequest(server string) (*http.Request, error) {
 	var err error
@@ -50789,6 +50937,14 @@ type ClientWithResponsesInterface interface {
 	UpdateCurrentUserWithBodyWithResponse(ctx context.Context, params *UpdateCurrentUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCurrentUserResponse, error)
 
 	UpdateCurrentUserWithResponse(ctx context.Context, params *UpdateCurrentUserParams, body UpdateCurrentUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCurrentUserResponse, error)
+
+	// SendUserEmailVerification request
+	SendUserEmailVerificationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SendUserEmailVerificationResponse, error)
+
+	// ConfirmUserEmailVerification request with any body
+	ConfirmUserEmailVerificationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmUserEmailVerificationResponse, error)
+
+	ConfirmUserEmailVerificationWithResponse(ctx context.Context, body ConfirmUserEmailVerificationJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmUserEmailVerificationResponse, error)
 
 	// DeleteGoogleCalendarConnection request
 	DeleteGoogleCalendarConnectionWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DeleteGoogleCalendarConnectionResponse, error)
@@ -57690,6 +57846,48 @@ func (r UpdateCurrentUserResponse) StatusCode() int {
 	return 0
 }
 
+type SendUserEmailVerificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r SendUserEmailVerificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SendUserEmailVerificationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ConfirmUserEmailVerificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r ConfirmUserEmailVerificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConfirmUserEmailVerificationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteGoogleCalendarConnectionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -62146,6 +62344,32 @@ func (c *ClientWithResponses) UpdateCurrentUserWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseUpdateCurrentUserResponse(rsp)
+}
+
+// SendUserEmailVerificationWithResponse request returning *SendUserEmailVerificationResponse
+func (c *ClientWithResponses) SendUserEmailVerificationWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*SendUserEmailVerificationResponse, error) {
+	rsp, err := c.SendUserEmailVerification(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSendUserEmailVerificationResponse(rsp)
+}
+
+// ConfirmUserEmailVerificationWithBodyWithResponse request with arbitrary body returning *ConfirmUserEmailVerificationResponse
+func (c *ClientWithResponses) ConfirmUserEmailVerificationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmUserEmailVerificationResponse, error) {
+	rsp, err := c.ConfirmUserEmailVerificationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmUserEmailVerificationResponse(rsp)
+}
+
+func (c *ClientWithResponses) ConfirmUserEmailVerificationWithResponse(ctx context.Context, body ConfirmUserEmailVerificationJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmUserEmailVerificationResponse, error) {
+	rsp, err := c.ConfirmUserEmailVerification(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmUserEmailVerificationResponse(rsp)
 }
 
 // DeleteGoogleCalendarConnectionWithResponse request returning *DeleteGoogleCalendarConnectionResponse
@@ -70217,6 +70441,38 @@ func ParseUpdateCurrentUserResponse(rsp *http.Response) (*UpdateCurrentUserRespo
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseSendUserEmailVerificationResponse parses an HTTP response from a SendUserEmailVerificationWithResponse call
+func ParseSendUserEmailVerificationResponse(rsp *http.Response) (*SendUserEmailVerificationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SendUserEmailVerificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseConfirmUserEmailVerificationResponse parses an HTTP response from a ConfirmUserEmailVerificationWithResponse call
+func ParseConfirmUserEmailVerificationResponse(rsp *http.Response) (*ConfirmUserEmailVerificationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConfirmUserEmailVerificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
