@@ -3078,6 +3078,9 @@ type CompanyPOSSettings struct {
 	// The name that will be printed on invoices.
 	NameOnInvoices *string `json:"name_on_invoices,omitempty"`
 
+	// Starting capital of the company.
+	StartingCapital *string `json:"starting_capital,omitempty"`
+
 	// The VAT number for the company.
 	VatNumber *string `json:"vat_number,omitempty"`
 }
@@ -5308,7 +5311,7 @@ type FiscalizationOnboardingDataInvopop struct {
 	// Country code
 	Country *string `json:"country,omitempty"`
 
-	// Invoice series prefix for Spain fiscalization.
+	// Invoice series prefix for fiscalization.
 	InvoiceSeries         *string    `json:"invoice_series,omitempty"`
 	OnboardingCompletedAt *time.Time `json:"onboarding_completed_at,omitempty"`
 
@@ -5326,6 +5329,9 @@ type FiscalizationOnboardingDataInvopop struct {
 
 	// URL for completing supplier registration
 	RegistrationUrl *string `json:"registration_url,omitempty"`
+
+	// Starting capital of the company
+	StartingCapital *string `json:"starting_capital,omitempty"`
 
 	// Street address
 	StreetAddress *string `json:"street_address,omitempty"`
