@@ -3623,14 +3623,20 @@ type Customer struct {
 
 	// All different license plates that the customer has used.
 	LicensePlates *[]string `json:"license_plates,omitempty"`
-	Name          *string   `json:"name,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	NextEvent        *ExpandableEvent `json:"next_event,omitempty"`
-	Notes            *string          `json:"notes,omitempty"`
-	Notices          *Notices         `json:"notices,omitempty"`
-	PhoneCountryCode *string          `json:"phone_country_code,omitempty"`
-	PhoneNumber      *string          `json:"phone_number,omitempty"`
+	MarketplaceUser *ExpandableMarketplaceUser `json:"marketplace_user,omitempty"`
+	Name            *string                    `json:"name,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	NextEvent *ExpandableEvent `json:"next_event,omitempty"`
+	Notes     *string          `json:"notes,omitempty"`
+	Notices   *Notices         `json:"notices,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	ParentMarketplaceUser *ExpandableMarketplaceUser `json:"parent_marketplace_user,omitempty"`
+	PhoneCountryCode      *string                    `json:"phone_country_code,omitempty"`
+	PhoneNumber           *string                    `json:"phone_number,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	PreviousEvent *ExpandableEvent `json:"previous_event,omitempty"`
