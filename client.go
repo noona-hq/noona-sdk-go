@@ -8388,6 +8388,9 @@ type SubscriptionDunningInfo struct {
 	// Applied dunning period in days for the payment method
 	DunningPeriodDays *int `json:"dunning_period_days,omitempty"`
 
+	// The subscriptions current dunning state.
+	DunningStatus *string `json:"dunning_status,omitempty"`
+
 	// The date and time of the oldest unpaid invoice in the dunning cycle
 	OldestUnpaidInvoice *time.Time `json:"oldest_unpaid_invoice,omitempty"`
 	UnpaidAmount        *int64     `json:"unpaid_amount,omitempty"`
