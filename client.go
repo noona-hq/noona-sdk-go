@@ -894,7 +894,6 @@ const (
 	ManageRolesAndPermission             Permission = "manageRolesAndPermission"
 	ViewAllAnalytics                     Permission = "viewAllAnalytics"
 	ViewAllCalendars                     Permission = "viewAllCalendars"
-	ViewAllClients                       Permission = "viewAllClients"
 	ViewAllInvoices                      Permission = "viewAllInvoices"
 	ViewAllMemos                         Permission = "viewAllMemos"
 	ViewAllNotifications                 Permission = "viewAllNotifications"
