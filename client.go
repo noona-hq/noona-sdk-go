@@ -1252,6 +1252,11 @@ const (
 	SubtransactionDataTerminalTypeTerminal SubtransactionDataTerminalType = "terminal"
 )
 
+// Defines values for SubtransactionDataVerifoneTerminalType.
+const (
+	VerifoneTerminal SubtransactionDataVerifoneTerminalType = "verifoneTerminal"
+)
+
 // Defines values for SubtransactionDataVoucherType.
 const (
 	SubtransactionDataVoucherTypeVoucher SubtransactionDataVoucherType = "voucher"
@@ -8516,6 +8521,16 @@ type SubtransactionDataTerminal struct {
 // SubtransactionDataTerminalType defines model for SubtransactionDataTerminal.Type.
 type SubtransactionDataTerminalType string
 
+// SubtransactionDataVerifoneTerminal defines model for SubtransactionDataVerifoneTerminal.
+type SubtransactionDataVerifoneTerminal struct {
+	MerchantId string                                 `json:"merchant_id"`
+	TerminalId string                                 `json:"terminal_id"`
+	Type       SubtransactionDataVerifoneTerminalType `json:"type"`
+}
+
+// SubtransactionDataVerifoneTerminalType defines model for SubtransactionDataVerifoneTerminal.Type.
+type SubtransactionDataVerifoneTerminalType string
+
 // SubtransactionDataVoucher defines model for SubtransactionDataVoucher.
 type SubtransactionDataVoucher struct {
 	Type      SubtransactionDataVoucherType `json:"type"`
@@ -15772,6 +15787,18 @@ func (t SubtransactionData) AsSubtransactionDataPaylink() (SubtransactionDataPay
 }
 
 func (t *SubtransactionData) FromSubtransactionDataPaylink(v SubtransactionDataPaylink) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t SubtransactionData) AsSubtransactionDataVerifoneTerminal() (SubtransactionDataVerifoneTerminal, error) {
+	var body SubtransactionDataVerifoneTerminal
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *SubtransactionData) FromSubtransactionDataVerifoneTerminal(v SubtransactionDataVerifoneTerminal) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
