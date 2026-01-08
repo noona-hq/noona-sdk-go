@@ -285,6 +285,13 @@ const (
 	Rates CommissionRatesType = "rates"
 )
 
+// Defines values for CompanyBillingPaymentMethod.
+const (
+	CompanyBillingPaymentMethodCard        CompanyBillingPaymentMethod = "card"
+	CompanyBillingPaymentMethodDirectDebit CompanyBillingPaymentMethod = "direct_debit"
+	CompanyBillingPaymentMethodInvoice     CompanyBillingPaymentMethod = "invoice"
+)
+
 // Defines values for CompanyField.
 const (
 	CompanyFieldBookingOfferMessage   CompanyField = "booking_offer_message"
@@ -1303,10 +1310,10 @@ const (
 
 // Defines values for TransactionType.
 const (
-	TransactionTypeInvoice  TransactionType = "invoice"
-	TransactionTypeRefund   TransactionType = "refund"
-	TransactionTypeRefunded TransactionType = "refunded"
-	TransactionTypeReturn   TransactionType = "return"
+	Invoice  TransactionType = "invoice"
+	Refund   TransactionType = "refund"
+	Refunded TransactionType = "refunded"
+	Return   TransactionType = "return"
 )
 
 // Defines values for TransactionCreationBehaviorRefund.
@@ -2928,10 +2935,16 @@ type Company struct {
 	Vouchers      *VoucherSettings `json:"vouchers,omitempty"`
 }
 
+// The payment method category for subscription billing.
+type CompanyBillingPaymentMethod string
+
 // CompanyBillingStatus defines model for CompanyBillingStatus.
 type CompanyBillingStatus struct {
-	PaidInvoices   *int32 `json:"paid_invoices,omitempty"`
-	UnpaidInvoices *int32 `json:"unpaid_invoices,omitempty"`
+	PaidInvoices *int32 `json:"paid_invoices,omitempty"`
+
+	// The payment method category for subscription billing.
+	PaymentMethod  *CompanyBillingPaymentMethod `json:"payment_method,omitempty"`
+	UnpaidInvoices *int32                       `json:"unpaid_invoices,omitempty"`
 }
 
 // CompanyCheckin defines model for CompanyCheckin.
