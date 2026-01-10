@@ -8179,6 +8179,7 @@ type SendTransactionReceiptRequest struct {
 // Settlement defines model for Settlement.
 type Settlement struct {
 	CreatedAt    *time.Time           `json:"created_at,omitempty"`
+	Currency     *string              `json:"currency,omitempty"`
 	Fee          *float64             `json:"fee,omitempty"`
 	Id           *string              `json:"id,omitempty"`
 	LineItems    *SettlementLineItems `json:"line_items,omitempty"`
