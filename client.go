@@ -373,6 +373,13 @@ const (
 	Soft         CustomerDeletionBehaviorType = "soft"
 )
 
+// Defines values for DunningStatus.
+const (
+	DunningStatusFailure        DunningStatus = "failure"
+	DunningStatusInProgress     DunningStatus = "in_progress"
+	DunningStatusNeedsAttention DunningStatus = "needs_attention"
+)
+
 // Defines values for DuplicateStatus.
 const (
 	DuplicateStatusApproved DuplicateStatus = "approved"
@@ -1400,10 +1407,10 @@ const (
 
 // Defines values for VoucherFilterStatus.
 const (
-	Expired    VoucherFilterStatus = "expired"
-	FullyUsed  VoucherFilterStatus = "fully_used"
-	NeverUsed  VoucherFilterStatus = "never_used"
-	PartlyUsed VoucherFilterStatus = "partly_used"
+	VoucherFilterStatusExpired    VoucherFilterStatus = "expired"
+	VoucherFilterStatusFullyUsed  VoucherFilterStatus = "fully_used"
+	VoucherFilterStatusNeverUsed  VoucherFilterStatus = "never_used"
+	VoucherFilterStatusPartlyUsed VoucherFilterStatus = "partly_used"
 )
 
 // Defines values for VoucherFilterType.
@@ -3768,6 +3775,9 @@ type DeletionResult struct {
 	// Number of notifications deleted
 	Count *int32 `json:"count,omitempty"`
 }
+
+// The subscriptions current dunning state.
+type DunningStatus string
 
 // The customers duplicate status.
 //
@@ -8408,7 +8418,7 @@ type SubscriptionDunningInfo struct {
 	DunningPeriodDays *int `json:"dunning_period_days,omitempty"`
 
 	// The subscriptions current dunning state.
-	DunningStatus *string `json:"dunning_status,omitempty"`
+	DunningStatus *DunningStatus `json:"dunning_status,omitempty"`
 
 	// The date and time of the oldest unpaid invoice in the dunning cycle
 	OldestUnpaidInvoice *time.Time `json:"oldest_unpaid_invoice,omitempty"`
