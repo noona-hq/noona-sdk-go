@@ -1149,6 +1149,7 @@ const (
 // Defines values for StreamEventName.
 const (
 	OnBlockedTimeUpdated         StreamEventName = "onBlockedTimeUpdated"
+	OnCompanyDunningUpdated      StreamEventName = "onCompanyDunningUpdated"
 	OnEmployeeUpdated            StreamEventName = "onEmployeeUpdated"
 	OnEventTypeGroupUpdated      StreamEventName = "onEventTypeGroupUpdated"
 	OnEventTypeUpdated           StreamEventName = "onEventTypeUpdated"
@@ -1166,6 +1167,7 @@ const (
 // Defines values for StreamableEntityType.
 const (
 	StreamableEntityTypeBlockedTimes         StreamableEntityType = "blocked_times"
+	StreamableEntityTypeCompanyDunning       StreamableEntityType = "company_dunning"
 	StreamableEntityTypeEmployees            StreamableEntityType = "employees"
 	StreamableEntityTypeEventTypeGroups      StreamableEntityType = "event_type_groups"
 	StreamableEntityTypeEventTypes           StreamableEntityType = "event_types"
