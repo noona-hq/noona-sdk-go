@@ -6553,6 +6553,9 @@ type OrderedProduct struct {
 	Id          *string       `json:"id,omitempty"`
 	Image       *ProductImage `json:"image,omitempty"`
 
+	// ID of the import job that created this product.
+	ImportJob *string `json:"import_job,omitempty"`
+
 	// Set during import of products, usually an identifier from an external system.
 	ImportReferenceId *string `json:"import_reference_id,omitempty"`
 
@@ -7022,6 +7025,9 @@ type Product struct {
 	Id          *string       `json:"id,omitempty"`
 	Image       *ProductImage `json:"image,omitempty"`
 
+	// ID of the import job that created this product.
+	ImportJob *string `json:"import_job,omitempty"`
+
 	// Set during import of products, usually an identifier from an external system.
 	ImportReferenceId *string `json:"import_reference_id,omitempty"`
 
@@ -7059,6 +7065,9 @@ type ProductGroup struct {
 	GroupProducts *[]GroupProduct `json:"group_products,omitempty"`
 	Id            *string         `json:"id,omitempty"`
 
+	// ID of the import job that created this product group.
+	ImportJob *string `json:"import_job,omitempty"`
+
 	// If true the product group is a special, uneditable, group that contains all products that have not been added to user created product groups.
 	IsDefaultGroup *bool `json:"is_default_group,omitempty"`
 
@@ -7078,6 +7087,9 @@ type ProductGroupExpanded struct {
 	GroupProductGroups *[]ProductGroupExpanded `json:"group_product_groups,omitempty"`
 	GroupProducts      *[]OrderedProduct       `json:"group_products,omitempty"`
 	Id                 *string                 `json:"id,omitempty"`
+
+	// ID of the import job that created this product group.
+	ImportJob *string `json:"import_job,omitempty"`
 
 	// If true the product group is a special, uneditable, group that contains all products that have not been added to user created product groups.
 	IsDefaultGroup *bool `json:"is_default_group,omitempty"`
