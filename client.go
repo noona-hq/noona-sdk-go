@@ -649,17 +649,19 @@ const (
 
 // Defines values for NotificationCategory.
 const (
-	NotificationCategoryBookingOffers  NotificationCategory = "booking_offers"
-	NotificationCategoryOnlineBookings NotificationCategory = "online_bookings"
-	NotificationCategoryPayments       NotificationCategory = "payments"
-	NotificationCategoryStaffBookings  NotificationCategory = "staff_bookings"
-	NotificationCategoryWaitlist       NotificationCategory = "waitlist"
+	NotificationCategoryBookingOffers            NotificationCategory = "booking_offers"
+	NotificationCategoryOnlineBookings           NotificationCategory = "online_bookings"
+	NotificationCategoryOtherStaffOnlineBookings NotificationCategory = "other_staff_online_bookings"
+	NotificationCategoryPayments                 NotificationCategory = "payments"
+	NotificationCategoryStaffBookings            NotificationCategory = "staff_bookings"
+	NotificationCategoryWaitlist                 NotificationCategory = "waitlist"
 )
 
 // Defines values for NotificationChannel.
 const (
-	NotificationChannelApp   NotificationChannel = "app"
 	NotificationChannelEmail NotificationChannel = "email"
+	NotificationChannelHq    NotificationChannel = "hq"
+	NotificationChannelPush  NotificationChannel = "push"
 	NotificationChannelSms   NotificationChannel = "sms"
 )
 
@@ -692,15 +694,15 @@ const (
 
 // Defines values for NotificationSubcategory.
 const (
-	NotificationSubcategoryApproved              NotificationSubcategory = "approved"
-	NotificationSubcategoryCancellations         NotificationSubcategory = "cancellations"
-	NotificationSubcategoryDeclined              NotificationSubcategory = "declined"
-	NotificationSubcategoryFailedSettlements     NotificationSubcategory = "failed_settlements"
-	NotificationSubcategoryNewAppointments       NotificationSubcategory = "new_appointments"
-	NotificationSubcategoryNewRequests           NotificationSubcategory = "new_requests"
-	NotificationSubcategoryReschedules           NotificationSubcategory = "reschedules"
-	NotificationSubcategoryResourceOnly          NotificationSubcategory = "resource_only"
-	NotificationSubcategorySuccessfulSettlements NotificationSubcategory = "successful_settlements"
+	NotificationSubcategoryApproved          NotificationSubcategory = "approved"
+	NotificationSubcategoryCancellations     NotificationSubcategory = "cancellations"
+	NotificationSubcategoryDeclined          NotificationSubcategory = "declined"
+	NotificationSubcategoryFailedPayouts     NotificationSubcategory = "failed_payouts"
+	NotificationSubcategoryNewBookings       NotificationSubcategory = "new_bookings"
+	NotificationSubcategoryNewRequests       NotificationSubcategory = "new_requests"
+	NotificationSubcategoryReschedules       NotificationSubcategory = "reschedules"
+	NotificationSubcategoryResourceOnly      NotificationSubcategory = "resource_only"
+	NotificationSubcategorySuccessfulPayouts NotificationSubcategory = "successful_payouts"
 )
 
 // Defines values for NotificationSurveyType.
@@ -1307,8 +1309,8 @@ const (
 
 // Defines values for TransactionOrigin.
 const (
-	Marketplace TransactionOrigin = "marketplace"
-	Pos         TransactionOrigin = "pos"
+	TransactionOriginMarketplace TransactionOrigin = "marketplace"
+	TransactionOriginPos         TransactionOrigin = "pos"
 )
 
 // Defines values for TransactionStatus.
@@ -3999,6 +4001,9 @@ type EmployeeNotificationSettings struct {
 	// Notification settings for customer-initiated bookings
 	OnlineBookings *OnlineBookingNotifications `json:"online_bookings,omitempty"`
 
+	// Notification settings for online bookings for other staff and/or resources
+	OtherStaffOnlineBookings *OtherStaffOnlineBookingsNotifications `json:"other_staff_online_bookings,omitempty"`
+
 	// Notification settings for payment events
 	Payments *PaymentNotifications `json:"payments,omitempty"`
 
@@ -6212,19 +6217,19 @@ type NotificationBookingOfferType string
 // NotificationCategory defines model for NotificationCategory.
 type NotificationCategory string
 
-// NotificationCategoryMetadata defines model for NotificationCategoryMetadata.
-type NotificationCategoryMetadata struct {
-	Id            *string                            `json:"id,omitempty"`
-	ReadableId    *NotificationCategory              `json:"readable_id,omitempty"`
-	Subcategories *[]NotificationSubcategoryMetadata `json:"subcategories,omitempty"`
-	Title         *string                            `json:"title,omitempty"`
+// NotificationCategoryConfig defines model for NotificationCategoryConfig.
+type NotificationCategoryConfig struct {
+	Id            *string                          `json:"id,omitempty"`
+	ReadableId    *NotificationCategory            `json:"readable_id,omitempty"`
+	Subcategories *[]NotificationSubcategoryConfig `json:"subcategories,omitempty"`
+	Title         *string                          `json:"title,omitempty"`
 }
 
 // NotificationChannel defines model for NotificationChannel.
 type NotificationChannel string
 
-// NotificationChannelMetadata defines model for NotificationChannelMetadata.
-type NotificationChannelMetadata struct {
+// NotificationChannelConfig defines model for NotificationChannelConfig.
+type NotificationChannelConfig struct {
 	Id *string `json:"id,omitempty"`
 
 	// Whether this channel is locked for this notification type
@@ -6235,11 +6240,14 @@ type NotificationChannelMetadata struct {
 
 // NotificationChannelSettings defines model for NotificationChannelSettings.
 type NotificationChannelSettings struct {
-	// Whether to receive notifications in the app (includes in-app and push notifications)
-	App *bool `json:"app,omitempty"`
-
 	// Whether to receive email notifications
 	Email *bool `json:"email,omitempty"`
+
+	// Whether to receive notifications in HQ
+	Hq *bool `json:"hq,omitempty"`
+
+	// Whether to receive push notifications on mobile
+	Push *bool `json:"push,omitempty"`
 }
 
 // NotificationCreate defines model for NotificationCreate.
@@ -6351,12 +6359,12 @@ type NotificationPreferences struct {
 // NotificationSubcategory defines model for NotificationSubcategory.
 type NotificationSubcategory string
 
-// NotificationSubcategoryMetadata defines model for NotificationSubcategoryMetadata.
-type NotificationSubcategoryMetadata struct {
-	Channels   *[]NotificationChannelMetadata `json:"channels,omitempty"`
-	Id         *string                        `json:"id,omitempty"`
-	ReadableId *NotificationSubcategory       `json:"readable_id,omitempty"`
-	Title      *string                        `json:"title,omitempty"`
+// NotificationSubcategoryConfig defines model for NotificationSubcategoryConfig.
+type NotificationSubcategoryConfig struct {
+	Channels   *[]NotificationChannelConfig `json:"channels,omitempty"`
+	Id         *string                      `json:"id,omitempty"`
+	ReadableId *NotificationSubcategory     `json:"readable_id,omitempty"`
+	Title      *string                      `json:"title,omitempty"`
 }
 
 // NotificationSurvey defines model for NotificationSurvey.
@@ -6462,10 +6470,10 @@ type OAuthTokenRequestGrantType string
 
 // Notification settings for customer-initiated bookings
 type OnlineBookingNotifications struct {
-	Cancellations   *NotificationChannelSettings `json:"cancellations,omitempty"`
-	NewAppointments *NotificationChannelSettings `json:"new_appointments,omitempty"`
-	Reschedules     *NotificationChannelSettings `json:"reschedules,omitempty"`
-	ResourceOnly    *NotificationChannelSettings `json:"resource_only,omitempty"`
+	Cancellations *NotificationChannelSettings `json:"cancellations,omitempty"`
+	NewBookings   *NotificationChannelSettings `json:"new_bookings,omitempty"`
+	Reschedules   *NotificationChannelSettings `json:"reschedules,omitempty"`
+	ResourceOnly  *NotificationChannelSettings `json:"resource_only,omitempty"`
 }
 
 // OnlineBookingsRule defines model for OnlineBookingsRule.
@@ -6574,6 +6582,13 @@ type OrderedProduct struct {
 
 	// Id of VAT to use for product
 	VatId *string `json:"vat_id,omitempty"`
+}
+
+// Notification settings for online bookings for other staff and/or resources
+type OtherStaffOnlineBookingsNotifications struct {
+	Cancellations *NotificationChannelSettings `json:"cancellations,omitempty"`
+	NewBookings   *NotificationChannelSettings `json:"new_bookings,omitempty"`
+	Reschedules   *NotificationChannelSettings `json:"reschedules,omitempty"`
 }
 
 // Pagination defines model for Pagination.
@@ -6750,8 +6765,8 @@ type PaymentMethods []PaymentMethod
 
 // Notification settings for payment events
 type PaymentNotifications struct {
-	FailedSettlements     *NotificationChannelSettings `json:"failed_settlements,omitempty"`
-	SuccessfulSettlements *NotificationChannelSettings `json:"successful_settlements,omitempty"`
+	FailedPayouts     *NotificationChannelSettings `json:"failed_payouts,omitempty"`
+	SuccessfulPayouts *NotificationChannelSettings `json:"successful_payouts,omitempty"`
 }
 
 // PaymentReceiptRecipient defines model for PaymentReceiptRecipient.
@@ -8332,10 +8347,10 @@ type SpacesFilter struct {
 
 // Notification settings for staff-initiated bookings
 type StaffBookingNotifications struct {
-	Cancellations   *NotificationChannelSettings `json:"cancellations,omitempty"`
-	NewAppointments *NotificationChannelSettings `json:"new_appointments,omitempty"`
-	Reschedules     *NotificationChannelSettings `json:"reschedules,omitempty"`
-	ResourceOnly    *NotificationChannelSettings `json:"resource_only,omitempty"`
+	Cancellations *NotificationChannelSettings `json:"cancellations,omitempty"`
+	NewBookings   *NotificationChannelSettings `json:"new_bookings,omitempty"`
+	Reschedules   *NotificationChannelSettings `json:"reschedules,omitempty"`
+	ResourceOnly  *NotificationChannelSettings `json:"resource_only,omitempty"`
 }
 
 // The Server-Sent Event names that will be emitted by the generic stream endpoint.
@@ -10696,15 +10711,6 @@ type GetSalesMetricsParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// ListNotificationMetadataParams defines parameters for ListNotificationMetadata.
-type ListNotificationMetadataParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
 // DeleteNotificationsParams defines parameters for DeleteNotifications.
 type DeleteNotificationsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -10727,6 +10733,15 @@ type ListNotificationsParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// ListNotificationSettingsParams defines parameters for ListNotificationSettings.
+type ListNotificationSettingsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // ListOpeningHoursParams defines parameters for ListOpeningHours.
@@ -16253,14 +16268,14 @@ type ClientInterface interface {
 	// MigrateCompanyReminders request
 	MigrateCompanyReminders(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListNotificationMetadata request
-	ListNotificationMetadata(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// DeleteNotifications request
 	DeleteNotifications(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListNotifications request
 	ListNotifications(ctx context.Context, companyId string, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListNotificationSettings request
+	ListNotificationSettings(ctx context.Context, companyId string, params *ListNotificationSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListOpeningHours request
 	ListOpeningHours(ctx context.Context, companyId string, params *ListOpeningHoursParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -18207,18 +18222,6 @@ func (c *Client) MigrateCompanyReminders(ctx context.Context, companyId string, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListNotificationMetadata(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListNotificationMetadataRequest(c.Server, companyId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) DeleteNotifications(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteNotificationsRequest(c.Server, companyId, params)
 	if err != nil {
@@ -18233,6 +18236,18 @@ func (c *Client) DeleteNotifications(ctx context.Context, companyId string, para
 
 func (c *Client) ListNotifications(ctx context.Context, companyId string, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListNotificationsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListNotificationSettings(ctx context.Context, companyId string, params *ListNotificationSettingsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListNotificationSettingsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -28157,76 +28172,6 @@ func NewMigrateCompanyRemindersRequest(server string, companyId string) (*http.R
 	return req, nil
 }
 
-// NewListNotificationMetadataRequest generates requests for ListNotificationMetadata
-func NewListNotificationMetadataRequest(server string, companyId string, params *ListNotificationMetadataParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/companies/%s/notification_metadata", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewDeleteNotificationsRequest generates requests for DeleteNotifications
 func NewDeleteNotificationsRequest(server string, companyId string, params *DeleteNotificationsParams) (*http.Request, error) {
 	var err error
@@ -28373,6 +28318,76 @@ func NewListNotificationsRequest(server string, companyId string, params *ListNo
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListNotificationSettingsRequest generates requests for ListNotificationSettings
+func NewListNotificationSettingsRequest(server string, companyId string, params *ListNotificationSettingsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/notifications_settings", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
@@ -50122,14 +50137,14 @@ type ClientWithResponsesInterface interface {
 	// MigrateCompanyReminders request
 	MigrateCompanyRemindersWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyRemindersResponse, error)
 
-	// ListNotificationMetadata request
-	ListNotificationMetadataWithResponse(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*ListNotificationMetadataResponse, error)
-
 	// DeleteNotifications request
 	DeleteNotificationsWithResponse(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*DeleteNotificationsResponse, error)
 
 	// ListNotifications request
 	ListNotificationsWithResponse(ctx context.Context, companyId string, params *ListNotificationsParams, reqEditors ...RequestEditorFn) (*ListNotificationsResponse, error)
+
+	// ListNotificationSettings request
+	ListNotificationSettingsWithResponse(ctx context.Context, companyId string, params *ListNotificationSettingsParams, reqEditors ...RequestEditorFn) (*ListNotificationSettingsResponse, error)
 
 	// ListOpeningHours request
 	ListOpeningHoursWithResponse(ctx context.Context, companyId string, params *ListOpeningHoursParams, reqEditors ...RequestEditorFn) (*ListOpeningHoursResponse, error)
@@ -52575,28 +52590,6 @@ func (r MigrateCompanyRemindersResponse) StatusCode() int {
 	return 0
 }
 
-type ListNotificationMetadataResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *[]NotificationCategoryMetadata
-}
-
-// Status returns HTTPResponse.Status
-func (r ListNotificationMetadataResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListNotificationMetadataResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type DeleteNotificationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -52635,6 +52628,28 @@ func (r ListNotificationsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListNotificationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListNotificationSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]NotificationCategoryConfig
+}
+
+// Status returns HTTPResponse.Status
+func (r ListNotificationSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListNotificationSettingsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -59580,15 +59595,6 @@ func (c *ClientWithResponses) MigrateCompanyRemindersWithResponse(ctx context.Co
 	return ParseMigrateCompanyRemindersResponse(rsp)
 }
 
-// ListNotificationMetadataWithResponse request returning *ListNotificationMetadataResponse
-func (c *ClientWithResponses) ListNotificationMetadataWithResponse(ctx context.Context, companyId string, params *ListNotificationMetadataParams, reqEditors ...RequestEditorFn) (*ListNotificationMetadataResponse, error) {
-	rsp, err := c.ListNotificationMetadata(ctx, companyId, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListNotificationMetadataResponse(rsp)
-}
-
 // DeleteNotificationsWithResponse request returning *DeleteNotificationsResponse
 func (c *ClientWithResponses) DeleteNotificationsWithResponse(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*DeleteNotificationsResponse, error) {
 	rsp, err := c.DeleteNotifications(ctx, companyId, params, reqEditors...)
@@ -59605,6 +59611,15 @@ func (c *ClientWithResponses) ListNotificationsWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseListNotificationsResponse(rsp)
+}
+
+// ListNotificationSettingsWithResponse request returning *ListNotificationSettingsResponse
+func (c *ClientWithResponses) ListNotificationSettingsWithResponse(ctx context.Context, companyId string, params *ListNotificationSettingsParams, reqEditors ...RequestEditorFn) (*ListNotificationSettingsResponse, error) {
+	rsp, err := c.ListNotificationSettings(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListNotificationSettingsResponse(rsp)
 }
 
 // ListOpeningHoursWithResponse request returning *ListOpeningHoursResponse
@@ -64591,32 +64606,6 @@ func ParseMigrateCompanyRemindersResponse(rsp *http.Response) (*MigrateCompanyRe
 	return response, nil
 }
 
-// ParseListNotificationMetadataResponse parses an HTTP response from a ListNotificationMetadataWithResponse call
-func ParseListNotificationMetadataResponse(rsp *http.Response) (*ListNotificationMetadataResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListNotificationMetadataResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []NotificationCategoryMetadata
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseDeleteNotificationsResponse parses an HTTP response from a DeleteNotificationsWithResponse call
 func ParseDeleteNotificationsResponse(rsp *http.Response) (*DeleteNotificationsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -64659,6 +64648,32 @@ func ParseListNotificationsResponse(rsp *http.Response) (*ListNotificationsRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Notifications
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListNotificationSettingsResponse parses an HTTP response from a ListNotificationSettingsWithResponse call
+func ParseListNotificationSettingsResponse(rsp *http.Response) (*ListNotificationSettingsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListNotificationSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []NotificationCategoryConfig
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
