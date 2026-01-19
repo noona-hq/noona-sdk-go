@@ -425,6 +425,14 @@ const (
 	EnterpriseFieldImage EnterpriseField = "image"
 )
 
+// Defines values for EntitlementFeatureType.
+const (
+	Custom   EntitlementFeatureType = "custom"
+	Quantity EntitlementFeatureType = "quantity"
+	Range    EntitlementFeatureType = "range"
+	Switch   EntitlementFeatureType = "switch"
+)
+
 // Defines values for EventDeletionBehaviorType.
 const (
 	EventDeletionBehaviorTypeFuture EventDeletionBehaviorType = "future"
@@ -1694,6 +1702,7 @@ type AdminCompanyUpdate struct {
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	Entitlements    *Entitlements              `json:"entitlements,omitempty"`
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
@@ -2906,6 +2915,7 @@ type Company struct {
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	Entitlements    *Entitlements              `json:"entitlements,omitempty"`
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
@@ -3304,6 +3314,7 @@ type CompanyResponse struct {
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	Entitlements    *Entitlements              `json:"entitlements,omitempty"`
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
@@ -3417,6 +3428,7 @@ type CompanyUpdate struct {
 
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
+	Entitlements    *Entitlements              `json:"entitlements,omitempty"`
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
@@ -4081,6 +4093,47 @@ type EnterpriseProfile struct {
 
 // Enterprises defines model for Enterprises.
 type Enterprises []Enterprise
+
+// Entitlement defines model for Entitlement.
+type Entitlement struct {
+	// Boolean value. Set when feature_type is "switch".
+	BoolValue *bool `json:"bool_value,omitempty"`
+
+	// Unique identifier for the feature.
+	FeatureId string `json:"feature_id"`
+
+	// Human-readable name of the feature.
+	FeatureName *string `json:"feature_name,omitempty"`
+
+	// The type of entitlement feature:
+	// - switch: Boolean on/off feature flag
+	// - quantity: Numerical limits (with possible "unlimited")
+	// - range: Numerical limits (with possible "unlimited")
+	// - custom: Custom text/labels
+	FeatureType EntitlementFeatureType `json:"feature_type"`
+
+	// Integer value. Set when feature_type is "quantity".
+	IntValue *int32 `json:"int_value,omitempty"`
+
+	// Whether the entitlement is enabled.
+	IsEnabled *bool `json:"is_enabled,omitempty"`
+
+	// Whether the entitlement has been overridden from its default value.
+	IsOverridden *bool `json:"is_overridden,omitempty"`
+
+	// String value for custom/text values or "unlimited".
+	StringValue *string `json:"string_value,omitempty"`
+}
+
+// The type of entitlement feature:
+// - switch: Boolean on/off feature flag
+// - quantity: Numerical limits (with possible "unlimited")
+// - range: Numerical limits (with possible "unlimited")
+// - custom: Custom text/labels
+type EntitlementFeatureType string
+
+// Entitlements defines model for Entitlements.
+type Entitlements []Entitlement
 
 // Error defines model for Error.
 type Error struct {
