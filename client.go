@@ -1280,7 +1280,7 @@ const (
 
 // Defines values for SubtransactionDataVerifoneTerminalType.
 const (
-	VerifoneTerminal SubtransactionDataVerifoneTerminalType = "verifoneTerminal"
+	Verifone SubtransactionDataVerifoneTerminalType = "verifone"
 )
 
 // Defines values for SubtransactionDataVoucherType.
@@ -1311,8 +1311,9 @@ const (
 
 // Defines values for TerminalProvider.
 const (
-	Istari TerminalProvider = "Istari"
-	MPAS   TerminalProvider = "MPAS"
+	Istari           TerminalProvider = "Istari"
+	MPAS             TerminalProvider = "MPAS"
+	VerifoneTerminal TerminalProvider = "VerifoneTerminal"
 )
 
 // Defines values for TransactionOrigin.
