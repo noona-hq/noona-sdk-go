@@ -9378,6 +9378,7 @@ type Voucher struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	MarketplaceUser  *ExpandableMarketplaceUser `json:"marketplace_user,omitempty"`
 	Message          *string                    `json:"message,omitempty"`
+	Name             *string                    `json:"name,omitempty"`
 	PhoneCountryCode *string                    `json:"phone_country_code,omitempty"`
 
 	// If a phone number is provided, it receives news of the newly created voucher.
