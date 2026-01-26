@@ -3120,6 +3120,9 @@ type CompanyPOSSettings struct {
 	// Starting capital of the company.
 	StartingCapital *string `json:"starting_capital,omitempty"`
 
+	// The tax exemption reason code for the company issuer.
+	TaxExemptionReason *string `json:"tax_exemption_reason,omitempty"`
+
 	// The VAT number for the company.
 	VatNumber *string `json:"vat_number,omitempty"`
 }
@@ -5404,6 +5407,9 @@ type FiscalizationOnboardingDataInvopop struct {
 
 	// Country code
 	Country *string `json:"country,omitempty"`
+
+	// Whether fiscalization is enabled for this user or company
+	FiscalizationEnabled *bool `json:"fiscalization_enabled,omitempty"`
 
 	// Invoice series prefix for fiscalization.
 	InvoiceSeries         *string    `json:"invoice_series,omitempty"`
@@ -8867,8 +8873,11 @@ type Transaction struct {
 	DueAmount     *float64              `json:"due_amount,omitempty"`
 	Employees     *[]ExpandableEmployee `json:"employees,omitempty"`
 	Fiscalization *string               `json:"fiscalization,omitempty"`
-	Id            *string               `json:"id,omitempty"`
-	InvoiceNumber *int64                `json:"invoice_number,omitempty"`
+
+	// Warning message if fiscalization failed but transaction was completed
+	FiscalizationWarning *string `json:"fiscalization_warning,omitempty"`
+	Id                   *string `json:"id,omitempty"`
+	InvoiceNumber        *int64  `json:"invoice_number,omitempty"`
 
 	// Invopop fiscalization header information extracted from GOBL envelope
 	InvopopHeader *InvopopHeader       `json:"invopop_header,omitempty"`
@@ -9201,6 +9210,9 @@ type UserPOSSettings struct {
 	// Business Identification Number
 	Bin *string `json:"bin,omitempty"`
 
+	// City for fiscalization.
+	City *string `json:"city,omitempty"`
+
 	// Whether the user is issuing their own invoices or not.
 	Enabled *bool `json:"enabled,omitempty"`
 
@@ -9208,9 +9220,24 @@ type UserPOSSettings struct {
 	ExtraInvoiceInfo *string `json:"extra_invoice_info,omitempty"`
 
 	// The initial invoice number for the user.
-	InitialInvoiceNumber *int64  `json:"initial_invoice_number,omitempty"`
-	LegalAddress         *string `json:"legal_address,omitempty"`
-	Name                 *string `json:"name,omitempty"`
+	InitialInvoiceNumber *int64 `json:"initial_invoice_number,omitempty"`
+
+	// Invoice series prefix for fiscalization.
+	InvoiceSeries *string `json:"invoice_series,omitempty"`
+	LegalAddress  *string `json:"legal_address,omitempty"`
+	Name          *string `json:"name,omitempty"`
+
+	// Postal code for fiscalization.
+	PostalCode *string `json:"postal_code,omitempty"`
+
+	// Starting capital of the user.
+	StartingCapital *string `json:"starting_capital,omitempty"`
+
+	// Street address for fiscalization.
+	StreetAddress *string `json:"street_address,omitempty"`
+
+	// Tax exemption reason code.
+	TaxExemptionReason *string `json:"tax_exemption_reason,omitempty"`
 
 	// VAT Identification Number
 	VatId *string `json:"vat_id,omitempty"`
@@ -11946,6 +11973,12 @@ type RefundFiscalizedTransactionParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 }
 
+// UpsertUserFiscalizationDataJSONBody defines parameters for UpsertUserFiscalizationData.
+type UpsertUserFiscalizationDataJSONBody FiscalizationOnboarding
+
+// UpdateUserFiscalizationStatusJSONBody defines parameters for UpdateUserFiscalizationStatus.
+type UpdateUserFiscalizationStatusJSONBody FiscalizationStatusUpdateRequest
+
 // UpdateGoalJSONBody defines parameters for UpdateGoal.
 type UpdateGoalJSONBody UpdateGoalRequest
 
@@ -13849,6 +13882,12 @@ type UpdateCompanyFiscalizationStatusJSONRequestBody UpdateCompanyFiscalizationS
 
 // FiscalizeTransactionJSONRequestBody defines body for FiscalizeTransaction for application/json ContentType.
 type FiscalizeTransactionJSONRequestBody FiscalizeTransactionJSONBody
+
+// UpsertUserFiscalizationDataJSONRequestBody defines body for UpsertUserFiscalizationData for application/json ContentType.
+type UpsertUserFiscalizationDataJSONRequestBody UpsertUserFiscalizationDataJSONBody
+
+// UpdateUserFiscalizationStatusJSONRequestBody defines body for UpdateUserFiscalizationStatus for application/json ContentType.
+type UpdateUserFiscalizationStatusJSONRequestBody UpdateUserFiscalizationStatusJSONBody
 
 // UpdateGoalJSONRequestBody defines body for UpdateGoal for application/json ContentType.
 type UpdateGoalJSONRequestBody UpdateGoalJSONBody
@@ -16689,6 +16728,22 @@ type ClientInterface interface {
 
 	// GetFiscalizedTransactionXML request
 	GetFiscalizedTransactionXML(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteUserFiscalizationData request
+	DeleteUserFiscalizationData(ctx context.Context, userId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUserFiscalizationData request
+	GetUserFiscalizationData(ctx context.Context, userId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpsertUserFiscalizationData request with any body
+	UpsertUserFiscalizationDataWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpsertUserFiscalizationData(ctx context.Context, userId string, body UpsertUserFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateUserFiscalizationStatus request with any body
+	UpdateUserFiscalizationStatusWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateUserFiscalizationStatus(ctx context.Context, userId string, body UpdateUserFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateGoal request with any body
 	UpdateGoalWithBody(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19838,6 +19893,78 @@ func (c *Client) RefundFiscalizedTransaction(ctx context.Context, transactionId 
 
 func (c *Client) GetFiscalizedTransactionXML(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetFiscalizedTransactionXMLRequest(c.Server, transactionId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteUserFiscalizationData(ctx context.Context, userId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteUserFiscalizationDataRequest(c.Server, userId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUserFiscalizationData(ctx context.Context, userId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserFiscalizationDataRequest(c.Server, userId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertUserFiscalizationDataWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertUserFiscalizationDataRequestWithBody(c.Server, userId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertUserFiscalizationData(ctx context.Context, userId string, body UpsertUserFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertUserFiscalizationDataRequest(c.Server, userId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateUserFiscalizationStatusWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserFiscalizationStatusRequestWithBody(c.Server, userId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateUserFiscalizationStatus(ctx context.Context, userId string, body UpdateUserFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUserFiscalizationStatusRequest(c.Server, userId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -36710,6 +36837,168 @@ func NewGetFiscalizedTransactionXMLRequest(server string, transactionId string) 
 	return req, nil
 }
 
+// NewDeleteUserFiscalizationDataRequest generates requests for DeleteUserFiscalizationData
+func NewDeleteUserFiscalizationDataRequest(server string, userId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_id", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/users/%s/onboarding", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetUserFiscalizationDataRequest generates requests for GetUserFiscalizationData
+func NewGetUserFiscalizationDataRequest(server string, userId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_id", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/users/%s/onboarding", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpsertUserFiscalizationDataRequest calls the generic UpsertUserFiscalizationData builder with application/json body
+func NewUpsertUserFiscalizationDataRequest(server string, userId string, body UpsertUserFiscalizationDataJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpsertUserFiscalizationDataRequestWithBody(server, userId, "application/json", bodyReader)
+}
+
+// NewUpsertUserFiscalizationDataRequestWithBody generates requests for UpsertUserFiscalizationData with any type of body
+func NewUpsertUserFiscalizationDataRequestWithBody(server string, userId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_id", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/users/%s/onboarding", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdateUserFiscalizationStatusRequest calls the generic UpdateUserFiscalizationStatus builder with application/json body
+func NewUpdateUserFiscalizationStatusRequest(server string, userId string, body UpdateUserFiscalizationStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateUserFiscalizationStatusRequestWithBody(server, userId, "application/json", bodyReader)
+}
+
+// NewUpdateUserFiscalizationStatusRequestWithBody generates requests for UpdateUserFiscalizationStatus with any type of body
+func NewUpdateUserFiscalizationStatusRequestWithBody(server string, userId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_id", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/users/%s/status", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewUpdateGoalRequest calls the generic UpdateGoal builder with application/json body
 func NewUpdateGoalRequest(server string, goalId string, body UpdateGoalJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -50559,6 +50848,22 @@ type ClientWithResponsesInterface interface {
 	// GetFiscalizedTransactionXML request
 	GetFiscalizedTransactionXMLWithResponse(ctx context.Context, transactionId string, reqEditors ...RequestEditorFn) (*GetFiscalizedTransactionXMLResponse, error)
 
+	// DeleteUserFiscalizationData request
+	DeleteUserFiscalizationDataWithResponse(ctx context.Context, userId string, reqEditors ...RequestEditorFn) (*DeleteUserFiscalizationDataResponse, error)
+
+	// GetUserFiscalizationData request
+	GetUserFiscalizationDataWithResponse(ctx context.Context, userId string, reqEditors ...RequestEditorFn) (*GetUserFiscalizationDataResponse, error)
+
+	// UpsertUserFiscalizationData request with any body
+	UpsertUserFiscalizationDataWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertUserFiscalizationDataResponse, error)
+
+	UpsertUserFiscalizationDataWithResponse(ctx context.Context, userId string, body UpsertUserFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertUserFiscalizationDataResponse, error)
+
+	// UpdateUserFiscalizationStatus request with any body
+	UpdateUserFiscalizationStatusWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserFiscalizationStatusResponse, error)
+
+	UpdateUserFiscalizationStatusWithResponse(ctx context.Context, userId string, body UpdateUserFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserFiscalizationStatusResponse, error)
+
 	// UpdateGoal request with any body
 	UpdateGoalWithBodyWithResponse(ctx context.Context, goalId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateGoalResponse, error)
 
@@ -54957,6 +55262,93 @@ func (r GetFiscalizedTransactionXMLResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetFiscalizedTransactionXMLResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteUserFiscalizationDataResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteUserFiscalizationDataResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteUserFiscalizationDataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetUserFiscalizationDataResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FiscalizationOnboarding
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUserFiscalizationDataResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUserFiscalizationDataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpsertUserFiscalizationDataResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FiscalizationOnboarding
+}
+
+// Status returns HTTPResponse.Status
+func (r UpsertUserFiscalizationDataResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpsertUserFiscalizationDataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateUserFiscalizationStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FiscalizationStatusUpdateResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateUserFiscalizationStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateUserFiscalizationStatusResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -60801,6 +61193,58 @@ func (c *ClientWithResponses) GetFiscalizedTransactionXMLWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseGetFiscalizedTransactionXMLResponse(rsp)
+}
+
+// DeleteUserFiscalizationDataWithResponse request returning *DeleteUserFiscalizationDataResponse
+func (c *ClientWithResponses) DeleteUserFiscalizationDataWithResponse(ctx context.Context, userId string, reqEditors ...RequestEditorFn) (*DeleteUserFiscalizationDataResponse, error) {
+	rsp, err := c.DeleteUserFiscalizationData(ctx, userId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteUserFiscalizationDataResponse(rsp)
+}
+
+// GetUserFiscalizationDataWithResponse request returning *GetUserFiscalizationDataResponse
+func (c *ClientWithResponses) GetUserFiscalizationDataWithResponse(ctx context.Context, userId string, reqEditors ...RequestEditorFn) (*GetUserFiscalizationDataResponse, error) {
+	rsp, err := c.GetUserFiscalizationData(ctx, userId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUserFiscalizationDataResponse(rsp)
+}
+
+// UpsertUserFiscalizationDataWithBodyWithResponse request with arbitrary body returning *UpsertUserFiscalizationDataResponse
+func (c *ClientWithResponses) UpsertUserFiscalizationDataWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertUserFiscalizationDataResponse, error) {
+	rsp, err := c.UpsertUserFiscalizationDataWithBody(ctx, userId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertUserFiscalizationDataResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpsertUserFiscalizationDataWithResponse(ctx context.Context, userId string, body UpsertUserFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertUserFiscalizationDataResponse, error) {
+	rsp, err := c.UpsertUserFiscalizationData(ctx, userId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertUserFiscalizationDataResponse(rsp)
+}
+
+// UpdateUserFiscalizationStatusWithBodyWithResponse request with arbitrary body returning *UpdateUserFiscalizationStatusResponse
+func (c *ClientWithResponses) UpdateUserFiscalizationStatusWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserFiscalizationStatusResponse, error) {
+	rsp, err := c.UpdateUserFiscalizationStatusWithBody(ctx, userId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateUserFiscalizationStatusResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateUserFiscalizationStatusWithResponse(ctx context.Context, userId string, body UpdateUserFiscalizationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserFiscalizationStatusResponse, error) {
+	rsp, err := c.UpdateUserFiscalizationStatus(ctx, userId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateUserFiscalizationStatusResponse(rsp)
 }
 
 // UpdateGoalWithBodyWithResponse request with arbitrary body returning *UpdateGoalResponse
@@ -67271,6 +67715,100 @@ func ParseGetFiscalizedTransactionXMLResponse(rsp *http.Response) (*GetFiscalize
 			return nil, err
 		}
 		response.XML200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteUserFiscalizationDataResponse parses an HTTP response from a DeleteUserFiscalizationDataWithResponse call
+func ParseDeleteUserFiscalizationDataResponse(rsp *http.Response) (*DeleteUserFiscalizationDataResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteUserFiscalizationDataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetUserFiscalizationDataResponse parses an HTTP response from a GetUserFiscalizationDataWithResponse call
+func ParseGetUserFiscalizationDataResponse(rsp *http.Response) (*GetUserFiscalizationDataResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUserFiscalizationDataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FiscalizationOnboarding
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpsertUserFiscalizationDataResponse parses an HTTP response from a UpsertUserFiscalizationDataWithResponse call
+func ParseUpsertUserFiscalizationDataResponse(rsp *http.Response) (*UpsertUserFiscalizationDataResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpsertUserFiscalizationDataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FiscalizationOnboarding
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateUserFiscalizationStatusResponse parses an HTTP response from a UpdateUserFiscalizationStatusWithResponse call
+func ParseUpdateUserFiscalizationStatusResponse(rsp *http.Response) (*UpdateUserFiscalizationStatusResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateUserFiscalizationStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FiscalizationStatusUpdateResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
