@@ -214,12 +214,12 @@ const (
 
 // Defines values for BookingSourceFunnel.
 const (
-	Ads                BookingSourceFunnel = "ads"
-	BookingHistory     BookingSourceFunnel = "bookingHistory"
-	Favorites          BookingSourceFunnel = "favorites"
-	QuickBookings      BookingSourceFunnel = "quickBookings"
-	SearchAndDiscovery BookingSourceFunnel = "searchAndDiscovery"
-	TrendingCompanies  BookingSourceFunnel = "trendingCompanies"
+	BookingSourceFunnelAds                BookingSourceFunnel = "ads"
+	BookingSourceFunnelBookingHistory     BookingSourceFunnel = "bookingHistory"
+	BookingSourceFunnelFavorites          BookingSourceFunnel = "favorites"
+	BookingSourceFunnelQuickBookings      BookingSourceFunnel = "quickBookings"
+	BookingSourceFunnelSearchAndDiscovery BookingSourceFunnel = "searchAndDiscovery"
+	BookingSourceFunnelTrendingCompanies  BookingSourceFunnel = "trendingCompanies"
 )
 
 // Defines values for BookingSourceGroup.
@@ -423,6 +423,23 @@ const (
 // Defines values for EnterpriseField.
 const (
 	EnterpriseFieldImage EnterpriseField = "image"
+)
+
+// Defines values for EntitlementFeatureID.
+const (
+	EntitlementFeatureIDActivityLog                 EntitlementFeatureID = "activity_log"
+	EntitlementFeatureIDBookableResources           EntitlementFeatureID = "bookable_resources"
+	EntitlementFeatureIDBookingConfirmation         EntitlementFeatureID = "booking_confirmation"
+	EntitlementFeatureIDBookingHistory              EntitlementFeatureID = "booking_history"
+	EntitlementFeatureIDCalendarNavigation          EntitlementFeatureID = "calendar_navigation"
+	EntitlementFeatureIDEventRepeat                 EntitlementFeatureID = "event_repeat"
+	EntitlementFeatureIDExtraSms                    EntitlementFeatureID = "extra_sms"
+	EntitlementFeatureIDMarketplaceAdvancedSettings EntitlementFeatureID = "marketplace_advanced_settings"
+	EntitlementFeatureIDMultipleCalendarEmployees   EntitlementFeatureID = "multiple_calendar_employees"
+	EntitlementFeatureIDNoShow                      EntitlementFeatureID = "no_show"
+	EntitlementFeatureIDPos                         EntitlementFeatureID = "pos"
+	EntitlementFeatureIDSmsMarketing                EntitlementFeatureID = "sms_marketing"
+	EntitlementFeatureIDWaitlist                    EntitlementFeatureID = "waitlist"
 )
 
 // Defines values for EntitlementFeatureType.
@@ -4103,8 +4120,8 @@ type Entitlement struct {
 	// Boolean value. Set when feature_type is "switch".
 	BoolValue *bool `json:"bool_value,omitempty"`
 
-	// Unique identifier for the feature.
-	FeatureId string `json:"feature_id"`
+	// Unique identifier for an entitlement feature.
+	FeatureId EntitlementFeatureID `json:"feature_id"`
 
 	// Human-readable name of the feature.
 	FeatureName *string `json:"feature_name,omitempty"`
@@ -4128,6 +4145,9 @@ type Entitlement struct {
 	// String value for custom/text values or "unlimited".
 	StringValue *string `json:"string_value,omitempty"`
 }
+
+// Unique identifier for an entitlement feature.
+type EntitlementFeatureID string
 
 // The type of entitlement feature:
 // - switch: Boolean on/off feature flag
