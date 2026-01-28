@@ -3111,6 +3111,9 @@ type CompanyPOSSettings struct {
 	// The first tab to show in the checkout flow.
 	CheckoutFirstTab *CompanyPOSSettingsCheckoutFirstTab `json:"checkout_first_tab,omitempty"`
 
+	// Contact email for fiscalization and invoicing.
+	ContactEmail *openapi_types.Email `json:"contact_email,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	DefaultVat *ExpandableVAT `json:"default_vat,omitempty"`
 	EacCode    *string        `json:"eac_code,omitempty"`
@@ -5432,8 +5435,11 @@ type FiscalizationOnboardingDataInvopop struct {
 	FiscalizationEnabled *bool `json:"fiscalization_enabled,omitempty"`
 
 	// Invoice series prefix for fiscalization.
-	InvoiceSeries         *string    `json:"invoice_series,omitempty"`
-	OnboardingCompletedAt *time.Time `json:"onboarding_completed_at,omitempty"`
+	InvoiceSeries *string `json:"invoice_series,omitempty"`
+
+	// Contact email for Invopop fiscalization. Must be unique across all company and individual fiscalization onboardings.
+	InvopopContactEmail   openapi_types.Email `json:"invopop_contact_email"`
+	OnboardingCompletedAt *time.Time          `json:"onboarding_completed_at,omitempty"`
 
 	// List of onboarding errors from Invopop
 	OnboardingErrors *[]string `json:"onboarding_errors,omitempty"`
@@ -9380,6 +9386,9 @@ type UserPOSSettings struct {
 
 	// City for fiscalization.
 	City *string `json:"city,omitempty"`
+
+	// Contact email for fiscalization and invoicing.
+	ContactEmail *openapi_types.Email `json:"contact_email,omitempty"`
 
 	// Whether the user is issuing their own invoices or not.
 	Enabled *bool `json:"enabled,omitempty"`
