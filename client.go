@@ -8273,6 +8273,154 @@ type SaltpayTerminal struct {
 // SaltpayTerminals defines model for SaltpayTerminals.
 type SaltpayTerminals []SaltpayTerminal
 
+// A scheduled event with fixed start/end times and capacity limits.
+type ScheduledEvent struct {
+	// Whether customers can cancel their booking.
+	AllowCancellation *bool `json:"allow_cancellation,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+
+	// Whether the customer selects their tier or it is assigned automatically.
+	CustomerSelectsTier *bool   `json:"customer_selects_tier,omitempty"`
+	Description         *string `json:"description,omitempty"`
+
+	// Employees blocked during this event.
+	Employees *[]ExpandableEmployee `json:"employees,omitempty"`
+	EndsAt    *time.Time            `json:"ends_at,omitempty"`
+	Id        *string               `json:"id,omitempty"`
+	Images    *[]Image              `json:"images,omitempty"`
+
+	// Whether all tiers are at capacity.
+	IsFull *bool `json:"is_full,omitempty"`
+
+	// Whether this event is visible on the marketplace.
+	MarketplaceVisible *bool `json:"marketplace_visible,omitempty"`
+
+	// Minimum notice required for cancellation in minutes.
+	MinCancelNoticeMinutes *int32  `json:"min_cancel_notice_minutes,omitempty"`
+	Name                   *string `json:"name,omitempty"`
+
+	// Total capacity minus booked guests.
+	RemainingCapacity *int32 `json:"remaining_capacity,omitempty"`
+
+	// Resources blocked during this event.
+	Resources *[]ExpandableResource         `json:"resources,omitempty"`
+	StartsAt  *time.Time                    `json:"starts_at,omitempty"`
+	Tiers     *[]ScheduledEventTierResponse `json:"tiers,omitempty"`
+
+	// Sum of max_capacity across all tiers.
+	TotalCapacity *int32     `json:"total_capacity,omitempty"`
+	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
+}
+
+// Request body for creating a scheduled event.
+type ScheduledEventCreate struct {
+	AllowCancellation *bool `json:"allow_cancellation,omitempty"`
+
+	// Company ID
+	Company             string  `json:"company"`
+	CustomerSelectsTier *bool   `json:"customer_selects_tier,omitempty"`
+	Description         *string `json:"description,omitempty"`
+
+	// Employee IDs to block during this event.
+	Employees              *[]string `json:"employees,omitempty"`
+	EndsAt                 time.Time `json:"ends_at"`
+	Images                 *[]Image  `json:"images,omitempty"`
+	MarketplaceVisible     *bool     `json:"marketplace_visible,omitempty"`
+	MinCancelNoticeMinutes *int32    `json:"min_cancel_notice_minutes,omitempty"`
+	Name                   string    `json:"name"`
+
+	// Resource IDs to block during this event.
+	Resources *[]string            `json:"resources,omitempty"`
+	StartsAt  time.Time            `json:"starts_at"`
+	Tiers     []ScheduledEventTier `json:"tiers"`
+}
+
+// Tier definition for creating/updating a scheduled event.
+type ScheduledEventTier struct {
+	Currency    *string `json:"currency,omitempty"`
+	Description *string `json:"description,omitempty"`
+
+	// Maximum number of guests for this tier.
+	MaxCapacity int32 `json:"max_capacity"`
+
+	// Maximum guests per booking.
+	MaxGroupSize *int32 `json:"max_group_size,omitempty"`
+
+	// Minimum guests per booking.
+	MinGroupSize *int32 `json:"min_group_size,omitempty"`
+	Name         string `json:"name"`
+
+	// Base price in smallest currency unit (cents).
+	Price      *int64                     `json:"price,omitempty"`
+	Variations *[]ScheduledEventVariation `json:"variations,omitempty"`
+}
+
+// Tier in scheduled event response with references and availability.
+type ScheduledEventTierResponse struct {
+	// Maximum capacity for this tier.
+	Capacity *int32 `json:"capacity,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	EventType *ExpandableEventType `json:"event_type,omitempty"`
+
+	// Whether this tier is at capacity.
+	IsFull *bool `json:"is_full,omitempty"`
+
+	// Remaining capacity for this tier.
+	Remaining *int32 `json:"remaining,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Resource *ExpandableResource `json:"resource,omitempty"`
+}
+
+// Request body for updating a scheduled event.
+type ScheduledEventUpdate struct {
+	AllowCancellation   *bool   `json:"allow_cancellation,omitempty"`
+	CustomerSelectsTier *bool   `json:"customer_selects_tier,omitempty"`
+	Description         *string `json:"description,omitempty"`
+
+	// Employee IDs to block during this event.
+	Employees              *[]string  `json:"employees,omitempty"`
+	EndsAt                 *time.Time `json:"ends_at,omitempty"`
+	Images                 *[]Image   `json:"images,omitempty"`
+	MarketplaceVisible     *bool      `json:"marketplace_visible,omitempty"`
+	MinCancelNoticeMinutes *int32     `json:"min_cancel_notice_minutes,omitempty"`
+	Name                   *string    `json:"name,omitempty"`
+
+	// Resource IDs to block during this event.
+	Resources *[]string             `json:"resources,omitempty"`
+	StartsAt  *time.Time            `json:"starts_at,omitempty"`
+	Tiers     *[]ScheduledEventTier `json:"tiers,omitempty"`
+}
+
+// Variation within a tier (e.g., Adult vs Child pricing).
+type ScheduledEventVariation struct {
+	// Optional ID for referencing on updates.
+	Id    *string `json:"id,omitempty"`
+	Label *string `json:"label,omitempty"`
+
+	// Price in smallest currency unit (cents).
+	Price *int64 `json:"price,omitempty"`
+}
+
+// ScheduledEvents defines model for ScheduledEvents.
+type ScheduledEvents []ScheduledEvent
+
+// [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
+type ScheduledEventsFilter struct {
+	// Filter by marketplace visibility.
+	MarketplaceVisible *bool `json:"marketplace_visible,omitempty"`
+
+	// Filter events starting on or after this time.
+	StartsAtFrom *time.Time `json:"starts_at_from,omitempty"`
+
+	// Filter events starting before this time.
+	StartsAtTo *time.Time `json:"starts_at_to,omitempty"`
+}
+
 // The search query.
 type Search string
 
@@ -11078,6 +11226,22 @@ type ListSalesParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// ListScheduledEventsParams defines parameters for ListScheduledEvents.
+type ListScheduledEventsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination            `form:"pagination,omitempty" json:"pagination,omitempty"`
+	Filter     *ScheduledEventsFilter `form:"filter,omitempty" json:"filter,omitempty"`
+}
+
 // SeedCompanyInitialDataParams defines parameters for SeedCompanyInitialData.
 type SeedCompanyInitialDataParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -13034,6 +13198,48 @@ type DeprecatedGetSubtransactionParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateScheduledEventJSONBody defines parameters for CreateScheduledEvent.
+type CreateScheduledEventJSONBody ScheduledEventCreate
+
+// CreateScheduledEventParams defines parameters for CreateScheduledEvent.
+type CreateScheduledEventParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteScheduledEventParams defines parameters for DeleteScheduledEvent.
+type DeleteScheduledEventParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetScheduledEventParams defines parameters for GetScheduledEvent.
+type GetScheduledEventParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateScheduledEventJSONBody defines parameters for UpdateScheduledEvent.
+type UpdateScheduledEventJSONBody ScheduledEventUpdate
+
+// UpdateScheduledEventParams defines parameters for UpdateScheduledEvent.
+type UpdateScheduledEventParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateSMSMessageJSONBody defines parameters for CreateSMSMessage.
 type CreateSMSMessageJSONBody CreateSMSMessage
 
@@ -14044,6 +14250,12 @@ type UpdateSaleJSONRequestBody UpdateSaleJSONBody
 
 // SendTransactionReceiptJSONRequestBody defines body for SendTransactionReceipt for application/json ContentType.
 type SendTransactionReceiptJSONRequestBody SendTransactionReceiptJSONBody
+
+// CreateScheduledEventJSONRequestBody defines body for CreateScheduledEvent for application/json ContentType.
+type CreateScheduledEventJSONRequestBody CreateScheduledEventJSONBody
+
+// UpdateScheduledEventJSONRequestBody defines body for UpdateScheduledEvent for application/json ContentType.
+type UpdateScheduledEventJSONRequestBody UpdateScheduledEventJSONBody
 
 // CreateSMSMessageJSONRequestBody defines body for CreateSMSMessage for application/json ContentType.
 type CreateSMSMessageJSONRequestBody CreateSMSMessageJSONBody
@@ -16448,6 +16660,9 @@ type ClientInterface interface {
 	// ListSales request
 	ListSales(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListScheduledEvents request
+	ListScheduledEvents(ctx context.Context, companyId string, params *ListScheduledEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// SeedCompanyInitialData request
 	SeedCompanyInitialData(ctx context.Context, companyId string, params *SeedCompanyInitialDataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -17155,6 +17370,22 @@ type ClientInterface interface {
 
 	// DeprecatedGetSubtransaction request
 	DeprecatedGetSubtransaction(ctx context.Context, saleId string, transactionId string, id string, params *DeprecatedGetSubtransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateScheduledEvent request with any body
+	CreateScheduledEventWithBody(ctx context.Context, params *CreateScheduledEventParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateScheduledEvent(ctx context.Context, params *CreateScheduledEventParams, body CreateScheduledEventJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteScheduledEvent request
+	DeleteScheduledEvent(ctx context.Context, scheduledEventId string, params *DeleteScheduledEventParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetScheduledEvent request
+	GetScheduledEvent(ctx context.Context, scheduledEventId string, params *GetScheduledEventParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateScheduledEvent request with any body
+	UpdateScheduledEventWithBody(ctx context.Context, scheduledEventId string, params *UpdateScheduledEventParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateScheduledEvent(ctx context.Context, scheduledEventId string, params *UpdateScheduledEventParams, body UpdateScheduledEventJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSMSMessage request with any body
 	CreateSMSMessageWithBody(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -18606,6 +18837,18 @@ func (c *Client) ListRuleSets(ctx context.Context, companyId string, params *Lis
 
 func (c *Client) ListSales(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListSalesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListScheduledEvents(ctx context.Context, companyId string, params *ListScheduledEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListScheduledEventsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -21726,6 +21969,78 @@ func (c *Client) DeprecatedListSubtransactions(ctx context.Context, saleId strin
 
 func (c *Client) DeprecatedGetSubtransaction(ctx context.Context, saleId string, transactionId string, id string, params *DeprecatedGetSubtransactionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeprecatedGetSubtransactionRequest(c.Server, saleId, transactionId, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateScheduledEventWithBody(ctx context.Context, params *CreateScheduledEventParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateScheduledEventRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateScheduledEvent(ctx context.Context, params *CreateScheduledEventParams, body CreateScheduledEventJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateScheduledEventRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteScheduledEvent(ctx context.Context, scheduledEventId string, params *DeleteScheduledEventParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteScheduledEventRequest(c.Server, scheduledEventId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetScheduledEvent(ctx context.Context, scheduledEventId string, params *GetScheduledEventParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetScheduledEventRequest(c.Server, scheduledEventId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateScheduledEventWithBody(ctx context.Context, scheduledEventId string, params *UpdateScheduledEventParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateScheduledEventRequestWithBody(c.Server, scheduledEventId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateScheduledEvent(ctx context.Context, scheduledEventId string, params *UpdateScheduledEventParams, body UpdateScheduledEventJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateScheduledEventRequest(c.Server, scheduledEventId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -30180,6 +30495,106 @@ func NewListSalesRequest(server string, companyId string, params *ListSalesParam
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListScheduledEventsRequest generates requests for ListScheduledEvents
+func NewListScheduledEventsRequest(server string, companyId string, params *ListScheduledEventsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/scheduled_events", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Filter != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Filter); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("filter", string(queryParamBuf))
 		}
 
 	}
@@ -44498,6 +44913,305 @@ func NewDeprecatedGetSubtransactionRequest(server string, saleId string, transac
 	return req, nil
 }
 
+// NewCreateScheduledEventRequest calls the generic CreateScheduledEvent builder with application/json body
+func NewCreateScheduledEventRequest(server string, params *CreateScheduledEventParams, body CreateScheduledEventJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateScheduledEventRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateScheduledEventRequestWithBody generates requests for CreateScheduledEvent with any type of body
+func NewCreateScheduledEventRequestWithBody(server string, params *CreateScheduledEventParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/scheduled_events")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteScheduledEventRequest generates requests for DeleteScheduledEvent
+func NewDeleteScheduledEventRequest(server string, scheduledEventId string, params *DeleteScheduledEventParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "scheduled_event_id", runtime.ParamLocationPath, scheduledEventId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/scheduled_events/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetScheduledEventRequest generates requests for GetScheduledEvent
+func NewGetScheduledEventRequest(server string, scheduledEventId string, params *GetScheduledEventParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "scheduled_event_id", runtime.ParamLocationPath, scheduledEventId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/scheduled_events/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateScheduledEventRequest calls the generic UpdateScheduledEvent builder with application/json body
+func NewUpdateScheduledEventRequest(server string, scheduledEventId string, params *UpdateScheduledEventParams, body UpdateScheduledEventJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateScheduledEventRequestWithBody(server, scheduledEventId, params, "application/json", bodyReader)
+}
+
+// NewUpdateScheduledEventRequestWithBody generates requests for UpdateScheduledEvent with any type of body
+func NewUpdateScheduledEventRequestWithBody(server string, scheduledEventId string, params *UpdateScheduledEventParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "scheduled_event_id", runtime.ParamLocationPath, scheduledEventId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/scheduled_events/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateSMSMessageRequest calls the generic CreateSMSMessage builder with application/json body
 func NewCreateSMSMessageRequest(server string, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -50567,6 +51281,9 @@ type ClientWithResponsesInterface interface {
 	// ListSales request
 	ListSalesWithResponse(ctx context.Context, companyId string, params *ListSalesParams, reqEditors ...RequestEditorFn) (*ListSalesResponse, error)
 
+	// ListScheduledEvents request
+	ListScheduledEventsWithResponse(ctx context.Context, companyId string, params *ListScheduledEventsParams, reqEditors ...RequestEditorFn) (*ListScheduledEventsResponse, error)
+
 	// SeedCompanyInitialData request
 	SeedCompanyInitialDataWithResponse(ctx context.Context, companyId string, params *SeedCompanyInitialDataParams, reqEditors ...RequestEditorFn) (*SeedCompanyInitialDataResponse, error)
 
@@ -51274,6 +51991,22 @@ type ClientWithResponsesInterface interface {
 
 	// DeprecatedGetSubtransaction request
 	DeprecatedGetSubtransactionWithResponse(ctx context.Context, saleId string, transactionId string, id string, params *DeprecatedGetSubtransactionParams, reqEditors ...RequestEditorFn) (*DeprecatedGetSubtransactionResponse, error)
+
+	// CreateScheduledEvent request with any body
+	CreateScheduledEventWithBodyWithResponse(ctx context.Context, params *CreateScheduledEventParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateScheduledEventResponse, error)
+
+	CreateScheduledEventWithResponse(ctx context.Context, params *CreateScheduledEventParams, body CreateScheduledEventJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateScheduledEventResponse, error)
+
+	// DeleteScheduledEvent request
+	DeleteScheduledEventWithResponse(ctx context.Context, scheduledEventId string, params *DeleteScheduledEventParams, reqEditors ...RequestEditorFn) (*DeleteScheduledEventResponse, error)
+
+	// GetScheduledEvent request
+	GetScheduledEventWithResponse(ctx context.Context, scheduledEventId string, params *GetScheduledEventParams, reqEditors ...RequestEditorFn) (*GetScheduledEventResponse, error)
+
+	// UpdateScheduledEvent request with any body
+	UpdateScheduledEventWithBodyWithResponse(ctx context.Context, scheduledEventId string, params *UpdateScheduledEventParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateScheduledEventResponse, error)
+
+	UpdateScheduledEventWithResponse(ctx context.Context, scheduledEventId string, params *UpdateScheduledEventParams, body UpdateScheduledEventJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateScheduledEventResponse, error)
 
 	// CreateSMSMessage request with any body
 	CreateSMSMessageWithBodyWithResponse(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error)
@@ -53448,6 +54181,28 @@ func (r ListSalesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListSalesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListScheduledEventsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ScheduledEvents
+}
+
+// Status returns HTTPResponse.Status
+func (r ListScheduledEventsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListScheduledEventsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -57565,6 +58320,93 @@ func (r DeprecatedGetSubtransactionResponse) StatusCode() int {
 	return 0
 }
 
+type CreateScheduledEventResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ScheduledEvent
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateScheduledEventResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateScheduledEventResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteScheduledEventResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteScheduledEventResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteScheduledEventResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetScheduledEventResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ScheduledEvent
+}
+
+// Status returns HTTPResponse.Status
+func (r GetScheduledEventResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetScheduledEventResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateScheduledEventResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ScheduledEvent
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateScheduledEventResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateScheduledEventResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSMSMessageResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -60260,6 +61102,15 @@ func (c *ClientWithResponses) ListSalesWithResponse(ctx context.Context, company
 	return ParseListSalesResponse(rsp)
 }
 
+// ListScheduledEventsWithResponse request returning *ListScheduledEventsResponse
+func (c *ClientWithResponses) ListScheduledEventsWithResponse(ctx context.Context, companyId string, params *ListScheduledEventsParams, reqEditors ...RequestEditorFn) (*ListScheduledEventsResponse, error) {
+	rsp, err := c.ListScheduledEvents(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListScheduledEventsResponse(rsp)
+}
+
 // SeedCompanyInitialDataWithResponse request returning *SeedCompanyInitialDataResponse
 func (c *ClientWithResponses) SeedCompanyInitialDataWithResponse(ctx context.Context, companyId string, params *SeedCompanyInitialDataParams, reqEditors ...RequestEditorFn) (*SeedCompanyInitialDataResponse, error) {
 	rsp, err := c.SeedCompanyInitialData(ctx, companyId, params, reqEditors...)
@@ -62526,6 +63377,58 @@ func (c *ClientWithResponses) DeprecatedGetSubtransactionWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseDeprecatedGetSubtransactionResponse(rsp)
+}
+
+// CreateScheduledEventWithBodyWithResponse request with arbitrary body returning *CreateScheduledEventResponse
+func (c *ClientWithResponses) CreateScheduledEventWithBodyWithResponse(ctx context.Context, params *CreateScheduledEventParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateScheduledEventResponse, error) {
+	rsp, err := c.CreateScheduledEventWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateScheduledEventResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateScheduledEventWithResponse(ctx context.Context, params *CreateScheduledEventParams, body CreateScheduledEventJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateScheduledEventResponse, error) {
+	rsp, err := c.CreateScheduledEvent(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateScheduledEventResponse(rsp)
+}
+
+// DeleteScheduledEventWithResponse request returning *DeleteScheduledEventResponse
+func (c *ClientWithResponses) DeleteScheduledEventWithResponse(ctx context.Context, scheduledEventId string, params *DeleteScheduledEventParams, reqEditors ...RequestEditorFn) (*DeleteScheduledEventResponse, error) {
+	rsp, err := c.DeleteScheduledEvent(ctx, scheduledEventId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteScheduledEventResponse(rsp)
+}
+
+// GetScheduledEventWithResponse request returning *GetScheduledEventResponse
+func (c *ClientWithResponses) GetScheduledEventWithResponse(ctx context.Context, scheduledEventId string, params *GetScheduledEventParams, reqEditors ...RequestEditorFn) (*GetScheduledEventResponse, error) {
+	rsp, err := c.GetScheduledEvent(ctx, scheduledEventId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetScheduledEventResponse(rsp)
+}
+
+// UpdateScheduledEventWithBodyWithResponse request with arbitrary body returning *UpdateScheduledEventResponse
+func (c *ClientWithResponses) UpdateScheduledEventWithBodyWithResponse(ctx context.Context, scheduledEventId string, params *UpdateScheduledEventParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateScheduledEventResponse, error) {
+	rsp, err := c.UpdateScheduledEventWithBody(ctx, scheduledEventId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateScheduledEventResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateScheduledEventWithResponse(ctx context.Context, scheduledEventId string, params *UpdateScheduledEventParams, body UpdateScheduledEventJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateScheduledEventResponse, error) {
+	rsp, err := c.UpdateScheduledEvent(ctx, scheduledEventId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateScheduledEventResponse(rsp)
 }
 
 // CreateSMSMessageWithBodyWithResponse request with arbitrary body returning *CreateSMSMessageResponse
@@ -65684,6 +66587,32 @@ func ParseListSalesResponse(rsp *http.Response) (*ListSalesResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Sales
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListScheduledEventsResponse parses an HTTP response from a ListScheduledEventsWithResponse call
+func ParseListScheduledEventsResponse(rsp *http.Response) (*ListScheduledEventsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListScheduledEventsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ScheduledEvents
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -70298,6 +71227,100 @@ func ParseDeprecatedGetSubtransactionResponse(rsp *http.Response) (*DeprecatedGe
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Subtransaction
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateScheduledEventResponse parses an HTTP response from a CreateScheduledEventWithResponse call
+func ParseCreateScheduledEventResponse(rsp *http.Response) (*CreateScheduledEventResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateScheduledEventResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ScheduledEvent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteScheduledEventResponse parses an HTTP response from a DeleteScheduledEventWithResponse call
+func ParseDeleteScheduledEventResponse(rsp *http.Response) (*DeleteScheduledEventResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteScheduledEventResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetScheduledEventResponse parses an HTTP response from a GetScheduledEventWithResponse call
+func ParseGetScheduledEventResponse(rsp *http.Response) (*GetScheduledEventResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetScheduledEventResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ScheduledEvent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateScheduledEventResponse parses an HTTP response from a UpdateScheduledEventWithResponse call
+func ParseUpdateScheduledEventResponse(rsp *http.Response) (*UpdateScheduledEventResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateScheduledEventResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ScheduledEvent
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
