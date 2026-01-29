@@ -12575,8 +12575,11 @@ type GetOAuthTokenJSONBody OAuthTokenRequest
 
 // GetOAuthTokenParams defines parameters for GetOAuthToken.
 type GetOAuthTokenParams struct {
-	ClientId     string `form:"client_id" json:"client_id"`
-	ClientSecret string `form:"client_secret" json:"client_secret"`
+	// Deprecated: Use HTTP Basic Authentication instead. Client ID of the application.
+	ClientId *string `form:"client_id,omitempty" json:"client_id,omitempty"`
+
+	// Deprecated: Use HTTP Basic Authentication instead. Client secret of the application.
+	ClientSecret *string `form:"client_secret,omitempty" json:"client_secret,omitempty"`
 }
 
 // CreatePaymentMethodInstanceJSONBody defines parameters for CreatePaymentMethodInstance.
@@ -40450,28 +40453,36 @@ func NewGetOAuthTokenRequestWithBody(server string, params *GetOAuthTokenParams,
 
 	queryValues := queryURL.Query()
 
-	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "client_id", runtime.ParamLocationQuery, params.ClientId); err != nil {
-		return nil, err
-	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-		return nil, err
-	} else {
-		for k, v := range parsed {
-			for _, v2 := range v {
-				queryValues.Add(k, v2)
+	if params.ClientId != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "client_id", runtime.ParamLocationQuery, *params.ClientId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
 			}
 		}
+
 	}
 
-	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "client_secret", runtime.ParamLocationQuery, params.ClientSecret); err != nil {
-		return nil, err
-	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-		return nil, err
-	} else {
-		for k, v := range parsed {
-			for _, v2 := range v {
-				queryValues.Add(k, v2)
+	if params.ClientSecret != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "client_secret", runtime.ParamLocationQuery, *params.ClientSecret); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
 			}
 		}
+
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
