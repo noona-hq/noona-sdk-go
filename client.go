@@ -7782,11 +7782,17 @@ type RuleSetCreateOverrides struct {
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type RuleSetFilter struct {
+	// Filter rule sets that apply to the specified employees.
+	EmployeeIds *[]string `json:"employee_ids,omitempty"`
+
 	// Expand recurring rule sets into individual rule sets.
 	//
 	// From/To must also be set for expansions to take place.
 	ExpandRecurring *bool   `json:"expand_recurring,omitempty"`
 	From            *string `json:"from,omitempty"`
+
+	// Filter rule sets that apply to the specified resources.
+	ResourceIds *[]string `json:"resource_ids,omitempty"`
 
 	// Only created from template with this ID.
 	TemplateId *string `json:"template_id,omitempty"`
