@@ -8402,8 +8402,15 @@ type ScheduledEventTier struct {
 
 // Tier in scheduled event response with references and availability.
 type ScheduledEventTierResponse struct {
-	// Maximum capacity for this tier.
-	Capacity *int32 `json:"capacity,omitempty"`
+	// Maximum capacity for this tier (computed).
+	Capacity    *int32  `json:"capacity,omitempty"`
+	Currency    *string `json:"currency,omitempty"`
+	Description *string `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType *ExpandableEventType `json:"event_type,omitempty"`
@@ -8411,11 +8418,30 @@ type ScheduledEventTierResponse struct {
 	// Whether this tier is at capacity.
 	IsFull *bool `json:"is_full,omitempty"`
 
+	// Maximum number of guests for this tier.
+	MaxCapacity *int32 `json:"max_capacity,omitempty"`
+
+	// Maximum guests per booking.
+	MaxGroupSize *int32 `json:"max_group_size,omitempty"`
+
+	// Minimum guests per booking.
+	MinGroupSize *int32  `json:"min_group_size,omitempty"`
+	Name         *string `json:"name,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
+
+	// Base price in smallest currency unit (cents).
+	Price *int64 `json:"price,omitempty"`
+
 	// Remaining capacity for this tier.
 	Remaining *int32 `json:"remaining,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Resource *ExpandableResource `json:"resource,omitempty"`
+	Resource   *ExpandableResource        `json:"resource,omitempty"`
+	Variations *[]ScheduledEventVariation `json:"variations,omitempty"`
 }
 
 // Request body for updating a scheduled event.
