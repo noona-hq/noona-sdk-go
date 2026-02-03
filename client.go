@@ -428,18 +428,40 @@ const (
 // Defines values for EntitlementFeatureID.
 const (
 	EntitlementFeatureIDActivityLog                 EntitlementFeatureID = "activity_log"
+	EntitlementFeatureIDBasicPos                    EntitlementFeatureID = "basic_pos"
+	EntitlementFeatureIDBasicRoles                  EntitlementFeatureID = "basic_roles"
 	EntitlementFeatureIDBookableResources           EntitlementFeatureID = "bookable_resources"
-	EntitlementFeatureIDBookingConfirmation         EntitlementFeatureID = "booking_confirmation"
 	EntitlementFeatureIDBookingHistory              EntitlementFeatureID = "booking_history"
+	EntitlementFeatureIDBookingScreening            EntitlementFeatureID = "booking_screening"
+	EntitlementFeatureIDBookingsWidget              EntitlementFeatureID = "bookings_widget"
 	EntitlementFeatureIDCalendarNavigation          EntitlementFeatureID = "calendar_navigation"
+	EntitlementFeatureIDCalendars                   EntitlementFeatureID = "calendars"
+	EntitlementFeatureIDClientGroups                EntitlementFeatureID = "client_groups"
+	EntitlementFeatureIDConfirmationPage            EntitlementFeatureID = "confirmation_page"
+	EntitlementFeatureIDCsvMarketingExport          EntitlementFeatureID = "csv_marketing_export"
+	EntitlementFeatureIDCustomFields                EntitlementFeatureID = "custom_fields"
+	EntitlementFeatureIDCustomFileAttachments       EntitlementFeatureID = "custom_file_attachments"
+	EntitlementFeatureIDCustomSms                   EntitlementFeatureID = "custom_sms"
+	EntitlementFeatureIDCustomStatuses              EntitlementFeatureID = "custom_statuses"
+	EntitlementFeatureIDCustomVouchers              EntitlementFeatureID = "custom_vouchers"
 	EntitlementFeatureIDEventRepeat                 EntitlementFeatureID = "event_repeat"
 	EntitlementFeatureIDExtraSms                    EntitlementFeatureID = "extra_sms"
+	EntitlementFeatureIDGoogleReserve               EntitlementFeatureID = "google_reserve"
+	EntitlementFeatureIDLockedSections              EntitlementFeatureID = "locked_sections"
 	EntitlementFeatureIDMarketplaceAdvancedSettings EntitlementFeatureID = "marketplace_advanced_settings"
 	EntitlementFeatureIDMultipleCalendarEmployees   EntitlementFeatureID = "multiple_calendar_employees"
 	EntitlementFeatureIDNoShow                      EntitlementFeatureID = "no_show"
-	EntitlementFeatureIDPos                         EntitlementFeatureID = "pos"
+	EntitlementFeatureIDNoonaCheckin                EntitlementFeatureID = "noona_checkin"
+	EntitlementFeatureIDOfflineWaitlist             EntitlementFeatureID = "offline_waitlist"
+	EntitlementFeatureIDOnlineWaitlist              EntitlementFeatureID = "online_waitlist"
+	EntitlementFeatureIDOutlets                     EntitlementFeatureID = "outlets"
+	EntitlementFeatureIDPosLegacy                   EntitlementFeatureID = "pos_legacy"
+	EntitlementFeatureIDPremiumPos                  EntitlementFeatureID = "premium_pos"
+	EntitlementFeatureIDPremiumRoles                EntitlementFeatureID = "premium_roles"
+	EntitlementFeatureIDServiceOverrides            EntitlementFeatureID = "service_overrides"
+	EntitlementFeatureIDSmsCredits                  EntitlementFeatureID = "sms_credits"
 	EntitlementFeatureIDSmsMarketing                EntitlementFeatureID = "sms_marketing"
-	EntitlementFeatureIDWaitlist                    EntitlementFeatureID = "waitlist"
+	EntitlementFeatureIDSupport                     EntitlementFeatureID = "support"
 )
 
 // Defines values for EntitlementFeatureType.
@@ -1010,6 +1032,15 @@ const (
 // Defines values for PrePaymentRuleType.
 const (
 	PrePaymentRuleTypePrePayment PrePaymentRuleType = "pre_payment"
+)
+
+// Defines values for PricingModel.
+const (
+	FlatFee   PricingModel = "flat_fee"
+	PerUnit   PricingModel = "per_unit"
+	Stairstep PricingModel = "stairstep"
+	Tiered    PricingModel = "tiered"
+	Volume    PricingModel = "volume"
 )
 
 // Defines values for ProductField.
@@ -2142,6 +2173,71 @@ type BillingInvoiceDownload struct {
 
 // BillingInvoices defines model for BillingInvoices.
 type BillingInvoices []BillingInvoice
+
+// BillingPlan defines model for BillingPlan.
+type BillingPlan struct {
+	// The description of the plan
+	Description  *string        `json:"description,omitempty"`
+	Entitlements *[]Entitlement `json:"entitlements,omitempty"`
+
+	// The external display name of the plan
+	ExternalName *string `json:"external_name,omitempty"`
+
+	// The unique identifier of the plan
+	Id string `json:"id"`
+
+	// The display name of the plan
+	Name          *string                    `json:"name,omitempty"`
+	PriceVariants *[]BillingPlanPriceVariant `json:"price_variants,omitempty"`
+}
+
+// BillingPlanPriceVariant defines model for BillingPlanPriceVariant.
+type BillingPlanPriceVariant struct {
+	// The currency code (e.g., USD, EUR)
+	CurrencyCode *string `json:"currency_code,omitempty"`
+
+	// The external display name shown in hosted checkout
+	ExternalName *string `json:"external_name,omitempty"`
+
+	// The unique identifier of the item price
+	Id string `json:"id"`
+
+	// The display name of the price
+	Name *string `json:"name,omitempty"`
+
+	// Billing period value
+	Period *int32 `json:"period,omitempty"`
+
+	// Billing period unit (e.g., month, year)
+	PeriodUnit *string `json:"period_unit,omitempty"`
+
+	// Price in cents
+	Price *int64 `json:"price,omitempty"`
+
+	// The ID of the price variant this price belongs to
+	PriceVariantId *string `json:"price_variant_id,omitempty"`
+
+	// The pricing model for the item price
+	PricingModel *PricingModel `json:"pricing_model,omitempty"`
+
+	// Pricing tiers (for tiered, volume, or stairstep pricing models)
+	Tiers *[]BillingPriceTier `json:"tiers,omitempty"`
+}
+
+// BillingPlans defines model for BillingPlans.
+type BillingPlans []BillingPlan
+
+// BillingPriceTier defines model for BillingPriceTier.
+type BillingPriceTier struct {
+	// Ending unit for this tier
+	EndingUnit *int32 `json:"ending_unit,omitempty"`
+
+	// Price in cents for this tier
+	Price *int64 `json:"price,omitempty"`
+
+	// Starting unit for this tier
+	StartingUnit *int32 `json:"starting_unit,omitempty"`
+}
 
 // BlockedTime defines model for BlockedTime.
 type BlockedTime struct {
@@ -7101,6 +7197,9 @@ type PricingCalculation struct {
 	// Price per sms
 	Sms *float64 `json:"sms,omitempty"`
 }
+
+// The pricing model for the item price
+type PricingModel string
 
 // Product defines model for Product.
 type Product struct {
@@ -17888,6 +17987,9 @@ type ClientInterface interface {
 	UpdateWebhookWithBody(ctx context.Context, webhookId string, params *UpdateWebhookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateWebhook(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListBillingPlans request
+	ListBillingPlans(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) ListBlockedTimeActivities(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -23640,6 +23742,18 @@ func (c *Client) UpdateWebhookWithBody(ctx context.Context, webhookId string, pa
 
 func (c *Client) UpdateWebhook(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWebhookRequest(c.Server, webhookId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListBillingPlans(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBillingPlansRequest(c.Server, itemFamilyId)
 	if err != nil {
 		return nil, err
 	}
@@ -51530,6 +51644,40 @@ func NewUpdateWebhookRequestWithBody(server string, webhookId string, params *Up
 	return req, nil
 }
 
+// NewListBillingPlansRequest generates requests for ListBillingPlans
+func NewListBillingPlansRequest(server string, itemFamilyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "item_family_id", runtime.ParamLocationPath, itemFamilyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/%s/plans", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -52899,6 +53047,9 @@ type ClientWithResponsesInterface interface {
 	UpdateWebhookWithBodyWithResponse(ctx context.Context, webhookId string, params *UpdateWebhookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWebhookResponse, error)
 
 	UpdateWebhookWithResponse(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWebhookResponse, error)
+
+	// ListBillingPlans request
+	ListBillingPlansWithResponse(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingPlansResponse, error)
 }
 
 type ListBlockedTimeActivitiesResponse struct {
@@ -60922,6 +61073,28 @@ func (r UpdateWebhookResponse) StatusCode() int {
 	return 0
 }
 
+type ListBillingPlansResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingPlans
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBillingPlansResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBillingPlansResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // ListBlockedTimeActivitiesWithResponse request returning *ListBlockedTimeActivitiesResponse
 func (c *ClientWithResponses) ListBlockedTimeActivitiesWithResponse(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*ListBlockedTimeActivitiesResponse, error) {
 	rsp, err := c.ListBlockedTimeActivities(ctx, blockedTimeId, params, reqEditors...)
@@ -65127,6 +65300,15 @@ func (c *ClientWithResponses) UpdateWebhookWithResponse(ctx context.Context, web
 		return nil, err
 	}
 	return ParseUpdateWebhookResponse(rsp)
+}
+
+// ListBillingPlansWithResponse request returning *ListBillingPlansResponse
+func (c *ClientWithResponses) ListBillingPlansWithResponse(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingPlansResponse, error) {
+	rsp, err := c.ListBillingPlans(ctx, itemFamilyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBillingPlansResponse(rsp)
 }
 
 // ParseListBlockedTimeActivitiesResponse parses an HTTP response from a ListBlockedTimeActivitiesWithResponse call
@@ -74068,6 +74250,32 @@ func ParseUpdateWebhookResponse(rsp *http.Response) (*UpdateWebhookResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Webhook
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListBillingPlansResponse parses an HTTP response from a ListBillingPlansWithResponse call
+func ParseListBillingPlansResponse(rsp *http.Response) (*ListBillingPlansResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBillingPlansResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingPlans
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
