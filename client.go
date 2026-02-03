@@ -674,12 +674,12 @@ const (
 
 // Defines values for NotificationCategory.
 const (
-	NotificationCategoryBookingOffers            NotificationCategory = "booking_offers"
-	NotificationCategoryOnlineBookings           NotificationCategory = "online_bookings"
-	NotificationCategoryOtherStaffOnlineBookings NotificationCategory = "other_staff_online_bookings"
-	NotificationCategoryPayments                 NotificationCategory = "payments"
-	NotificationCategoryStaffBookings            NotificationCategory = "staff_bookings"
-	NotificationCategoryWaitlist                 NotificationCategory = "waitlist"
+	NotificationCategoryBookingOffers       NotificationCategory = "booking_offers"
+	NotificationCategoryOtherOnlineBookings NotificationCategory = "other_online_bookings"
+	NotificationCategoryOwnOnlineBookings   NotificationCategory = "own_online_bookings"
+	NotificationCategoryPayments            NotificationCategory = "payments"
+	NotificationCategoryStaffBookingUpdates NotificationCategory = "staff_booking_updates"
+	NotificationCategoryWaitlist            NotificationCategory = "waitlist"
 )
 
 // Defines values for NotificationChannel.
@@ -726,7 +726,6 @@ const (
 	NotificationSubcategoryNewBookings       NotificationSubcategory = "new_bookings"
 	NotificationSubcategoryNewRequests       NotificationSubcategory = "new_requests"
 	NotificationSubcategoryReschedules       NotificationSubcategory = "reschedules"
-	NotificationSubcategoryResourceOnly      NotificationSubcategory = "resource_only"
 	NotificationSubcategorySuccessfulPayouts NotificationSubcategory = "successful_payouts"
 )
 
@@ -848,7 +847,7 @@ const (
 
 // Defines values for OnlineBookingsRuleType.
 const (
-	OnlineBookingsRuleTypeOnlineBookings OnlineBookingsRuleType = "online_bookings"
+	OnlineBookings OnlineBookingsRuleType = "online_bookings"
 )
 
 // Defines values for PaymentProvider.
@@ -2465,6 +2464,13 @@ type BlockedTimesResponse []BlockedTimeResponse
 // A booking interval is set on the company level but can be overridden on the resource/employee level.
 type BookingInterval int32
 
+// Notification settings for booking events
+type BookingNotifications struct {
+	Cancellations *NotificationChannelSettings `json:"cancellations,omitempty"`
+	NewBookings   *NotificationChannelSettings `json:"new_bookings,omitempty"`
+	Reschedules   *NotificationChannelSettings `json:"reschedules,omitempty"`
+}
+
 // A booking offer is used to notify a customer that an opening has been made for their requested service.
 //
 // On event creation the booking offer payload must be provided in the request body.
@@ -4034,17 +4040,17 @@ type EmployeeNotificationSettings struct {
 	// Notification settings for booking offer events
 	BookingOffers *BookingOfferNotifications `json:"booking_offers,omitempty"`
 
-	// Notification settings for customer-initiated bookings
-	OnlineBookings *OnlineBookingNotifications `json:"online_bookings,omitempty"`
+	// Notification settings for booking events
+	OtherOnlineBookings *BookingNotifications `json:"other_online_bookings,omitempty"`
 
-	// Notification settings for online bookings for other staff and/or resources
-	OtherStaffOnlineBookings *OtherStaffOnlineBookingsNotifications `json:"other_staff_online_bookings,omitempty"`
+	// Notification settings for booking events
+	OwnOnlineBookings *BookingNotifications `json:"own_online_bookings,omitempty"`
 
 	// Notification settings for payment events
 	Payments *PaymentNotifications `json:"payments,omitempty"`
 
-	// Notification settings for staff-initiated bookings
-	StaffBookings *StaffBookingNotifications `json:"staff_bookings,omitempty"`
+	// Notification settings for booking events
+	StaffBookingUpdates *BookingNotifications `json:"staff_booking_updates,omitempty"`
 
 	// Notification settings for waitlist events
 	Waitlist *WaitlistNotifications `json:"waitlist,omitempty"`
@@ -6554,14 +6560,6 @@ type OAuthTokenRequest struct {
 // OAuthTokenRequestGrantType defines model for OAuthTokenRequest.GrantType.
 type OAuthTokenRequestGrantType string
 
-// Notification settings for customer-initiated bookings
-type OnlineBookingNotifications struct {
-	Cancellations *NotificationChannelSettings `json:"cancellations,omitempty"`
-	NewBookings   *NotificationChannelSettings `json:"new_bookings,omitempty"`
-	Reschedules   *NotificationChannelSettings `json:"reschedules,omitempty"`
-	ResourceOnly  *NotificationChannelSettings `json:"resource_only,omitempty"`
-}
-
 // OnlineBookingsRule defines model for OnlineBookingsRule.
 type OnlineBookingsRule struct {
 	Employees            *[]string                               `json:"employees,omitempty"`
@@ -6668,13 +6666,6 @@ type OrderedProduct struct {
 
 	// Id of VAT to use for product
 	VatId *string `json:"vat_id,omitempty"`
-}
-
-// Notification settings for online bookings for other staff and/or resources
-type OtherStaffOnlineBookingsNotifications struct {
-	Cancellations *NotificationChannelSettings `json:"cancellations,omitempty"`
-	NewBookings   *NotificationChannelSettings `json:"new_bookings,omitempty"`
-	Reschedules   *NotificationChannelSettings `json:"reschedules,omitempty"`
 }
 
 // Pagination defines model for Pagination.
@@ -8661,14 +8652,6 @@ type Spaces []Space
 type SpacesFilter struct {
 	// Filter by space IDs
 	Types *[]SpaceType `json:"types,omitempty"`
-}
-
-// Notification settings for staff-initiated bookings
-type StaffBookingNotifications struct {
-	Cancellations *NotificationChannelSettings `json:"cancellations,omitempty"`
-	NewBookings   *NotificationChannelSettings `json:"new_bookings,omitempty"`
-	Reschedules   *NotificationChannelSettings `json:"reschedules,omitempty"`
-	ResourceOnly  *NotificationChannelSettings `json:"resource_only,omitempty"`
 }
 
 // The Server-Sent Event names that will be emitted by the generic stream endpoint.
