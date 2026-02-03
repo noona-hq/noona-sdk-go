@@ -9617,6 +9617,9 @@ type VerifoneConnectRequest struct {
 	// Verifone API key
 	ApiKey string `json:"api_key"`
 
+	// Optional Verifone merchant ID for credential validation
+	MerchantId *string `json:"merchant_id,omitempty"`
+
 	// Verifone user ID
 	UserId string `json:"user_id"`
 }
@@ -9641,6 +9644,21 @@ type VerifoneTerminalCreate struct {
 	// Verifone terminal ID
 	TerminalId string `json:"terminal_id"`
 }
+
+// VerifoneTerminalOption defines model for VerifoneTerminalOption.
+type VerifoneTerminalOption struct {
+	// The issuer (user or company ID) the terminal is connected to, if any
+	Issuer *string `json:"issuer,omitempty"`
+
+	// Display name for the terminal
+	Name *string `json:"name,omitempty"`
+
+	// Terminal serial number (used as terminal ID)
+	TerminalId *string `json:"terminalId,omitempty"`
+}
+
+// VerifoneTerminals defines model for VerifoneTerminals.
+type VerifoneTerminals []VerifoneTerminalOption
 
 // Voucher defines model for Voucher.
 type Voucher struct {
@@ -12459,6 +12477,18 @@ type ConnectVerifoneParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListVerifoneTerminalsParams defines parameters for ListVerifoneTerminals.
+type ListVerifoneTerminalsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// Optional Verifone merchant ID for filtering terminals
+	MerchantId *string `form:"merchant_id,omitempty" json:"merchant_id,omitempty"`
 }
 
 // CreateVerifoneTerminalJSONBody defines parameters for CreateVerifoneTerminal.
@@ -17219,6 +17249,9 @@ type ClientInterface interface {
 
 	ConnectVerifone(ctx context.Context, params *ConnectVerifoneParams, body ConnectVerifoneJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListVerifoneTerminals request
+	ListVerifoneTerminals(ctx context.Context, params *ListVerifoneTerminalsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateVerifoneTerminal request with any body
 	CreateVerifoneTerminalWithBody(ctx context.Context, params *CreateVerifoneTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -20732,6 +20765,18 @@ func (c *Client) ConnectVerifoneWithBody(ctx context.Context, params *ConnectVer
 
 func (c *Client) ConnectVerifone(ctx context.Context, params *ConnectVerifoneParams, body ConnectVerifoneJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewConnectVerifoneRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListVerifoneTerminals(ctx context.Context, params *ListVerifoneTerminalsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListVerifoneTerminalsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -38980,6 +39025,85 @@ func NewConnectVerifoneRequestWithBody(server string, params *ConnectVerifonePar
 	return req, nil
 }
 
+// NewListVerifoneTerminalsRequest generates requests for ListVerifoneTerminals
+func NewListVerifoneTerminalsRequest(server string, params *ListVerifoneTerminalsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/integrations/verifone/terminals")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.MerchantId != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "merchant_id", runtime.ParamLocationQuery, *params.MerchantId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateVerifoneTerminalRequest calls the generic CreateVerifoneTerminal builder with application/json body
 func NewCreateVerifoneTerminalRequest(server string, params *CreateVerifoneTerminalParams, body CreateVerifoneTerminalJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -52136,6 +52260,9 @@ type ClientWithResponsesInterface interface {
 
 	ConnectVerifoneWithResponse(ctx context.Context, params *ConnectVerifoneParams, body ConnectVerifoneJSONRequestBody, reqEditors ...RequestEditorFn) (*ConnectVerifoneResponse, error)
 
+	// ListVerifoneTerminals request
+	ListVerifoneTerminalsWithResponse(ctx context.Context, params *ListVerifoneTerminalsParams, reqEditors ...RequestEditorFn) (*ListVerifoneTerminalsResponse, error)
+
 	// CreateVerifoneTerminal request with any body
 	CreateVerifoneTerminalWithBodyWithResponse(ctx context.Context, params *CreateVerifoneTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVerifoneTerminalResponse, error)
 
@@ -56996,6 +57123,28 @@ func (r ConnectVerifoneResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ConnectVerifoneResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListVerifoneTerminalsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *VerifoneTerminals
+}
+
+// Status returns HTTPResponse.Status
+func (r ListVerifoneTerminalsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListVerifoneTerminalsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -62892,6 +63041,15 @@ func (c *ClientWithResponses) ConnectVerifoneWithResponse(ctx context.Context, p
 		return nil, err
 	}
 	return ParseConnectVerifoneResponse(rsp)
+}
+
+// ListVerifoneTerminalsWithResponse request returning *ListVerifoneTerminalsResponse
+func (c *ClientWithResponses) ListVerifoneTerminalsWithResponse(ctx context.Context, params *ListVerifoneTerminalsParams, reqEditors ...RequestEditorFn) (*ListVerifoneTerminalsResponse, error) {
+	rsp, err := c.ListVerifoneTerminals(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListVerifoneTerminalsResponse(rsp)
 }
 
 // CreateVerifoneTerminalWithBodyWithResponse request with arbitrary body returning *CreateVerifoneTerminalResponse
@@ -69807,6 +69965,32 @@ func ParseConnectVerifoneResponse(rsp *http.Response) (*ConnectVerifoneResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest VerifoneConnection
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListVerifoneTerminalsResponse parses an HTTP response from a ListVerifoneTerminalsWithResponse call
+func ParseListVerifoneTerminalsResponse(rsp *http.Response) (*ListVerifoneTerminalsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListVerifoneTerminalsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest VerifoneTerminals
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
