@@ -11670,6 +11670,7 @@ type ListBillingInvoicesParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand         `form:"expand,omitempty" json:"expand,omitempty"`
 	Filter *InvoicesFilter `form:"filter,omitempty" json:"filter,omitempty"`
+	Limit  *int32          `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // CreatePaymentIntentParams defines parameters for CreatePaymentIntent.
@@ -31894,6 +31895,22 @@ func NewListBillingInvoicesRequest(server string, companyId string, params *List
 			return nil, err
 		} else {
 			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Limit != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
