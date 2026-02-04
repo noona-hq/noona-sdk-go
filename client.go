@@ -714,11 +714,10 @@ const (
 
 // Defines values for NotificationEventStatus.
 const (
-	NotificationEventStatusCancelled    NotificationEventStatus = "cancelled"
-	NotificationEventStatusConfirmed    NotificationEventStatus = "confirmed"
-	NotificationEventStatusRequest      NotificationEventStatus = "request"
-	NotificationEventStatusRescheduled  NotificationEventStatus = "rescheduled"
-	NotificationEventStatusResourceOnly NotificationEventStatus = "resource_only"
+	NotificationEventStatusCancelled   NotificationEventStatus = "cancelled"
+	NotificationEventStatusConfirmed   NotificationEventStatus = "confirmed"
+	NotificationEventStatusRequest     NotificationEventStatus = "request"
+	NotificationEventStatusRescheduled NotificationEventStatus = "rescheduled"
 )
 
 // Defines values for NotificationEventType.
@@ -1766,6 +1765,9 @@ type AdminCompanyUpdate struct {
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+
+	// Notification system configuration for the company
+	NotificationSettings *NotificationSettings `json:"notification_settings,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -3049,6 +3051,9 @@ type Company struct {
 	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
 	Name           *string             `json:"name,omitempty"`
 
+	// Notification system configuration for the company
+	NotificationSettings *NotificationSettings `json:"notification_settings,omitempty"`
+
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
@@ -3454,6 +3459,9 @@ type CompanyResponse struct {
 	Messaging      CompanyMessaging   `json:"messaging"`
 	Name           string             `json:"name"`
 
+	// Notification system configuration for the company
+	NotificationSettings *NotificationSettings `json:"notification_settings,omitempty"`
+
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
@@ -3567,6 +3575,9 @@ type CompanyUpdate struct {
 	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
 	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
 	Name           *string             `json:"name,omitempty"`
+
+	// Notification system configuration for the company
+	NotificationSettings *NotificationSettings `json:"notification_settings,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -6371,6 +6382,9 @@ type Notification struct {
 
 // NotificationBookingOffer defines model for NotificationBookingOffer.
 type NotificationBookingOffer struct {
+	// Groups related notifications for interactive actions. Format: {notificationType}:{entityId}
+	ActionGroup *string `json:"action_group,omitempty"`
+
 	// The booking offer ID
 	BookingOffer *string    `json:"booking_offer,omitempty"`
 	Company      *string    `json:"company,omitempty"`
@@ -6385,7 +6399,16 @@ type NotificationBookingOffer struct {
 
 	// The names of the event types
 	EventTypeNames *[]string `json:"event_type_names,omitempty"`
-	Id             *string   `json:"id,omitempty"`
+
+	// User who took action on interactive notification
+	HandledBy *string `json:"handled_by,omitempty"`
+	Id        *string `json:"id,omitempty"`
+
+	// The user who should see this notification
+	RecipientUser *string `json:"recipient_user,omitempty"`
+
+	// The employee this notification relates to
+	RelatedEmployee *string `json:"related_employee,omitempty"`
 
 	// When the booking offer appointment starts
 	StartsAt *time.Time `json:"starts_at,omitempty"`
@@ -6448,6 +6471,9 @@ type NotificationCreate struct {
 
 // NotificationEvent defines model for NotificationEvent.
 type NotificationEvent struct {
+	// Groups related notifications for interactive actions. Format: {notificationType}:{entityId}
+	ActionGroup *string `json:"action_group,omitempty"`
+
 	// Provided by customers when they decline through the marketplace.
 	CancelReason *string    `json:"cancel_reason,omitempty"`
 	Company      *string    `json:"company,omitempty"`
@@ -6468,7 +6494,10 @@ type NotificationEvent struct {
 
 	// The names of the event types
 	EventTypeNames *[]string `json:"event_type_names,omitempty"`
-	Id             *string   `json:"id,omitempty"`
+
+	// User who took action on interactive notification
+	HandledBy *string `json:"handled_by,omitempty"`
+	Id        *string `json:"id,omitempty"`
 
 	// True if the customer is new
 	NewCustomer *bool `json:"new_customer,omitempty"`
@@ -6482,6 +6511,12 @@ type NotificationEvent struct {
 	// The currency of the payment if the event has a payment associated with it.
 	PaymentCurrency *string        `json:"payment_currency,omitempty"`
 	PaymentStatus   *PaymentStatus `json:"payment_status,omitempty"`
+
+	// The user who should see this notification
+	RecipientUser *string `json:"recipient_user,omitempty"`
+
+	// The employee this notification relates to
+	RelatedEmployee *string `json:"related_employee,omitempty"`
 
 	// The original date and time of the event
 	RescheduledFrom *time.Time `json:"rescheduled_from,omitempty"`
@@ -6509,15 +6544,26 @@ type NotificationEventType string
 
 // NotificationGeneric defines model for NotificationGeneric.
 type NotificationGeneric struct {
-	CreatedAt *time.Time              `json:"created_at,omitempty"`
-	Employee  *string                 `json:"employee,omitempty"`
-	Icon      *NotificationIcon       `json:"icon,omitempty"`
-	Id        *string                 `json:"id,omitempty"`
-	Message   *string                 `json:"message,omitempty"`
-	Priority  *int32                  `json:"priority,omitempty"`
-	Title     string                  `json:"title"`
-	Type      NotificationGenericType `json:"type"`
-	UpdatedAt *time.Time              `json:"updated_at,omitempty"`
+	// Groups related notifications for interactive actions. Format: {notificationType}:{entityId}
+	ActionGroup *string    `json:"action_group,omitempty"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	Employee    *string    `json:"employee,omitempty"`
+
+	// User who took action on interactive notification
+	HandledBy *string           `json:"handled_by,omitempty"`
+	Icon      *NotificationIcon `json:"icon,omitempty"`
+	Id        *string           `json:"id,omitempty"`
+	Message   *string           `json:"message,omitempty"`
+	Priority  *int32            `json:"priority,omitempty"`
+
+	// The user who should see this notification
+	RecipientUser *string `json:"recipient_user,omitempty"`
+
+	// The employee this notification relates to
+	RelatedEmployee *string                 `json:"related_employee,omitempty"`
+	Title           string                  `json:"title"`
+	Type            NotificationGenericType `json:"type"`
+	UpdatedAt       *time.Time              `json:"updated_at,omitempty"`
 
 	// A valid URL path for HQ which is redirected to when the notification is clicked
 	Url *string `json:"url,omitempty"`
@@ -6537,11 +6583,37 @@ type NotificationIcon struct {
 // NotificationIconIconVariant defines model for NotificationIcon.IconVariant.
 type NotificationIconIconVariant string
 
+// NotificationMetadata defines model for NotificationMetadata.
+type NotificationMetadata struct {
+	// Groups related notifications for interactive actions. Format: {notificationType}:{entityId}
+	ActionGroup *string    `json:"action_group,omitempty"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+
+	// User who took action on interactive notification
+	HandledBy *string `json:"handled_by,omitempty"`
+	Id        *string `json:"id,omitempty"`
+
+	// The user who should see this notification
+	RecipientUser *string `json:"recipient_user,omitempty"`
+
+	// The employee this notification relates to
+	RelatedEmployee *string    `json:"related_employee,omitempty"`
+	UpdatedAt       *time.Time `json:"updated_at,omitempty"`
+}
+
 // NotificationPreferences defines model for NotificationPreferences.
 type NotificationPreferences struct {
 	Email *bool `json:"email,omitempty"`
 	Push  *bool `json:"push,omitempty"`
 	Sms   *bool `json:"sms,omitempty"`
+}
+
+// Notification system configuration for the company
+type NotificationSettings struct {
+	// Whether the company has migrated to the new per-recipient notification system.
+	// When true, notifications are created individually for each user with their preferences respected.
+	// When false or absent, legacy single-notification system is used.
+	NewNotificationsEnabled *bool `json:"new_notifications_enabled,omitempty"`
 }
 
 // NotificationSubcategory defines model for NotificationSubcategory.
@@ -6557,12 +6629,23 @@ type NotificationSubcategoryConfig struct {
 
 // NotificationSurvey defines model for NotificationSurvey.
 type NotificationSurvey struct {
-	CreatedAt *time.Time             `json:"created_at,omitempty"`
-	Employee  *string                `json:"employee,omitempty"`
-	Id        *string                `json:"id,omitempty"`
-	Priority  *int32                 `json:"priority,omitempty"`
-	Type      NotificationSurveyType `json:"type"`
-	UpdatedAt *time.Time             `json:"updated_at,omitempty"`
+	// Groups related notifications for interactive actions. Format: {notificationType}:{entityId}
+	ActionGroup *string    `json:"action_group,omitempty"`
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	Employee    *string    `json:"employee,omitempty"`
+
+	// User who took action on interactive notification
+	HandledBy *string `json:"handled_by,omitempty"`
+	Id        *string `json:"id,omitempty"`
+	Priority  *int32  `json:"priority,omitempty"`
+
+	// The user who should see this notification
+	RecipientUser *string `json:"recipient_user,omitempty"`
+
+	// The employee this notification relates to
+	RelatedEmployee *string                `json:"related_employee,omitempty"`
+	Type            NotificationSurveyType `json:"type"`
+	UpdatedAt       *time.Time             `json:"updated_at,omitempty"`
 }
 
 // NotificationSurveyType defines model for NotificationSurvey.Type.
@@ -6570,6 +6653,8 @@ type NotificationSurveyType string
 
 // NotificationWaitlistEntry defines model for NotificationWaitlistEntry.
 type NotificationWaitlistEntry struct {
+	// Groups related notifications for interactive actions. Format: {notificationType}:{entityId}
+	ActionGroup  *string    `json:"action_group,omitempty"`
 	Company      *string    `json:"company,omitempty"`
 	CreatedAt    *time.Time `json:"created_at,omitempty"`
 	Customer     *string    `json:"customer,omitempty"`
@@ -6582,7 +6667,16 @@ type NotificationWaitlistEntry struct {
 
 	// The time when the waitlist entry expires
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
-	Id        *string    `json:"id,omitempty"`
+
+	// User who took action on interactive notification
+	HandledBy *string `json:"handled_by,omitempty"`
+	Id        *string `json:"id,omitempty"`
+
+	// The user who should see this notification
+	RecipientUser *string `json:"recipient_user,omitempty"`
+
+	// The employee this notification relates to
+	RelatedEmployee *string `json:"related_employee,omitempty"`
 
 	// The status of the waitlist entry notification. If not set, the entry was created.
 	Status        *NotificationWaitlistEntryStatus `json:"status,omitempty"`
@@ -16869,6 +16963,9 @@ type ClientInterface interface {
 	// GetSalesMetrics request
 	GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MigrateNotifications request
+	MigrateNotifications(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// MigrateCompanyReminders request
 	MigrateCompanyReminders(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18858,6 +18955,18 @@ func (c *Client) GetEventsMetrics(ctx context.Context, companyId string, params 
 
 func (c *Client) GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSalesMetricsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MigrateNotifications(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMigrateNotificationsRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -29029,6 +29138,40 @@ func NewGetSalesMetricsRequest(server string, companyId string, params *GetSales
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMigrateNotificationsRequest generates requests for MigrateNotifications
+func NewMigrateNotificationsRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/migrate-notifications", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -51929,6 +52072,9 @@ type ClientWithResponsesInterface interface {
 	// GetSalesMetrics request
 	GetSalesMetricsWithResponse(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*GetSalesMetricsResponse, error)
 
+	// MigrateNotifications request
+	MigrateNotificationsWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateNotificationsResponse, error)
+
 	// MigrateCompanyReminders request
 	MigrateCompanyRemindersWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyRemindersResponse, error)
 
@@ -54412,6 +54558,28 @@ func (r GetSalesMetricsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSalesMetricsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MigrateNotificationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON403      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r MigrateNotificationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MigrateNotificationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -61741,6 +61909,15 @@ func (c *ClientWithResponses) GetSalesMetricsWithResponse(ctx context.Context, c
 	return ParseGetSalesMetricsResponse(rsp)
 }
 
+// MigrateNotificationsWithResponse request returning *MigrateNotificationsResponse
+func (c *ClientWithResponses) MigrateNotificationsWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateNotificationsResponse, error) {
+	rsp, err := c.MigrateNotifications(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMigrateNotificationsResponse(rsp)
+}
+
 // MigrateCompanyRemindersWithResponse request returning *MigrateCompanyRemindersResponse
 func (c *ClientWithResponses) MigrateCompanyRemindersWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyRemindersResponse, error) {
 	rsp, err := c.MigrateCompanyReminders(ctx, companyId, reqEditors...)
@@ -66913,6 +67090,32 @@ func ParseGetSalesMetricsResponse(rsp *http.Response) (*GetSalesMetricsResponse,
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMigrateNotificationsResponse parses an HTTP response from a MigrateNotificationsWithResponse call
+func ParseMigrateNotificationsResponse(rsp *http.Response) (*MigrateNotificationsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MigrateNotificationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	}
 
