@@ -4257,6 +4257,9 @@ type Entitlement struct {
 	// Whether the entitlement has been overridden from its default value.
 	IsOverridden *bool `json:"is_overridden,omitempty"`
 
+	// The ID of the plan or powerup that this entitlement belongs to.
+	PlanId *string `json:"plan_id,omitempty"`
+
 	// String value for custom/text values or "unlimited".
 	StringValue *string `json:"string_value,omitempty"`
 }
