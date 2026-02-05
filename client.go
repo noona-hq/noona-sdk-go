@@ -455,7 +455,6 @@ const (
 	EntitlementFeatureIDOfflineWaitlist             EntitlementFeatureID = "offline_waitlist"
 	EntitlementFeatureIDOnlineWaitlist              EntitlementFeatureID = "online_waitlist"
 	EntitlementFeatureIDOutlets                     EntitlementFeatureID = "outlets"
-	EntitlementFeatureIDPosLegacy                   EntitlementFeatureID = "pos_legacy"
 	EntitlementFeatureIDPremiumPos                  EntitlementFeatureID = "premium_pos"
 	EntitlementFeatureIDPremiumRoles                EntitlementFeatureID = "premium_roles"
 	EntitlementFeatureIDServiceOverrides            EntitlementFeatureID = "service_overrides"
