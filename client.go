@@ -8584,7 +8584,7 @@ type ScheduledEventTier struct {
 	Variations *[]ScheduledEventVariation `json:"variations,omitempty"`
 }
 
-// Tier in scheduled event response with references and availability.
+// Tier in scheduled event response with availability.
 type ScheduledEventTierResponse struct {
 	// Maximum capacity for this tier (computed).
 	Capacity    *int32  `json:"capacity,omitempty"`
@@ -8596,8 +8596,8 @@ type ScheduledEventTierResponse struct {
 	// The key is the language code, and the value is the translated string.
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
 
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	EventType *ExpandableEventType `json:"event_type,omitempty"`
+	// Unique identifier for this tier.
+	Id *string `json:"id,omitempty"`
 
 	// Whether this tier is at capacity.
 	IsFull *bool `json:"is_full,omitempty"`
@@ -8621,10 +8621,7 @@ type ScheduledEventTierResponse struct {
 	Price *int64 `json:"price,omitempty"`
 
 	// Remaining capacity for this tier.
-	Remaining *int32 `json:"remaining,omitempty"`
-
-	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Resource   *ExpandableResource        `json:"resource,omitempty"`
+	Remaining  *int32                     `json:"remaining,omitempty"`
 	Variations *[]ScheduledEventVariation `json:"variations,omitempty"`
 }
 
