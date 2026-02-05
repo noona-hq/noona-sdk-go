@@ -8558,19 +8558,36 @@ type ScheduledEventCreate struct {
 
 // Tier definition for creating/updating a scheduled event.
 type ScheduledEventTier struct {
-	Currency    *string `json:"currency,omitempty"`
-	Description *string `json:"description,omitempty"`
+	// Whether customers can cancel their booking for this tier.
+	AllowCancellation *bool             `json:"allow_cancellation,omitempty"`
+	BookingQuestions  *BookingQuestions `json:"booking_questions,omitempty"`
+
+	// Custom confirmation message displayed after booking.
+	ConfirmationMessage *string `json:"confirmation_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	ConfirmationMessageTranslations *TranslationMap `json:"confirmation_message_translations,omitempty"`
+	Currency                        *string         `json:"currency,omitempty"`
+	Description                     *string         `json:"description,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
 
+	// Whether this tier is available for online bookings.
+	MarketplaceVisible *bool `json:"marketplace_visible,omitempty"`
+
 	// Maximum number of guests for this tier.
 	MaxCapacity int32 `json:"max_capacity"`
 
 	// Maximum guests per booking.
 	MaxGroupSize *int32 `json:"max_group_size,omitempty"`
+
+	// Minimum notice required for cancellation in minutes. Null or 0 means any time.
+	MinCancelNoticeMinutes *int32 `json:"min_cancel_notice_minutes,omitempty"`
 
 	// Minimum guests per booking.
 	MinGroupSize *int32 `json:"min_group_size,omitempty"`
@@ -8581,6 +8598,9 @@ type ScheduledEventTier struct {
 	// The key is the language code, and the value is the translated string.
 	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
 
+	// Whether prepayment is required for booking this tier.
+	PrepaymentRequired *bool `json:"prepayment_required,omitempty"`
+
 	// Base price in smallest currency unit (cents).
 	Price      *int64                     `json:"price,omitempty"`
 	Variations *[]ScheduledEventVariation `json:"variations,omitempty"`
@@ -8588,10 +8608,22 @@ type ScheduledEventTier struct {
 
 // Tier in scheduled event response with availability.
 type ScheduledEventTierResponse struct {
+	// Whether customers can cancel their booking for this tier.
+	AllowCancellation *bool             `json:"allow_cancellation,omitempty"`
+	BookingQuestions  *BookingQuestions `json:"booking_questions,omitempty"`
+
 	// Maximum capacity for this tier (computed).
-	Capacity    *int32  `json:"capacity,omitempty"`
-	Currency    *string `json:"currency,omitempty"`
-	Description *string `json:"description,omitempty"`
+	Capacity *int32 `json:"capacity,omitempty"`
+
+	// Custom confirmation message displayed after booking.
+	ConfirmationMessage *string `json:"confirmation_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	ConfirmationMessageTranslations *TranslationMap `json:"confirmation_message_translations,omitempty"`
+	Currency                        *string         `json:"currency,omitempty"`
+	Description                     *string         `json:"description,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -8604,11 +8636,17 @@ type ScheduledEventTierResponse struct {
 	// Whether this tier is at capacity.
 	IsFull *bool `json:"is_full,omitempty"`
 
+	// Whether this tier is available for online bookings.
+	MarketplaceVisible *bool `json:"marketplace_visible,omitempty"`
+
 	// Maximum number of guests for this tier.
 	MaxCapacity *int32 `json:"max_capacity,omitempty"`
 
 	// Maximum guests per booking.
 	MaxGroupSize *int32 `json:"max_group_size,omitempty"`
+
+	// Minimum notice required for cancellation in minutes. Null or 0 means any time.
+	MinCancelNoticeMinutes *int32 `json:"min_cancel_notice_minutes,omitempty"`
 
 	// Minimum guests per booking.
 	MinGroupSize *int32  `json:"min_group_size,omitempty"`
@@ -8618,6 +8656,9 @@ type ScheduledEventTierResponse struct {
 	//
 	// The key is the language code, and the value is the translated string.
 	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
+
+	// Whether prepayment is required for booking this tier.
+	PrepaymentRequired *bool `json:"prepayment_required,omitempty"`
 
 	// Base price in smallest currency unit (cents).
 	Price *int64 `json:"price,omitempty"`
