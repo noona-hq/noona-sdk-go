@@ -7161,6 +7161,9 @@ type PowerupSubscription struct {
 	// Date when the user acknowledged the end of the trial.
 	TrialEndAcknowledgedAt *time.Time `json:"trial_end_acknowledged_at,omitempty"`
 
+	// Date when the trial ends at.
+	TrialEndsAt *time.Time `json:"trial_ends_at,omitempty"`
+
 	// Date when the trial started.
 	TrialStartedAt *time.Time `json:"trial_started_at,omitempty"`
 	Type           *Powerup   `json:"type,omitempty"`
