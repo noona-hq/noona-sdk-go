@@ -1760,6 +1760,7 @@ type AdminCompanyUpdate struct {
 	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
 	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
 	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
+	Migrations     *CompanyMigrations  `json:"migrations,omitempty"`
 	Name           *string             `json:"name,omitempty"`
 
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
@@ -3048,6 +3049,7 @@ type Company struct {
 	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
 	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
 	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
+	Migrations     *CompanyMigrations  `json:"migrations,omitempty"`
 	Name           *string             `json:"name,omitempty"`
 
 	// Notification system configuration for the company
@@ -3210,6 +3212,12 @@ type CompanyMessaging struct {
 
 	// Whether the company wants to show the booking end time/duration in booking confirmation messages and reminders.
 	ShowBookingEndsAt *bool `json:"show_booking_ends_at,omitempty"`
+}
+
+// CompanyMigrations defines model for CompanyMigrations.
+type CompanyMigrations struct {
+	// Whether the company has been migrated to staff-level work hours.
+	StaffWorkHoursEnabled *bool `json:"staff_work_hours_enabled,omitempty"`
 }
 
 // CompanyPOSSettings defines model for CompanyPOSSettings.
@@ -3456,6 +3464,7 @@ type CompanyResponse struct {
 	LockedSections *LockedSections    `json:"locked_sections,omitempty"`
 	Marketplace    CompanyMarketplace `json:"marketplace"`
 	Messaging      CompanyMessaging   `json:"messaging"`
+	Migrations     *CompanyMigrations `json:"migrations,omitempty"`
 	Name           string             `json:"name"`
 
 	// Notification system configuration for the company
@@ -3573,6 +3582,7 @@ type CompanyUpdate struct {
 	LockedSections *LockedSections     `json:"locked_sections,omitempty"`
 	Marketplace    *CompanyMarketplace `json:"marketplace,omitempty"`
 	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
+	Migrations     *CompanyMigrations  `json:"migrations,omitempty"`
 	Name           *string             `json:"name,omitempty"`
 
 	// Notification system configuration for the company
@@ -17013,6 +17023,9 @@ type ClientInterface interface {
 	// MigrateCompanyReminders request
 	MigrateCompanyReminders(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MigrateStaffWorkHours request
+	MigrateStaffWorkHours(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteNotifications request
 	DeleteNotifications(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19023,6 +19036,18 @@ func (c *Client) MigrateNotifications(ctx context.Context, companyId string, req
 
 func (c *Client) MigrateCompanyReminders(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMigrateCompanyRemindersRequest(c.Server, companyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MigrateStaffWorkHours(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMigrateStaffWorkHoursRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -29240,6 +29265,40 @@ func NewMigrateCompanyRemindersRequest(server string, companyId string) (*http.R
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/migrate-reminders", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMigrateStaffWorkHoursRequest generates requests for MigrateStaffWorkHours
+func NewMigrateStaffWorkHoursRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/migrate-staff-work-hours", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -52138,6 +52197,9 @@ type ClientWithResponsesInterface interface {
 	// MigrateCompanyReminders request
 	MigrateCompanyRemindersWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyRemindersResponse, error)
 
+	// MigrateStaffWorkHours request
+	MigrateStaffWorkHoursWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateStaffWorkHoursResponse, error)
+
 	// DeleteNotifications request
 	DeleteNotificationsWithResponse(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*DeleteNotificationsResponse, error)
 
@@ -54661,6 +54723,27 @@ func (r MigrateCompanyRemindersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r MigrateCompanyRemindersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MigrateStaffWorkHoursResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r MigrateStaffWorkHoursResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MigrateStaffWorkHoursResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -61987,6 +62070,15 @@ func (c *ClientWithResponses) MigrateCompanyRemindersWithResponse(ctx context.Co
 	return ParseMigrateCompanyRemindersResponse(rsp)
 }
 
+// MigrateStaffWorkHoursWithResponse request returning *MigrateStaffWorkHoursResponse
+func (c *ClientWithResponses) MigrateStaffWorkHoursWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateStaffWorkHoursResponse, error) {
+	rsp, err := c.MigrateStaffWorkHours(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMigrateStaffWorkHoursResponse(rsp)
+}
+
 // DeleteNotificationsWithResponse request returning *DeleteNotificationsResponse
 func (c *ClientWithResponses) DeleteNotificationsWithResponse(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*DeleteNotificationsResponse, error) {
 	rsp, err := c.DeleteNotifications(ctx, companyId, params, reqEditors...)
@@ -67191,6 +67283,22 @@ func ParseMigrateCompanyRemindersResponse(rsp *http.Response) (*MigrateCompanyRe
 	}
 
 	response := &MigrateCompanyRemindersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseMigrateStaffWorkHoursResponse parses an HTTP response from a MigrateStaffWorkHoursWithResponse call
+func ParseMigrateStaffWorkHoursResponse(rsp *http.Response) (*MigrateStaffWorkHoursResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MigrateStaffWorkHoursResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
