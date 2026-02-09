@@ -1180,6 +1180,12 @@ const (
 	SaleFieldCustomer SaleField = "customer"
 )
 
+// Defines values for ScheduledEventBookingQuestionAnswerType.
+const (
+	ScheduledEventBookingQuestionAnswerTypeBoolean ScheduledEventBookingQuestionAnswerType = "boolean"
+	ScheduledEventBookingQuestionAnswerTypeString  ScheduledEventBookingQuestionAnswerType = "string"
+)
+
 // Defines values for SignupGoalOption.
 const (
 	AttractMoreOnlineBookings SignupGoalOption = "attract_more_online_bookings"
@@ -8501,12 +8507,9 @@ type ScheduledEvent struct {
 	//
 	// The key is the language code, and the value is the translated string.
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
-
-	// Employees blocked during this event.
-	Employees *[]ExpandableEmployee `json:"employees,omitempty"`
-	EndsAt    *time.Time            `json:"ends_at,omitempty"`
-	Id        *string               `json:"id,omitempty"`
-	Images    *[]Image              `json:"images,omitempty"`
+	EndsAt                  *time.Time      `json:"ends_at,omitempty"`
+	Id                      *string         `json:"id,omitempty"`
+	Images                  *[]Image        `json:"images,omitempty"`
 
 	// Whether all tiers are at capacity.
 	IsFull *bool `json:"is_full,omitempty"`
@@ -8524,66 +8527,74 @@ type ScheduledEvent struct {
 	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
 
 	// Total capacity minus booked guests.
-	RemainingCapacity *int32 `json:"remaining_capacity,omitempty"`
-
-	// Resources blocked during this event.
-	Resources *[]ExpandableResource         `json:"resources,omitempty"`
-	StartsAt  *time.Time                    `json:"starts_at,omitempty"`
-	Tiers     *[]ScheduledEventTierResponse `json:"tiers,omitempty"`
+	RemainingCapacity *int32                        `json:"remaining_capacity,omitempty"`
+	StartsAt          *time.Time                    `json:"starts_at,omitempty"`
+	Tiers             *[]ScheduledEventTierResponse `json:"tiers,omitempty"`
 
 	// Sum of max_capacity across all tiers.
 	TotalCapacity *int32     `json:"total_capacity,omitempty"`
 	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
 }
 
-// Request body for creating a scheduled event.
-type ScheduledEventCreate struct {
-	AllowCancellation *bool `json:"allow_cancellation,omitempty"`
+// Booking question for a scheduled event tier.
+type ScheduledEventBookingQuestion struct {
+	// Indicates if an answer is required.
+	AnswerRequired bool `json:"answer_required"`
 
-	// Company ID
-	Company             string  `json:"company"`
-	CustomerSelectsTier *bool   `json:"customer_selects_tier,omitempty"`
-	Description         *string `json:"description,omitempty"`
+	// The type of answer expected.
+	AnswerType *ScheduledEventBookingQuestionAnswerType `json:"answer_type,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
 
-	// Employee IDs to block during this event.
-	Employees              *[]string `json:"employees,omitempty"`
-	EndsAt                 time.Time `json:"ends_at"`
-	Images                 *[]Image  `json:"images,omitempty"`
-	MarketplaceVisible     *bool     `json:"marketplace_visible,omitempty"`
-	MinCancelNoticeMinutes *int32    `json:"min_cancel_notice_minutes,omitempty"`
-	Name                   string    `json:"name"`
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	TitleTranslations *TranslationMap `json:"title_translations,omitempty"`
+}
+
+// The type of answer expected.
+type ScheduledEventBookingQuestionAnswerType string
+
+// ScheduledEventBookingQuestions defines model for ScheduledEventBookingQuestions.
+type ScheduledEventBookingQuestions []ScheduledEventBookingQuestion
+
+// Request body for creating a scheduled event.
+type ScheduledEventCreate struct {
+	AllowCancellation *bool `json:"allow_cancellation,omitempty"`
+
+	// Company ID
+	Company             string `json:"company"`
+	CustomerSelectsTier *bool  `json:"customer_selects_tier,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
-	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	EndsAt                  time.Time       `json:"ends_at"`
+	Images                  *[]Image        `json:"images,omitempty"`
+	MarketplaceVisible      *bool           `json:"marketplace_visible,omitempty"`
+	MinCancelNoticeMinutes  *int32          `json:"min_cancel_notice_minutes,omitempty"`
 
-	// Resource IDs to block during this event.
-	Resources *[]string            `json:"resources,omitempty"`
-	StartsAt  time.Time            `json:"starts_at"`
-	Tiers     []ScheduledEventTier `json:"tiers"`
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	NameTranslations TranslationMap       `json:"name_translations"`
+	StartsAt         time.Time            `json:"starts_at"`
+	Tiers            []ScheduledEventTier `json:"tiers"`
 }
 
 // Tier definition for creating/updating a scheduled event.
 type ScheduledEventTier struct {
-	// Whether customers can cancel their booking for this tier.
-	AllowCancellation *bool             `json:"allow_cancellation,omitempty"`
-	BookingQuestions  *BookingQuestions `json:"booking_questions,omitempty"`
-
-	// Custom confirmation message displayed after booking.
-	ConfirmationMessage *string `json:"confirmation_message,omitempty"`
+	BookingQuestions *ScheduledEventBookingQuestions `json:"booking_questions,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
 	ConfirmationMessageTranslations *TranslationMap `json:"confirmation_message_translations,omitempty"`
 	Currency                        *string         `json:"currency,omitempty"`
-	Description                     *string         `json:"description,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -8599,31 +8610,22 @@ type ScheduledEventTier struct {
 	// Maximum guests per booking.
 	MaxGroupSize *int32 `json:"max_group_size,omitempty"`
 
-	// Minimum notice required for cancellation in minutes. Null or 0 means any time.
-	MinCancelNoticeMinutes *int32 `json:"min_cancel_notice_minutes,omitempty"`
-
 	// Minimum guests per booking.
 	MinGroupSize *int32 `json:"min_group_size,omitempty"`
-	Name         string `json:"name"`
 
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
-	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
+	NameTranslations TranslationMap `json:"name_translations"`
 
 	// Whether prepayment is required for booking this tier.
-	PrepaymentRequired *bool `json:"prepayment_required,omitempty"`
-
-	// Base price in smallest currency unit (cents).
-	Price      *int64                     `json:"price,omitempty"`
-	Variations *[]ScheduledEventVariation `json:"variations,omitempty"`
+	PrepaymentRequired *bool                     `json:"prepayment_required,omitempty"`
+	Variations         []ScheduledEventVariation `json:"variations"`
 }
 
 // Tier in scheduled event response with availability.
 type ScheduledEventTierResponse struct {
-	// Whether customers can cancel their booking for this tier.
-	AllowCancellation *bool             `json:"allow_cancellation,omitempty"`
-	BookingQuestions  *BookingQuestions `json:"booking_questions,omitempty"`
+	BookingQuestions *BookingQuestions `json:"booking_questions,omitempty"`
 
 	// Maximum capacity for this tier (computed).
 	Capacity *int32 `json:"capacity,omitempty"`
@@ -8658,9 +8660,6 @@ type ScheduledEventTierResponse struct {
 	// Maximum guests per booking.
 	MaxGroupSize *int32 `json:"max_group_size,omitempty"`
 
-	// Minimum notice required for cancellation in minutes. Null or 0 means any time.
-	MinCancelNoticeMinutes *int32 `json:"min_cancel_notice_minutes,omitempty"`
-
 	// Minimum guests per booking.
 	MinGroupSize *int32  `json:"min_group_size,omitempty"`
 	Name         *string `json:"name,omitempty"`
@@ -8673,56 +8672,62 @@ type ScheduledEventTierResponse struct {
 	// Whether prepayment is required for booking this tier.
 	PrepaymentRequired *bool `json:"prepayment_required,omitempty"`
 
-	// Base price in smallest currency unit (cents).
-	Price *int64 `json:"price,omitempty"`
-
 	// Remaining capacity for this tier.
-	Remaining  *int32                     `json:"remaining,omitempty"`
-	Variations *[]ScheduledEventVariation `json:"variations,omitempty"`
+	Remaining  *int32                             `json:"remaining,omitempty"`
+	Variations *[]ScheduledEventVariationResponse `json:"variations,omitempty"`
 }
 
 // Request body for updating a scheduled event.
 type ScheduledEventUpdate struct {
-	AllowCancellation   *bool   `json:"allow_cancellation,omitempty"`
-	CustomerSelectsTier *bool   `json:"customer_selects_tier,omitempty"`
-	Description         *string `json:"description,omitempty"`
+	AllowCancellation   *bool `json:"allow_cancellation,omitempty"`
+	CustomerSelectsTier *bool `json:"customer_selects_tier,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
-
-	// Employee IDs to block during this event.
-	Employees              *[]string  `json:"employees,omitempty"`
-	EndsAt                 *time.Time `json:"ends_at,omitempty"`
-	Images                 *[]Image   `json:"images,omitempty"`
-	MarketplaceVisible     *bool      `json:"marketplace_visible,omitempty"`
-	MinCancelNoticeMinutes *int32     `json:"min_cancel_notice_minutes,omitempty"`
-	Name                   *string    `json:"name,omitempty"`
+	EndsAt                  *time.Time      `json:"ends_at,omitempty"`
+	Images                  *[]Image        `json:"images,omitempty"`
+	MarketplaceVisible      *bool           `json:"marketplace_visible,omitempty"`
+	MinCancelNoticeMinutes  *int32          `json:"min_cancel_notice_minutes,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
-	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
-
-	// Resource IDs to block during this event.
-	Resources *[]string             `json:"resources,omitempty"`
-	StartsAt  *time.Time            `json:"starts_at,omitempty"`
-	Tiers     *[]ScheduledEventTier `json:"tiers,omitempty"`
+	NameTranslations *TranslationMap       `json:"name_translations,omitempty"`
+	StartsAt         *time.Time            `json:"starts_at,omitempty"`
+	Tiers            *[]ScheduledEventTier `json:"tiers,omitempty"`
 }
 
 // Variation within a tier (e.g., Adult vs Child pricing).
 type ScheduledEventVariation struct {
-	Description *string `json:"description,omitempty"`
-
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
 
 	// Optional ID for referencing on updates.
-	Id    *string `json:"id,omitempty"`
-	Label *string `json:"label,omitempty"`
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
+
+	// Price in smallest currency unit (cents).
+	Price *int64 `json:"price,omitempty"`
+}
+
+// Variation in a scheduled event response.
+type ScheduledEventVariationResponse struct {
+	Description *string `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	Id                      *string         `json:"id,omitempty"`
+	Label                   *string         `json:"label,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
