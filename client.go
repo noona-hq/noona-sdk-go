@@ -826,6 +826,8 @@ const (
 	RuleSetsWrite         OAuthScope = "rule_sets:write"
 	SalesRead             OAuthScope = "sales:read"
 	SalesWrite            OAuthScope = "sales:write"
+	ScheduledEventsRead   OAuthScope = "scheduled_events:read"
+	ScheduledEventsWrite  OAuthScope = "scheduled_events:write"
 	SettlementsRead       OAuthScope = "settlements:read"
 	SmsMessagesRead       OAuthScope = "sms_messages:read"
 	TerminalsRead         OAuthScope = "terminals:read"
@@ -4407,6 +4409,9 @@ type Event struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Sale *ExpandableSale `json:"sale,omitempty"`
 
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	ScheduledEvent *ExpandableScheduledEvent `json:"scheduled_event,omitempty"`
+
 	// Use resource instead
 	Space *Event_Space `json:"space,omitempty"`
 
@@ -4573,6 +4578,9 @@ type EventCheckinResult struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Sale   *ExpandableSale `json:"sale,omitempty"`
 	SaleId *string         `json:"sale_id,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	ScheduledEvent *ExpandableScheduledEvent `json:"scheduled_event,omitempty"`
 
 	// Use resource instead
 	Space *EventCheckinResult_Space `json:"space,omitempty"`
@@ -4765,6 +4773,9 @@ type EventFilter struct {
 
 	// Filter by resource IDs
 	Resources *[]string `json:"resources,omitempty"`
+
+	// Filter by scheduled event IDs
+	ScheduledEventIds *[]string `json:"scheduled_event_ids,omitempty"`
 
 	// Filter by space IDs
 	Spaces *[]string `json:"spaces,omitempty"`
@@ -5456,6 +5467,11 @@ type ExpandableRole struct {
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableSale struct {
+	union json.RawMessage
+}
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableScheduledEvent struct {
 	union json.RawMessage
 }
 
@@ -15974,6 +15990,40 @@ func (t ExpandableSale) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ExpandableSale) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableScheduledEvent) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableScheduledEvent) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableScheduledEvent) AsScheduledEvent() (ScheduledEvent, error) {
+	var body ScheduledEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableScheduledEvent) FromScheduledEvent(v ScheduledEvent) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableScheduledEvent) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableScheduledEvent) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
