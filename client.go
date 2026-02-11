@@ -4433,6 +4433,10 @@ type Event struct {
 	Status *string    `json:"status,omitempty"`
 	Tags   *EventTags `json:"tags,omitempty"`
 
+	// A human-readable ticket ID for events created from scheduled events.
+	// Can be used for manual check-in of guests.
+	TicketId *string `json:"ticket_id,omitempty"`
+
 	// Event is unconfirmed if the employee has not yet confirmed the booking.
 	// This is only relevant for companies that have the "Require employee confirmation" setting enabled.
 	Unconfirmed  *bool        `json:"unconfirmed,omitempty"`
@@ -4607,7 +4611,11 @@ type EventCheckinResult struct {
 	// If the company does not have a terminal associated with their checkin, this ID will be empty.
 	SubtransactionId *string    `json:"subtransaction_id,omitempty"`
 	Tags             *EventTags `json:"tags,omitempty"`
-	TransactionId    *string    `json:"transaction_id,omitempty"`
+
+	// A human-readable ticket ID for events created from scheduled events.
+	// Can be used for manual check-in of guests.
+	TicketId      *string `json:"ticket_id,omitempty"`
+	TransactionId *string `json:"transaction_id,omitempty"`
 
 	// Event is unconfirmed if the employee has not yet confirmed the booking.
 	// This is only relevant for companies that have the "Require employee confirmation" setting enabled.
@@ -4784,6 +4792,9 @@ type EventFilter struct {
 	//
 	// See [Event Statuses](#tag/Event-Statuses) for more information.
 	Statuses *[]string `json:"statuses,omitempty"`
+
+	// Filter by ticket ID
+	TicketId *string `json:"ticket_id,omitempty"`
 
 	// Only return events where starts_at is before this timestamp.
 	//
