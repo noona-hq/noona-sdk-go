@@ -8539,7 +8539,8 @@ type ScheduledEvent struct {
 	Images                  *[]Image        `json:"images,omitempty"`
 
 	// Whether all tiers are at capacity.
-	IsFull *bool `json:"is_full,omitempty"`
+	IsFull   *bool     `json:"is_full,omitempty"`
+	Location *Location `json:"location,omitempty"`
 
 	// Whether this event is visible on the marketplace.
 	MarketplaceVisible *bool `json:"marketplace_visible,omitempty"`
@@ -8602,6 +8603,7 @@ type ScheduledEventCreate struct {
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
 	EndsAt                  time.Time       `json:"ends_at"`
 	Images                  *[]Image        `json:"images,omitempty"`
+	Location                *Location       `json:"location,omitempty"`
 	MarketplaceVisible      *bool           `json:"marketplace_visible,omitempty"`
 	MinCancelNoticeMinutes  *int32          `json:"min_cancel_notice_minutes,omitempty"`
 
@@ -8715,6 +8717,7 @@ type ScheduledEventUpdate struct {
 	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
 	EndsAt                  *time.Time      `json:"ends_at,omitempty"`
 	Images                  *[]Image        `json:"images,omitempty"`
+	Location                *Location       `json:"location,omitempty"`
 	MarketplaceVisible      *bool           `json:"marketplace_visible,omitempty"`
 	MinCancelNoticeMinutes  *int32          `json:"min_cancel_notice_minutes,omitempty"`
 
