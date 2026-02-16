@@ -1536,6 +1536,9 @@ const (
 	WebhookEventEventCreated       WebhookEvent = "event.created"
 	WebhookEventEventDeleted       WebhookEvent = "event.deleted"
 	WebhookEventEventUpdated       WebhookEvent = "event.updated"
+	WebhookEventProductCreated     WebhookEvent = "product.created"
+	WebhookEventProductDeleted     WebhookEvent = "product.deleted"
+	WebhookEventProductUpdated     WebhookEvent = "product.updated"
 	WebhookEventTransactionCreated WebhookEvent = "transaction.created"
 	WebhookEventTransactionUpdated WebhookEvent = "transaction.updated"
 )
@@ -9896,6 +9899,12 @@ type VerifoneConnection struct {
 
 // VerifoneTerminalOption defines model for VerifoneTerminalOption.
 type VerifoneTerminalOption struct {
+	// Terminal hardware model (e.g. V400m, P400)
+	DeviceModel *string `json:"deviceModel,omitempty"`
+
+	// Terminal payment application software version
+	DeviceSoftwareVersion *string `json:"deviceSoftwareVersion,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Issuer *ExpandableIssuer `json:"issuer,omitempty"`
 
@@ -9904,6 +9913,9 @@ type VerifoneTerminalOption struct {
 
 	// Display name for the terminal
 	Name *string `json:"name,omitempty"`
+
+	// Verifone POSCloud API version
+	PosCloudVersion *string `json:"posCloudVersion,omitempty"`
 
 	// Terminal serial number (used as terminal ID)
 	TerminalId *string `json:"terminalId,omitempty"`
@@ -14917,6 +14929,18 @@ func (t CallbackData_Data) AsCustomer() (Customer, error) {
 }
 
 func (t *CallbackData_Data) FromCustomer(v Customer) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t CallbackData_Data) AsProduct() (Product, error) {
+	var body Product
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *CallbackData_Data) FromProduct(v Product) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
