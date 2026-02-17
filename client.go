@@ -110,6 +110,18 @@ const (
 	ApplicationPayoutStatusPending ApplicationPayoutStatus = "pending"
 )
 
+// Defines values for AvailabilityRuleEmployeesAssociation.
+const (
+	AvailabilityRuleEmployeesAssociationExcludes AvailabilityRuleEmployeesAssociation = "excludes"
+	AvailabilityRuleEmployeesAssociationIncludes AvailabilityRuleEmployeesAssociation = "includes"
+)
+
+// Defines values for AvailabilityRuleResourcesAssociation.
+const (
+	AvailabilityRuleResourcesAssociationExcludes AvailabilityRuleResourcesAssociation = "excludes"
+	AvailabilityRuleResourcesAssociationIncludes AvailabilityRuleResourcesAssociation = "includes"
+)
+
 // Defines values for AvailabilityRuleType.
 const (
 	AvailabilityRuleTypeAvailability AvailabilityRuleType = "availability"
@@ -870,6 +882,12 @@ const (
 // Defines values for OnlineBookingsRuleType.
 const (
 	OnlineBookings OnlineBookingsRuleType = "online_bookings"
+)
+
+// Defines values for OpeningHoursMode.
+const (
+	OpeningHoursModeBookableEntities OpeningHoursMode = "bookable_entities"
+	OpeningHoursModeCompany          OpeningHoursMode = "company"
 )
 
 // Defines values for PaymentProvider.
@@ -2115,14 +2133,25 @@ type Attachments []Attachment
 
 // AvailabilityRule defines model for AvailabilityRule.
 type AvailabilityRule struct {
+	Employees            *[]string                             `json:"employees,omitempty"`
+	EmployeesAssociation *AvailabilityRuleEmployeesAssociation `json:"employees_association,omitempty"`
+
 	// End time within the day
-	EndsAt *string `json:"ends_at,omitempty"`
-	Open   bool    `json:"open"`
+	EndsAt               *string                               `json:"ends_at,omitempty"`
+	Open                 bool                                  `json:"open"`
+	Resources            *[]string                             `json:"resources,omitempty"`
+	ResourcesAssociation *AvailabilityRuleResourcesAssociation `json:"resources_association,omitempty"`
 
 	// Start time within the day
 	StartsAt *string              `json:"starts_at,omitempty"`
 	Type     AvailabilityRuleType `json:"type"`
 }
+
+// AvailabilityRuleEmployeesAssociation defines model for AvailabilityRule.EmployeesAssociation.
+type AvailabilityRuleEmployeesAssociation string
+
+// AvailabilityRuleResourcesAssociation defines model for AvailabilityRule.ResourcesAssociation.
+type AvailabilityRuleResourcesAssociation string
 
 // AvailabilityRuleType defines model for AvailabilityRule.Type.
 type AvailabilityRuleType string
@@ -2563,6 +2592,13 @@ type BlockedTimes []BlockedTime
 
 // BlockedTimesResponse defines model for BlockedTimesResponse.
 type BlockedTimesResponse []BlockedTimeResponse
+
+// BookableEntitiesOpeningHoursResponse defines model for BookableEntitiesOpeningHoursResponse.
+type BookableEntitiesOpeningHoursResponse struct {
+	Company   *OpeningHoursResponse            `json:"company,omitempty"`
+	Employees *map[string]OpeningHoursResponse `json:"employees,omitempty"`
+	Resources *map[string]OpeningHoursResponse `json:"resources,omitempty"`
+}
 
 // Booking interval in minutes.
 //
@@ -6849,6 +6885,9 @@ type OpeningHourFilter struct {
 //
 // Array of seven (7) items, 0 being Monday and 6 Sunday. Or 0 being Sunday. Nobody really knows.
 type OpeningHours []OpeningHour
+
+// OpeningHoursMode defines model for OpeningHoursMode.
+type OpeningHoursMode string
 
 // OpeningHoursResponse defines model for OpeningHoursResponse.
 type OpeningHoursResponse map[string][]TimeRange
@@ -11420,6 +11459,7 @@ type ListOpeningHoursParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand            `form:"expand,omitempty" json:"expand,omitempty"`
 	Filter *OpeningHourFilter `form:"filter,omitempty" json:"filter,omitempty"`
+	Mode   *OpeningHoursMode  `form:"mode,omitempty" json:"mode,omitempty"`
 
 	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
 	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
@@ -29705,6 +29745,22 @@ func NewListOpeningHoursRequest(server string, companyId string, params *ListOpe
 			return nil, err
 		} else {
 			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Mode != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "mode", runtime.ParamLocationQuery, *params.Mode); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
@@ -54912,7 +54968,9 @@ func (r ListNotificationSettingsResponse) StatusCode() int {
 type ListOpeningHoursResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *OpeningHoursResponse
+	JSON200      *struct {
+		union json.RawMessage
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -67492,7 +67550,9 @@ func ParseListOpeningHoursResponse(rsp *http.Response) (*ListOpeningHoursRespons
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OpeningHoursResponse
+		var dest struct {
+			union json.RawMessage
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
