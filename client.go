@@ -8687,11 +8687,9 @@ type ScheduledEventTier struct {
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
-	NameTranslations TranslationMap `json:"name_translations"`
-
-	// Whether prepayment is required for booking this tier.
-	PrepaymentRequired *bool                     `json:"prepayment_required,omitempty"`
-	Variations         []ScheduledEventVariation `json:"variations"`
+	NameTranslations TranslationMap            `json:"name_translations"`
+	PaymentSettings  *PaymentSettings          `json:"payment_settings,omitempty"`
+	Variations       []ScheduledEventVariation `json:"variations"`
 }
 
 // Tier in scheduled event response with availability.
@@ -8738,10 +8736,8 @@ type ScheduledEventTierResponse struct {
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
-	NameTranslations *TranslationMap `json:"name_translations,omitempty"`
-
-	// Whether prepayment is required for booking this tier.
-	PrepaymentRequired *bool `json:"prepayment_required,omitempty"`
+	NameTranslations *TranslationMap  `json:"name_translations,omitempty"`
+	PaymentSettings  *PaymentSettings `json:"payment_settings,omitempty"`
 
 	// Remaining capacity for this tier.
 	Remaining  *int32                             `json:"remaining,omitempty"`
