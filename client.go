@@ -6923,9 +6923,6 @@ type OrderedProduct struct {
 	Id          *string       `json:"id,omitempty"`
 	Image       *ProductImage `json:"image,omitempty"`
 
-	// ID of the import job that created this product.
-	ImportJob *string `json:"import_job,omitempty"`
-
 	// Set during import of products, usually an identifier from an external system.
 	ImportReferenceId *string `json:"import_reference_id,omitempty"`
 
@@ -7401,9 +7398,6 @@ type Product struct {
 	Id          *string       `json:"id,omitempty"`
 	Image       *ProductImage `json:"image,omitempty"`
 
-	// ID of the import job that created this product.
-	ImportJob *string `json:"import_job,omitempty"`
-
 	// Set during import of products, usually an identifier from an external system.
 	ImportReferenceId *string `json:"import_reference_id,omitempty"`
 
@@ -7419,6 +7413,38 @@ type Product struct {
 
 	// Id of VAT to use for product
 	VatId *string `json:"vat_id,omitempty"`
+}
+
+// ProductCreate defines model for ProductCreate.
+type ProductCreate struct {
+	Amount    *float64 `json:"amount,omitempty"`
+	Barcode   *string  `json:"barcode,omitempty"`
+	CompanyId string   `json:"company_id"`
+
+	// The cost of the product from a wholesaler.
+	//
+	// In the x100 format.
+	Cost        *int32        `json:"cost,omitempty"`
+	Description *string       `json:"description,omitempty"`
+	Image       *ProductImage `json:"image,omitempty"`
+
+	// ID of the import job that created this product.
+	ImportJobId *string `json:"import_job_id,omitempty"`
+
+	// Set during import of products, usually an identifier from an external system.
+	ImportReferenceId *string `json:"import_reference_id,omitempty"`
+
+	// List of product group ids product belongs to.
+	ProductGroups *[]string `json:"product_groups,omitempty"`
+	Sku           *string   `json:"sku,omitempty"`
+	StockLevel    *int32    `json:"stock_level,omitempty"`
+
+	// VAT exemption reason when having a VAT amount of 0%
+	TaxExemptionReason *string `json:"tax_exemption_reason,omitempty"`
+	Title              string  `json:"title"`
+
+	// Id of VAT to use for product
+	VatId string `json:"vat_id"`
 }
 
 // ProductField defines model for ProductField.
@@ -7499,6 +7525,31 @@ type ProductGroupsOrder []ProductGroupOrder
 type ProductImage struct {
 	// Link to product image
 	Thumb *string `json:"thumb,omitempty"`
+}
+
+// ProductUpdate defines model for ProductUpdate.
+type ProductUpdate struct {
+	Amount  *float64 `json:"amount,omitempty"`
+	Barcode *string  `json:"barcode,omitempty"`
+
+	// The cost of the product from a wholesaler.
+	//
+	// In the x100 format.
+	Cost        *int32        `json:"cost,omitempty"`
+	Description *string       `json:"description,omitempty"`
+	Image       *ProductImage `json:"image,omitempty"`
+
+	// List of product group ids product belongs to.
+	ProductGroups *[]string `json:"product_groups,omitempty"`
+	Sku           *string   `json:"sku,omitempty"`
+	StockLevel    *int32    `json:"stock_level,omitempty"`
+
+	// VAT exemption reason when having a VAT amount of 0%
+	TaxExemptionReason *string `json:"tax_exemption_reason,omitempty"`
+	Title              *string `json:"title,omitempty"`
+
+	// Id of VAT to use for product
+	VatId *string `json:"vat_id,omitempty"`
 }
 
 // Products defines model for Products.
@@ -13310,7 +13361,7 @@ type ListProductsLegacyParams struct {
 }
 
 // CreateProductJSONBody defines parameters for CreateProduct.
-type CreateProductJSONBody Product
+type CreateProductJSONBody ProductCreate
 
 // CreateProductParams defines parameters for CreateProduct.
 type CreateProductParams struct {
@@ -13340,7 +13391,7 @@ type GetProductParams struct {
 }
 
 // UpdateProductJSONBody defines parameters for UpdateProduct.
-type UpdateProductJSONBody Product
+type UpdateProductJSONBody ProductUpdate
 
 // UpdateProductParams defines parameters for UpdateProduct.
 type UpdateProductParams struct {
