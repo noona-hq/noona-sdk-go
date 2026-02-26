@@ -1,51 +1,31 @@
-# The Noona Golang SDK
+```markdown
+# Noona SDK for Go
 
-Noona SDK for the Go programming language.
+The Noona SDK for Go provides a set of tools and utilities to interact with Noona services using the Go programming language.
 
-## Installing
+## **Tech Stack**
+- **Language:** Go 1.24.0
+- **Frameworks:** Gin, Pongo2
+- **Key Dependencies:** 
+  - github.com/deepmap/oapi-codegen
+  - github.com/pkg/errors
+  - github.com/gin-gonic/gin
+  - github.com/go-playground/validator/v10
 
-```bash
-go get github.com/noona-hq/noona-sdk-go
-```
+## **Architecture / How it works**
+- **Modular Design:** The SDK is organized into modules for easy integration and scalability.
+- **OAPI-Codegen:** Utilizes OpenAPI code generation for type-safe API interactions.
+- **Error Handling:** Implements structured error handling using github.com/pkg/errors.
+- **Middleware Support:** Integrates with Gin middleware for enhanced request processing.
 
-## Usage
+## **Key Interfaces / API**
+- **Client Interface:** Provides methods to interact with Noona's core services.
+- **Event Subscriptions:** Supports subscribing to Noona's event streams for real-time data processing.
+- **Data Validation:** Includes validation utilities for ensuring data integrity before API calls.
 
-```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"net/http"
-
-	noona "github.com/noona-hq/noona-sdk-go"
-	"github.com/pkg/errors"
-)
-
-const (
-	noonaToken       = "<your-noona-token>"
-)
-
-func main() {
-	c, err := noona.New(noonaToken)
-	if err != nil {
-		panic(errors.Wrap(err, "failed to create client"))
-	}
-
-	resp, err := c.GetUserWithResponse(context.Background(), &noona.GetUserParams{})
-	if err != nil {
-		panic(errors.Wrap(err, "failed to get user"))
-	}
-
-	if resp.StatusCode() != http.StatusOK {
-		panic(errors.Errorf("failed to get user: %d", resp.StatusCode()))
-	}
-
-	user := resp.JSON200
-
-	// Do something with user
-	fmt.Println(*user.Email)
-}
-
-
+## **Dependencies**
+- **Noona Services:** 
+  - Noona Authentication Service
+  - Noona Data Processing Service
+  - Noona Event Bus
 ```
