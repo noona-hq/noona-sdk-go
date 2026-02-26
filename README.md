@@ -43,20 +43,19 @@ const noonaToken = "<your-noona-token>"
 
 func main() {
 	c, err := noona.New(noonaToken)
-	if err \!= nil {
+	if err != nil {
 		panic(errors.Wrap(err, "failed to create client"))
 	}
 
 	resp, err := c.GetUserWithResponse(context.Background(), &noona.GetUserParams{})
-	if err \!= nil {
+	if err != nil {
 		panic(errors.Wrap(err, "failed to get user"))
 	}
 
-	if resp.StatusCode() \!= http.StatusOK {
+	if resp.StatusCode() != http.StatusOK {
 		panic(errors.Errorf("failed to get user: %d", resp.StatusCode()))
 	}
 
 	fmt.Println(*resp.JSON200.Email)
 }
 ```
-
