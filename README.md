@@ -1,29 +1,62 @@
 # Noona SDK for Go
 
-The Noona SDK for Go provides a set of tools and utilities to interact with Noona services using the Go programming language.
+The Noona SDK for Go is an HTTP client library for interacting with the Noona API (`api.noona.is`). It is generated from the Noona OpenAPI spec using `oapi-codegen`.
 
-## **Tech Stack**
+## Tech Stack
+
 - **Language:** Go 1.24.0
-- **Frameworks:** Gin, Pongo2
-- **Key Dependencies:** 
-  - github.com/deepmap/oapi-codegen
-  - github.com/pkg/errors
-  - github.com/gin-gonic/gin
-  - github.com/go-playground/validator/v10
+- **Key Dependencies:**
+  - `github.com/deepmap/oapi-codegen` — OpenAPI code generation
+  - `github.com/pkg/errors` — structured error handling
 
-## **Architecture / How it works**
-- **Modular Design:** The SDK is organized into modules for easy integration and scalability.
-- **OAPI-Codegen:** Utilizes OpenAPI code generation for type-safe API interactions.
-- **Error Handling:** Implements structured error handling using github.com/pkg/errors.
-- **Middleware Support:** Integrates with Gin middleware for enhanced request processing.
+## Architecture / How it works
 
-## **Key Interfaces / API**
-- **Client Interface:** Provides methods to interact with Noona's core services.
-- **Event Subscriptions:** Supports subscribing to Noona's event streams for real-time data processing.
-- **Data Validation:** Includes validation utilities for ensuring data integrity before API calls.
+- **OAPI-Codegen:** The client is auto-generated from the Noona OpenAPI specification. Do not manually edit generated files.
+- **HTTP Client:** Makes typed HTTP calls to `https://api.noona.is`. Not a web framework — contains no server-side logic.
+- **Error Handling:** Structured error handling via `github.com/pkg/errors`.
 
-## **Dependencies**
-- **Noona Services:** 
-  - Noona Authentication Service
-  - Noona Data Processing Service
-  - Noona Event Bus
+## Key Interfaces / API
+
+- **Client:** Provides typed methods for all Noona API endpoints (e.g. `GetUserWithResponse`, etc.).
+
+## Installation
+
+```bash
+go get github.com/noona-hq/noona-sdk-go
+```
+
+## Usage
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+
+	noona "github.com/noona-hq/noona-sdk-go"
+	"github.com/pkg/errors"
+)
+
+const noonaToken = "<your-noona-token>"
+
+func main() {
+	c, err := noona.New(noonaToken)
+	if err \!= nil {
+		panic(errors.Wrap(err, "failed to create client"))
+	}
+
+	resp, err := c.GetUserWithResponse(context.Background(), &noona.GetUserParams{})
+	if err \!= nil {
+		panic(errors.Wrap(err, "failed to get user"))
+	}
+
+	if resp.StatusCode() \!= http.StatusOK {
+		panic(errors.Errorf("failed to get user: %d", resp.StatusCode()))
+	}
+
+	fmt.Println(*resp.JSON200.Email)
+}
+```
+
