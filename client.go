@@ -27,6 +27,11 @@ const (
 	OAuth_2_0Scopes       = "oAuth_2_0.Scopes"
 )
 
+// Defines values for AITranslationEntityType.
+const (
+	AITranslationEntityTypeEventType AITranslationEntityType = "event_type"
+)
+
 // Defines values for ActivityField.
 const (
 	ActivityFieldAfterPause         ActivityField = "after_pause"
@@ -1641,6 +1646,38 @@ const (
 	CreateVerificationRequestJSONBodyCertificationTypePodiatry                  CreateVerificationRequestJSONBodyCertificationType = "podiatry"
 	CreateVerificationRequestJSONBodyCertificationTypeTherapeuticMassageTherapy CreateVerificationRequestJSONBodyCertificationType = "therapeutic_massage_therapy"
 )
+
+// AITranslation defines model for AITranslation.
+type AITranslation struct {
+	// Map of field names to language translations
+	Translations *map[string]map[string]string `json:"translations,omitempty"`
+}
+
+// AITranslationCreate defines model for AITranslationCreate.
+type AITranslationCreate struct {
+	// The ID of the entity being translated
+	EntityId   string                  `json:"entity_id"`
+	EntityType AITranslationEntityType `json:"entity_type"`
+	Fields     []AITranslationField    `json:"fields"`
+
+	// The language code of the source text
+	SourceLanguage string `json:"source_language"`
+
+	// The language codes to translate to
+	TargetLanguages []string `json:"target_languages"`
+}
+
+// AITranslationEntityType defines model for AITranslationEntityType.
+type AITranslationEntityType string
+
+// AITranslationField defines model for AITranslationField.
+type AITranslationField struct {
+	// The field name being translated
+	Key string `json:"key"`
+
+	// The source text to translate
+	Text string `json:"text"`
+}
 
 // ActivateGoalRequest defines model for ActivateGoalRequest.
 type ActivateGoalRequest struct {
@@ -11114,6 +11151,9 @@ type GetSMSMessagesAggregateParams struct {
 // GetSMSMessagesAggregateParamsGroupBy defines parameters for GetSMSMessagesAggregate.
 type GetSMSMessagesAggregateParamsGroupBy string
 
+// GenerateAITranslationJSONBody defines parameters for GenerateAITranslation.
+type GenerateAITranslationJSONBody AITranslationCreate
+
 // ListAppsParams defines parameters for ListApps.
 type ListAppsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -14640,6 +14680,9 @@ type CreateCompanyJSONRequestBody CreateCompanyJSONBody
 // UpdateCompanyJSONRequestBody defines body for UpdateCompany for application/json ContentType.
 type UpdateCompanyJSONRequestBody UpdateCompanyJSONBody
 
+// GenerateAITranslationJSONRequestBody defines body for GenerateAITranslation for application/json ContentType.
+type GenerateAITranslationJSONRequestBody GenerateAITranslationJSONBody
+
 // CloneCompanyJSONRequestBody defines body for CloneCompany for application/json ContentType.
 type CloneCompanyJSONRequestBody CloneCompanyJSONBody
 
@@ -17162,6 +17205,11 @@ type ClientInterface interface {
 	// GetSMSMessagesAggregate request
 	GetSMSMessagesAggregate(ctx context.Context, companyId string, params *GetSMSMessagesAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GenerateAITranslation request with any body
+	GenerateAITranslationWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	GenerateAITranslation(ctx context.Context, companyId string, body GenerateAITranslationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListApps request
 	ListApps(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18885,6 +18933,30 @@ func (c *Client) GetEventsAggregate(ctx context.Context, companyId string, param
 
 func (c *Client) GetSMSMessagesAggregate(ctx context.Context, companyId string, params *GetSMSMessagesAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSMSMessagesAggregateRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateAITranslationWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateAITranslationRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateAITranslation(ctx context.Context, companyId string, body GenerateAITranslationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGenerateAITranslationRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -26730,6 +26802,53 @@ func NewGetSMSMessagesAggregateRequest(server string, companyId string, params *
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewGenerateAITranslationRequest calls the generic GenerateAITranslation builder with application/json body
+func NewGenerateAITranslationRequest(server string, companyId string, body GenerateAITranslationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGenerateAITranslationRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewGenerateAITranslationRequestWithBody generates requests for GenerateAITranslation with any type of body
+func NewGenerateAITranslationRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/ai_translations", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -52499,6 +52618,11 @@ type ClientWithResponsesInterface interface {
 	// GetSMSMessagesAggregate request
 	GetSMSMessagesAggregateWithResponse(ctx context.Context, companyId string, params *GetSMSMessagesAggregateParams, reqEditors ...RequestEditorFn) (*GetSMSMessagesAggregateResponse, error)
 
+	// GenerateAITranslation request with any body
+	GenerateAITranslationWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateAITranslationResponse, error)
+
+	GenerateAITranslationWithResponse(ctx context.Context, companyId string, body GenerateAITranslationJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateAITranslationResponse, error)
+
 	// ListApps request
 	ListAppsWithResponse(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*ListAppsResponse, error)
 
@@ -54428,6 +54552,28 @@ func (r GetSMSMessagesAggregateResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSMSMessagesAggregateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GenerateAITranslationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AITranslation
+}
+
+// Status returns HTTPResponse.Status
+func (r GenerateAITranslationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GenerateAITranslationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -62228,6 +62374,23 @@ func (c *ClientWithResponses) GetSMSMessagesAggregateWithResponse(ctx context.Co
 	return ParseGetSMSMessagesAggregateResponse(rsp)
 }
 
+// GenerateAITranslationWithBodyWithResponse request with arbitrary body returning *GenerateAITranslationResponse
+func (c *ClientWithResponses) GenerateAITranslationWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GenerateAITranslationResponse, error) {
+	rsp, err := c.GenerateAITranslationWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateAITranslationResponse(rsp)
+}
+
+func (c *ClientWithResponses) GenerateAITranslationWithResponse(ctx context.Context, companyId string, body GenerateAITranslationJSONRequestBody, reqEditors ...RequestEditorFn) (*GenerateAITranslationResponse, error) {
+	rsp, err := c.GenerateAITranslation(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateAITranslationResponse(rsp)
+}
+
 // ListAppsWithResponse request returning *ListAppsResponse
 func (c *ClientWithResponses) ListAppsWithResponse(ctx context.Context, companyId string, params *ListAppsParams, reqEditors ...RequestEditorFn) (*ListAppsResponse, error) {
 	rsp, err := c.ListApps(ctx, companyId, params, reqEditors...)
@@ -66944,6 +67107,32 @@ func ParseGetSMSMessagesAggregateResponse(rsp *http.Response) (*GetSMSMessagesAg
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest SMSMessagesAggregate
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGenerateAITranslationResponse parses an HTTP response from a GenerateAITranslationWithResponse call
+func ParseGenerateAITranslationResponse(rsp *http.Response) (*GenerateAITranslationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GenerateAITranslationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AITranslation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
