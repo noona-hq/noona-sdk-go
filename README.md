@@ -1,4 +1,3 @@
-```markdown
 # Noona SDK for Go
 
 The Noona SDK for Go provides a set of tools and utilities to interact with Noona services using the Go programming language.
@@ -28,4 +27,3 @@ The Noona SDK for Go provides a set of tools and utilities to interact with Noon
   - Noona Authentication Service
   - Noona Data Processing Service
   - Noona Event Bus
-```
