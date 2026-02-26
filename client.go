@@ -1668,7 +1668,7 @@ type AITranslation struct {
 // AITranslationCreate defines model for AITranslationCreate.
 type AITranslationCreate struct {
 	// The ID of the entity being translated
-	EntityId   string                  `json:"entity_id"`
+	EntityId   *string                 `json:"entity_id,omitempty"`
 	EntityType AITranslationEntityType `json:"entity_type"`
 	Fields     []AITranslationField    `json:"fields"`
 
