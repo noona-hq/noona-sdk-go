@@ -658,6 +658,18 @@ const (
 	IssuerTypeEmployee IssuerType = "employee"
 )
 
+// Defines values for LanguageCode.
+const (
+	Cs LanguageCode = "cs"
+	En LanguageCode = "en"
+	Es LanguageCode = "es"
+	Fr LanguageCode = "fr"
+	Is LanguageCode = "is"
+	Pl LanguageCode = "pl"
+	Pt LanguageCode = "pt"
+	Ru LanguageCode = "ru"
+)
+
 // Defines values for LineItemField.
 const (
 	LineItemFieldEmployee LineItemField = "employee"
@@ -6091,6 +6103,12 @@ type KindeUserMigration struct {
 	Name          *string `json:"name,omitempty"`
 }
 
+// LanguageCode defines model for LanguageCode.
+type LanguageCode string
+
+// LanguageCodes defines model for LanguageCodes.
+type LanguageCodes []LanguageCode
+
 // This schema is deprecated. Use `booking_question_answers` instead.
 type LegacyBookingQuestion struct {
 	Answer   *string `json:"answer,omitempty"`
@@ -6225,8 +6243,9 @@ type LineItems []LineItem
 
 // Locale defines model for Locale.
 type Locale struct {
-	MessagingLanguage *string `json:"messaging_language,omitempty"`
-	UiLanguage        *string `json:"ui_language,omitempty"`
+	AvailableLanguages *LanguageCodes `json:"available_languages,omitempty"`
+	MessagingLanguage  *string        `json:"messaging_language,omitempty"`
+	UiLanguage         *string        `json:"ui_language,omitempty"`
 }
 
 // Location defines model for Location.
