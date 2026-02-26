@@ -29,6 +29,7 @@ const (
 
 // Defines values for AITranslationEntityType.
 const (
+	AITranslationEntityTypeCompany   AITranslationEntityType = "company"
 	AITranslationEntityTypeEventType AITranslationEntityType = "event_type"
 )
 
