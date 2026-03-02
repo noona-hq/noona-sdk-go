@@ -363,6 +363,7 @@ const (
 	InvalidCard            CreatePaymentErrorCode = "invalidCard"
 	InvalidCardNumber      CreatePaymentErrorCode = "invalidCardNumber"
 	NotSufficientFunds     CreatePaymentErrorCode = "notSufficientFunds"
+	PaymentDeclined        CreatePaymentErrorCode = "paymentDeclined"
 	UnableToProcessPayment CreatePaymentErrorCode = "unableToProcessPayment"
 	UnknownPaymentError    CreatePaymentErrorCode = "unknownPaymentError"
 )
@@ -3799,6 +3800,7 @@ type CreatePaymentError struct {
 	// - `invalid_card`: The card is invalid.
 	// - `invalid_card_number`: The card number is invalid.
 	// - `expired_card`: The card is expired.
+	// - `payment_declined`: The payment was declined by the issuer.
 	// - `unknown_payment_error`: An unknown payment error occurred.
 	Code    *CreatePaymentErrorCode `json:"code,omitempty"`
 	Message string                  `json:"message"`
@@ -3811,6 +3813,7 @@ type CreatePaymentError struct {
 // - `invalid_card`: The card is invalid.
 // - `invalid_card_number`: The card number is invalid.
 // - `expired_card`: The card is expired.
+// - `payment_declined`: The payment was declined by the issuer.
 // - `unknown_payment_error`: An unknown payment error occurred.
 type CreatePaymentErrorCode string
 
