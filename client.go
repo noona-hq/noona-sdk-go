@@ -1814,6 +1814,7 @@ type AdminCompanyDetails struct {
 // AdminCompanyDetailsUser defines model for AdminCompanyDetailsUser.
 type AdminCompanyDetailsUser struct {
 	ActiveCompanyId *string `json:"active_company_id,omitempty"`
+	Email           *string `json:"email,omitempty"`
 	Id              *string `json:"id,omitempty"`
 	Name            *string `json:"name,omitempty"`
 	Role            *string `json:"role,omitempty"`
