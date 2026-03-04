@@ -10948,8 +10948,8 @@ type AdminListUsersParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 
-	// Search users by email
-	Email *string `form:"email,omitempty" json:"email,omitempty"`
+	// Search users by ID (exact match) or email (prefix match)
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
 }
 
 // AdminForceResetPasswordParams defines parameters for AdminForceResetPassword.
@@ -25336,9 +25336,9 @@ func NewAdminListUsersRequest(server string, params *AdminListUsersParams) (*htt
 
 	}
 
-	if params.Email != nil {
+	if params.Q != nil {
 
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "email", runtime.ParamLocationQuery, *params.Email); err != nil {
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "q", runtime.ParamLocationQuery, *params.Q); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
