@@ -10952,6 +10952,15 @@ type AdminListUsersParams struct {
 	Email *string `form:"email,omitempty" json:"email,omitempty"`
 }
 
+// AdminForceResetPasswordParams defines parameters for AdminForceResetPassword.
+type AdminForceResetPasswordParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AdminMoveUserJSONBody defines parameters for AdminMoveUser.
 type AdminMoveUserJSONBody AdminMoveUserRequest
 
@@ -17161,6 +17170,9 @@ type ClientInterface interface {
 	// AdminListUsers request
 	AdminListUsers(ctx context.Context, params *AdminListUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminForceResetPassword request
+	AdminForceResetPassword(ctx context.Context, userId string, params *AdminForceResetPasswordParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminMoveUser request with any body
 	AdminMoveUserWithBody(ctx context.Context, userId string, params *AdminMoveUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18657,6 +18669,18 @@ func (c *Client) AdminListSecretaries(ctx context.Context, params *AdminListSecr
 
 func (c *Client) AdminListUsers(ctx context.Context, params *AdminListUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminListUsersRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminForceResetPassword(ctx context.Context, userId string, params *AdminForceResetPasswordParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminForceResetPasswordRequest(c.Server, userId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -25331,6 +25355,76 @@ func NewAdminListUsersRequest(server string, params *AdminListUsersParams) (*htt
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminForceResetPasswordRequest generates requests for AdminForceResetPassword
+func NewAdminForceResetPasswordRequest(server string, userId string, params *AdminForceResetPasswordParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_id", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/users/%s/force-reset-password", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -52574,6 +52668,9 @@ type ClientWithResponsesInterface interface {
 	// AdminListUsers request
 	AdminListUsersWithResponse(ctx context.Context, params *AdminListUsersParams, reqEditors ...RequestEditorFn) (*AdminListUsersResponse, error)
 
+	// AdminForceResetPassword request
+	AdminForceResetPasswordWithResponse(ctx context.Context, userId string, params *AdminForceResetPasswordParams, reqEditors ...RequestEditorFn) (*AdminForceResetPasswordResponse, error)
+
 	// AdminMoveUser request with any body
 	AdminMoveUserWithBodyWithResponse(ctx context.Context, userId string, params *AdminMoveUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminMoveUserResponse, error)
 
@@ -54175,6 +54272,27 @@ func (r AdminListUsersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminListUsersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminForceResetPasswordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminForceResetPasswordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminForceResetPasswordResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -62180,6 +62298,15 @@ func (c *ClientWithResponses) AdminListUsersWithResponse(ctx context.Context, pa
 	return ParseAdminListUsersResponse(rsp)
 }
 
+// AdminForceResetPasswordWithResponse request returning *AdminForceResetPasswordResponse
+func (c *ClientWithResponses) AdminForceResetPasswordWithResponse(ctx context.Context, userId string, params *AdminForceResetPasswordParams, reqEditors ...RequestEditorFn) (*AdminForceResetPasswordResponse, error) {
+	rsp, err := c.AdminForceResetPassword(ctx, userId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminForceResetPasswordResponse(rsp)
+}
+
 // AdminMoveUserWithBodyWithResponse request with arbitrary body returning *AdminMoveUserResponse
 func (c *ClientWithResponses) AdminMoveUserWithBodyWithResponse(ctx context.Context, userId string, params *AdminMoveUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminMoveUserResponse, error) {
 	rsp, err := c.AdminMoveUserWithBody(ctx, userId, params, contentType, body, reqEditors...)
@@ -66636,6 +66763,22 @@ func ParseAdminListUsersResponse(rsp *http.Response) (*AdminListUsersResponse, e
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseAdminForceResetPasswordResponse parses an HTTP response from a AdminForceResetPasswordWithResponse call
+func ParseAdminForceResetPasswordResponse(rsp *http.Response) (*AdminForceResetPasswordResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminForceResetPasswordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
