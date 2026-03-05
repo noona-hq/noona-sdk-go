@@ -10103,6 +10103,9 @@ type VerifoneTerminalOption struct {
 	// Display name for the terminal
 	Name *string `json:"name,omitempty"`
 
+	// Verifone Point of Interaction ID (used for addressing the terminal in transactions)
+	PoiId *string `json:"poiId,omitempty"`
+
 	// Verifone POSCloud API version
 	PosCloudVersion *string `json:"posCloudVersion,omitempty"`
 
