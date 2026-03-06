@@ -10106,6 +10106,9 @@ type VerifoneTerminalOption struct {
 	// Verifone Point of Interaction ID (used for addressing the terminal in transactions)
 	PoiId *string `json:"poiId,omitempty"`
 
+	// Terminal connection state (e.g. "Online", "Offline")
+	PoiState *string `json:"poiState,omitempty"`
+
 	// Verifone POSCloud API version
 	PosCloudVersion *string `json:"posCloudVersion,omitempty"`
 
