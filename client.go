@@ -459,6 +459,7 @@ const (
 	EntitlementFeatureIDBasicRoles                  EntitlementFeatureID = "basic_roles"
 	EntitlementFeatureIDBookableResources           EntitlementFeatureID = "bookable_resources"
 	EntitlementFeatureIDBookingHistory              EntitlementFeatureID = "booking_history"
+	EntitlementFeatureIDBookingOffers               EntitlementFeatureID = "booking_offers"
 	EntitlementFeatureIDBookingScreening            EntitlementFeatureID = "booking_screening"
 	EntitlementFeatureIDBookingsWidget              EntitlementFeatureID = "bookings_widget"
 	EntitlementFeatureIDCalendarNavigation          EntitlementFeatureID = "calendar_navigation"
