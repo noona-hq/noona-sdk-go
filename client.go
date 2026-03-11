@@ -50,11 +50,13 @@ const (
 	ActivityFieldPause              ActivityField = "pause"
 	ActivityFieldPhoneCountryCode   ActivityField = "phone_country_code"
 	ActivityFieldPhoneNumber        ActivityField = "phone_number"
+	ActivityFieldReminderEmail      ActivityField = "reminder_email"
 	ActivityFieldSpace              ActivityField = "space"
 	ActivityFieldStartsAt           ActivityField = "starts_at"
 	ActivityFieldStatus             ActivityField = "status"
 	ActivityFieldTitle              ActivityField = "title"
 	ActivityFieldUnconfirmed        ActivityField = "unconfirmed"
+	ActivityFieldWantsSms           ActivityField = "wants_sms"
 )
 
 // Defines values for ActivityAction.
