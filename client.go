@@ -8925,6 +8925,17 @@ type ScheduledEventUpdate struct {
 	Tiers            *[]ScheduledEventTier `json:"tiers,omitempty"`
 }
 
+// Behavior options for updating a scheduled event.
+type ScheduledEventUpdateBehavior struct {
+	// Whether to notify customers about the scheduled event update.
+	//
+	// When true, customers with bookings for this scheduled event will receive
+	// a notification about the rescheduled booking.
+	//
+	// When false, no notifications will be sent.
+	Notify *bool `json:"notify,omitempty"`
+}
+
 // Variation within a tier (e.g., Adult vs Child pricing).
 type ScheduledEventVariation struct {
 	// A map of translations for a given attribute.
@@ -13928,7 +13939,8 @@ type UpdateScheduledEventParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand   *Expand                       `form:"expand,omitempty" json:"expand,omitempty"`
+	Behavior *ScheduledEventUpdateBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
 }
 
 // CreateSMSMessageJSONBody defines parameters for CreateSMSMessage.
@@ -46788,6 +46800,16 @@ func NewUpdateScheduledEventRequestWithBody(server string, scheduledEventId stri
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	if params.Behavior != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Behavior); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("behavior", string(queryParamBuf))
 		}
 
 	}
