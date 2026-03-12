@@ -13919,6 +13919,9 @@ type DeleteScheduledEventParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// Whether to notify customers about the cancellation of their bookings.
+	Notify *bool `form:"notify,omitempty" json:"notify,omitempty"`
 }
 
 // GetScheduledEventParams defines parameters for GetScheduledEvent.
@@ -46640,6 +46643,22 @@ func NewDeleteScheduledEventRequest(server string, scheduledEventId string, para
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Notify != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "notify", runtime.ParamLocationQuery, *params.Notify); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
