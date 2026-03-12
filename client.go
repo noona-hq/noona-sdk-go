@@ -3959,9 +3959,10 @@ type Customer struct {
 	Name            *string                    `json:"name,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	NextEvent *ExpandableEvent `json:"next_event,omitempty"`
-	Notes     *string          `json:"notes,omitempty"`
-	Notices   *Notices         `json:"notices,omitempty"`
+	NextEvent               *ExpandableEvent         `json:"next_event,omitempty"`
+	Notes                   *string                  `json:"notes,omitempty"`
+	Notices                 *Notices                 `json:"notices,omitempty"`
+	NotificationPreferences *NotificationPreferences `json:"notification_preferences,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	ParentMarketplaceUser *ExpandableMarketplaceUser `json:"parent_marketplace_user,omitempty"`
