@@ -8722,6 +8722,14 @@ type ScheduledEvent struct {
 	// Whether customers can cancel their booking.
 	AllowCancellation *bool `json:"allow_cancellation,omitempty"`
 
+	// Custom success message displayed after a successful booking.
+	BookingSuccessMessage *string `json:"booking_success_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingSuccessMessageTranslations *TranslationMap `json:"booking_success_message_translations,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company   *ExpandableCompany `json:"company,omitempty"`
 	CreatedAt *time.Time         `json:"created_at,omitempty"`
@@ -8792,6 +8800,11 @@ type ScheduledEventBookingQuestions []ScheduledEventBookingQuestion
 // Request body for creating a scheduled event.
 type ScheduledEventCreate struct {
 	AllowCancellation *bool `json:"allow_cancellation,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingSuccessMessageTranslations *TranslationMap `json:"booking_success_message_translations,omitempty"`
 
 	// Company ID
 	Company             string `json:"company"`
@@ -8904,8 +8917,13 @@ type ScheduledEventTierResponse struct {
 
 // Request body for updating a scheduled event.
 type ScheduledEventUpdate struct {
-	AllowCancellation   *bool `json:"allow_cancellation,omitempty"`
-	CustomerSelectsTier *bool `json:"customer_selects_tier,omitempty"`
+	AllowCancellation *bool `json:"allow_cancellation,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	BookingSuccessMessageTranslations *TranslationMap `json:"booking_success_message_translations,omitempty"`
+	CustomerSelectsTier               *bool           `json:"customer_selects_tier,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
