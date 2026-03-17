@@ -3257,9 +3257,16 @@ type CompanyCreate struct {
 	// Selected event type category Ids for service companies
 	EventTypeCategoryGroupIds *[]string      `json:"event_type_category_group_ids,omitempty"`
 	Location                  LocationCreate `json:"location"`
-	PhoneCountryCode          *string        `json:"phone_country_code,omitempty"`
-	PhoneNumber               *string        `json:"phone_number,omitempty"`
-	ProfileImage              *Image         `json:"profile_image,omitempty"`
+
+	// Opening hours to list on the company's profile on the marketplace.
+	//
+	// Has no effect on when the calendar is bookable.
+	//
+	// Array of seven (7) items, 0 being Monday and 6 Sunday. Or 0 being Sunday. Nobody really knows.
+	OpeningHours     *OpeningHours `json:"opening_hours,omitempty"`
+	PhoneCountryCode *string       `json:"phone_country_code,omitempty"`
+	PhoneNumber      *string       `json:"phone_number,omitempty"`
+	ProfileImage     *Image        `json:"profile_image,omitempty"`
 
 	// Information about how the user heard about Noona
 	Referer *Referer `json:"referer,omitempty"`
