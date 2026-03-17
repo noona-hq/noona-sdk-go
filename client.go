@@ -1569,6 +1569,14 @@ const (
 	VoucherTemplateUpdateTypeService VoucherTemplateUpdateType = "service"
 )
 
+// Defines values for VoucherTransactionOrigin.
+const (
+	Checkin     VoucherTransactionOrigin = "checkin"
+	Hq          VoucherTransactionOrigin = "hq"
+	Marketplace VoucherTransactionOrigin = "marketplace"
+	Pos         VoucherTransactionOrigin = "pos"
+)
+
 // Defines values for WaitlistEntryField.
 const (
 	WaitlistEntryFieldEmployee WaitlistEntryField = "employee"
@@ -9009,7 +9017,7 @@ type ScheduledEventsFilter struct {
 }
 
 // The search query.
-type Search string
+type SearchQuery string
 
 // Secretaries defines model for Secretaries.
 type Secretaries []Secretary
@@ -10200,8 +10208,9 @@ type Voucher struct {
 	Status      *VoucherStatus `json:"status,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Template  *ExpandableVoucherTemplate `json:"template,omitempty"`
-	UpdatedAt *time.Time                 `json:"updated_at,omitempty"`
+	Template     *ExpandableVoucherTemplate `json:"template,omitempty"`
+	Transactions *[]VoucherTransaction      `json:"transactions,omitempty"`
+	UpdatedAt    *time.Time                 `json:"updated_at,omitempty"`
 }
 
 // VoucherStatus defines model for Voucher.Status.
@@ -10552,6 +10561,20 @@ type VoucherTemplates []VoucherTemplate
 // VoucherTemplatesResponse defines model for VoucherTemplatesResponse.
 type VoucherTemplatesResponse []VoucherTemplateResponse
 
+// VoucherTransaction defines model for VoucherTransaction.
+type VoucherTransaction struct {
+	// The amount associated with this transaction. Usually 1 for single-use and multi-use vouchers but can be any amount within the credit of an amount voucher.
+	Amount    *float64   `json:"amount,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	CreatedBy *ExpandableActor          `json:"created_by,omitempty"`
+	Origin    *VoucherTransactionOrigin `json:"origin,omitempty"`
+}
+
+// VoucherTransactionOrigin defines model for VoucherTransactionOrigin.
+type VoucherTransactionOrigin string
+
 // Vouchers defines model for Vouchers.
 type Vouchers []Voucher
 
@@ -10848,6 +10871,9 @@ type String string
 
 // Expand defines model for expand.
 type Expand []string
+
+// Search defines model for search.
+type Search string
 
 // Select defines model for select.
 type Select []string
