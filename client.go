@@ -4101,6 +4101,11 @@ type DeletionResult struct {
 // The subscriptions current dunning state.
 type DunningStatus string
 
+// DuplicateResourceRequest defines model for DuplicateResourceRequest.
+type DuplicateResourceRequest struct {
+	Count int32 `json:"count"`
+}
+
 // The customers duplicate status.
 //
 // If `approved` the customer has been approved as a duplicate.
@@ -13752,6 +13757,18 @@ type UpdateResourceParams struct {
 	Unset  *ResourceFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
+// DuplicateResourceJSONBody defines parameters for DuplicateResource.
+type DuplicateResourceJSONBody DuplicateResourceRequest
+
+// DuplicateResourceParams defines parameters for DuplicateResource.
+type DuplicateResourceParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateRoleJSONBody defines parameters for CreateRole.
 type CreateRoleJSONBody RoleInput
 
@@ -14992,6 +15009,9 @@ type CreateResourceJSONRequestBody CreateResourceJSONBody
 
 // UpdateResourceJSONRequestBody defines body for UpdateResource for application/json ContentType.
 type UpdateResourceJSONRequestBody UpdateResourceJSONBody
+
+// DuplicateResourceJSONRequestBody defines body for DuplicateResource for application/json ContentType.
+type DuplicateResourceJSONRequestBody DuplicateResourceJSONBody
 
 // CreateRoleJSONRequestBody defines body for CreateRole for application/json ContentType.
 type CreateRoleJSONRequestBody CreateRoleJSONBody
@@ -18145,6 +18165,11 @@ type ClientInterface interface {
 	UpdateResourceWithBody(ctx context.Context, resourceId string, params *UpdateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DuplicateResource request with any body
+	DuplicateResourceWithBody(ctx context.Context, resourceId string, params *DuplicateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DuplicateResource(ctx context.Context, resourceId string, params *DuplicateResourceParams, body DuplicateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateRole request with any body
 	CreateRoleWithBody(ctx context.Context, params *CreateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -22645,6 +22670,30 @@ func (c *Client) UpdateResourceWithBody(ctx context.Context, resourceId string, 
 
 func (c *Client) UpdateResource(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateResourceRequest(c.Server, resourceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DuplicateResourceWithBody(ctx context.Context, resourceId string, params *DuplicateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDuplicateResourceRequestWithBody(c.Server, resourceId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DuplicateResource(ctx context.Context, resourceId string, params *DuplicateResourceParams, body DuplicateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDuplicateResourceRequest(c.Server, resourceId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -45074,6 +45123,89 @@ func NewUpdateResourceRequestWithBody(server string, resourceId string, params *
 	return req, nil
 }
 
+// NewDuplicateResourceRequest calls the generic DuplicateResource builder with application/json body
+func NewDuplicateResourceRequest(server string, resourceId string, params *DuplicateResourceParams, body DuplicateResourceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDuplicateResourceRequestWithBody(server, resourceId, params, "application/json", bodyReader)
+}
+
+// NewDuplicateResourceRequestWithBody generates requests for DuplicateResource with any type of body
+func NewDuplicateResourceRequestWithBody(server string, resourceId string, params *DuplicateResourceParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "resource_id", runtime.ParamLocationPath, resourceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/resources/%s/duplicate", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateRoleRequest calls the generic CreateRole builder with application/json body
 func NewCreateRoleRequest(server string, params *CreateRoleParams, body CreateRoleJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -53670,6 +53802,11 @@ type ClientWithResponsesInterface interface {
 
 	UpdateResourceWithResponse(ctx context.Context, resourceId string, params *UpdateResourceParams, body UpdateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateResourceResponse, error)
 
+	// DuplicateResource request with any body
+	DuplicateResourceWithBodyWithResponse(ctx context.Context, resourceId string, params *DuplicateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DuplicateResourceResponse, error)
+
+	DuplicateResourceWithResponse(ctx context.Context, resourceId string, params *DuplicateResourceParams, body DuplicateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*DuplicateResourceResponse, error)
+
 	// CreateRole request with any body
 	CreateRoleWithBodyWithResponse(ctx context.Context, params *CreateRoleParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRoleResponse, error)
 
@@ -59864,6 +60001,28 @@ func (r UpdateResourceResponse) StatusCode() int {
 	return 0
 }
 
+type DuplicateResourceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Resource
+}
+
+// Status returns HTTPResponse.Status
+func (r DuplicateResourceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DuplicateResourceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateRoleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -65248,6 +65407,23 @@ func (c *ClientWithResponses) UpdateResourceWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseUpdateResourceResponse(rsp)
+}
+
+// DuplicateResourceWithBodyWithResponse request with arbitrary body returning *DuplicateResourceResponse
+func (c *ClientWithResponses) DuplicateResourceWithBodyWithResponse(ctx context.Context, resourceId string, params *DuplicateResourceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DuplicateResourceResponse, error) {
+	rsp, err := c.DuplicateResourceWithBody(ctx, resourceId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDuplicateResourceResponse(rsp)
+}
+
+func (c *ClientWithResponses) DuplicateResourceWithResponse(ctx context.Context, resourceId string, params *DuplicateResourceParams, body DuplicateResourceJSONRequestBody, reqEditors ...RequestEditorFn) (*DuplicateResourceResponse, error) {
+	rsp, err := c.DuplicateResource(ctx, resourceId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDuplicateResourceResponse(rsp)
 }
 
 // CreateRoleWithBodyWithResponse request with arbitrary body returning *CreateRoleResponse
@@ -73131,6 +73307,32 @@ func ParseUpdateResourceResponse(rsp *http.Response) (*UpdateResourceResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Resource
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDuplicateResourceResponse parses an HTTP response from a DuplicateResourceWithResponse call
+func ParseDuplicateResourceResponse(rsp *http.Response) (*DuplicateResourceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DuplicateResourceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []Resource
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
