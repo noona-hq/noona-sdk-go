@@ -737,12 +737,13 @@ const (
 
 // Defines values for NotificationCategory.
 const (
-	NotificationCategoryBookingOffers       NotificationCategory = "booking_offers"
-	NotificationCategoryOtherOnlineBookings NotificationCategory = "other_online_bookings"
-	NotificationCategoryOwnOnlineBookings   NotificationCategory = "own_online_bookings"
-	NotificationCategoryPayments            NotificationCategory = "payments"
-	NotificationCategoryStaffBookingUpdates NotificationCategory = "staff_booking_updates"
-	NotificationCategoryWaitlist            NotificationCategory = "waitlist"
+	NotificationCategoryBookingOffers          NotificationCategory = "booking_offers"
+	NotificationCategoryOtherOnlineBookings    NotificationCategory = "other_online_bookings"
+	NotificationCategoryOwnOnlineBookings      NotificationCategory = "own_online_bookings"
+	NotificationCategoryPayments               NotificationCategory = "payments"
+	NotificationCategoryScheduledEventBookings NotificationCategory = "scheduled_event_bookings"
+	NotificationCategoryStaffBookingUpdates    NotificationCategory = "staff_booking_updates"
+	NotificationCategoryWaitlist               NotificationCategory = "waitlist"
 )
 
 // Defines values for NotificationChannel.
@@ -4329,6 +4330,9 @@ type EmployeeNotificationSettings struct {
 
 	// Notification settings for payment events
 	Payments *PaymentNotifications `json:"payments,omitempty"`
+
+	// Notification settings for booking events
+	ScheduledEventBookings *BookingNotifications `json:"scheduled_event_bookings,omitempty"`
 
 	// Notification settings for booking events
 	StaffBookingUpdates *BookingNotifications `json:"staff_booking_updates,omitempty"`
