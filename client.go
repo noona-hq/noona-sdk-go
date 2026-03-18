@@ -1924,6 +1924,33 @@ type AdminMoveUserRequest struct {
 	SourceCompanyId string `json:"source_company_id"`
 }
 
+// AdminSmsRemindersBulkMigrationFailure defines model for AdminSmsRemindersBulkMigrationFailure.
+type AdminSmsRemindersBulkMigrationFailure struct {
+	CompanyId *string `json:"company_id,omitempty"`
+	Error     *string `json:"error,omitempty"`
+}
+
+// AdminSmsRemindersBulkMigrationRequest defines model for AdminSmsRemindersBulkMigrationRequest.
+type AdminSmsRemindersBulkMigrationRequest struct {
+	// If provided, only these companies are migrated. Otherwise all unmigrated companies are processed.
+	CompanyIds *[]string `json:"company_ids,omitempty"`
+
+	// If true, return count without migrating
+	DryRun *bool `json:"dry_run,omitempty"`
+
+	// Max companies to process when company_ids is not provided. Default 100, max 1000.
+	Limit *int32 `json:"limit,omitempty"`
+}
+
+// AdminSmsRemindersBulkMigrationResult defines model for AdminSmsRemindersBulkMigrationResult.
+type AdminSmsRemindersBulkMigrationResult struct {
+	Failed   *int32                                   `json:"failed,omitempty"`
+	Failures *[]AdminSmsRemindersBulkMigrationFailure `json:"failures,omitempty"`
+	Migrated *int32                                   `json:"migrated,omitempty"`
+	Skipped  *int32                                   `json:"skipped,omitempty"`
+	Total    *int32                                   `json:"total,omitempty"`
+}
+
 // AdminStaffWorkHoursBulkMigrationFailure defines model for AdminStaffWorkHoursBulkMigrationFailure.
 type AdminStaffWorkHoursBulkMigrationFailure struct {
 	CompanyId *string `json:"company_id,omitempty"`
@@ -11009,6 +11036,9 @@ type AdminAssignSecretaryToCompanyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminBulkMigrateSmsRemindersJSONBody defines parameters for AdminBulkMigrateSmsReminders.
+type AdminBulkMigrateSmsRemindersJSONBody AdminSmsRemindersBulkMigrationRequest
+
 // AdminBulkMigrateStaffWorkHoursJSONBody defines parameters for AdminBulkMigrateStaffWorkHours.
 type AdminBulkMigrateStaffWorkHoursJSONBody AdminStaffWorkHoursBulkMigrationRequest
 
@@ -14786,6 +14816,9 @@ type AdminUpdateCompanyJSONRequestBody AdminUpdateCompanyJSONBody
 // AdminAssignSecretaryToCompanyJSONRequestBody defines body for AdminAssignSecretaryToCompany for application/json ContentType.
 type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJSONBody
 
+// AdminBulkMigrateSmsRemindersJSONRequestBody defines body for AdminBulkMigrateSmsReminders for application/json ContentType.
+type AdminBulkMigrateSmsRemindersJSONRequestBody AdminBulkMigrateSmsRemindersJSONBody
+
 // AdminBulkMigrateStaffWorkHoursJSONRequestBody defines body for AdminBulkMigrateStaffWorkHours for application/json ContentType.
 type AdminBulkMigrateStaffWorkHoursJSONRequestBody AdminBulkMigrateStaffWorkHoursJSONBody
 
@@ -17259,6 +17292,11 @@ type ClientInterface interface {
 
 	AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminBulkMigrateSmsReminders request with any body
+	AdminBulkMigrateSmsRemindersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminBulkMigrateSmsReminders(ctx context.Context, body AdminBulkMigrateSmsRemindersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminBulkMigrateStaffWorkHours request with any body
 	AdminBulkMigrateStaffWorkHoursWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18726,6 +18764,30 @@ func (c *Client) AdminAssignSecretaryToCompanyWithBody(ctx context.Context, comp
 
 func (c *Client) AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminAssignSecretaryToCompanyRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBulkMigrateSmsRemindersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBulkMigrateSmsRemindersRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBulkMigrateSmsReminders(ctx context.Context, body AdminBulkMigrateSmsRemindersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBulkMigrateSmsRemindersRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -25300,6 +25362,46 @@ func NewAdminAssignSecretaryToCompanyRequestWithBody(server string, companyId st
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminBulkMigrateSmsRemindersRequest calls the generic AdminBulkMigrateSmsReminders builder with application/json body
+func NewAdminBulkMigrateSmsRemindersRequest(server string, body AdminBulkMigrateSmsRemindersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminBulkMigrateSmsRemindersRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminBulkMigrateSmsRemindersRequestWithBody generates requests for AdminBulkMigrateSmsReminders with any type of body
+func NewAdminBulkMigrateSmsRemindersRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/sms_reminders")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -52895,6 +52997,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminAssignSecretaryToCompanyWithResponse(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminAssignSecretaryToCompanyResponse, error)
 
+	// AdminBulkMigrateSmsReminders request with any body
+	AdminBulkMigrateSmsRemindersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error)
+
+	AdminBulkMigrateSmsRemindersWithResponse(ctx context.Context, body AdminBulkMigrateSmsRemindersJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error)
+
 	// AdminBulkMigrateStaffWorkHours request with any body
 	AdminBulkMigrateStaffWorkHoursWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateStaffWorkHoursResponse, error)
 
@@ -54449,6 +54556,28 @@ func (r AdminAssignSecretaryToCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminAssignSecretaryToCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminBulkMigrateSmsRemindersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminSmsRemindersBulkMigrationResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminBulkMigrateSmsRemindersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminBulkMigrateSmsRemindersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -62528,6 +62657,23 @@ func (c *ClientWithResponses) AdminAssignSecretaryToCompanyWithResponse(ctx cont
 	return ParseAdminAssignSecretaryToCompanyResponse(rsp)
 }
 
+// AdminBulkMigrateSmsRemindersWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateSmsRemindersResponse
+func (c *ClientWithResponses) AdminBulkMigrateSmsRemindersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error) {
+	rsp, err := c.AdminBulkMigrateSmsRemindersWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBulkMigrateSmsRemindersResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminBulkMigrateSmsRemindersWithResponse(ctx context.Context, body AdminBulkMigrateSmsRemindersJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error) {
+	rsp, err := c.AdminBulkMigrateSmsReminders(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBulkMigrateSmsRemindersResponse(rsp)
+}
+
 // AdminBulkMigrateStaffWorkHoursWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateStaffWorkHoursResponse
 func (c *ClientWithResponses) AdminBulkMigrateStaffWorkHoursWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateStaffWorkHoursResponse, error) {
 	rsp, err := c.AdminBulkMigrateStaffWorkHoursWithBody(ctx, contentType, body, reqEditors...)
@@ -66967,6 +67113,32 @@ func ParseAdminAssignSecretaryToCompanyResponse(rsp *http.Response) (*AdminAssig
 	response := &AdminAssignSecretaryToCompanyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminBulkMigrateSmsRemindersResponse parses an HTTP response from a AdminBulkMigrateSmsRemindersWithResponse call
+func ParseAdminBulkMigrateSmsRemindersResponse(rsp *http.Response) (*AdminBulkMigrateSmsRemindersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminBulkMigrateSmsRemindersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminSmsRemindersBulkMigrationResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
