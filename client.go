@@ -457,6 +457,7 @@ const (
 // Defines values for EntitlementFeatureID.
 const (
 	EntitlementFeatureIDActivityLog                 EntitlementFeatureID = "activity_log"
+	EntitlementFeatureIDApps                        EntitlementFeatureID = "apps"
 	EntitlementFeatureIDBasicPos                    EntitlementFeatureID = "basic_pos"
 	EntitlementFeatureIDBasicRoles                  EntitlementFeatureID = "basic_roles"
 	EntitlementFeatureIDBookableResources           EntitlementFeatureID = "bookable_resources"
