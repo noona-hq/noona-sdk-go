@@ -1375,6 +1375,11 @@ const (
 	SubtransactionDataPrePaymentTypePrePayment SubtransactionDataPrePaymentType = "pre_payment"
 )
 
+// Defines values for SubtransactionDataStraumurTerminalType.
+const (
+	Straumur SubtransactionDataStraumurTerminalType = "straumur"
+)
+
 // Defines values for SubtransactionDataTerminalType.
 const (
 	SubtransactionDataTerminalTypeTerminal SubtransactionDataTerminalType = "terminal"
@@ -1415,6 +1420,7 @@ const (
 const (
 	Istari           TerminalProvider = "Istari"
 	MPAS             TerminalProvider = "MPAS"
+	StraumurTerminal TerminalProvider = "StraumurTerminal"
 	VerifoneTerminal TerminalProvider = "VerifoneTerminal"
 )
 
@@ -9231,6 +9237,45 @@ type SpacesFilter struct {
 	Types *[]SpaceType `json:"types,omitempty"`
 }
 
+// StraumurConnectRequest defines model for StraumurConnectRequest.
+type StraumurConnectRequest struct {
+	// Straumur API key
+	ApiKey string `json:"api_key"`
+
+	// Straumur merchant ID
+	MerchantId string `json:"merchant_id"`
+}
+
+// StraumurConnection defines model for StraumurConnection.
+type StraumurConnection struct {
+	// True if the user has Straumur credentials saved
+	Connected *bool `json:"connected,omitempty"`
+}
+
+// StraumurTerminalOption defines model for StraumurTerminalOption.
+type StraumurTerminalOption struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Issuer *ExpandableIssuer `json:"issuer,omitempty"`
+
+	// Adyen unique device ID
+	TerminalId *string `json:"terminal_id,omitempty"`
+}
+
+// StraumurTerminalUpdate defines model for StraumurTerminalUpdate.
+type StraumurTerminalUpdate struct {
+	// Optional description for the terminal
+	Description *string `json:"description,omitempty"`
+
+	// User ID or Company ID to attach the terminal to. Set to empty string to disconnect.
+	Issuer string `json:"issuer"`
+
+	// Straumur terminal device ID
+	TerminalId string `json:"terminal_id"`
+}
+
+// StraumurTerminals defines model for StraumurTerminals.
+type StraumurTerminals []StraumurTerminalOption
+
 // The Server-Sent Event names that will be emitted by the generic stream endpoint.
 //
 // **Usage with JavaScript EventSource:**
@@ -9442,6 +9487,16 @@ type SubtransactionDataPrePayment struct {
 
 // SubtransactionDataPrePaymentType defines model for SubtransactionDataPrePayment.Type.
 type SubtransactionDataPrePaymentType string
+
+// SubtransactionDataStraumurTerminal defines model for SubtransactionDataStraumurTerminal.
+type SubtransactionDataStraumurTerminal struct {
+	MerchantId string                                 `json:"merchant_id"`
+	TerminalId string                                 `json:"terminal_id"`
+	Type       SubtransactionDataStraumurTerminalType `json:"type"`
+}
+
+// SubtransactionDataStraumurTerminalType defines model for SubtransactionDataStraumurTerminal.Type.
+type SubtransactionDataStraumurTerminalType string
 
 // SubtransactionDataTerminal defines model for SubtransactionDataTerminal.
 type SubtransactionDataTerminal struct {
@@ -9922,6 +9977,7 @@ type User struct {
 type UserConnections struct {
 	Adyen    *AdyenConnection       `json:"adyen,omitempty"`
 	Google   *UserConnectionsGoogle `json:"google,omitempty"`
+	Straumur *StraumurConnection    `json:"straumur,omitempty"`
 	Teya     *TeyaConnection        `json:"teya,omitempty"`
 	Verifone *VerifoneConnection    `json:"verifone,omitempty"`
 }
@@ -13160,6 +13216,48 @@ type UpdateSaltpayTerminalParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// DisconnectStraumurParams defines parameters for DisconnectStraumur.
+type DisconnectStraumurParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ConnectStraumurJSONBody defines parameters for ConnectStraumur.
+type ConnectStraumurJSONBody StraumurConnectRequest
+
+// ConnectStraumurParams defines parameters for ConnectStraumur.
+type ConnectStraumurParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListStraumurTerminalsParams defines parameters for ListStraumurTerminals.
+type ListStraumurTerminalsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateStraumurTerminalJSONBody defines parameters for UpdateStraumurTerminal.
+type UpdateStraumurTerminalJSONBody StraumurTerminalUpdate
+
+// UpdateStraumurTerminalParams defines parameters for UpdateStraumurTerminal.
+type UpdateStraumurTerminalParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // DisconnectVerifoneParams defines parameters for DisconnectVerifone.
 type DisconnectVerifoneParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15062,6 +15160,12 @@ type LinkSaltpayBankAccountJSONRequestBody LinkSaltpayBankAccountJSONBody
 
 // UpdateSaltpayTerminalJSONRequestBody defines body for UpdateSaltpayTerminal for application/json ContentType.
 type UpdateSaltpayTerminalJSONRequestBody UpdateSaltpayTerminalJSONBody
+
+// ConnectStraumurJSONRequestBody defines body for ConnectStraumur for application/json ContentType.
+type ConnectStraumurJSONRequestBody ConnectStraumurJSONBody
+
+// UpdateStraumurTerminalJSONRequestBody defines body for UpdateStraumurTerminal for application/json ContentType.
+type UpdateStraumurTerminalJSONRequestBody UpdateStraumurTerminalJSONBody
 
 // ConnectVerifoneJSONRequestBody defines body for ConnectVerifone for application/json ContentType.
 type ConnectVerifoneJSONRequestBody ConnectVerifoneJSONBody
@@ -17167,6 +17271,18 @@ func (t *SubtransactionData) FromSubtransactionDataVerifoneTerminal(v Subtransac
 	return err
 }
 
+func (t SubtransactionData) AsSubtransactionDataStraumurTerminal() (SubtransactionDataStraumurTerminal, error) {
+	var body SubtransactionDataStraumurTerminal
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *SubtransactionData) FromSubtransactionDataStraumurTerminal(v SubtransactionDataStraumurTerminal) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
 func (t SubtransactionData) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -18058,6 +18174,22 @@ type ClientInterface interface {
 	UpdateSaltpayTerminalWithBody(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateSaltpayTerminal(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, body UpdateSaltpayTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DisconnectStraumur request
+	DisconnectStraumur(ctx context.Context, params *DisconnectStraumurParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConnectStraumur request with any body
+	ConnectStraumurWithBody(ctx context.Context, params *ConnectStraumurParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ConnectStraumur(ctx context.Context, params *ConnectStraumurParams, body ConnectStraumurJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListStraumurTerminals request
+	ListStraumurTerminals(ctx context.Context, params *ListStraumurTerminalsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateStraumurTerminal request with any body
+	UpdateStraumurTerminalWithBody(ctx context.Context, params *UpdateStraumurTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateStraumurTerminal(ctx context.Context, params *UpdateStraumurTerminalParams, body UpdateStraumurTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DisconnectVerifone request
 	DisconnectVerifone(ctx context.Context, params *DisconnectVerifoneParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -21703,6 +21835,78 @@ func (c *Client) UpdateSaltpayTerminalWithBody(ctx context.Context, storeId stri
 
 func (c *Client) UpdateSaltpayTerminal(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, body UpdateSaltpayTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateSaltpayTerminalRequest(c.Server, storeId, terminalId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DisconnectStraumur(ctx context.Context, params *DisconnectStraumurParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDisconnectStraumurRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConnectStraumurWithBody(ctx context.Context, params *ConnectStraumurParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConnectStraumurRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConnectStraumur(ctx context.Context, params *ConnectStraumurParams, body ConnectStraumurJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConnectStraumurRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListStraumurTerminals(ctx context.Context, params *ListStraumurTerminalsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListStraumurTerminalsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateStraumurTerminalWithBody(ctx context.Context, params *UpdateStraumurTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateStraumurTerminalRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateStraumurTerminal(ctx context.Context, params *UpdateStraumurTerminalParams, body UpdateStraumurTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateStraumurTerminalRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -40408,6 +40612,284 @@ func NewUpdateSaltpayTerminalRequestWithBody(server string, storeId string, term
 	return req, nil
 }
 
+// NewDisconnectStraumurRequest generates requests for DisconnectStraumur
+func NewDisconnectStraumurRequest(server string, params *DisconnectStraumurParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/integrations/straumur/connect")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewConnectStraumurRequest calls the generic ConnectStraumur builder with application/json body
+func NewConnectStraumurRequest(server string, params *ConnectStraumurParams, body ConnectStraumurJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConnectStraumurRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewConnectStraumurRequestWithBody generates requests for ConnectStraumur with any type of body
+func NewConnectStraumurRequestWithBody(server string, params *ConnectStraumurParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/integrations/straumur/connect")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListStraumurTerminalsRequest generates requests for ListStraumurTerminals
+func NewListStraumurTerminalsRequest(server string, params *ListStraumurTerminalsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/integrations/straumur/terminals")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateStraumurTerminalRequest calls the generic UpdateStraumurTerminal builder with application/json body
+func NewUpdateStraumurTerminalRequest(server string, params *UpdateStraumurTerminalParams, body UpdateStraumurTerminalJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateStraumurTerminalRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewUpdateStraumurTerminalRequestWithBody generates requests for UpdateStraumurTerminal with any type of body
+func NewUpdateStraumurTerminalRequestWithBody(server string, params *UpdateStraumurTerminalParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/integrations/straumur/terminals")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDisconnectVerifoneRequest generates requests for DisconnectVerifone
 func NewDisconnectVerifoneRequest(server string, params *DisconnectVerifoneParams) (*http.Request, error) {
 	var err error
@@ -54102,6 +54584,22 @@ type ClientWithResponsesInterface interface {
 
 	UpdateSaltpayTerminalWithResponse(ctx context.Context, storeId string, terminalId string, params *UpdateSaltpayTerminalParams, body UpdateSaltpayTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSaltpayTerminalResponse, error)
 
+	// DisconnectStraumur request
+	DisconnectStraumurWithResponse(ctx context.Context, params *DisconnectStraumurParams, reqEditors ...RequestEditorFn) (*DisconnectStraumurResponse, error)
+
+	// ConnectStraumur request with any body
+	ConnectStraumurWithBodyWithResponse(ctx context.Context, params *ConnectStraumurParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConnectStraumurResponse, error)
+
+	ConnectStraumurWithResponse(ctx context.Context, params *ConnectStraumurParams, body ConnectStraumurJSONRequestBody, reqEditors ...RequestEditorFn) (*ConnectStraumurResponse, error)
+
+	// ListStraumurTerminals request
+	ListStraumurTerminalsWithResponse(ctx context.Context, params *ListStraumurTerminalsParams, reqEditors ...RequestEditorFn) (*ListStraumurTerminalsResponse, error)
+
+	// UpdateStraumurTerminal request with any body
+	UpdateStraumurTerminalWithBodyWithResponse(ctx context.Context, params *UpdateStraumurTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateStraumurTerminalResponse, error)
+
+	UpdateStraumurTerminalWithResponse(ctx context.Context, params *UpdateStraumurTerminalParams, body UpdateStraumurTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateStraumurTerminalResponse, error)
+
 	// DisconnectVerifone request
 	DisconnectVerifoneWithResponse(ctx context.Context, params *DisconnectVerifoneParams, reqEditors ...RequestEditorFn) (*DisconnectVerifoneResponse, error)
 
@@ -59129,6 +59627,94 @@ func (r UpdateSaltpayTerminalResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateSaltpayTerminalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DisconnectStraumurResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StraumurConnection
+}
+
+// Status returns HTTPResponse.Status
+func (r DisconnectStraumurResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DisconnectStraumurResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ConnectStraumurResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StraumurConnection
+}
+
+// Status returns HTTPResponse.Status
+func (r ConnectStraumurResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConnectStraumurResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListStraumurTerminalsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StraumurTerminals
+}
+
+// Status returns HTTPResponse.Status
+func (r ListStraumurTerminalsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListStraumurTerminalsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateStraumurTerminalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Terminal
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateStraumurTerminalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateStraumurTerminalResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -65292,6 +65878,58 @@ func (c *ClientWithResponses) UpdateSaltpayTerminalWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseUpdateSaltpayTerminalResponse(rsp)
+}
+
+// DisconnectStraumurWithResponse request returning *DisconnectStraumurResponse
+func (c *ClientWithResponses) DisconnectStraumurWithResponse(ctx context.Context, params *DisconnectStraumurParams, reqEditors ...RequestEditorFn) (*DisconnectStraumurResponse, error) {
+	rsp, err := c.DisconnectStraumur(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDisconnectStraumurResponse(rsp)
+}
+
+// ConnectStraumurWithBodyWithResponse request with arbitrary body returning *ConnectStraumurResponse
+func (c *ClientWithResponses) ConnectStraumurWithBodyWithResponse(ctx context.Context, params *ConnectStraumurParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConnectStraumurResponse, error) {
+	rsp, err := c.ConnectStraumurWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConnectStraumurResponse(rsp)
+}
+
+func (c *ClientWithResponses) ConnectStraumurWithResponse(ctx context.Context, params *ConnectStraumurParams, body ConnectStraumurJSONRequestBody, reqEditors ...RequestEditorFn) (*ConnectStraumurResponse, error) {
+	rsp, err := c.ConnectStraumur(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConnectStraumurResponse(rsp)
+}
+
+// ListStraumurTerminalsWithResponse request returning *ListStraumurTerminalsResponse
+func (c *ClientWithResponses) ListStraumurTerminalsWithResponse(ctx context.Context, params *ListStraumurTerminalsParams, reqEditors ...RequestEditorFn) (*ListStraumurTerminalsResponse, error) {
+	rsp, err := c.ListStraumurTerminals(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListStraumurTerminalsResponse(rsp)
+}
+
+// UpdateStraumurTerminalWithBodyWithResponse request with arbitrary body returning *UpdateStraumurTerminalResponse
+func (c *ClientWithResponses) UpdateStraumurTerminalWithBodyWithResponse(ctx context.Context, params *UpdateStraumurTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateStraumurTerminalResponse, error) {
+	rsp, err := c.UpdateStraumurTerminalWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateStraumurTerminalResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateStraumurTerminalWithResponse(ctx context.Context, params *UpdateStraumurTerminalParams, body UpdateStraumurTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateStraumurTerminalResponse, error) {
+	rsp, err := c.UpdateStraumurTerminal(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateStraumurTerminalResponse(rsp)
 }
 
 // DisconnectVerifoneWithResponse request returning *DisconnectVerifoneResponse
@@ -72458,6 +73096,110 @@ func ParseUpdateSaltpayTerminalResponse(rsp *http.Response) (*UpdateSaltpayTermi
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest SaltpayTerminal
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDisconnectStraumurResponse parses an HTTP response from a DisconnectStraumurWithResponse call
+func ParseDisconnectStraumurResponse(rsp *http.Response) (*DisconnectStraumurResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DisconnectStraumurResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StraumurConnection
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseConnectStraumurResponse parses an HTTP response from a ConnectStraumurWithResponse call
+func ParseConnectStraumurResponse(rsp *http.Response) (*ConnectStraumurResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConnectStraumurResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StraumurConnection
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListStraumurTerminalsResponse parses an HTTP response from a ListStraumurTerminalsWithResponse call
+func ParseListStraumurTerminalsResponse(rsp *http.Response) (*ListStraumurTerminalsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListStraumurTerminalsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StraumurTerminals
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateStraumurTerminalResponse parses an HTTP response from a UpdateStraumurTerminalWithResponse call
+func ParseUpdateStraumurTerminalResponse(rsp *http.Response) (*UpdateStraumurTerminalResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateStraumurTerminalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Terminal
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
