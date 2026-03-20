@@ -6794,8 +6794,11 @@ type NotificationEvent struct {
 
 	// The ID of the scheduled event that the booking belongs to. Used by the frontend to determine routing (scheduled events calendar vs regular calendar).
 	ScheduledEventId *string `json:"scheduled_event_id,omitempty"`
-	Space            *string `json:"space,omitempty"`
-	SpaceName        *string `json:"space_name,omitempty"`
+
+	// The name of the scheduled event that the booking belongs to.
+	ScheduledEventName *string `json:"scheduled_event_name,omitempty"`
+	Space              *string `json:"space,omitempty"`
+	SpaceName          *string `json:"space_name,omitempty"`
 
 	// Start time of event
 	StartsAt  *time.Time              `json:"starts_at,omitempty"`
