@@ -1415,6 +1415,7 @@ const (
 	TaskNavigateToEventTypes                   TaskNavigateTo = "event_types"
 	TaskNavigateToMarketplaceProfile           TaskNavigateTo = "marketplace_profile"
 	TaskNavigateToMarketplaceProfileOnboarding TaskNavigateTo = "marketplace_profile_onboarding"
+	TaskNavigateToStaffWorkHours               TaskNavigateTo = "staff_work_hours"
 )
 
 // Defines values for TerminalProvider.
@@ -9580,6 +9581,7 @@ type TaskAction struct {
 	// - event_types: Navigate to event types/services page
 	// - employees: Navigate to employees/staff page
 	// - calendar_settings: Navigate to calendar settings page
+	// - staff_work_hours: Navigate to staff work hours settings page
 	NavigateTo *TaskNavigateTo `json:"navigate_to,omitempty"`
 
 	// Localized button text
@@ -9607,6 +9609,7 @@ type TaskCompletionMethod string
 // - event_types: Navigate to event types/services page
 // - employees: Navigate to employees/staff page
 // - calendar_settings: Navigate to calendar settings page
+// - staff_work_hours: Navigate to staff work hours settings page
 type TaskNavigateTo string
 
 // Tasks defines model for Tasks.
