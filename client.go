@@ -18884,9 +18884,6 @@ type ClientInterface interface {
 
 	CreateWorkHours(ctx context.Context, body CreateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DeleteWorkHours request
-	DeleteWorkHours(ctx context.Context, workHoursId string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetWorkHours request
 	GetWorkHours(ctx context.Context, workHoursId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24913,18 +24910,6 @@ func (c *Client) CreateWorkHoursWithBody(ctx context.Context, contentType string
 
 func (c *Client) CreateWorkHours(ctx context.Context, body CreateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkHoursRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteWorkHours(ctx context.Context, workHoursId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteWorkHoursRequest(c.Server, workHoursId)
 	if err != nil {
 		return nil, err
 	}
@@ -53764,40 +53749,6 @@ func NewCreateWorkHoursRequestWithBody(server string, contentType string, body i
 	return req, nil
 }
 
-// NewDeleteWorkHoursRequest generates requests for DeleteWorkHours
-func NewDeleteWorkHoursRequest(server string, workHoursId string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "work_hours_id", runtime.ParamLocationPath, workHoursId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/work_hours/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewGetWorkHoursRequest generates requests for GetWorkHours
 func NewGetWorkHoursRequest(server string, workHoursId string) (*http.Request, error) {
 	var err error
@@ -55341,9 +55292,6 @@ type ClientWithResponsesInterface interface {
 	CreateWorkHoursWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkHoursResponse, error)
 
 	CreateWorkHoursWithResponse(ctx context.Context, body CreateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkHoursResponse, error)
-
-	// DeleteWorkHours request
-	DeleteWorkHoursWithResponse(ctx context.Context, workHoursId string, reqEditors ...RequestEditorFn) (*DeleteWorkHoursResponse, error)
 
 	// GetWorkHours request
 	GetWorkHoursWithResponse(ctx context.Context, workHoursId string, reqEditors ...RequestEditorFn) (*GetWorkHoursResponse, error)
@@ -63708,27 +63656,6 @@ func (r CreateWorkHoursResponse) StatusCode() int {
 	return 0
 }
 
-type DeleteWorkHoursResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteWorkHoursResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteWorkHoursResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type GetWorkHoursResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -68191,15 +68118,6 @@ func (c *ClientWithResponses) CreateWorkHoursWithResponse(ctx context.Context, b
 		return nil, err
 	}
 	return ParseCreateWorkHoursResponse(rsp)
-}
-
-// DeleteWorkHoursWithResponse request returning *DeleteWorkHoursResponse
-func (c *ClientWithResponses) DeleteWorkHoursWithResponse(ctx context.Context, workHoursId string, reqEditors ...RequestEditorFn) (*DeleteWorkHoursResponse, error) {
-	rsp, err := c.DeleteWorkHours(ctx, workHoursId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteWorkHoursResponse(rsp)
 }
 
 // GetWorkHoursWithResponse request returning *GetWorkHoursResponse
@@ -77553,22 +77471,6 @@ func ParseCreateWorkHoursResponse(rsp *http.Response) (*CreateWorkHoursResponse,
 		}
 		response.JSON200 = &dest
 
-	}
-
-	return response, nil
-}
-
-// ParseDeleteWorkHoursResponse parses an HTTP response from a DeleteWorkHoursWithResponse call
-func ParseDeleteWorkHoursResponse(rsp *http.Response) (*DeleteWorkHoursResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteWorkHoursResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
 	}
 
 	return response, nil
