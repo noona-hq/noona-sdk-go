@@ -10986,22 +10986,6 @@ type WebhookInvocations []WebhookInvocation
 // Webhooks defines model for Webhooks.
 type Webhooks []Webhook
 
-// WorkHoursCreate defines model for WorkHoursCreate.
-type WorkHoursCreate struct {
-	// The company ID.
-	CompanyId string `json:"company_id"`
-
-	// Day of the week.
-	Day WorkHoursDay `json:"day"`
-
-	// The ID of the entity (employee or resource).
-	EntityId string `json:"entity_id"`
-
-	// The type of entity this work hours entry belongs to.
-	EntityType WorkHoursEntityType `json:"entity_type"`
-	Periods    []WorkHoursPeriod   `json:"periods"`
-}
-
 // Day of the week.
 type WorkHoursDay string
 
@@ -15023,9 +15007,6 @@ type UpdateWebhookParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// CreateWorkHoursJSONBody defines parameters for CreateWorkHours.
-type CreateWorkHoursJSONBody WorkHoursCreate
-
 // UpdateWorkHoursJSONBody defines parameters for UpdateWorkHours.
 type UpdateWorkHoursJSONBody WorkHoursUpdate
 
@@ -15385,9 +15366,6 @@ type CreateWebhookJSONRequestBody CreateWebhookJSONBody
 
 // UpdateWebhookJSONRequestBody defines body for UpdateWebhook for application/json ContentType.
 type UpdateWebhookJSONRequestBody UpdateWebhookJSONBody
-
-// CreateWorkHoursJSONRequestBody defines body for CreateWorkHours for application/json ContentType.
-type CreateWorkHoursJSONRequestBody CreateWorkHoursJSONBody
 
 // UpdateWorkHoursJSONRequestBody defines body for UpdateWorkHours for application/json ContentType.
 type UpdateWorkHoursJSONRequestBody UpdateWorkHoursJSONBody
@@ -18878,11 +18856,6 @@ type ClientInterface interface {
 	UpdateWebhookWithBody(ctx context.Context, webhookId string, params *UpdateWebhookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateWebhook(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreateWorkHours request with any body
-	CreateWorkHoursWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateWorkHours(ctx context.Context, body CreateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetWorkHours request
 	GetWorkHours(ctx context.Context, workHoursId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -24886,30 +24859,6 @@ func (c *Client) UpdateWebhookWithBody(ctx context.Context, webhookId string, pa
 
 func (c *Client) UpdateWebhook(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWebhookRequest(c.Server, webhookId, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateWorkHoursWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateWorkHoursRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateWorkHours(ctx context.Context, body CreateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateWorkHoursRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -53709,46 +53658,6 @@ func NewUpdateWebhookRequestWithBody(server string, webhookId string, params *Up
 	return req, nil
 }
 
-// NewCreateWorkHoursRequest calls the generic CreateWorkHours builder with application/json body
-func NewCreateWorkHoursRequest(server string, body CreateWorkHoursJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateWorkHoursRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewCreateWorkHoursRequestWithBody generates requests for CreateWorkHours with any type of body
-func NewCreateWorkHoursRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/work_hours")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewGetWorkHoursRequest generates requests for GetWorkHours
 func NewGetWorkHoursRequest(server string, workHoursId string) (*http.Request, error) {
 	var err error
@@ -55287,11 +55196,6 @@ type ClientWithResponsesInterface interface {
 	UpdateWebhookWithBodyWithResponse(ctx context.Context, webhookId string, params *UpdateWebhookParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWebhookResponse, error)
 
 	UpdateWebhookWithResponse(ctx context.Context, webhookId string, params *UpdateWebhookParams, body UpdateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWebhookResponse, error)
-
-	// CreateWorkHours request with any body
-	CreateWorkHoursWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkHoursResponse, error)
-
-	CreateWorkHoursWithResponse(ctx context.Context, body CreateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkHoursResponse, error)
 
 	// GetWorkHours request
 	GetWorkHoursWithResponse(ctx context.Context, workHoursId string, reqEditors ...RequestEditorFn) (*GetWorkHoursResponse, error)
@@ -63634,28 +63538,6 @@ func (r UpdateWebhookResponse) StatusCode() int {
 	return 0
 }
 
-type CreateWorkHoursResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *WorkHoursResponse
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateWorkHoursResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateWorkHoursResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type GetWorkHoursResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -68101,23 +67983,6 @@ func (c *ClientWithResponses) UpdateWebhookWithResponse(ctx context.Context, web
 		return nil, err
 	}
 	return ParseUpdateWebhookResponse(rsp)
-}
-
-// CreateWorkHoursWithBodyWithResponse request with arbitrary body returning *CreateWorkHoursResponse
-func (c *ClientWithResponses) CreateWorkHoursWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkHoursResponse, error) {
-	rsp, err := c.CreateWorkHoursWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateWorkHoursResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateWorkHoursWithResponse(ctx context.Context, body CreateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkHoursResponse, error) {
-	rsp, err := c.CreateWorkHours(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateWorkHoursResponse(rsp)
 }
 
 // GetWorkHoursWithResponse request returning *GetWorkHoursResponse
@@ -77440,32 +77305,6 @@ func ParseUpdateWebhookResponse(rsp *http.Response) (*UpdateWebhookResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Webhook
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseCreateWorkHoursResponse parses an HTTP response from a CreateWorkHoursWithResponse call
-func ParseCreateWorkHoursResponse(rsp *http.Response) (*CreateWorkHoursResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateWorkHoursResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkHoursResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
