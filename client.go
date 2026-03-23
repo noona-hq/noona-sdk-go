@@ -6371,6 +6371,11 @@ type LockedSections struct {
 	Transactions  *bool   `json:"transactions,omitempty"`
 }
 
+// ManagePaymentSources defines model for ManagePaymentSources.
+type ManagePaymentSources struct {
+	Url string `json:"url"`
+}
+
 // MarketplaceUser defines model for MarketplaceUser.
 type MarketplaceUser struct {
 	Email *string `json:"email,omitempty"`
@@ -17833,6 +17838,9 @@ type ClientInterface interface {
 	// CreatePaymentIntent request
 	CreatePaymentIntent(ctx context.Context, companyId string, params *CreatePaymentIntentParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetPaymentMethodPortal request
+	GetPaymentMethodPortal(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetSubscriptionPricing request
 	GetSubscriptionPricing(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -20309,6 +20317,18 @@ func (c *Client) ListBillingInvoices(ctx context.Context, companyId string, para
 
 func (c *Client) CreatePaymentIntent(ctx context.Context, companyId string, params *CreatePaymentIntentParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreatePaymentIntentRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPaymentMethodPortal(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPaymentMethodPortalRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -33322,6 +33342,40 @@ func NewCreatePaymentIntentRequest(server string, companyId string, params *Crea
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetPaymentMethodPortalRequest generates requests for GetPaymentMethodPortal
+func NewGetPaymentMethodPortalRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/subscriptions/payment_methods", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
@@ -54242,6 +54296,9 @@ type ClientWithResponsesInterface interface {
 	// CreatePaymentIntent request
 	CreatePaymentIntentWithResponse(ctx context.Context, companyId string, params *CreatePaymentIntentParams, reqEditors ...RequestEditorFn) (*CreatePaymentIntentResponse, error)
 
+	// GetPaymentMethodPortal request
+	GetPaymentMethodPortalWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*GetPaymentMethodPortalResponse, error)
+
 	// GetSubscriptionPricing request
 	GetSubscriptionPricingWithResponse(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*GetSubscriptionPricingResponse, error)
 
@@ -57537,6 +57594,28 @@ func (r CreatePaymentIntentResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreatePaymentIntentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPaymentMethodPortalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ManagePaymentSources
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPaymentMethodPortalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPaymentMethodPortalResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -64770,6 +64849,15 @@ func (c *ClientWithResponses) CreatePaymentIntentWithResponse(ctx context.Contex
 	return ParseCreatePaymentIntentResponse(rsp)
 }
 
+// GetPaymentMethodPortalWithResponse request returning *GetPaymentMethodPortalResponse
+func (c *ClientWithResponses) GetPaymentMethodPortalWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*GetPaymentMethodPortalResponse, error) {
+	rsp, err := c.GetPaymentMethodPortal(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPaymentMethodPortalResponse(rsp)
+}
+
 // GetSubscriptionPricingWithResponse request returning *GetSubscriptionPricingResponse
 func (c *ClientWithResponses) GetSubscriptionPricingWithResponse(ctx context.Context, companyId string, params *GetSubscriptionPricingParams, reqEditors ...RequestEditorFn) (*GetSubscriptionPricingResponse, error) {
 	rsp, err := c.GetSubscriptionPricing(ctx, companyId, params, reqEditors...)
@@ -70736,6 +70824,32 @@ func ParseCreatePaymentIntentResponse(rsp *http.Response) (*CreatePaymentIntentR
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest PaymentIntent
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPaymentMethodPortalResponse parses an HTTP response from a GetPaymentMethodPortalWithResponse call
+func ParseGetPaymentMethodPortalResponse(rsp *http.Response) (*GetPaymentMethodPortalResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPaymentMethodPortalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ManagePaymentSources
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
