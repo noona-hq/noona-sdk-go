@@ -3461,6 +3461,9 @@ type CompanyPOSSettings struct {
 	// The name that will be printed on invoices.
 	NameOnInvoices *string `json:"name_on_invoices,omitempty"`
 
+	// The timestamp when POS was first configured for this company.
+	OnboardedAt *time.Time `json:"onboarded_at,omitempty"`
+
 	// Starting capital of the company.
 	StartingCapital *string `json:"starting_capital,omitempty"`
 
