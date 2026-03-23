@@ -11018,7 +11018,7 @@ type WorkHoursPeriod struct {
 	EndsAt string `json:"ends_at"`
 
 	// Whether the entity is closed during this period.
-	IsClosed *bool `json:"is_closed,omitempty"`
+	IsClosed bool `json:"is_closed"`
 
 	// Start time in HH:MM format.
 	StartsAt string `json:"starts_at"`
@@ -11027,20 +11027,20 @@ type WorkHoursPeriod struct {
 // WorkHoursResponse defines model for WorkHoursResponse.
 type WorkHoursResponse struct {
 	// The company this work hours entry belongs to.
-	Company   *string    `json:"company,omitempty"`
+	Company   string     `json:"company"`
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	// Day of the week.
-	Day *WorkHoursDay `json:"day,omitempty"`
+	Day WorkHoursDay `json:"day"`
 
 	// The ID of the entity this work hours entry belongs to.
-	EntityId *string `json:"entity_id,omitempty"`
+	EntityId string `json:"entity_id"`
 
 	// The type of entity this work hours entry belongs to.
-	EntityType *WorkHoursEntityType `json:"entity_type,omitempty"`
-	Id         *string              `json:"id,omitempty"`
-	Periods    *[]WorkHoursPeriod   `json:"periods,omitempty"`
-	UpdatedAt  *time.Time           `json:"updated_at,omitempty"`
+	EntityType WorkHoursEntityType `json:"entity_type"`
+	Id         *string             `json:"id,omitempty"`
+	Periods    []WorkHoursPeriod   `json:"periods"`
+	UpdatedAt  *time.Time          `json:"updated_at,omitempty"`
 }
 
 // WorkHoursUpdate defines model for WorkHoursUpdate.
