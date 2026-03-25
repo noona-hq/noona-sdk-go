@@ -472,6 +472,7 @@ const (
 	EntitlementFeatureIDCsvMarketingExport          EntitlementFeatureID = "csv_marketing_export"
 	EntitlementFeatureIDCustomFields                EntitlementFeatureID = "custom_fields"
 	EntitlementFeatureIDCustomFileAttachments       EntitlementFeatureID = "custom_file_attachments"
+	EntitlementFeatureIDCustomPaymentMethods        EntitlementFeatureID = "custom_payment_methods"
 	EntitlementFeatureIDCustomSms                   EntitlementFeatureID = "custom_sms"
 	EntitlementFeatureIDCustomStatuses              EntitlementFeatureID = "custom_statuses"
 	EntitlementFeatureIDCustomVouchers              EntitlementFeatureID = "custom_vouchers"
