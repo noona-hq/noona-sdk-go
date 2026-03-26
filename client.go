@@ -1994,6 +1994,9 @@ type AdminStaffWorkHoursBulkMigrationRequest struct {
 	// Max companies to process. Default 100, max 1000. Ignored for "single" scope.
 	Limit *int32                                `json:"limit,omitempty"`
 	Scope AdminStaffWorkHoursBulkMigrationScope `json:"scope"`
+
+	// Number of companies to skip before processing. Use with limit to paginate. Ignored for "single" scope.
+	Skip *int32 `json:"skip,omitempty"`
 }
 
 // AdminStaffWorkHoursBulkMigrationResult defines model for AdminStaffWorkHoursBulkMigrationResult.
