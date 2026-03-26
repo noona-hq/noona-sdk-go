@@ -84,6 +84,12 @@ const (
 	ActorTypeSystem          ActorType = "system"
 )
 
+// Defines values for AdminFixWorkHoursTimesScope.
+const (
+	AdminFixWorkHoursTimesScopeAll    AdminFixWorkHoursTimesScope = "all"
+	AdminFixWorkHoursTimesScopeSingle AdminFixWorkHoursTimesScope = "single"
+)
+
 // Defines values for AdminStaffWorkHoursBulkMigrationScope.
 const (
 	AdminStaffWorkHoursBulkMigrationScopeAll         AdminStaffWorkHoursBulkMigrationScope = "all"
@@ -1501,9 +1507,9 @@ const (
 
 // Defines values for VerificationStatus.
 const (
-	Approved VerificationStatus = "approved"
-	Pending  VerificationStatus = "pending"
-	Rejected VerificationStatus = "rejected"
+	VerificationStatusApproved VerificationStatus = "approved"
+	VerificationStatusPending  VerificationStatus = "pending"
+	VerificationStatusRejected VerificationStatus = "rejected"
 )
 
 // Defines values for VoucherStatus.
@@ -1928,6 +1934,37 @@ type AdminCompanyUpdateFields struct {
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
 }
+
+// AdminFixWorkHoursTimesFailure defines model for AdminFixWorkHoursTimesFailure.
+type AdminFixWorkHoursTimesFailure struct {
+	CompanyId *string `json:"company_id,omitempty"`
+	Error     *string `json:"error,omitempty"`
+}
+
+// AdminFixWorkHoursTimesRequest defines model for AdminFixWorkHoursTimesRequest.
+type AdminFixWorkHoursTimesRequest struct {
+	// Required when scope is "single"
+	CompanyId *string `json:"company_id,omitempty"`
+
+	// If true, return count without fixing
+	DryRun *bool `json:"dry_run,omitempty"`
+
+	// Max companies to process. Default 100, max 1000. Ignored for "single" scope.
+	Limit *int32                      `json:"limit,omitempty"`
+	Scope AdminFixWorkHoursTimesScope `json:"scope"`
+}
+
+// AdminFixWorkHoursTimesResult defines model for AdminFixWorkHoursTimesResult.
+type AdminFixWorkHoursTimesResult struct {
+	Failed   *int32                           `json:"failed,omitempty"`
+	Failures *[]AdminFixWorkHoursTimesFailure `json:"failures,omitempty"`
+	Fixed    *int32                           `json:"fixed,omitempty"`
+	Skipped  *int32                           `json:"skipped,omitempty"`
+	Total    *int32                           `json:"total,omitempty"`
+}
+
+// AdminFixWorkHoursTimesScope defines model for AdminFixWorkHoursTimesScope.
+type AdminFixWorkHoursTimesScope string
 
 // AdminMoveUserRequest defines model for AdminMoveUserRequest.
 type AdminMoveUserRequest struct {
@@ -3843,6 +3880,12 @@ type CompanyUpdateOverrides struct {
 
 // CompanyVertical defines model for CompanyVertical.
 type CompanyVertical string
+
+// Optional request body for consuming a user invite
+type ConsumeUserInviteRequest struct {
+	// Profile name to set for the user at this company
+	Name *string `json:"name,omitempty"`
+}
 
 // CountMetricsByTimeFrame defines model for CountMetricsByTimeFrame.
 type CountMetricsByTimeFrame struct {
@@ -11188,6 +11231,9 @@ type AdminAssignSecretaryToCompanyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminFixWorkHoursTimesJSONBody defines parameters for AdminFixWorkHoursTimes.
+type AdminFixWorkHoursTimesJSONBody AdminFixWorkHoursTimesRequest
+
 // AdminBulkMigrateSmsRemindersJSONBody defines parameters for AdminBulkMigrateSmsReminders.
 type AdminBulkMigrateSmsRemindersJSONBody AdminSmsRemindersBulkMigrationRequest
 
@@ -14785,6 +14831,9 @@ type CreateUserInviteParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// ConsumeUserInviteJSONBody defines parameters for ConsumeUserInvite.
+type ConsumeUserInviteJSONBody ConsumeUserInviteRequest
+
 // DeleteUserInviteParams defines parameters for DeleteUserInvite.
 type DeleteUserInviteParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15022,6 +15071,9 @@ type AdminUpdateCompanyJSONRequestBody AdminUpdateCompanyJSONBody
 
 // AdminAssignSecretaryToCompanyJSONRequestBody defines body for AdminAssignSecretaryToCompany for application/json ContentType.
 type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJSONBody
+
+// AdminFixWorkHoursTimesJSONRequestBody defines body for AdminFixWorkHoursTimes for application/json ContentType.
+type AdminFixWorkHoursTimesJSONRequestBody AdminFixWorkHoursTimesJSONBody
 
 // AdminBulkMigrateSmsRemindersJSONRequestBody defines body for AdminBulkMigrateSmsReminders for application/json ContentType.
 type AdminBulkMigrateSmsRemindersJSONRequestBody AdminBulkMigrateSmsRemindersJSONBody
@@ -15343,6 +15395,9 @@ type CreateVerificationRequestJSONRequestBody CreateVerificationRequestJSONBody
 
 // CreateUserInviteJSONRequestBody defines body for CreateUserInvite for application/json ContentType.
 type CreateUserInviteJSONRequestBody CreateUserInviteJSONBody
+
+// ConsumeUserInviteJSONRequestBody defines body for ConsumeUserInvite for application/json ContentType.
+type ConsumeUserInviteJSONRequestBody ConsumeUserInviteJSONBody
 
 // UpdateVerificationRequestJSONRequestBody defines body for UpdateVerificationRequest for application/json ContentType.
 type UpdateVerificationRequestJSONRequestBody UpdateVerificationRequestJSONBody
@@ -17520,6 +17575,11 @@ type ClientInterface interface {
 
 	AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminFixWorkHoursTimes request with any body
+	AdminFixWorkHoursTimesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminFixWorkHoursTimes(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminBulkMigrateSmsReminders request with any body
 	AdminBulkMigrateSmsRemindersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18769,8 +18829,10 @@ type ClientInterface interface {
 	// GetUserInviteContext request
 	GetUserInviteContext(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ConsumeUserInvite request
-	ConsumeUserInvite(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ConsumeUserInvite request with any body
+	ConsumeUserInviteWithBody(ctx context.Context, token string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ConsumeUserInvite(ctx context.Context, token string, body ConsumeUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteUserInvite request
 	DeleteUserInvite(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19022,6 +19084,30 @@ func (c *Client) AdminAssignSecretaryToCompanyWithBody(ctx context.Context, comp
 
 func (c *Client) AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminAssignSecretaryToCompanyRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminFixWorkHoursTimesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminFixWorkHoursTimesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminFixWorkHoursTimes(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminFixWorkHoursTimesRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -24456,8 +24542,20 @@ func (c *Client) GetUserInviteContext(ctx context.Context, token string, reqEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) ConsumeUserInvite(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewConsumeUserInviteRequest(c.Server, token)
+func (c *Client) ConsumeUserInviteWithBody(ctx context.Context, token string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConsumeUserInviteRequestWithBody(c.Server, token, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConsumeUserInvite(ctx context.Context, token string, body ConsumeUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConsumeUserInviteRequest(c.Server, token, body)
 	if err != nil {
 		return nil, err
 	}
@@ -25752,6 +25850,46 @@ func NewAdminAssignSecretaryToCompanyRequestWithBody(server string, companyId st
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminFixWorkHoursTimesRequest calls the generic AdminFixWorkHoursTimes builder with application/json body
+func NewAdminFixWorkHoursTimesRequest(server string, body AdminFixWorkHoursTimesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminFixWorkHoursTimesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminFixWorkHoursTimesRequestWithBody generates requests for AdminFixWorkHoursTimes with any type of body
+func NewAdminFixWorkHoursTimesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/fix-work-hours-times")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -51910,8 +52048,19 @@ func NewGetUserInviteContextRequest(server string, token string) (*http.Request,
 	return req, nil
 }
 
-// NewConsumeUserInviteRequest generates requests for ConsumeUserInvite
-func NewConsumeUserInviteRequest(server string, token string) (*http.Request, error) {
+// NewConsumeUserInviteRequest calls the generic ConsumeUserInvite builder with application/json body
+func NewConsumeUserInviteRequest(server string, token string, body ConsumeUserInviteJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConsumeUserInviteRequestWithBody(server, token, "application/json", bodyReader)
+}
+
+// NewConsumeUserInviteRequestWithBody generates requests for ConsumeUserInvite with any type of body
+func NewConsumeUserInviteRequestWithBody(server string, token string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -51936,10 +52085,12 @@ func NewConsumeUserInviteRequest(server string, token string) (*http.Request, er
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -53860,6 +54011,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminAssignSecretaryToCompanyWithResponse(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminAssignSecretaryToCompanyResponse, error)
 
+	// AdminFixWorkHoursTimes request with any body
+	AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
+
+	AdminFixWorkHoursTimesWithResponse(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
+
 	// AdminBulkMigrateSmsReminders request with any body
 	AdminBulkMigrateSmsRemindersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error)
 
@@ -55109,8 +55265,10 @@ type ClientWithResponsesInterface interface {
 	// GetUserInviteContext request
 	GetUserInviteContextWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*GetUserInviteContextResponse, error)
 
-	// ConsumeUserInvite request
-	ConsumeUserInviteWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error)
+	// ConsumeUserInvite request with any body
+	ConsumeUserInviteWithBodyWithResponse(ctx context.Context, token string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error)
+
+	ConsumeUserInviteWithResponse(ctx context.Context, token string, body ConsumeUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error)
 
 	// DeleteUserInvite request
 	DeleteUserInviteWithResponse(ctx context.Context, userInviteId string, params *DeleteUserInviteParams, reqEditors ...RequestEditorFn) (*DeleteUserInviteResponse, error)
@@ -55449,6 +55607,28 @@ func (r AdminAssignSecretaryToCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminAssignSecretaryToCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminFixWorkHoursTimesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminFixWorkHoursTimesResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminFixWorkHoursTimesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminFixWorkHoursTimesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -63726,6 +63906,23 @@ func (c *ClientWithResponses) AdminAssignSecretaryToCompanyWithResponse(ctx cont
 	return ParseAdminAssignSecretaryToCompanyResponse(rsp)
 }
 
+// AdminFixWorkHoursTimesWithBodyWithResponse request with arbitrary body returning *AdminFixWorkHoursTimesResponse
+func (c *ClientWithResponses) AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error) {
+	rsp, err := c.AdminFixWorkHoursTimesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminFixWorkHoursTimesResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminFixWorkHoursTimesWithResponse(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error) {
+	rsp, err := c.AdminFixWorkHoursTimes(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminFixWorkHoursTimesResponse(rsp)
+}
+
 // AdminBulkMigrateSmsRemindersWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateSmsRemindersResponse
 func (c *ClientWithResponses) AdminBulkMigrateSmsRemindersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error) {
 	rsp, err := c.AdminBulkMigrateSmsRemindersWithBody(ctx, contentType, body, reqEditors...)
@@ -67687,9 +67884,17 @@ func (c *ClientWithResponses) GetUserInviteContextWithResponse(ctx context.Conte
 	return ParseGetUserInviteContextResponse(rsp)
 }
 
-// ConsumeUserInviteWithResponse request returning *ConsumeUserInviteResponse
-func (c *ClientWithResponses) ConsumeUserInviteWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error) {
-	rsp, err := c.ConsumeUserInvite(ctx, token, reqEditors...)
+// ConsumeUserInviteWithBodyWithResponse request with arbitrary body returning *ConsumeUserInviteResponse
+func (c *ClientWithResponses) ConsumeUserInviteWithBodyWithResponse(ctx context.Context, token string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error) {
+	rsp, err := c.ConsumeUserInviteWithBody(ctx, token, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConsumeUserInviteResponse(rsp)
+}
+
+func (c *ClientWithResponses) ConsumeUserInviteWithResponse(ctx context.Context, token string, body ConsumeUserInviteJSONRequestBody, reqEditors ...RequestEditorFn) (*ConsumeUserInviteResponse, error) {
+	rsp, err := c.ConsumeUserInvite(ctx, token, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -68278,6 +68483,32 @@ func ParseAdminAssignSecretaryToCompanyResponse(rsp *http.Response) (*AdminAssig
 	response := &AdminAssignSecretaryToCompanyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminFixWorkHoursTimesResponse parses an HTTP response from a AdminFixWorkHoursTimesWithResponse call
+func ParseAdminFixWorkHoursTimesResponse(rsp *http.Response) (*AdminFixWorkHoursTimesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminFixWorkHoursTimesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminFixWorkHoursTimesResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
