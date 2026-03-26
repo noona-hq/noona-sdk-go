@@ -2795,6 +2795,9 @@ type BookingOffer struct {
 	Id        *string          `json:"id,omitempty"`
 	Message   *string          `json:"message,omitempty"`
 
+	// If true, an SMS notification will be sent to the customer with the booking offer link.
+	SendSms *bool `json:"send_sms,omitempty"`
+
 	// The start time of the event.
 	StartsAt  *time.Time `json:"starts_at,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
