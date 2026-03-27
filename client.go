@@ -10120,6 +10120,9 @@ type UserInviteContextResponse struct {
 	// When the user invite expires
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 
+	// Whether the invited user already has a password (only present for email invites)
+	HasPassword *bool `json:"has_password,omitempty"`
+
 	// Name of the user who created this user invite
 	InvitedBy *string `json:"invited_by,omitempty"`
 
