@@ -7493,6 +7493,10 @@ type PowerupSubscription struct {
 	// Date when the trial ends at.
 	TrialEndsAt *time.Time `json:"trial_ends_at,omitempty"`
 
+	// Computed field. True when the subscription was deactivated because the trial period ended,
+	// i.e. deactivated_at is within a short window of trial_ends_at.
+	TrialExpired *bool `json:"trial_expired,omitempty"`
+
 	// Date when the trial started.
 	TrialStartedAt *time.Time `json:"trial_started_at,omitempty"`
 	Type           *Powerup   `json:"type,omitempty"`
