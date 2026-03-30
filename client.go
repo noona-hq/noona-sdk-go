@@ -460,6 +460,12 @@ const (
 	EnterpriseFieldImage EnterpriseField = "image"
 )
 
+// Defines values for EntitlementErrorCode.
+const (
+	EntitlementRequired EntitlementErrorCode = "entitlement_required"
+	SeatLimitReached    EntitlementErrorCode = "seat_limit_reached"
+)
+
 // Defines values for EntitlementFeatureID.
 const (
 	EntitlementFeatureIDActivityLog                 EntitlementFeatureID = "activity_log"
@@ -4547,6 +4553,18 @@ type Entitlement struct {
 	// String value for custom/text values or "unlimited".
 	StringValue *string `json:"string_value,omitempty"`
 }
+
+// EntitlementError defines model for EntitlementError.
+type EntitlementError struct {
+	Code EntitlementErrorCode `json:"code"`
+
+	// Unique identifier for an entitlement feature.
+	Entitlement EntitlementFeatureID `json:"entitlement"`
+	Message     string               `json:"message"`
+}
+
+// EntitlementErrorCode defines model for EntitlementErrorCode.
+type EntitlementErrorCode string
 
 // Unique identifier for an entitlement feature.
 type EntitlementFeatureID string
