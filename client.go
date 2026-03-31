@@ -2399,12 +2399,14 @@ type BillingCustomerVatNumberStatus string
 
 // BillingInvoice defines model for BillingInvoice.
 type BillingInvoice struct {
-	Amount     *int32                `json:"amount,omitempty"`
-	Currency   *string               `json:"currency,omitempty"`
-	Date       *time.Time            `json:"date,omitempty"`
-	Id         *string               `json:"id,omitempty"`
-	PaymentUrl *string               `json:"payment_url,omitempty"`
-	Status     *BillingInvoiceStatus `json:"status,omitempty"`
+	Amount         *int32                `json:"amount,omitempty"`
+	AppliedCredits *int32                `json:"applied_credits,omitempty"`
+	Currency       *string               `json:"currency,omitempty"`
+	Date           *time.Time            `json:"date,omitempty"`
+	Id             *string               `json:"id,omitempty"`
+	IssuedCredits  *int32                `json:"issued_credits,omitempty"`
+	PaymentUrl     *string               `json:"payment_url,omitempty"`
+	Status         *BillingInvoiceStatus `json:"status,omitempty"`
 }
 
 // BillingInvoiceStatus defines model for BillingInvoice.Status.
