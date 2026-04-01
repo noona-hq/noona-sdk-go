@@ -792,6 +792,11 @@ const (
 	NotificationIconIconVariantWarning NotificationIconIconVariant = "warning"
 )
 
+// Defines values for NotificationOrigin.
+const (
+	NotificationOriginCustomer NotificationOrigin = "customer"
+)
+
 // Defines values for NotificationSubcategory.
 const (
 	NotificationSubcategoryApproved          NotificationSubcategory = "approved"
@@ -4953,6 +4958,21 @@ type EventCreationBehavior struct {
 	// - The booking_offer payload must be provided in the request body.
 	BookingOffer *bool `json:"booking_offer,omitempty"`
 
+	// Controls the notification style for this event operation.
+	//
+	// When set to `marketplace`, the system treats this event as a customer-initiated
+	// booking for notification purposes. This triggers marketplace-style notifications:
+	// - In-app HQ notification framed as "customer booked" (not "staff booked")
+	// - Confirmation email to the customer
+	// - Push notification to the customer (if eligible)
+	// - Push notification to the assigned employee
+	//
+	// When omitted, standard HQ notification behavior applies (controlled by `notify`).
+	//
+	// This is intended for partner integrations (e.g., Reserve with Google) where events
+	// are created via the HQ API but are customer-initiated.
+	NotificationOrigin *NotificationOrigin `json:"notification_origin,omitempty"`
+
 	// Whether to notify customer about the event.
 	//
 	// When true, the customer will receive an email and push notification about the event.
@@ -4963,6 +4983,21 @@ type EventCreationBehavior struct {
 
 // [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
 type EventDeletionBehavior struct {
+	// Controls the notification style for this event operation.
+	//
+	// When set to `marketplace`, the system treats this event as a customer-initiated
+	// booking for notification purposes. This triggers marketplace-style notifications:
+	// - In-app HQ notification framed as "customer booked" (not "staff booked")
+	// - Confirmation email to the customer
+	// - Push notification to the customer (if eligible)
+	// - Push notification to the assigned employee
+	//
+	// When omitted, standard HQ notification behavior applies (controlled by `notify`).
+	//
+	// This is intended for partner integrations (e.g., Reserve with Google) where events
+	// are created via the HQ API but are customer-initiated.
+	NotificationOrigin *NotificationOrigin `json:"notification_origin,omitempty"`
+
 	// Whether to notify customer about the event deletion.
 	//
 	// When true, the customer will receive an email and push notification about the event deletion.
@@ -5459,6 +5494,21 @@ type EventTypes []EventType
 
 // [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
 type EventUpdateBehavior struct {
+	// Controls the notification style for this event operation.
+	//
+	// When set to `marketplace`, the system treats this event as a customer-initiated
+	// booking for notification purposes. This triggers marketplace-style notifications:
+	// - In-app HQ notification framed as "customer booked" (not "staff booked")
+	// - Confirmation email to the customer
+	// - Push notification to the customer (if eligible)
+	// - Push notification to the assigned employee
+	//
+	// When omitted, standard HQ notification behavior applies (controlled by `notify`).
+	//
+	// This is intended for partner integrations (e.g., Reserve with Google) where events
+	// are created via the HQ API but are customer-initiated.
+	NotificationOrigin *NotificationOrigin `json:"notification_origin,omitempty"`
+
 	// Whether to notify customer about the event update.
 	//
 	// When true, the customer will receive an email and push notification about the event update.
@@ -6947,6 +6997,21 @@ type NotificationMetadata struct {
 	RelatedEmployee *string    `json:"related_employee,omitempty"`
 	UpdatedAt       *time.Time `json:"updated_at,omitempty"`
 }
+
+// Controls the notification style for this event operation.
+//
+// When set to `marketplace`, the system treats this event as a customer-initiated
+// booking for notification purposes. This triggers marketplace-style notifications:
+// - In-app HQ notification framed as "customer booked" (not "staff booked")
+// - Confirmation email to the customer
+// - Push notification to the customer (if eligible)
+// - Push notification to the assigned employee
+//
+// When omitted, standard HQ notification behavior applies (controlled by `notify`).
+//
+// This is intended for partner integrations (e.g., Reserve with Google) where events
+// are created via the HQ API but are customer-initiated.
+type NotificationOrigin string
 
 // NotificationPreferences defines model for NotificationPreferences.
 type NotificationPreferences struct {
