@@ -489,7 +489,6 @@ const (
 	EntitlementFeatureIDCustomStatuses              EntitlementFeatureID = "custom_statuses"
 	EntitlementFeatureIDCustomVouchers              EntitlementFeatureID = "custom_vouchers"
 	EntitlementFeatureIDEventRepeat                 EntitlementFeatureID = "event_repeat"
-	EntitlementFeatureIDExtraSms                    EntitlementFeatureID = "extra_sms"
 	EntitlementFeatureIDGoogleReserve               EntitlementFeatureID = "google_reserve"
 	EntitlementFeatureIDLockedSections              EntitlementFeatureID = "locked_sections"
 	EntitlementFeatureIDMarketplaceAdvancedSettings EntitlementFeatureID = "marketplace_advanced_settings"
@@ -503,7 +502,6 @@ const (
 	EntitlementFeatureIDPremiumRoles                EntitlementFeatureID = "premium_roles"
 	EntitlementFeatureIDServiceOverrides            EntitlementFeatureID = "service_overrides"
 	EntitlementFeatureIDSmsCredits                  EntitlementFeatureID = "sms_credits"
-	EntitlementFeatureIDSmsMarketing                EntitlementFeatureID = "sms_marketing"
 	EntitlementFeatureIDSupport                     EntitlementFeatureID = "support"
 )
 
