@@ -503,6 +503,7 @@ const (
 	EntitlementFeatureIDPremiumRoles                EntitlementFeatureID = "premium_roles"
 	EntitlementFeatureIDServiceOverrides            EntitlementFeatureID = "service_overrides"
 	EntitlementFeatureIDSmsCredits                  EntitlementFeatureID = "sms_credits"
+	EntitlementFeatureIDSmsMarketing                EntitlementFeatureID = "sms_marketing"
 	EntitlementFeatureIDSupport                     EntitlementFeatureID = "support"
 )
 
