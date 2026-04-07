@@ -233,17 +233,18 @@ const (
 
 // Defines values for BookingSourceChannel.
 const (
-	BookingSourceChannelApp           BookingSourceChannel = "app"
-	BookingSourceChannelBookingLink   BookingSourceChannel = "bookingLink"
-	BookingSourceChannelBookingWidget BookingSourceChannel = "bookingWidget"
-	BookingSourceChannelCalendar      BookingSourceChannel = "calendar"
-	BookingSourceChannelFacebook      BookingSourceChannel = "facebook"
-	BookingSourceChannelImport        BookingSourceChannel = "import"
-	BookingSourceChannelInstagram     BookingSourceChannel = "instagram"
-	BookingSourceChannelMichelinGuide BookingSourceChannel = "michelinGuide"
-	BookingSourceChannelSecretary     BookingSourceChannel = "secretary"
-	BookingSourceChannelTripadvisor   BookingSourceChannel = "tripadvisor"
-	BookingSourceChannelWeb           BookingSourceChannel = "web"
+	BookingSourceChannelApp               BookingSourceChannel = "app"
+	BookingSourceChannelBookingLink       BookingSourceChannel = "bookingLink"
+	BookingSourceChannelBookingWidget     BookingSourceChannel = "bookingWidget"
+	BookingSourceChannelCalendar          BookingSourceChannel = "calendar"
+	BookingSourceChannelFacebook          BookingSourceChannel = "facebook"
+	BookingSourceChannelImport            BookingSourceChannel = "import"
+	BookingSourceChannelInstagram         BookingSourceChannel = "instagram"
+	BookingSourceChannelMichelinGuide     BookingSourceChannel = "michelinGuide"
+	BookingSourceChannelReserveWithGoogle BookingSourceChannel = "reserveWithGoogle"
+	BookingSourceChannelSecretary         BookingSourceChannel = "secretary"
+	BookingSourceChannelTripadvisor       BookingSourceChannel = "tripadvisor"
+	BookingSourceChannelWeb               BookingSourceChannel = "web"
 )
 
 // Defines values for BookingSourceFunnel.
@@ -540,6 +541,7 @@ const (
 	EventOriginApp              EventOrigin = "app"
 	EventOriginCalendar         EventOrigin = "calendar"
 	EventOriginFacebook         EventOrigin = "facebook"
+	EventOriginGoogleReserve    EventOrigin = "google_reserve"
 	EventOriginImport           EventOrigin = "import"
 	EventOriginInstagram        EventOrigin = "instagram"
 	EventOriginOnline           EventOrigin = "online"
