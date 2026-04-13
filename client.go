@@ -1118,6 +1118,29 @@ const (
 	ProductFieldImage ProductField = "image"
 )
 
+// Defines values for PromoCodeDiscountType.
+const (
+	FixedAmount   PromoCodeDiscountType = "fixed_amount"
+	OfferQuantity PromoCodeDiscountType = "offer_quantity"
+	Percentage    PromoCodeDiscountType = "percentage"
+)
+
+// Defines values for PromoCodeDurationType.
+const (
+	PromoCodeDurationTypeForever       PromoCodeDurationType = "forever"
+	PromoCodeDurationTypeLimitedPeriod PromoCodeDurationType = "limited_period"
+	PromoCodeDurationTypeOneTime       PromoCodeDurationType = "one_time"
+)
+
+// Defines values for PromoCodeValidationErrorCode.
+const (
+	PromoCodeValidationErrorCodeCurrencyMismatch  PromoCodeValidationErrorCode = "currency_mismatch"
+	PromoCodeValidationErrorCodeExpired           PromoCodeValidationErrorCode = "expired"
+	PromoCodeValidationErrorCodeInactive          PromoCodeValidationErrorCode = "inactive"
+	PromoCodeValidationErrorCodeNotFound          PromoCodeValidationErrorCode = "not_found"
+	PromoCodeValidationErrorCodeUsageLimitReached PromoCodeValidationErrorCode = "usage_limit_reached"
+)
+
 // Defines values for PushNotificationType.
 const (
 	PushNotificationTypeEventCancelledFromMarketplace PushNotificationType = "eventCancelledFromMarketplace"
@@ -1331,9 +1354,9 @@ const (
 
 // Defines values for SubscriptionDiscountDurationType.
 const (
-	SubscriptionDiscountDurationTypeForever       SubscriptionDiscountDurationType = "forever"
-	SubscriptionDiscountDurationTypeLimitedPeriod SubscriptionDiscountDurationType = "limited_period"
-	SubscriptionDiscountDurationTypeOneTime       SubscriptionDiscountDurationType = "one_time"
+	Forever       SubscriptionDiscountDurationType = "forever"
+	LimitedPeriod SubscriptionDiscountDurationType = "limited_period"
+	OneTime       SubscriptionDiscountDurationType = "one_time"
 )
 
 // Defines values for SubscriptionDiscountPeriodUnit.
@@ -1550,10 +1573,10 @@ const (
 
 // Defines values for VoucherFilterStatus.
 const (
-	VoucherFilterStatusExpired    VoucherFilterStatus = "expired"
-	VoucherFilterStatusFullyUsed  VoucherFilterStatus = "fully_used"
-	VoucherFilterStatusNeverUsed  VoucherFilterStatus = "never_used"
-	VoucherFilterStatusPartlyUsed VoucherFilterStatus = "partly_used"
+	Expired    VoucherFilterStatus = "expired"
+	FullyUsed  VoucherFilterStatus = "fully_used"
+	NeverUsed  VoucherFilterStatus = "never_used"
+	PartlyUsed VoucherFilterStatus = "partly_used"
 )
 
 // Defines values for VoucherFilterType.
@@ -7558,6 +7581,9 @@ type PowerupAddon string
 // PowerupPostBody defines model for PowerupPostBody.
 type PowerupPostBody struct {
 	Product *Powerup `json:"product,omitempty"`
+
+	// Optional promo code to apply as a coupon on subscription creation
+	PromoCode *string `json:"promo_code,omitempty"`
 }
 
 // PowerupSubscription defines model for PowerupSubscription.
@@ -7891,6 +7917,29 @@ type ProductUpdate struct {
 
 // Products defines model for Products.
 type Products []Product
+
+// PromoCodeDiscountType defines model for PromoCodeDiscountType.
+type PromoCodeDiscountType string
+
+// PromoCodeDurationType defines model for PromoCodeDurationType.
+type PromoCodeDurationType string
+
+// PromoCodeValidation defines model for PromoCodeValidation.
+type PromoCodeValidation struct {
+	CouponId           *string                       `json:"coupon_id,omitempty"`
+	CurrencyCode       *string                       `json:"currency_code,omitempty"`
+	DiscountAmount     *int32                        `json:"discount_amount,omitempty"`
+	DiscountPercentage *float64                      `json:"discount_percentage,omitempty"`
+	DiscountType       *PromoCodeDiscountType        `json:"discount_type,omitempty"`
+	DurationMonth      *int32                        `json:"duration_month,omitempty"`
+	DurationType       *PromoCodeDurationType        `json:"duration_type,omitempty"`
+	ErrorCode          *PromoCodeValidationErrorCode `json:"error_code,omitempty"`
+	ErrorMessage       *string                       `json:"error_message,omitempty"`
+	Valid              *bool                         `json:"valid,omitempty"`
+}
+
+// PromoCodeValidationErrorCode defines model for PromoCodeValidationErrorCode.
+type PromoCodeValidationErrorCode string
 
 // PublicCompanies defines model for PublicCompanies.
 type PublicCompanies []PublicCompany
@@ -13975,6 +14024,18 @@ type UpdateProductParams struct {
 	Unset  *ProductFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
+// GetPromoCodeParams defines parameters for GetPromoCode.
+type GetPromoCodeParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// Company id
+	CompanyId string `form:"company_id" json:"company_id"`
+}
+
 // CreateCustomPropertyJSONBody defines parameters for CreateCustomProperty.
 type CreateCustomPropertyJSONBody CustomProperty
 
@@ -18551,6 +18612,9 @@ type ClientInterface interface {
 
 	UpdateProduct(ctx context.Context, id string, params *UpdateProductParams, body UpdateProductJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetPromoCode request
+	GetPromoCode(ctx context.Context, promoCode string, params *GetPromoCodeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateCustomProperty request with any body
 	CreateCustomPropertyWithBody(ctx context.Context, params *CreateCustomPropertyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -22994,6 +23058,18 @@ func (c *Client) UpdateProductWithBody(ctx context.Context, id string, params *U
 
 func (c *Client) UpdateProduct(ctx context.Context, id string, params *UpdateProductParams, body UpdateProductJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateProductRequest(c.Server, id, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPromoCode(ctx context.Context, promoCode string, params *GetPromoCodeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPromoCodeRequest(c.Server, promoCode, params)
 	if err != nil {
 		return nil, err
 	}
@@ -45101,6 +45177,88 @@ func NewUpdateProductRequestWithBody(server string, id string, params *UpdatePro
 	return req, nil
 }
 
+// NewGetPromoCodeRequest generates requests for GetPromoCode
+func NewGetPromoCodeRequest(server string, promoCode string, params *GetPromoCodeParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "promo_code", runtime.ParamLocationPath, promoCode)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/promo_codes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if queryFrag, err := runtime.StyleParamWithLocation("form", true, "company_id", runtime.ParamLocationQuery, params.CompanyId); err != nil {
+		return nil, err
+	} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+		return nil, err
+	} else {
+		for k, v := range parsed {
+			for _, v2 := range v {
+				queryValues.Add(k, v2)
+			}
+		}
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateCustomPropertyRequest calls the generic CreateCustomProperty builder with application/json body
 func NewCreateCustomPropertyRequest(server string, params *CreateCustomPropertyParams, body CreateCustomPropertyJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -54987,6 +55145,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateProductWithResponse(ctx context.Context, id string, params *UpdateProductParams, body UpdateProductJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProductResponse, error)
 
+	// GetPromoCode request
+	GetPromoCodeWithResponse(ctx context.Context, promoCode string, params *GetPromoCodeParams, reqEditors ...RequestEditorFn) (*GetPromoCodeResponse, error)
+
 	// CreateCustomProperty request with any body
 	CreateCustomPropertyWithBodyWithResponse(ctx context.Context, params *CreateCustomPropertyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCustomPropertyResponse, error)
 
@@ -61101,6 +61262,28 @@ func (r UpdateProductResponse) StatusCode() int {
 	return 0
 }
 
+type GetPromoCodeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PromoCodeValidation
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPromoCodeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPromoCodeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateCustomPropertyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -66788,6 +66971,15 @@ func (c *ClientWithResponses) UpdateProductWithResponse(ctx context.Context, id 
 		return nil, err
 	}
 	return ParseUpdateProductResponse(rsp)
+}
+
+// GetPromoCodeWithResponse request returning *GetPromoCodeResponse
+func (c *ClientWithResponses) GetPromoCodeWithResponse(ctx context.Context, promoCode string, params *GetPromoCodeParams, reqEditors ...RequestEditorFn) (*GetPromoCodeResponse, error) {
+	rsp, err := c.GetPromoCode(ctx, promoCode, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPromoCodeResponse(rsp)
 }
 
 // CreateCustomPropertyWithBodyWithResponse request with arbitrary body returning *CreateCustomPropertyResponse
@@ -74734,6 +74926,32 @@ func ParseUpdateProductResponse(rsp *http.Response) (*UpdateProductResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Product
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPromoCodeResponse parses an HTTP response from a GetPromoCodeWithResponse call
+func ParseGetPromoCodeResponse(rsp *http.Response) (*GetPromoCodeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPromoCodeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PromoCodeValidation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
