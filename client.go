@@ -490,7 +490,6 @@ const (
 	EntitlementFeatureIDCustomVouchers              EntitlementFeatureID = "custom_vouchers"
 	EntitlementFeatureIDEventRepeat                 EntitlementFeatureID = "event_repeat"
 	EntitlementFeatureIDExtraSms                    EntitlementFeatureID = "extra_sms"
-	EntitlementFeatureIDGoogleReserve               EntitlementFeatureID = "google_reserve"
 	EntitlementFeatureIDLockedSections              EntitlementFeatureID = "locked_sections"
 	EntitlementFeatureIDMarketplaceAdvancedSettings EntitlementFeatureID = "marketplace_advanced_settings"
 	EntitlementFeatureIDMultipleCalendarEmployees   EntitlementFeatureID = "multiple_calendar_employees"
