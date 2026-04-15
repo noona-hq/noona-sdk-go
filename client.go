@@ -2137,6 +2137,46 @@ type AdyenTransferInstrument struct {
 	union json.RawMessage
 }
 
+// AgentToken defines model for AgentToken.
+type AgentToken struct {
+	CreatedAt   time.Time   `json:"created_at"`
+	CreatedBy   string      `json:"created_by"`
+	Id          string      `json:"id"`
+	MaskedToken string      `json:"masked_token"`
+	Name        string      `json:"name"`
+	Scopes      OAuthScopes `json:"scopes"`
+	UpdatedAt   *time.Time  `json:"updated_at,omitempty"`
+}
+
+// AgentTokenCreate defines model for AgentTokenCreate.
+type AgentTokenCreate struct {
+	Name   string      `json:"name"`
+	Scopes OAuthScopes `json:"scopes"`
+}
+
+// AgentTokenCreated defines model for AgentTokenCreated.
+type AgentTokenCreated struct {
+	CreatedAt   time.Time   `json:"created_at"`
+	CreatedBy   string      `json:"created_by"`
+	Id          string      `json:"id"`
+	MaskedToken string      `json:"masked_token"`
+	Name        string      `json:"name"`
+	Scopes      OAuthScopes `json:"scopes"`
+
+	// The raw token value. Only returned on creation.
+	Token     string     `json:"token"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+// AgentTokenUpdate defines model for AgentTokenUpdate.
+type AgentTokenUpdate struct {
+	Name   *string      `json:"name,omitempty"`
+	Scopes *OAuthScopes `json:"scopes,omitempty"`
+}
+
+// AgentTokens defines model for AgentTokens.
+type AgentTokens []AgentToken
+
 // AllPricing defines model for AllPricing.
 type AllPricing []Pricing
 
@@ -11302,6 +11342,12 @@ type ListPaymentActivitiesParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminCreateAgentTokenJSONBody defines parameters for AdminCreateAgentToken.
+type AdminCreateAgentTokenJSONBody AgentTokenCreate
+
+// AdminUpdateAgentTokenJSONBody defines parameters for AdminUpdateAgentToken.
+type AdminUpdateAgentTokenJSONBody AgentTokenUpdate
+
 // AdminListCompaniesParams defines parameters for AdminListCompanies.
 type AdminListCompaniesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15219,6 +15265,12 @@ type UpdateWebhookParams struct {
 // UpdateWorkHoursJSONBody defines parameters for UpdateWorkHours.
 type UpdateWorkHoursJSONBody WorkHoursUpdate
 
+// AdminCreateAgentTokenJSONRequestBody defines body for AdminCreateAgentToken for application/json ContentType.
+type AdminCreateAgentTokenJSONRequestBody AdminCreateAgentTokenJSONBody
+
+// AdminUpdateAgentTokenJSONRequestBody defines body for AdminUpdateAgentToken for application/json ContentType.
+type AdminUpdateAgentTokenJSONRequestBody AdminUpdateAgentTokenJSONBody
+
 // AdminUpdateCompanyJSONRequestBody defines body for AdminUpdateCompany for application/json ContentType.
 type AdminUpdateCompanyJSONRequestBody AdminUpdateCompanyJSONBody
 
@@ -17706,6 +17758,25 @@ type ClientInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminListAgentTokens request
+	AdminListAgentTokens(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminCreateAgentToken request with any body
+	AdminCreateAgentTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminCreateAgentToken(ctx context.Context, body AdminCreateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminDeleteAgentToken request
+	AdminDeleteAgentToken(ctx context.Context, tokenId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminGetAgentToken request
+	AdminGetAgentToken(ctx context.Context, tokenId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminUpdateAgentToken request with any body
+	AdminUpdateAgentTokenWithBody(ctx context.Context, tokenId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminUpdateAgentToken(ctx context.Context, tokenId string, body AdminUpdateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminListCompanies request
 	AdminListCompanies(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19144,6 +19215,90 @@ func (c *Client) ListEventActivities(ctx context.Context, eventId string, params
 
 func (c *Client) ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPaymentActivitiesRequest(c.Server, paymentId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminListAgentTokens(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminListAgentTokensRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminCreateAgentTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminCreateAgentTokenRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminCreateAgentToken(ctx context.Context, body AdminCreateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminCreateAgentTokenRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminDeleteAgentToken(ctx context.Context, tokenId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminDeleteAgentTokenRequest(c.Server, tokenId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminGetAgentToken(ctx context.Context, tokenId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminGetAgentTokenRequest(c.Server, tokenId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateAgentTokenWithBody(ctx context.Context, tokenId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateAgentTokenRequestWithBody(c.Server, tokenId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateAgentToken(ctx context.Context, tokenId string, body AdminUpdateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateAgentTokenRequest(c.Server, tokenId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -25536,6 +25691,188 @@ func NewListPaymentActivitiesRequest(server string, paymentId string, params *Li
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewAdminListAgentTokensRequest generates requests for AdminListAgentTokens
+func NewAdminListAgentTokensRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/agent-tokens")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminCreateAgentTokenRequest calls the generic AdminCreateAgentToken builder with application/json body
+func NewAdminCreateAgentTokenRequest(server string, body AdminCreateAgentTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminCreateAgentTokenRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminCreateAgentTokenRequestWithBody generates requests for AdminCreateAgentToken with any type of body
+func NewAdminCreateAgentTokenRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/agent-tokens")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminDeleteAgentTokenRequest generates requests for AdminDeleteAgentToken
+func NewAdminDeleteAgentTokenRequest(server string, tokenId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "token_id", runtime.ParamLocationPath, tokenId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/agent-tokens/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminGetAgentTokenRequest generates requests for AdminGetAgentToken
+func NewAdminGetAgentTokenRequest(server string, tokenId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "token_id", runtime.ParamLocationPath, tokenId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/agent-tokens/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminUpdateAgentTokenRequest calls the generic AdminUpdateAgentToken builder with application/json body
+func NewAdminUpdateAgentTokenRequest(server string, tokenId string, body AdminUpdateAgentTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminUpdateAgentTokenRequestWithBody(server, tokenId, "application/json", bodyReader)
+}
+
+// NewAdminUpdateAgentTokenRequestWithBody generates requests for AdminUpdateAgentToken with any type of body
+func NewAdminUpdateAgentTokenRequestWithBody(server string, tokenId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "token_id", runtime.ParamLocationPath, tokenId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/agent-tokens/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -54239,6 +54576,25 @@ type ClientWithResponsesInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivitiesWithResponse(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*ListPaymentActivitiesResponse, error)
 
+	// AdminListAgentTokens request
+	AdminListAgentTokensWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminListAgentTokensResponse, error)
+
+	// AdminCreateAgentToken request with any body
+	AdminCreateAgentTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminCreateAgentTokenResponse, error)
+
+	AdminCreateAgentTokenWithResponse(ctx context.Context, body AdminCreateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminCreateAgentTokenResponse, error)
+
+	// AdminDeleteAgentToken request
+	AdminDeleteAgentTokenWithResponse(ctx context.Context, tokenId string, reqEditors ...RequestEditorFn) (*AdminDeleteAgentTokenResponse, error)
+
+	// AdminGetAgentToken request
+	AdminGetAgentTokenWithResponse(ctx context.Context, tokenId string, reqEditors ...RequestEditorFn) (*AdminGetAgentTokenResponse, error)
+
+	// AdminUpdateAgentToken request with any body
+	AdminUpdateAgentTokenWithBodyWithResponse(ctx context.Context, tokenId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateAgentTokenResponse, error)
+
+	AdminUpdateAgentTokenWithResponse(ctx context.Context, tokenId string, body AdminUpdateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateAgentTokenResponse, error)
+
 	// AdminListCompanies request
 	AdminListCompaniesWithResponse(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*AdminListCompaniesResponse, error)
 
@@ -55731,6 +56087,115 @@ func (r ListPaymentActivitiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPaymentActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminListAgentTokensResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentTokens
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminListAgentTokensResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminListAgentTokensResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminCreateAgentTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentTokenCreated
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminCreateAgentTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminCreateAgentTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminDeleteAgentTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminDeleteAgentTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminDeleteAgentTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminGetAgentTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentToken
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminGetAgentTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminGetAgentTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminUpdateAgentTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentToken
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminUpdateAgentTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminUpdateAgentTokenResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -64111,6 +64576,67 @@ func (c *ClientWithResponses) ListPaymentActivitiesWithResponse(ctx context.Cont
 	return ParseListPaymentActivitiesResponse(rsp)
 }
 
+// AdminListAgentTokensWithResponse request returning *AdminListAgentTokensResponse
+func (c *ClientWithResponses) AdminListAgentTokensWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminListAgentTokensResponse, error) {
+	rsp, err := c.AdminListAgentTokens(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminListAgentTokensResponse(rsp)
+}
+
+// AdminCreateAgentTokenWithBodyWithResponse request with arbitrary body returning *AdminCreateAgentTokenResponse
+func (c *ClientWithResponses) AdminCreateAgentTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminCreateAgentTokenResponse, error) {
+	rsp, err := c.AdminCreateAgentTokenWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminCreateAgentTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminCreateAgentTokenWithResponse(ctx context.Context, body AdminCreateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminCreateAgentTokenResponse, error) {
+	rsp, err := c.AdminCreateAgentToken(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminCreateAgentTokenResponse(rsp)
+}
+
+// AdminDeleteAgentTokenWithResponse request returning *AdminDeleteAgentTokenResponse
+func (c *ClientWithResponses) AdminDeleteAgentTokenWithResponse(ctx context.Context, tokenId string, reqEditors ...RequestEditorFn) (*AdminDeleteAgentTokenResponse, error) {
+	rsp, err := c.AdminDeleteAgentToken(ctx, tokenId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminDeleteAgentTokenResponse(rsp)
+}
+
+// AdminGetAgentTokenWithResponse request returning *AdminGetAgentTokenResponse
+func (c *ClientWithResponses) AdminGetAgentTokenWithResponse(ctx context.Context, tokenId string, reqEditors ...RequestEditorFn) (*AdminGetAgentTokenResponse, error) {
+	rsp, err := c.AdminGetAgentToken(ctx, tokenId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminGetAgentTokenResponse(rsp)
+}
+
+// AdminUpdateAgentTokenWithBodyWithResponse request with arbitrary body returning *AdminUpdateAgentTokenResponse
+func (c *ClientWithResponses) AdminUpdateAgentTokenWithBodyWithResponse(ctx context.Context, tokenId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateAgentTokenResponse, error) {
+	rsp, err := c.AdminUpdateAgentTokenWithBody(ctx, tokenId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateAgentTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminUpdateAgentTokenWithResponse(ctx context.Context, tokenId string, body AdminUpdateAgentTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateAgentTokenResponse, error) {
+	rsp, err := c.AdminUpdateAgentToken(ctx, tokenId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateAgentTokenResponse(rsp)
+}
+
 // AdminListCompaniesWithResponse request returning *AdminListCompaniesResponse
 func (c *ClientWithResponses) AdminListCompaniesWithResponse(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*AdminListCompaniesResponse, error) {
 	rsp, err := c.AdminListCompanies(ctx, params, reqEditors...)
@@ -68636,6 +69162,126 @@ func ParseListPaymentActivitiesResponse(rsp *http.Response) (*ListPaymentActivit
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Activities
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminListAgentTokensResponse parses an HTTP response from a AdminListAgentTokensWithResponse call
+func ParseAdminListAgentTokensResponse(rsp *http.Response) (*AdminListAgentTokensResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminListAgentTokensResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentTokens
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminCreateAgentTokenResponse parses an HTTP response from a AdminCreateAgentTokenWithResponse call
+func ParseAdminCreateAgentTokenResponse(rsp *http.Response) (*AdminCreateAgentTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminCreateAgentTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentTokenCreated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminDeleteAgentTokenResponse parses an HTTP response from a AdminDeleteAgentTokenWithResponse call
+func ParseAdminDeleteAgentTokenResponse(rsp *http.Response) (*AdminDeleteAgentTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminDeleteAgentTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminGetAgentTokenResponse parses an HTTP response from a AdminGetAgentTokenWithResponse call
+func ParseAdminGetAgentTokenResponse(rsp *http.Response) (*AdminGetAgentTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminGetAgentTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentToken
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminUpdateAgentTokenResponse parses an HTTP response from a AdminUpdateAgentTokenWithResponse call
+func ParseAdminUpdateAgentTokenResponse(rsp *http.Response) (*AdminUpdateAgentTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminUpdateAgentTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentToken
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
