@@ -1880,12 +1880,15 @@ type AdminCompany struct {
 
 // AdminCompanyDetails defines model for AdminCompanyDetails.
 type AdminCompanyDetails struct {
-	Country          *Country                  `json:"country,omitempty"`
-	CreatedAt        time.Time                 `json:"created_at"`
-	DeletedAt        *time.Time                `json:"deleted_at,omitempty"`
-	Id               string                    `json:"id"`
-	LastActive       *time.Time                `json:"last_active,omitempty"`
-	Name             string                    `json:"name"`
+	Country    *Country   `json:"country,omitempty"`
+	CreatedAt  time.Time  `json:"created_at"`
+	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
+	Id         string     `json:"id"`
+	LastActive *time.Time `json:"last_active,omitempty"`
+	Name       string     `json:"name"`
+
+	// The company's Icelandic national ID (kennitala) used as the claimant identity for no-show claims.
+	NoshowClaimantId *string                   `json:"noshow_claimant_id,omitempty"`
 	PhoneCountryCode *string                   `json:"phone_country_code,omitempty"`
 	PhoneNumber      *string                   `json:"phone_number,omitempty"`
 	SecretaryId      *string                   `json:"secretary_id,omitempty"`
