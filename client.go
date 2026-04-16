@@ -10407,9 +10407,10 @@ type UserSettings struct {
 
 // UserUpdate defines model for UserUpdate.
 type UserUpdate struct {
-	ActiveCompanyId *string          `json:"active_company_id,omitempty"`
-	Pos             *UserPOSSettings `json:"pos,omitempty"`
-	Settings        *UserSettings    `json:"settings,omitempty"`
+	ActiveCompanyId *string              `json:"active_company_id,omitempty"`
+	Email           *openapi_types.Email `json:"email,omitempty"`
+	Pos             *UserPOSSettings     `json:"pos,omitempty"`
+	Settings        *UserSettings        `json:"settings,omitempty"`
 }
 
 // Users defines model for Users.
