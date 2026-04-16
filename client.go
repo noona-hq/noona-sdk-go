@@ -22,6 +22,7 @@ import (
 )
 
 const (
+	AgentTokenAuthScopes  = "AgentTokenAuth.Scopes"
 	BearerTokenAuthScopes = "BearerTokenAuth.Scopes"
 	Email_PasswordScopes  = "Email_Password.Scopes"
 	OAuth_2_0Scopes       = "oAuth_2_0.Scopes"
@@ -110,6 +111,11 @@ const (
 	AdyenOnboardingStatusPending    AdyenOnboardingStatus = "pending"
 	AdyenOnboardingStatusRejected   AdyenOnboardingStatus = "rejected"
 	AdyenOnboardingStatusValid      AdyenOnboardingStatus = "valid"
+)
+
+// Defines values for AgentExclusiveScope.
+const (
+	AgentCompaniesRead AgentExclusiveScope = "agent.companies:read"
 )
 
 // Defines values for ApplicationPaymentType.
@@ -2137,41 +2143,52 @@ type AdyenTransferInstrument struct {
 	union json.RawMessage
 }
 
+// AgentExclusiveScope defines model for AgentExclusiveScope.
+type AgentExclusiveScope string
+
 // AgentToken defines model for AgentToken.
 type AgentToken struct {
-	CreatedAt   time.Time   `json:"created_at"`
-	CreatedBy   string      `json:"created_by"`
-	Id          string      `json:"id"`
-	MaskedToken string      `json:"masked_token"`
-	Name        string      `json:"name"`
-	Scopes      OAuthScopes `json:"scopes"`
-	UpdatedAt   *time.Time  `json:"updated_at,omitempty"`
+	CreatedAt   time.Time        `json:"created_at"`
+	CreatedBy   string           `json:"created_by"`
+	Id          string           `json:"id"`
+	MaskedToken string           `json:"masked_token"`
+	Name        string           `json:"name"`
+	Scopes      AgentTokenScopes `json:"scopes"`
+	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 }
 
 // AgentTokenCreate defines model for AgentTokenCreate.
 type AgentTokenCreate struct {
-	Name   string      `json:"name"`
-	Scopes OAuthScopes `json:"scopes"`
+	Name   string           `json:"name"`
+	Scopes AgentTokenScopes `json:"scopes"`
 }
 
 // AgentTokenCreated defines model for AgentTokenCreated.
 type AgentTokenCreated struct {
-	CreatedAt   time.Time   `json:"created_at"`
-	CreatedBy   string      `json:"created_by"`
-	Id          string      `json:"id"`
-	MaskedToken string      `json:"masked_token"`
-	Name        string      `json:"name"`
-	Scopes      OAuthScopes `json:"scopes"`
+	CreatedAt   time.Time        `json:"created_at"`
+	CreatedBy   string           `json:"created_by"`
+	Id          string           `json:"id"`
+	MaskedToken string           `json:"masked_token"`
+	Name        string           `json:"name"`
+	Scopes      AgentTokenScopes `json:"scopes"`
 
 	// The raw token value. Only returned on creation.
 	Token     string     `json:"token"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
+// AgentTokenScope defines model for AgentTokenScope.
+type AgentTokenScope struct {
+	union json.RawMessage
+}
+
+// AgentTokenScopes defines model for AgentTokenScopes.
+type AgentTokenScopes []AgentTokenScope
+
 // AgentTokenUpdate defines model for AgentTokenUpdate.
 type AgentTokenUpdate struct {
-	Name   *string      `json:"name,omitempty"`
-	Scopes *OAuthScopes `json:"scopes,omitempty"`
+	Name   *string           `json:"name,omitempty"`
+	Scopes *AgentTokenScopes `json:"scopes,omitempty"`
 }
 
 // AgentTokens defines model for AgentTokens.
@@ -11469,6 +11486,24 @@ type AdminMoveUserParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AgentListCompaniesParams defines parameters for AgentListCompanies.
+type AgentListCompaniesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// Search companies by name (case-insensitive partial match)
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+
+	// Filter by company vertical
+	Vertical *CompanyVertical `form:"vertical,omitempty" json:"vertical,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
 // ListAmbiencesParams defines parameters for ListAmbiences.
 type ListAmbiencesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15659,6 +15694,40 @@ func (t *AdyenTransferInstrument) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+func (t AgentTokenScope) AsOAuthScope() (OAuthScope, error) {
+	var body OAuthScope
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AgentTokenScope) FromOAuthScope(v OAuthScope) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AgentTokenScope) AsAgentExclusiveScope() (AgentExclusiveScope, error) {
+	var body AgentExclusiveScope
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AgentTokenScope) FromAgentExclusiveScope(v AgentExclusiveScope) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AgentTokenScope) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AgentTokenScope) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 func (t BookingQuestionAnswer_Answer) AsBookingQuestionAnswerValueString() (BookingQuestionAnswerValueString, error) {
 	var body BookingQuestionAnswerValueString
 	err := json.Unmarshal(t.union, &body)
@@ -17828,6 +17897,9 @@ type ClientInterface interface {
 
 	AdminMoveUser(ctx context.Context, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AgentListCompanies request
+	AgentListCompanies(ctx context.Context, params *AgentListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAmbiences request
 	ListAmbiences(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19527,6 +19599,18 @@ func (c *Client) AdminMoveUserWithBody(ctx context.Context, userId string, param
 
 func (c *Client) AdminMoveUser(ctx context.Context, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminMoveUserRequest(c.Server, userId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AgentListCompanies(ctx context.Context, params *AgentListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAgentListCompaniesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -26775,6 +26859,111 @@ func NewAdminMoveUserRequestWithBody(server string, userId string, params *Admin
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAgentListCompaniesRequest generates requests for AgentListCompanies
+func NewAgentListCompaniesRequest(server string, params *AgentListCompaniesParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/agent/companies")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Search != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "search", runtime.ParamLocationQuery, *params.Search); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Vertical != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "vertical", runtime.ParamLocationQuery, *params.Vertical); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -54646,6 +54835,9 @@ type ClientWithResponsesInterface interface {
 
 	AdminMoveUserWithResponse(ctx context.Context, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminMoveUserResponse, error)
 
+	// AgentListCompanies request
+	AgentListCompaniesWithResponse(ctx context.Context, params *AgentListCompaniesParams, reqEditors ...RequestEditorFn) (*AgentListCompaniesResponse, error)
+
 	// ListAmbiences request
 	ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error)
 
@@ -56477,6 +56669,28 @@ func (r AdminMoveUserResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminMoveUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AgentListCompaniesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CompaniesResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r AgentListCompaniesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AgentListCompaniesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -64802,6 +65016,15 @@ func (c *ClientWithResponses) AdminMoveUserWithResponse(ctx context.Context, use
 	return ParseAdminMoveUserResponse(rsp)
 }
 
+// AgentListCompaniesWithResponse request returning *AgentListCompaniesResponse
+func (c *ClientWithResponses) AgentListCompaniesWithResponse(ctx context.Context, params *AgentListCompaniesParams, reqEditors ...RequestEditorFn) (*AgentListCompaniesResponse, error) {
+	rsp, err := c.AgentListCompanies(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAgentListCompaniesResponse(rsp)
+}
+
 // ListAmbiencesWithResponse request returning *ListAmbiencesResponse
 func (c *ClientWithResponses) ListAmbiencesWithResponse(ctx context.Context, params *ListAmbiencesParams, reqEditors ...RequestEditorFn) (*ListAmbiencesResponse, error) {
 	rsp, err := c.ListAmbiences(ctx, params, reqEditors...)
@@ -69575,6 +69798,32 @@ func ParseAdminMoveUserResponse(rsp *http.Response) (*AdminMoveUserResponse, err
 	response := &AdminMoveUserResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAgentListCompaniesResponse parses an HTTP response from a AgentListCompaniesWithResponse call
+func ParseAgentListCompaniesResponse(rsp *http.Response) (*AgentListCompaniesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AgentListCompaniesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CompaniesResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
