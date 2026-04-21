@@ -17866,6 +17866,9 @@ type ClientInterface interface {
 
 	AdminUpdateAgentClient(ctx context.Context, clientId string, body AdminUpdateAgentClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminRotateAgentClientSecret request
+	AdminRotateAgentClientSecret(ctx context.Context, clientId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminListCompanies request
 	AdminListCompanies(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19391,6 +19394,18 @@ func (c *Client) AdminUpdateAgentClientWithBody(ctx context.Context, clientId st
 
 func (c *Client) AdminUpdateAgentClient(ctx context.Context, clientId string, body AdminUpdateAgentClientJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateAgentClientRequest(c.Server, clientId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminRotateAgentClientSecret(ctx context.Context, clientId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminRotateAgentClientSecretRequest(c.Server, clientId)
 	if err != nil {
 		return nil, err
 	}
@@ -25977,6 +25992,40 @@ func NewAdminUpdateAgentClientRequestWithBody(server string, clientId string, co
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminRotateAgentClientSecretRequest generates requests for AdminRotateAgentClientSecret
+func NewAdminRotateAgentClientSecretRequest(server string, clientId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "client_id", runtime.ParamLocationPath, clientId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/agent-clients/%s/rotate-secret", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -54804,6 +54853,9 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateAgentClientWithResponse(ctx context.Context, clientId string, body AdminUpdateAgentClientJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateAgentClientResponse, error)
 
+	// AdminRotateAgentClientSecret request
+	AdminRotateAgentClientSecretWithResponse(ctx context.Context, clientId string, reqEditors ...RequestEditorFn) (*AdminRotateAgentClientSecretResponse, error)
+
 	// AdminListCompanies request
 	AdminListCompaniesWithResponse(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*AdminListCompaniesResponse, error)
 
@@ -56408,6 +56460,28 @@ func (r AdminUpdateAgentClientResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateAgentClientResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminRotateAgentClientSecretResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AgentClientCreated
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminRotateAgentClientSecretResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminRotateAgentClientSecretResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -64871,6 +64945,15 @@ func (c *ClientWithResponses) AdminUpdateAgentClientWithResponse(ctx context.Con
 	return ParseAdminUpdateAgentClientResponse(rsp)
 }
 
+// AdminRotateAgentClientSecretWithResponse request returning *AdminRotateAgentClientSecretResponse
+func (c *ClientWithResponses) AdminRotateAgentClientSecretWithResponse(ctx context.Context, clientId string, reqEditors ...RequestEditorFn) (*AdminRotateAgentClientSecretResponse, error) {
+	rsp, err := c.AdminRotateAgentClientSecret(ctx, clientId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminRotateAgentClientSecretResponse(rsp)
+}
+
 // AdminListCompaniesWithResponse request returning *AdminListCompaniesResponse
 func (c *ClientWithResponses) AdminListCompaniesWithResponse(ctx context.Context, params *AdminListCompaniesParams, reqEditors ...RequestEditorFn) (*AdminListCompaniesResponse, error) {
 	rsp, err := c.AdminListCompanies(ctx, params, reqEditors...)
@@ -69525,6 +69608,32 @@ func ParseAdminUpdateAgentClientResponse(rsp *http.Response) (*AdminUpdateAgentC
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AgentClient
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminRotateAgentClientSecretResponse parses an HTTP response from a AdminRotateAgentClientSecretWithResponse call
+func ParseAdminRotateAgentClientSecretResponse(rsp *http.Response) (*AdminRotateAgentClientSecretResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminRotateAgentClientSecretResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AgentClientCreated
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
