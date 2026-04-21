@@ -6732,6 +6732,11 @@ type MergeCustomersRequest struct {
 	CustomerIds []string `json:"customer_ids"`
 }
 
+// MoveToEnterpriseRequest defines model for MoveToEnterpriseRequest.
+type MoveToEnterpriseRequest struct {
+	EnterpriseId string `json:"enterprise_id"`
+}
+
 // MozrestBookingChannel defines model for MozrestBookingChannel.
 type MozrestBookingChannel struct {
 	Enabled *bool   `json:"enabled,omitempty"`
@@ -12134,6 +12139,9 @@ type GetSalesMetricsParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// MoveCompanyToEnterpriseJSONBody defines parameters for MoveCompanyToEnterprise.
+type MoveCompanyToEnterpriseJSONBody MoveToEnterpriseRequest
+
 // DeleteNotificationsParams defines parameters for DeleteNotifications.
 type DeleteNotificationsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15371,6 +15379,9 @@ type CloneCompanyJSONRequestBody CloneCompanyJSONBody
 // UpdateEmployeeJSONRequestBody defines body for UpdateEmployee for application/json ContentType.
 type UpdateEmployeeJSONRequestBody UpdateEmployeeJSONBody
 
+// MoveCompanyToEnterpriseJSONRequestBody defines body for MoveCompanyToEnterprise for application/json ContentType.
+type MoveCompanyToEnterpriseJSONRequestBody MoveCompanyToEnterpriseJSONBody
+
 // CreateSubscriptionJSONRequestBody defines body for CreateSubscription for application/json ContentType.
 type CreateSubscriptionJSONRequestBody CreateSubscriptionJSONBody
 
@@ -18023,6 +18034,9 @@ type ClientInterface interface {
 	// ListCustomers request
 	ListCustomers(ctx context.Context, companyId string, params *ListCustomersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DetachCompanyFromEnterprise request
+	DetachCompanyFromEnterprise(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListEmails request
 	ListEmails(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18096,6 +18110,11 @@ type ClientInterface interface {
 
 	// MigrateStaffWorkHours request
 	MigrateStaffWorkHours(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MoveCompanyToEnterprise request with any body
+	MoveCompanyToEnterpriseWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	MoveCompanyToEnterprise(ctx context.Context, companyId string, body MoveCompanyToEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteNotifications request
 	DeleteNotifications(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -20088,6 +20107,18 @@ func (c *Client) ListCustomers(ctx context.Context, companyId string, params *Li
 	return c.Client.Do(req)
 }
 
+func (c *Client) DetachCompanyFromEnterprise(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDetachCompanyFromEnterpriseRequest(c.Server, companyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListEmails(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListEmailsRequest(c.Server, companyId, params)
 	if err != nil {
@@ -20378,6 +20409,30 @@ func (c *Client) MigrateCompanyReminders(ctx context.Context, companyId string, 
 
 func (c *Client) MigrateStaffWorkHours(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMigrateStaffWorkHoursRequest(c.Server, companyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MoveCompanyToEnterpriseWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMoveCompanyToEnterpriseRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MoveCompanyToEnterprise(ctx context.Context, companyId string, body MoveCompanyToEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMoveCompanyToEnterpriseRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -29370,6 +29425,40 @@ func NewListCustomersRequest(server string, companyId string, params *ListCustom
 	return req, nil
 }
 
+// NewDetachCompanyFromEnterpriseRequest generates requests for DetachCompanyFromEnterprise
+func NewDetachCompanyFromEnterpriseRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/detach-from-enterprise", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListEmailsRequest generates requests for ListEmails
 func NewListEmailsRequest(server string, companyId string, params *ListEmailsParams) (*http.Request, error) {
 	var err error
@@ -31392,6 +31481,53 @@ func NewMigrateStaffWorkHoursRequest(server string, companyId string) (*http.Req
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewMoveCompanyToEnterpriseRequest calls the generic MoveCompanyToEnterprise builder with application/json body
+func NewMoveCompanyToEnterpriseRequest(server string, companyId string, body MoveCompanyToEnterpriseJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMoveCompanyToEnterpriseRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewMoveCompanyToEnterpriseRequestWithBody generates requests for MoveCompanyToEnterprise with any type of body
+func NewMoveCompanyToEnterpriseRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/move-to-enterprise", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -55010,6 +55146,9 @@ type ClientWithResponsesInterface interface {
 	// ListCustomers request
 	ListCustomersWithResponse(ctx context.Context, companyId string, params *ListCustomersParams, reqEditors ...RequestEditorFn) (*ListCustomersResponse, error)
 
+	// DetachCompanyFromEnterprise request
+	DetachCompanyFromEnterpriseWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*DetachCompanyFromEnterpriseResponse, error)
+
 	// ListEmails request
 	ListEmailsWithResponse(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*ListEmailsResponse, error)
 
@@ -55083,6 +55222,11 @@ type ClientWithResponsesInterface interface {
 
 	// MigrateStaffWorkHours request
 	MigrateStaffWorkHoursWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateStaffWorkHoursResponse, error)
+
+	// MoveCompanyToEnterprise request with any body
+	MoveCompanyToEnterpriseWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MoveCompanyToEnterpriseResponse, error)
+
+	MoveCompanyToEnterpriseWithResponse(ctx context.Context, companyId string, body MoveCompanyToEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*MoveCompanyToEnterpriseResponse, error)
 
 	// DeleteNotifications request
 	DeleteNotificationsWithResponse(ctx context.Context, companyId string, params *DeleteNotificationsParams, reqEditors ...RequestEditorFn) (*DeleteNotificationsResponse, error)
@@ -57414,6 +57558,28 @@ func (r ListCustomersResponse) StatusCode() int {
 	return 0
 }
 
+type DetachCompanyFromEnterpriseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Enterprise
+}
+
+// Status returns HTTPResponse.Status
+func (r DetachCompanyFromEnterpriseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DetachCompanyFromEnterpriseResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListEmailsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -57933,6 +58099,28 @@ func (r MigrateStaffWorkHoursResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r MigrateStaffWorkHoursResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MoveCompanyToEnterpriseResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Enterprise
+}
+
+// Status returns HTTPResponse.Status
+func (r MoveCompanyToEnterpriseResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MoveCompanyToEnterpriseResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -65444,6 +65632,15 @@ func (c *ClientWithResponses) ListCustomersWithResponse(ctx context.Context, com
 	return ParseListCustomersResponse(rsp)
 }
 
+// DetachCompanyFromEnterpriseWithResponse request returning *DetachCompanyFromEnterpriseResponse
+func (c *ClientWithResponses) DetachCompanyFromEnterpriseWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*DetachCompanyFromEnterpriseResponse, error) {
+	rsp, err := c.DetachCompanyFromEnterprise(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDetachCompanyFromEnterpriseResponse(rsp)
+}
+
 // ListEmailsWithResponse request returning *ListEmailsResponse
 func (c *ClientWithResponses) ListEmailsWithResponse(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*ListEmailsResponse, error) {
 	rsp, err := c.ListEmails(ctx, companyId, params, reqEditors...)
@@ -65666,6 +65863,23 @@ func (c *ClientWithResponses) MigrateStaffWorkHoursWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseMigrateStaffWorkHoursResponse(rsp)
+}
+
+// MoveCompanyToEnterpriseWithBodyWithResponse request with arbitrary body returning *MoveCompanyToEnterpriseResponse
+func (c *ClientWithResponses) MoveCompanyToEnterpriseWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MoveCompanyToEnterpriseResponse, error) {
+	rsp, err := c.MoveCompanyToEnterpriseWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMoveCompanyToEnterpriseResponse(rsp)
+}
+
+func (c *ClientWithResponses) MoveCompanyToEnterpriseWithResponse(ctx context.Context, companyId string, body MoveCompanyToEnterpriseJSONRequestBody, reqEditors ...RequestEditorFn) (*MoveCompanyToEnterpriseResponse, error) {
+	rsp, err := c.MoveCompanyToEnterprise(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMoveCompanyToEnterpriseResponse(rsp)
 }
 
 // DeleteNotificationsWithResponse request returning *DeleteNotificationsResponse
@@ -70732,6 +70946,32 @@ func ParseListCustomersResponse(rsp *http.Response) (*ListCustomersResponse, err
 	return response, nil
 }
 
+// ParseDetachCompanyFromEnterpriseResponse parses an HTTP response from a DetachCompanyFromEnterpriseWithResponse call
+func ParseDetachCompanyFromEnterpriseResponse(rsp *http.Response) (*DetachCompanyFromEnterpriseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DetachCompanyFromEnterpriseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Enterprise
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListEmailsResponse parses an HTTP response from a ListEmailsWithResponse call
 func ParseListEmailsResponse(rsp *http.Response) (*ListEmailsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -71321,6 +71561,32 @@ func ParseMigrateStaffWorkHoursResponse(rsp *http.Response) (*MigrateStaffWorkHo
 	response := &MigrateStaffWorkHoursResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseMoveCompanyToEnterpriseResponse parses an HTTP response from a MoveCompanyToEnterpriseWithResponse call
+func ParseMoveCompanyToEnterpriseResponse(rsp *http.Response) (*MoveCompanyToEnterpriseResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MoveCompanyToEnterpriseResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Enterprise
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
