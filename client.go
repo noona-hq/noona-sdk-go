@@ -44,6 +44,7 @@ const (
 	ActivityFieldEmployee           ActivityField = "employee"
 	ActivityFieldEndsAt             ActivityField = "ends_at"
 	ActivityFieldEventTypes         ActivityField = "event_types"
+	ActivityFieldImage              ActivityField = "image"
 	ActivityFieldKennitala          ActivityField = "kennitala"
 	ActivityFieldLicensePlate       ActivityField = "license_plate"
 	ActivityFieldName               ActivityField = "name"
