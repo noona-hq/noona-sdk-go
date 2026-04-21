@@ -2149,9 +2149,12 @@ type AdyenTransferInstrument struct {
 
 // AgentClient defines model for AgentClient.
 type AgentClient struct {
-	ClientId           string            `json:"client_id"`
-	CreatedAt          time.Time         `json:"created_at"`
-	CreatedBy          string            `json:"created_by"`
+	ClientId  string    `json:"client_id"`
+	CreatedAt time.Time `json:"created_at"`
+	CreatedBy string    `json:"created_by"`
+
+	// Whether this agent client has global (cross-company) access. Defaults to true.
+	Global             bool              `json:"global"`
 	Id                 string            `json:"id"`
 	MaskedClientSecret string            `json:"masked_client_secret"`
 	Name               string            `json:"name"`
@@ -2161,6 +2164,8 @@ type AgentClient struct {
 
 // AgentClientCreate defines model for AgentClientCreate.
 type AgentClientCreate struct {
+	// Whether this agent client has global (cross-company) access. Defaults to true when omitted.
+	Global *bool             `json:"global,omitempty"`
 	Name   string            `json:"name"`
 	Scopes AgentClientScopes `json:"scopes"`
 }
@@ -2170,9 +2175,12 @@ type AgentClientCreated struct {
 	ClientId string `json:"client_id"`
 
 	// The raw client secret. Only returned on creation.
-	ClientSecret       string            `json:"client_secret"`
-	CreatedAt          time.Time         `json:"created_at"`
-	CreatedBy          string            `json:"created_by"`
+	ClientSecret string    `json:"client_secret"`
+	CreatedAt    time.Time `json:"created_at"`
+	CreatedBy    string    `json:"created_by"`
+
+	// Whether this agent client has global (cross-company) access. Defaults to true.
+	Global             bool              `json:"global"`
 	Id                 string            `json:"id"`
 	MaskedClientSecret string            `json:"masked_client_secret"`
 	Name               string            `json:"name"`
@@ -2190,6 +2198,8 @@ type AgentClientScopes []AgentClientScope
 
 // AgentClientUpdate defines model for AgentClientUpdate.
 type AgentClientUpdate struct {
+	// Whether this agent client has global (cross-company) access.
+	Global *bool              `json:"global,omitempty"`
 	Name   *string            `json:"name,omitempty"`
 	Scopes *AgentClientScopes `json:"scopes,omitempty"`
 }
