@@ -4586,7 +4586,6 @@ type Enterprise struct {
 type EnterpriseConnections struct {
 	// Controls whether customers can make appointments without authentication
 	AllowsBookingWithoutAuth *bool                             `json:"allows_booking_without_auth,omitempty"`
-	AvailableOnMarketplace   *bool                             `json:"available_on_marketplace,omitempty"`
 	Marketplace              *EnterpriseConnectionsMarketplace `json:"marketplace,omitempty"`
 
 	// Used when constructing the marketplace url for the enterprise.
