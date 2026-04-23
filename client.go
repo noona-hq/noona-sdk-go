@@ -506,6 +506,7 @@ const (
 	EntitlementFeatureIDOnlineWaitlist              EntitlementFeatureID = "online_waitlist"
 	EntitlementFeatureIDPremiumPos                  EntitlementFeatureID = "premium_pos"
 	EntitlementFeatureIDPremiumRoles                EntitlementFeatureID = "premium_roles"
+	EntitlementFeatureIDScheduledEvents             EntitlementFeatureID = "scheduled_events"
 	EntitlementFeatureIDServiceOverrides            EntitlementFeatureID = "service_overrides"
 	EntitlementFeatureIDSharedChainPage             EntitlementFeatureID = "shared_chain_page"
 	EntitlementFeatureIDSmsCredits                  EntitlementFeatureID = "sms_credits"
@@ -1967,6 +1968,7 @@ type AdminCompanyUpdate struct {
 	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
 	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
+	Verifone            *VerifoneConnection      `json:"verifone,omitempty"`
 	Vertical            *interface{}             `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
@@ -3432,6 +3434,7 @@ type Company struct {
 	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
 	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
+	Verifone            *VerifoneConnection      `json:"verifone,omitempty"`
 	Vertical            *CompanyVertical         `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
@@ -3857,6 +3860,7 @@ type CompanyResponse struct {
 	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
 	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
+	Verifone            *VerifoneConnection      `json:"verifone,omitempty"`
 	Vertical            CompanyVertical          `json:"vertical"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
@@ -3975,6 +3979,7 @@ type CompanyUpdate struct {
 	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
 	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
+	Verifone            *VerifoneConnection      `json:"verifone,omitempty"`
 	Vertical            *interface{}             `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
@@ -4424,6 +4429,7 @@ type Employee struct {
 	Sms               *EmployeeSMSSettings         `json:"sms,omitempty"`
 	Teya              *TeyaConnection              `json:"teya,omitempty"`
 	UpdatedAt         *time.Time                   `json:"updated_at,omitempty"`
+	Verifone          *VerifoneConnection          `json:"verifone,omitempty"`
 }
 
 // EmployeeCommissions defines model for EmployeeCommissions.
@@ -10530,8 +10536,11 @@ type VerifoneConnectRequest struct {
 
 // VerifoneConnection defines model for VerifoneConnection.
 type VerifoneConnection struct {
-	// True if the user has Verifone credentials saved
+	// True if the user has Verifone terminal credentials saved
 	Connected *bool `json:"connected,omitempty"`
+
+	// True if the company has a working Verifone ecom gateway attached
+	HasEcom *bool `json:"has_ecom,omitempty"`
 }
 
 // VerifoneTerminalOption defines model for VerifoneTerminalOption.
