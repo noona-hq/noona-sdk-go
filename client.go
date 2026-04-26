@@ -10541,7 +10541,10 @@ type VerifoneConnection struct {
 	// True if the user has Verifone terminal credentials saved
 	Connected *bool `json:"connected,omitempty"`
 
-	// True if the company has a working Verifone ecom gateway attached
+	// True if the entity has a working Verifone ecom gateway attached.
+	// On a company response this reflects the company-level credentials;
+	// on a user/employee response this reflects the user's own-settlement
+	// ecom credentials.
 	HasEcom *bool `json:"has_ecom,omitempty"`
 }
 
