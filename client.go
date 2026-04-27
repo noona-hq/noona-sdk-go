@@ -1913,6 +1913,9 @@ type AdminCompanyDetailsUser struct {
 	Id              *string `json:"id,omitempty"`
 	Name            *string `json:"name,omitempty"`
 	Role            *string `json:"role,omitempty"`
+
+	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
 }
 
 // AdminCompanyDetailsUsers defines model for AdminCompanyDetailsUsers.
@@ -2113,6 +2116,9 @@ type AdminUser struct {
 	Email     *string         `json:"email,omitempty"`
 	Id        string          `json:"id"`
 	Name      *string         `json:"name,omitempty"`
+
+	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
 }
 
 // Admin-only user update payload. Designed as a generic envelope so additional admin-only fields can be added over time without breaking existing clients.
