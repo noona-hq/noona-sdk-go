@@ -1900,7 +1900,10 @@ type AdminCompanyDetails struct {
 	Subscriptions    *PowerupSubscriptions     `json:"subscriptions,omitempty"`
 	UpdatedAt        time.Time                 `json:"updated_at"`
 	Users            *AdminCompanyDetailsUsers `json:"users,omitempty"`
-	Vertical         CompanyVertical           `json:"vertical"`
+
+	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
+	Vertical     CompanyVertical          `json:"vertical"`
 }
 
 // AdminCompanyDetailsUser defines model for AdminCompanyDetailsUser.
@@ -1971,7 +1974,10 @@ type AdminCompanyUpdate struct {
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
 	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
 	Verifone            *VerifoneConnection      `json:"verifone,omitempty"`
-	Vertical            *interface{}             `json:"vertical,omitempty"`
+
+	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
+	Vertical     *interface{}             `json:"vertical,omitempty"`
 
 	// Required fields configuration - used for both HQ (top-level) and marketplace (profile) visibility
 	VisibleFields *RequiredFields  `json:"visible_fields,omitempty"`
@@ -1982,6 +1988,9 @@ type AdminCompanyUpdate struct {
 type AdminCompanyUpdateFields struct {
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+
+	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
 }
 
 // AdminFixWorkHoursTimesFailure defines model for AdminFixWorkHoursTimesFailure.
@@ -2104,6 +2113,12 @@ type AdminUser struct {
 	Email     *string         `json:"email,omitempty"`
 	Id        string          `json:"id"`
 	Name      *string         `json:"name,omitempty"`
+}
+
+// Admin-only user update payload. Designed as a generic envelope so additional admin-only fields can be added over time without breaking existing clients.
+type AdminUserUpdate struct {
+	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
 }
 
 // AdminUsers defines model for AdminUsers.
@@ -10548,6 +10563,33 @@ type VerifoneConnection struct {
 	HasEcom *bool `json:"has_ecom,omitempty"`
 }
 
+// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+type VerifoneEcomCredentials struct {
+	// Verifone e-comm API key
+	ApiKey *string `json:"api_key,omitempty"`
+
+	// Verifone entity (merchant) ID
+	EntityId *string `json:"entity_id,omitempty"`
+
+	// Verifone payment provider contract identifier
+	PaymentProviderContract *string `json:"payment_provider_contract,omitempty"`
+
+	// PGP public key Verifone uses to encrypt payloads sent to this merchant
+	PgpPublicKey *string `json:"pgp_public_key,omitempty"`
+
+	// Alias of the Verifone-managed public key used for card encryption
+	PublicKeyAlias *string `json:"public_key_alias,omitempty"`
+
+	// Verifone 3-D Secure contract ID
+	ThreeDsContractId *string `json:"three_ds_contract_id,omitempty"`
+
+	// OAuth token scope assigned to this merchant for the e-comm gateway
+	TokenScope *string `json:"token_scope,omitempty"`
+
+	// Verifone e-comm user ID
+	UserId *string `json:"user_id,omitempty"`
+}
+
 // VerifoneTerminalOption defines model for VerifoneTerminalOption.
 type VerifoneTerminalOption struct {
 	// Terminal hardware model (e.g. V400m, P400)
@@ -11502,6 +11544,18 @@ type AdminListUsersParams struct {
 
 	// Search users by ID (exact match) or email (prefix match)
 	Q *string `form:"q,omitempty" json:"q,omitempty"`
+}
+
+// AdminUpdateUserJSONBody defines parameters for AdminUpdateUser.
+type AdminUpdateUserJSONBody AdminUserUpdate
+
+// AdminUpdateUserParams defines parameters for AdminUpdateUser.
+type AdminUpdateUserParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // AdminForceResetPasswordParams defines parameters for AdminForceResetPassword.
@@ -15363,6 +15417,9 @@ type AdminBulkMigrateSmsRemindersJSONRequestBody AdminBulkMigrateSmsRemindersJSO
 // AdminBulkMigrateStaffWorkHoursJSONRequestBody defines body for AdminBulkMigrateStaffWorkHours for application/json ContentType.
 type AdminBulkMigrateStaffWorkHoursJSONRequestBody AdminBulkMigrateStaffWorkHoursJSONBody
 
+// AdminUpdateUserJSONRequestBody defines body for AdminUpdateUser for application/json ContentType.
+type AdminUpdateUserJSONRequestBody AdminUpdateUserJSONBody
+
 // AdminMoveUserJSONRequestBody defines body for AdminMoveUser for application/json ContentType.
 type AdminMoveUserJSONRequestBody AdminMoveUserJSONBody
 
@@ -17937,6 +17994,11 @@ type ClientInterface interface {
 	// AdminListUsers request
 	AdminListUsers(ctx context.Context, params *AdminListUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminUpdateUser request with any body
+	AdminUpdateUserWithBody(ctx context.Context, userId string, params *AdminUpdateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminUpdateUser(ctx context.Context, userId string, params *AdminUpdateUserParams, body AdminUpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminForceResetPassword request
 	AdminForceResetPassword(ctx context.Context, userId string, params *AdminForceResetPasswordParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19631,6 +19693,30 @@ func (c *Client) AdminListSecretaries(ctx context.Context, params *AdminListSecr
 
 func (c *Client) AdminListUsers(ctx context.Context, params *AdminListUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminListUsersRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateUserWithBody(ctx context.Context, userId string, params *AdminUpdateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateUserRequestWithBody(c.Server, userId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateUser(ctx context.Context, userId string, params *AdminUpdateUserParams, body AdminUpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateUserRequest(c.Server, userId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -26844,6 +26930,89 @@ func NewAdminListUsersRequest(server string, params *AdminListUsersParams) (*htt
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewAdminUpdateUserRequest calls the generic AdminUpdateUser builder with application/json body
+func NewAdminUpdateUserRequest(server string, userId string, params *AdminUpdateUserParams, body AdminUpdateUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminUpdateUserRequestWithBody(server, userId, params, "application/json", bodyReader)
+}
+
+// NewAdminUpdateUserRequestWithBody generates requests for AdminUpdateUser with any type of body
+func NewAdminUpdateUserRequestWithBody(server string, userId string, params *AdminUpdateUserParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_id", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/users/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -55049,6 +55218,11 @@ type ClientWithResponsesInterface interface {
 	// AdminListUsers request
 	AdminListUsersWithResponse(ctx context.Context, params *AdminListUsersParams, reqEditors ...RequestEditorFn) (*AdminListUsersResponse, error)
 
+	// AdminUpdateUser request with any body
+	AdminUpdateUserWithBodyWithResponse(ctx context.Context, userId string, params *AdminUpdateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateUserResponse, error)
+
+	AdminUpdateUserWithResponse(ctx context.Context, userId string, params *AdminUpdateUserParams, body AdminUpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateUserResponse, error)
+
 	// AdminForceResetPassword request
 	AdminForceResetPasswordWithResponse(ctx context.Context, userId string, params *AdminForceResetPasswordParams, reqEditors ...RequestEditorFn) (*AdminForceResetPasswordResponse, error)
 
@@ -56879,6 +57053,27 @@ func (r AdminListUsersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminListUsersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminUpdateUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminUpdateUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminUpdateUserResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -65295,6 +65490,23 @@ func (c *ClientWithResponses) AdminListUsersWithResponse(ctx context.Context, pa
 	return ParseAdminListUsersResponse(rsp)
 }
 
+// AdminUpdateUserWithBodyWithResponse request with arbitrary body returning *AdminUpdateUserResponse
+func (c *ClientWithResponses) AdminUpdateUserWithBodyWithResponse(ctx context.Context, userId string, params *AdminUpdateUserParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateUserResponse, error) {
+	rsp, err := c.AdminUpdateUserWithBody(ctx, userId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminUpdateUserWithResponse(ctx context.Context, userId string, params *AdminUpdateUserParams, body AdminUpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateUserResponse, error) {
+	rsp, err := c.AdminUpdateUser(ctx, userId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateUserResponse(rsp)
+}
+
 // AdminForceResetPasswordWithResponse request returning *AdminForceResetPasswordResponse
 func (c *ClientWithResponses) AdminForceResetPasswordWithResponse(ctx context.Context, userId string, params *AdminForceResetPasswordParams, reqEditors ...RequestEditorFn) (*AdminForceResetPasswordResponse, error) {
 	rsp, err := c.AdminForceResetPassword(ctx, userId, params, reqEditors...)
@@ -70123,6 +70335,22 @@ func ParseAdminListUsersResponse(rsp *http.Response) (*AdminListUsersResponse, e
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseAdminUpdateUserResponse parses an HTTP response from a AdminUpdateUserWithResponse call
+func ParseAdminUpdateUserResponse(rsp *http.Response) (*AdminUpdateUserResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminUpdateUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
