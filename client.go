@@ -1182,11 +1182,13 @@ const (
 
 // Defines values for ReminderErrorType.
 const (
-	AllEmployeesSelected    ReminderErrorType = "all_employees_selected"
-	AllEventTypesSelected   ReminderErrorType = "all_event_types_selected"
-	DuplicateGlobalReminder ReminderErrorType = "duplicate_global_reminder"
-	NonWhitelistedUrls      ReminderErrorType = "non_whitelisted_urls"
-	Validation              ReminderErrorType = "validation"
+	AllEmployeesSelected     ReminderErrorType = "all_employees_selected"
+	AllEventTypesSelected    ReminderErrorType = "all_event_types_selected"
+	DefaultReminderNotGlobal ReminderErrorType = "default_reminder_not_global"
+	DuplicateDefaultReminder ReminderErrorType = "duplicate_default_reminder"
+	DuplicateGlobalReminder  ReminderErrorType = "duplicate_global_reminder"
+	NonWhitelistedUrls       ReminderErrorType = "non_whitelisted_urls"
+	Validation               ReminderErrorType = "validation"
 )
 
 // Defines values for ResourceField.
@@ -8234,6 +8236,11 @@ type ReminderCreate struct {
 	// Company ID
 	CompanyId string `json:"company_id"`
 
+	// Marks the reminder as the company's default. Requires a global
+	// reminder with translations matching the base template; failed
+	// constraints fall back to non-default. Limited to one per company.
+	Default *bool `json:"default,omitempty"`
+
 	// Employee IDs for employee-specific reminders
 	Employees *[]string `json:"employees,omitempty"`
 
@@ -8281,6 +8288,13 @@ type ReminderFilter struct {
 type ReminderUpdate struct {
 	// Whether the reminder is active or inactive
 	Active *bool `json:"active,omitempty"`
+
+	// Marks the reminder as the company's default. Setting true
+	// replaces sms_content_translations with the base template and
+	// requires a global reminder. Omit to re-evaluate: timing or
+	// active changes retain default, translation or scoping changes
+	// revert to custom.
+	Default *bool `json:"default,omitempty"`
 
 	// Employee IDs for employee-specific reminders
 	Employees *[]string `json:"employees,omitempty"`
