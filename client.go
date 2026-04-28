@@ -2069,6 +2069,12 @@ type AdminNotificationsBulkMigrationRequest struct {
 
 	// Max companies to process in this request. Default 20. Hard-capped server-side with max 200.
 	Limit *int32 `json:"limit,omitempty"`
+
+	// Optional per-company guard override for projected per-recipient backfill notifications. Defaults to 10000.
+	MaxBackfillNotificationsPerCompany *int32 `json:"max_backfill_notifications_per_company,omitempty"`
+
+	// Optional per-company guard override for legacy notifications. Defaults to 5000.
+	MaxLegacyNotificationsPerCompany *int32 `json:"max_legacy_notifications_per_company,omitempty"`
 }
 
 // AdminNotificationsBulkMigrationResult defines model for AdminNotificationsBulkMigrationResult.
