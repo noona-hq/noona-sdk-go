@@ -2058,6 +2058,9 @@ type AdminNotificationsBulkMigrationFailure struct {
 
 // AdminNotificationsBulkMigrationRequest defines model for AdminNotificationsBulkMigrationRequest.
 type AdminNotificationsBulkMigrationRequest struct {
+	// If true, only backfill legacy generic/survey notifications without running company migration side effects.
+	BackfillLegacyUserSpecificNotifications *bool `json:"backfill_legacy_user_specific_notifications,omitempty"`
+
 	// If provided, only these companies are processed. Cannot be used together with cursor.
 	CompanyIds *[]string `json:"company_ids,omitempty"`
 
