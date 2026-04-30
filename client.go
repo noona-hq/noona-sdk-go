@@ -1955,9 +1955,6 @@ type AdminCompanyUpdate struct {
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
 
-	// Notification system configuration for the company
-	NotificationSettings *NotificationSettings `json:"notification_settings,omitempty"`
-
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
@@ -2048,64 +2045,6 @@ type AdminMoveUserRequest struct {
 
 	// ID of the company to move the user from
 	SourceCompanyId string `json:"source_company_id"`
-}
-
-// AdminNotificationsBulkMigrationFailure defines model for AdminNotificationsBulkMigrationFailure.
-type AdminNotificationsBulkMigrationFailure struct {
-	CompanyId *string `json:"company_id,omitempty"`
-	Error     *string `json:"error,omitempty"`
-}
-
-// AdminNotificationsBulkMigrationRequest defines model for AdminNotificationsBulkMigrationRequest.
-type AdminNotificationsBulkMigrationRequest struct {
-	// If true, only backfill legacy generic/survey notifications without running company migration side effects.
-	BackfillLegacyUserSpecificNotifications *bool `json:"backfill_legacy_user_specific_notifications,omitempty"`
-
-	// If provided, only these companies are processed. Cannot be used together with cursor.
-	CompanyIds *[]string `json:"company_ids,omitempty"`
-
-	// Cursor for iterating unmigrated companies in ascending company_id order. Only for list mode, not company_ids mode.
-	Cursor *string `json:"cursor,omitempty"`
-
-	// If true, preview counts without mutating data.
-	DryRun *bool `json:"dry_run,omitempty"`
-
-	// Max companies to process in this request. Default 20. Hard-capped server-side with max 200.
-	Limit *int32 `json:"limit,omitempty"`
-
-	// Optional per-company guard override for projected per-recipient backfill notifications. Defaults to 10000.
-	MaxBackfillNotificationsPerCompany *int32 `json:"max_backfill_notifications_per_company,omitempty"`
-
-	// Optional per-company guard override for legacy notifications. Defaults to 5000.
-	MaxLegacyNotificationsPerCompany *int32 `json:"max_legacy_notifications_per_company,omitempty"`
-}
-
-// AdminNotificationsBulkMigrationResult defines model for AdminNotificationsBulkMigrationResult.
-type AdminNotificationsBulkMigrationResult struct {
-	// Number of per-recipient notifications the legacy backfill would materialize.
-	BackfillNotifications *int32 `json:"backfill_notifications,omitempty"`
-
-	// Number of backfilled per-recipient notifications created during this run.
-	BackfilledNotificationsCreated *int32 `json:"backfilled_notifications_created,omitempty"`
-
-	// Number of backfilled per-recipient notifications skipped because they already existed.
-	BackfilledNotificationsSkipped *int32                                    `json:"backfilled_notifications_skipped,omitempty"`
-	Failed                         *int32                                    `json:"failed,omitempty"`
-	Failures                       *[]AdminNotificationsBulkMigrationFailure `json:"failures,omitempty"`
-
-	// True when there are more companies to process after this response page.
-	HasMore *bool `json:"has_more,omitempty"`
-
-	// Number of legacy company-level notifications found in the processed scope.
-	LegacyNotifications *int32 `json:"legacy_notifications,omitempty"`
-	Migrated            *int32 `json:"migrated,omitempty"`
-
-	// Cursor to pass to the next request when has_more is true.
-	NextCursor *string `json:"next_cursor,omitempty"`
-	Skipped    *int32  `json:"skipped,omitempty"`
-
-	// Number of companies actually processed in this response page.
-	Total *int32 `json:"total,omitempty"`
 }
 
 // AdminSmsRemindersBulkMigrationFailure defines model for AdminSmsRemindersBulkMigrationFailure.
@@ -3494,9 +3433,6 @@ type Company struct {
 	Migrations     *CompanyMigrations  `json:"migrations,omitempty"`
 	Name           *string             `json:"name,omitempty"`
 
-	// Notification system configuration for the company
-	NotificationSettings *NotificationSettings `json:"notification_settings,omitempty"`
-
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
@@ -3920,9 +3856,6 @@ type CompanyResponse struct {
 	Migrations     *CompanyMigrations `json:"migrations,omitempty"`
 	Name           string             `json:"name"`
 
-	// Notification system configuration for the company
-	NotificationSettings *NotificationSettings `json:"notification_settings,omitempty"`
-
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
 	Payments    *PaymentSettings `json:"payments,omitempty"`
@@ -4038,9 +3971,6 @@ type CompanyUpdate struct {
 	Messaging      *CompanyMessaging   `json:"messaging,omitempty"`
 	Migrations     *CompanyMigrations  `json:"migrations,omitempty"`
 	Name           *string             `json:"name,omitempty"`
-
-	// Notification system configuration for the company
-	NotificationSettings *NotificationSettings `json:"notification_settings,omitempty"`
 
 	// Dynamic mapping of payment reasons to fees. Valid keys include "event", "paylink", "voucher", etc., representing different reasons for payments. Each key maps to a fee represented as a floating-point number.
 	PaymentFees *PaymentFees     `json:"payment_fees,omitempty"`
@@ -7210,14 +7140,6 @@ type NotificationPreferences struct {
 	Email *bool `json:"email,omitempty"`
 	Push  *bool `json:"push,omitempty"`
 	Sms   *bool `json:"sms,omitempty"`
-}
-
-// Notification system configuration for the company
-type NotificationSettings struct {
-	// Whether the company has migrated to the new per-recipient notification system.
-	// When true, notifications are created individually for each user with their preferences respected.
-	// When false or absent, legacy single-notification system is used.
-	NewNotificationsEnabled *bool `json:"new_notifications_enabled,omitempty"`
 }
 
 // NotificationSubcategory defines model for NotificationSubcategory.
@@ -11597,9 +11519,6 @@ type AdminAssignSecretaryToCompanyParams struct {
 // AdminFixWorkHoursTimesJSONBody defines parameters for AdminFixWorkHoursTimes.
 type AdminFixWorkHoursTimesJSONBody AdminFixWorkHoursTimesRequest
 
-// AdminBulkMigrateNotificationsJSONBody defines parameters for AdminBulkMigrateNotifications.
-type AdminBulkMigrateNotificationsJSONBody AdminNotificationsBulkMigrationRequest
-
 // AdminBulkMigrateSmsRemindersJSONBody defines parameters for AdminBulkMigrateSmsReminders.
 type AdminBulkMigrateSmsRemindersJSONBody AdminSmsRemindersBulkMigrationRequest
 
@@ -15492,9 +15411,6 @@ type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJ
 // AdminFixWorkHoursTimesJSONRequestBody defines body for AdminFixWorkHoursTimes for application/json ContentType.
 type AdminFixWorkHoursTimesJSONRequestBody AdminFixWorkHoursTimesJSONBody
 
-// AdminBulkMigrateNotificationsJSONRequestBody defines body for AdminBulkMigrateNotifications for application/json ContentType.
-type AdminBulkMigrateNotificationsJSONRequestBody AdminBulkMigrateNotificationsJSONBody
-
 // AdminBulkMigrateSmsRemindersJSONRequestBody defines body for AdminBulkMigrateSmsReminders for application/json ContentType.
 type AdminBulkMigrateSmsRemindersJSONRequestBody AdminBulkMigrateSmsRemindersJSONBody
 
@@ -18062,11 +17978,6 @@ type ClientInterface interface {
 
 	AdminFixWorkHoursTimes(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AdminBulkMigrateNotifications request with any body
-	AdminBulkMigrateNotificationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AdminBulkMigrateNotifications(ctx context.Context, body AdminBulkMigrateNotificationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// AdminBulkMigrateSmsReminders request with any body
 	AdminBulkMigrateSmsRemindersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18266,9 +18177,6 @@ type ClientInterface interface {
 
 	// GetSalesMetrics request
 	GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// MigrateNotifications request
-	MigrateNotifications(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// MigrateCompanyReminders request
 	MigrateCompanyReminders(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19720,30 +19628,6 @@ func (c *Client) AdminFixWorkHoursTimes(ctx context.Context, body AdminFixWorkHo
 	return c.Client.Do(req)
 }
 
-func (c *Client) AdminBulkMigrateNotificationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBulkMigrateNotificationsRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminBulkMigrateNotifications(ctx context.Context, body AdminBulkMigrateNotificationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBulkMigrateNotificationsRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) AdminBulkMigrateSmsRemindersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminBulkMigrateSmsRemindersRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -20586,18 +20470,6 @@ func (c *Client) GetEventsMetrics(ctx context.Context, companyId string, params 
 
 func (c *Client) GetSalesMetrics(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSalesMetricsRequest(c.Server, companyId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) MigrateNotifications(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewMigrateNotificationsRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -26825,46 +26697,6 @@ func NewAdminFixWorkHoursTimesRequestWithBody(server string, contentType string,
 	return req, nil
 }
 
-// NewAdminBulkMigrateNotificationsRequest calls the generic AdminBulkMigrateNotifications builder with application/json body
-func NewAdminBulkMigrateNotificationsRequest(server string, body AdminBulkMigrateNotificationsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAdminBulkMigrateNotificationsRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewAdminBulkMigrateNotificationsRequestWithBody generates requests for AdminBulkMigrateNotifications with any type of body
-func NewAdminBulkMigrateNotificationsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/notifications")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewAdminBulkMigrateSmsRemindersRequest calls the generic AdminBulkMigrateSmsReminders builder with application/json body
 func NewAdminBulkMigrateSmsRemindersRequest(server string, body AdminBulkMigrateSmsRemindersJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -31712,40 +31544,6 @@ func NewGetSalesMetricsRequest(server string, companyId string, params *GetSales
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewMigrateNotificationsRequest generates requests for MigrateNotifications
-func NewMigrateNotificationsRequest(server string, companyId string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/companies/%s/migrate-notifications", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -55355,11 +55153,6 @@ type ClientWithResponsesInterface interface {
 
 	AdminFixWorkHoursTimesWithResponse(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
 
-	// AdminBulkMigrateNotifications request with any body
-	AdminBulkMigrateNotificationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateNotificationsResponse, error)
-
-	AdminBulkMigrateNotificationsWithResponse(ctx context.Context, body AdminBulkMigrateNotificationsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateNotificationsResponse, error)
-
 	// AdminBulkMigrateSmsReminders request with any body
 	AdminBulkMigrateSmsRemindersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error)
 
@@ -55559,9 +55352,6 @@ type ClientWithResponsesInterface interface {
 
 	// GetSalesMetrics request
 	GetSalesMetricsWithResponse(ctx context.Context, companyId string, params *GetSalesMetricsParams, reqEditors ...RequestEditorFn) (*GetSalesMetricsResponse, error)
-
-	// MigrateNotifications request
-	MigrateNotificationsWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateNotificationsResponse, error)
 
 	// MigrateCompanyReminders request
 	MigrateCompanyRemindersWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyRemindersResponse, error)
@@ -57129,28 +56919,6 @@ func (r AdminFixWorkHoursTimesResponse) StatusCode() int {
 	return 0
 }
 
-type AdminBulkMigrateNotificationsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *AdminNotificationsBulkMigrationResult
-}
-
-// Status returns HTTPResponse.Status
-func (r AdminBulkMigrateNotificationsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AdminBulkMigrateNotificationsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type AdminBulkMigrateSmsRemindersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -58424,28 +58192,6 @@ func (r GetSalesMetricsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSalesMetricsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type MigrateNotificationsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON403      *Error
-}
-
-// Status returns HTTPResponse.Status
-func (r MigrateNotificationsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r MigrateNotificationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -65618,23 +65364,6 @@ func (c *ClientWithResponses) AdminFixWorkHoursTimesWithResponse(ctx context.Con
 	return ParseAdminFixWorkHoursTimesResponse(rsp)
 }
 
-// AdminBulkMigrateNotificationsWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateNotificationsResponse
-func (c *ClientWithResponses) AdminBulkMigrateNotificationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateNotificationsResponse, error) {
-	rsp, err := c.AdminBulkMigrateNotificationsWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBulkMigrateNotificationsResponse(rsp)
-}
-
-func (c *ClientWithResponses) AdminBulkMigrateNotificationsWithResponse(ctx context.Context, body AdminBulkMigrateNotificationsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateNotificationsResponse, error) {
-	rsp, err := c.AdminBulkMigrateNotifications(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBulkMigrateNotificationsResponse(rsp)
-}
-
 // AdminBulkMigrateSmsRemindersWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateSmsRemindersResponse
 func (c *ClientWithResponses) AdminBulkMigrateSmsRemindersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error) {
 	rsp, err := c.AdminBulkMigrateSmsRemindersWithBody(ctx, contentType, body, reqEditors...)
@@ -66259,15 +65988,6 @@ func (c *ClientWithResponses) GetSalesMetricsWithResponse(ctx context.Context, c
 		return nil, err
 	}
 	return ParseGetSalesMetricsResponse(rsp)
-}
-
-// MigrateNotificationsWithResponse request returning *MigrateNotificationsResponse
-func (c *ClientWithResponses) MigrateNotificationsWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateNotificationsResponse, error) {
-	rsp, err := c.MigrateNotifications(ctx, companyId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseMigrateNotificationsResponse(rsp)
 }
 
 // MigrateCompanyRemindersWithResponse request returning *MigrateCompanyRemindersResponse
@@ -70433,32 +70153,6 @@ func ParseAdminFixWorkHoursTimesResponse(rsp *http.Response) (*AdminFixWorkHours
 	return response, nil
 }
 
-// ParseAdminBulkMigrateNotificationsResponse parses an HTTP response from a AdminBulkMigrateNotificationsWithResponse call
-func ParseAdminBulkMigrateNotificationsResponse(rsp *http.Response) (*AdminBulkMigrateNotificationsResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AdminBulkMigrateNotificationsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdminNotificationsBulkMigrationResult
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseAdminBulkMigrateSmsRemindersResponse parses an HTTP response from a AdminBulkMigrateSmsRemindersWithResponse call
 func ParseAdminBulkMigrateSmsRemindersResponse(rsp *http.Response) (*AdminBulkMigrateSmsRemindersResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -71967,32 +71661,6 @@ func ParseGetSalesMetricsResponse(rsp *http.Response) (*GetSalesMetricsResponse,
 			return nil, err
 		}
 		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseMigrateNotificationsResponse parses an HTTP response from a MigrateNotificationsWithResponse call
-func ParseMigrateNotificationsResponse(rsp *http.Response) (*MigrateNotificationsResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &MigrateNotificationsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		var dest Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON403 = &dest
 
 	}
 
