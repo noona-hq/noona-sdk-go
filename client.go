@@ -363,6 +363,12 @@ const (
 	WithOthers CompanySize = "with_others"
 )
 
+// Defines values for CompanySubscriptionBillingPeriodUnit.
+const (
+	CompanySubscriptionBillingPeriodUnitMonth CompanySubscriptionBillingPeriodUnit = "month"
+	CompanySubscriptionBillingPeriodUnitYear  CompanySubscriptionBillingPeriodUnit = "year"
+)
+
 // Defines values for CompanyVertical.
 const (
 	Appointment CompanyVertical = "appointment"
@@ -393,6 +399,19 @@ const (
 	CreateSMSErrorTypeNonWhitelistedUrls CreateSMSErrorType = "non_whitelisted_urls"
 	CreateSMSErrorTypeQuotaExceeded      CreateSMSErrorType = "quota_exceeded"
 	CreateSMSErrorTypeValidation         CreateSMSErrorType = "validation"
+)
+
+// Defines values for CreditLedgerEntrySource.
+const (
+	CreditLedgerEntrySourceAutoTopUp CreditLedgerEntrySource = "auto_top_up"
+	CreditLedgerEntrySourceCustom    CreditLedgerEntrySource = "custom"
+	CreditLedgerEntrySourceRefund    CreditLedgerEntrySource = "refund"
+	CreditLedgerEntrySourceTopUp     CreditLedgerEntrySource = "top_up"
+)
+
+// Defines values for CreditWalletType.
+const (
+	CreditWalletTypeSms CreditWalletType = "sms"
 )
 
 // Defines values for CustomMessageRuleType.
@@ -489,7 +508,6 @@ const (
 	EntitlementFeatureIDBookingScreening            EntitlementFeatureID = "booking_screening"
 	EntitlementFeatureIDBookingsWidget              EntitlementFeatureID = "bookings_widget"
 	EntitlementFeatureIDCalendarNavigation          EntitlementFeatureID = "calendar_navigation"
-	EntitlementFeatureIDCalendars                   EntitlementFeatureID = "calendars"
 	EntitlementFeatureIDClientGroups                EntitlementFeatureID = "client_groups"
 	EntitlementFeatureIDConfirmationPage            EntitlementFeatureID = "confirmation_page"
 	EntitlementFeatureIDCsvMarketingExport          EntitlementFeatureID = "csv_marketing_export"
@@ -511,6 +529,7 @@ const (
 	EntitlementFeatureIDPremiumPos                  EntitlementFeatureID = "premium_pos"
 	EntitlementFeatureIDPremiumRoles                EntitlementFeatureID = "premium_roles"
 	EntitlementFeatureIDScheduledEvents             EntitlementFeatureID = "scheduled_events"
+	EntitlementFeatureIDSeats                       EntitlementFeatureID = "seats"
 	EntitlementFeatureIDServiceOverrides            EntitlementFeatureID = "service_overrides"
 	EntitlementFeatureIDSharedChainPage             EntitlementFeatureID = "shared_chain_page"
 	EntitlementFeatureIDSmsCredits                  EntitlementFeatureID = "sms_credits"
@@ -520,10 +539,10 @@ const (
 
 // Defines values for EntitlementFeatureType.
 const (
-	Custom   EntitlementFeatureType = "custom"
-	Quantity EntitlementFeatureType = "quantity"
-	Range    EntitlementFeatureType = "range"
-	Switch   EntitlementFeatureType = "switch"
+	EntitlementFeatureTypeCustom   EntitlementFeatureType = "custom"
+	EntitlementFeatureTypeQuantity EntitlementFeatureType = "quantity"
+	EntitlementFeatureTypeRange    EntitlementFeatureType = "range"
+	EntitlementFeatureTypeSwitch   EntitlementFeatureType = "switch"
 )
 
 // Defines values for EventDeletionBehaviorType.
@@ -1294,6 +1313,12 @@ const (
 	ScheduledEventBookingQuestionAnswerTypeString  ScheduledEventBookingQuestionAnswerType = "string"
 )
 
+// Defines values for ScheduledSubscriptionChangeBillingPeriodUnit.
+const (
+	ScheduledSubscriptionChangeBillingPeriodUnitMonth ScheduledSubscriptionChangeBillingPeriodUnit = "month"
+	ScheduledSubscriptionChangeBillingPeriodUnitYear  ScheduledSubscriptionChangeBillingPeriodUnit = "year"
+)
+
 // Defines values for SignupGoalOption.
 const (
 	AttractMoreOnlineBookings SignupGoalOption = "attract_more_online_bookings"
@@ -1979,8 +2004,11 @@ type AdminCompanyUpdate struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId         *string                  `json:"reference_id,omitempty"`
-	Signup              *CompanySignup           `json:"signup,omitempty"`
+	ReferenceId *string        `json:"reference_id,omitempty"`
+	Signup      *CompanySignup `json:"signup,omitempty"`
+
+	// The company's subscription (1:1). Replaces the legacy powerup-based subscriptions structure.
+	Subscription        *CompanySubscription     `json:"subscription,omitempty"`
 	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
 	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
@@ -2211,7 +2239,7 @@ type AgentClient struct {
 
 // AgentClientCreate defines model for AgentClientCreate.
 type AgentClientCreate struct {
-	// Whether this agent client has global (cross-company) access. Defaults to true when omitted.
+	// Whether this agent client has global (cross-company) access.
 	Global *bool             `json:"global,omitempty"`
 	Name   string            `json:"name"`
 	Scopes AgentClientScopes `json:"scopes"`
@@ -2568,8 +2596,20 @@ type BillingInvoiceDownload struct {
 // BillingInvoices defines model for BillingInvoices.
 type BillingInvoices []BillingInvoice
 
-// BillingPlan defines model for BillingPlan.
-type BillingPlan struct {
+// BillingPriceTier defines model for BillingPriceTier.
+type BillingPriceTier struct {
+	// Ending unit for this tier
+	EndingUnit *int32 `json:"ending_unit,omitempty"`
+
+	// Price in cents for this tier
+	Price *int64 `json:"price,omitempty"`
+
+	// Starting unit for this tier
+	StartingUnit *int32 `json:"starting_unit,omitempty"`
+}
+
+// BillingProduct defines model for BillingProduct.
+type BillingProduct struct {
 	// The description of the plan
 	Description  *string        `json:"description,omitempty"`
 	Entitlements *[]Entitlement `json:"entitlements,omitempty"`
@@ -2581,12 +2621,12 @@ type BillingPlan struct {
 	Id string `json:"id"`
 
 	// The display name of the plan
-	Name          *string                    `json:"name,omitempty"`
-	PriceVariants *[]BillingPlanPriceVariant `json:"price_variants,omitempty"`
+	Name          *string                       `json:"name,omitempty"`
+	PriceVariants *[]BillingProductPriceVariant `json:"price_variants,omitempty"`
 }
 
-// BillingPlanPriceVariant defines model for BillingPlanPriceVariant.
-type BillingPlanPriceVariant struct {
+// BillingProductPriceVariant defines model for BillingProductPriceVariant.
+type BillingProductPriceVariant struct {
 	// The currency code (e.g., USD, EUR)
 	CurrencyCode *string `json:"currency_code,omitempty"`
 
@@ -2618,20 +2658,8 @@ type BillingPlanPriceVariant struct {
 	Tiers *[]BillingPriceTier `json:"tiers,omitempty"`
 }
 
-// BillingPlans defines model for BillingPlans.
-type BillingPlans []BillingPlan
-
-// BillingPriceTier defines model for BillingPriceTier.
-type BillingPriceTier struct {
-	// Ending unit for this tier
-	EndingUnit *int32 `json:"ending_unit,omitempty"`
-
-	// Price in cents for this tier
-	Price *int64 `json:"price,omitempty"`
-
-	// Starting unit for this tier
-	StartingUnit *int32 `json:"starting_unit,omitempty"`
-}
+// BillingProducts defines model for BillingProducts.
+type BillingProducts []BillingProduct
 
 // BlockedTime defines model for BlockedTime.
 type BlockedTime struct {
@@ -3174,8 +3202,13 @@ type CampaignCreate struct {
 	Filter    CampaignRecipientFilter `json:"filter"`
 
 	// Campaign message content
-	Message *string      `json:"message,omitempty"`
-	Type    CampaignType `json:"type"`
+	Message *string `json:"message,omitempty"`
+
+	// The Chargebee authorization transaction ID obtained client-side via Chargebee.js.
+	// Required for companies with a credit wallet (pay-per-campaign model). Ignored for
+	// legacy companies on the marketing SMS quota model.
+	PaymentIntentId *string      `json:"payment_intent_id,omitempty"`
+	Type            CampaignType `json:"type"`
 }
 
 // CampaignCreateResponse defines model for CampaignCreateResponse.
@@ -3209,11 +3242,23 @@ type CampaignPreview struct {
 	// Currency code for the estimated cost
 	Currency *string `json:"currency,omitempty"`
 
+	// Total cost including taxes Chargebee will charge. Populated only when include_tax=true.
+	GrossTotal *int64 `json:"gross_total,omitempty"`
+
+	// Chargebee item price id used to bill the campaign on plan-based subscriptions. Empty for legacy powerup companies.
+	ItemPriceId *string `json:"item_price_id,omitempty"`
+
 	// Number of unique recipients
 	RecipientCount *int32 `json:"recipient_count,omitempty"`
 
-	// Estimated total cost in cents for sending the campaign
+	// Number of SMS segments per message body. Defaults to 1 when no message is provided.
+	SegmentsPerMessage *int32 `json:"segments_per_message,omitempty"`
+
+	// Estimated total cost in cents for sending the campaign (net of tax)
 	TotalCost *int32 `json:"total_cost,omitempty"`
+
+	// segments_per_message multiplied by recipient_count.
+	TotalSegments *int32 `json:"total_segments,omitempty"`
 }
 
 // CampaignRecipient defines model for CampaignRecipient.
@@ -3469,8 +3514,11 @@ type Company struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId         *string                  `json:"reference_id,omitempty"`
-	Signup              *CompanySignup           `json:"signup,omitempty"`
+	ReferenceId *string        `json:"reference_id,omitempty"`
+	Signup      *CompanySignup `json:"signup,omitempty"`
+
+	// The company's subscription (1:1). Replaces the legacy powerup-based subscriptions structure.
+	Subscription        *CompanySubscription     `json:"subscription,omitempty"`
 	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
 	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
@@ -3892,8 +3940,11 @@ type CompanyResponse struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId         *string                  `json:"reference_id,omitempty"`
-	Signup              *CompanySignup           `json:"signup,omitempty"`
+	ReferenceId *string        `json:"reference_id,omitempty"`
+	Signup      *CompanySignup `json:"signup,omitempty"`
+
+	// The company's subscription (1:1). Replaces the legacy powerup-based subscriptions structure.
+	Subscription        *CompanySubscription     `json:"subscription,omitempty"`
 	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
 	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
@@ -3952,6 +4003,50 @@ type CompanySignup struct {
 // - `large`: 10+ People
 type CompanySize string
 
+// The company's subscription (1:1). Replaces the legacy powerup-based subscriptions structure.
+type CompanySubscription struct {
+	// The date the subscription was activated.
+	ActiveSince *time.Time `json:"active_since,omitempty"`
+
+	// The billing period unit for the subscription plan (month or year).
+	BillingPeriodUnit *CompanySubscriptionBillingPeriodUnit `json:"billing_period_unit,omitempty"`
+
+	// If the subscription is deactivated, this is the date it was deactivated.
+	DeactivatedAt *time.Time `json:"deactivated_at,omitempty"`
+
+	// Date when deactivation was requested. Present when cancellation is scheduled but not yet effective.
+	DeactivationRequestedAt *time.Time `json:"deactivation_requested_at,omitempty"`
+
+	// The Chargebee subscription ID.
+	Id *string `json:"id,omitempty"`
+
+	// The next billing date for this subscription.
+	NextBillingAt *time.Time `json:"next_billing_at,omitempty"`
+
+	// The Chargebee item price ID for the subscription plan.
+	PlanId *string `json:"plan_id,omitempty"`
+
+	// A pending subscription change scheduled to take effect at end of term (e.g. a downgrade).
+	// Present when the customer has scheduled a plan change but the change has not yet applied.
+	ScheduledChange *ScheduledSubscriptionChange `json:"scheduled_change,omitempty"`
+
+	// The number of seats purchased with the subscription plan.
+	Seats *int32 `json:"seats,omitempty"`
+
+	// Date when the trial ends.
+	TrialEndsAt *time.Time `json:"trial_ends_at,omitempty"`
+
+	// Computed field. True when the subscription was deactivated because the trial period ended,
+	// i.e. deactivated_at is within a short window of trial_ends_at.
+	TrialExpired *bool `json:"trial_expired,omitempty"`
+
+	// Date when the trial started.
+	TrialStartedAt *time.Time `json:"trial_started_at,omitempty"`
+}
+
+// The billing period unit for the subscription plan (month or year).
+type CompanySubscriptionBillingPeriodUnit string
+
 // CompanyType defines model for CompanyType.
 type CompanyType struct {
 	Id                string  `json:"id"`
@@ -4008,8 +4103,11 @@ type CompanyUpdate struct {
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
-	ReferenceId         *string                  `json:"reference_id,omitempty"`
-	Signup              *CompanySignup           `json:"signup,omitempty"`
+	ReferenceId *string        `json:"reference_id,omitempty"`
+	Signup      *CompanySignup `json:"signup,omitempty"`
+
+	// The company's subscription (1:1). Replaces the legacy powerup-based subscriptions structure.
+	Subscription        *CompanySubscription     `json:"subscription,omitempty"`
 	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
 	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
@@ -4129,6 +4227,88 @@ type CreateUserInviteRequest struct {
 	// ID of the company this user invite will belong to
 	CompanyId *string `json:"company_id,omitempty"`
 }
+
+// CreditLedgerEntries defines model for CreditLedgerEntries.
+type CreditLedgerEntries []CreditLedgerEntry
+
+// CreditLedgerEntry defines model for CreditLedgerEntry.
+type CreditLedgerEntry struct {
+	Amount      *int64                   `json:"amount,omitempty"`
+	Balance     *int64                   `json:"balance,omitempty"`
+	Company     *string                  `json:"company,omitempty"`
+	CreatedAt   *time.Time               `json:"created_at,omitempty"`
+	Description *string                  `json:"description,omitempty"`
+	Id          *string                  `json:"id,omitempty"`
+	Source      *CreditLedgerEntrySource `json:"source,omitempty"`
+	SourceId    *string                  `json:"source_id,omitempty"`
+	Wallet      *string                  `json:"wallet,omitempty"`
+}
+
+// CreditLedgerEntrySource defines model for CreditLedgerEntrySource.
+type CreditLedgerEntrySource string
+
+// CreditWallet defines model for CreditWallet.
+type CreditWallet struct {
+	AutoTopUp     *CreditWalletAutoTopUp     `json:"auto_top_up,omitempty"`
+	Balance       *int64                     `json:"balance,omitempty"`
+	Company       *string                    `json:"company,omitempty"`
+	CreatedAt     *time.Time                 `json:"created_at,omitempty"`
+	Currency      *string                    `json:"currency,omitempty"`
+	FreeAllowance *CreditWalletFreeAllowance `json:"free_allowance,omitempty"`
+	Id            *string                    `json:"id,omitempty"`
+	Type          *CreditWalletType          `json:"type,omitempty"`
+	UpdatedAt     *time.Time                 `json:"updated_at,omitempty"`
+}
+
+// CreditWalletAutoTopUp defines model for CreditWalletAutoTopUp.
+type CreditWalletAutoTopUp struct {
+	Amount      *int64  `json:"amount,omitempty"`
+	Enabled     *bool   `json:"enabled,omitempty"`
+	ItemPriceId *string `json:"item_price_id,omitempty"`
+	Threshold   *int64  `json:"threshold,omitempty"`
+}
+
+// CreditWalletAutoTopUpUpdate defines model for CreditWalletAutoTopUpUpdate.
+type CreditWalletAutoTopUpUpdate struct {
+	Amount      *int64  `json:"amount,omitempty"`
+	Enabled     bool    `json:"enabled"`
+	ItemPriceId *string `json:"item_price_id,omitempty"`
+	Threshold   *int64  `json:"threshold,omitempty"`
+}
+
+// CreditWalletFilter defines model for CreditWalletFilter.
+type CreditWalletFilter struct {
+	Type *CreditWalletType `json:"type,omitempty"`
+}
+
+// CreditWalletFreeAllowance defines model for CreditWalletFreeAllowance.
+type CreditWalletFreeAllowance struct {
+	// Total free allowance available per billing cycle.
+	Limit *int32 `json:"limit,omitempty"`
+
+	// When the current allowance cycle started.
+	PeriodStart *time.Time `json:"period_start,omitempty"`
+
+	// Allowance consumed in the current cycle.
+	Used *int32 `json:"used,omitempty"`
+}
+
+// CreditWalletPurchase defines model for CreditWalletPurchase.
+type CreditWalletPurchase struct {
+	// The Chargebee item price ID for the credit pack to purchase.
+	ItemPriceId string `json:"item_price_id"`
+
+	// The Chargebee authorization transaction ID obtained client-side via Chargebee.js.
+	// The intent must be authorized for an amount equal to the credit pack's price and
+	// belong to the authenticated company. Server validates both before creating the invoice.
+	PaymentIntentId string `json:"payment_intent_id"`
+}
+
+// CreditWalletType defines model for CreditWalletType.
+type CreditWalletType string
+
+// CreditWallets defines model for CreditWallets.
+type CreditWallets []CreditWallet
 
 // CustomDuration defines model for CustomDuration.
 type CustomDuration struct {
@@ -7520,16 +7700,19 @@ type PaymentIntent struct {
 	CreatedAt *int64 `json:"created_at,omitempty"`
 
 	// Currency code (ISO 4217 format) for transaction
-	CurrencyCode     *string              `json:"currency_code,omitempty"`
-	CustomerId       *string              `json:"customer_id,omitempty"`
-	ExpiresAt        *int64               `json:"expires_at,omitempty"`
-	Gateway          *string              `json:"gateway,omitempty"`
-	GatewayAccountId *string              `json:"gateway_account_id,omitempty"`
-	Id               *string              `json:"id,omitempty"`
-	ModifiedAt       *int64               `json:"modified_at,omitempty"`
-	ResourceVersion  *int64               `json:"resource_version,omitempty"`
-	Status           *PaymentIntentStatus `json:"status,omitempty"`
-	UpdatedAt        *int64               `json:"updated_at,omitempty"`
+	CurrencyCode     *string `json:"currency_code,omitempty"`
+	CustomerId       *string `json:"customer_id,omitempty"`
+	ExpiresAt        *int64  `json:"expires_at,omitempty"`
+	Gateway          *string `json:"gateway,omitempty"`
+	GatewayAccountId *string `json:"gateway_account_id,omitempty"`
+	Id               *string `json:"id,omitempty"`
+	ModifiedAt       *int64  `json:"modified_at,omitempty"`
+
+	// Gateway reference of the saved payment source attached to this intent. Empty when no saved card is attached.
+	ReferenceId     *string              `json:"reference_id,omitempty"`
+	ResourceVersion *int64               `json:"resource_version,omitempty"`
+	Status          *PaymentIntentStatus `json:"status,omitempty"`
+	UpdatedAt       *int64               `json:"updated_at,omitempty"`
 }
 
 // PaymentIntentStatus defines model for PaymentIntent.Status.
@@ -7732,6 +7915,8 @@ type PowerupSubscriptionStatus string
 
 // PowerupSubscriptionInfo defines model for PowerupSubscriptionInfo.
 type PowerupSubscriptionInfo struct {
+	// The date the subscription was activated.
+	ActiveSince       *time.Time                           `json:"active_since,omitempty"`
 	AutoCloseInvoices *bool                                `json:"auto_close_invoices,omitempty"`
 	CancelReason      *PowerupSubscriptionInfoCancelReason `json:"cancel_reason,omitempty"`
 	CancelledAt       *time.Time                           `json:"cancelled_at,omitempty"`
@@ -7742,21 +7927,33 @@ type PowerupSubscriptionInfo struct {
 	CurrentTermEnd    *time.Time                           `json:"current_term_end,omitempty"`
 	CurrentTermStart  *time.Time                           `json:"current_term_start,omitempty"`
 	Customer          *string                              `json:"customer,omitempty"`
-	Deleted           *bool                                `json:"deleted,omitempty"`
-	Discounts         *SubscriptionDiscounts               `json:"discounts,omitempty"`
-	DueInvoicesCount  *int32                               `json:"due_invoices_count,omitempty"`
-	DueSince          *time.Time                           `json:"due_since,omitempty"`
-	ExchangeRate      *float64                             `json:"exchange_rate,omitempty"`
-	Id                *string                              `json:"id,omitempty"`
-	NextBillingAt     *time.Time                           `json:"next_billing_at,omitempty"`
-	StartedAt         *time.Time                           `json:"started_at,omitempty"`
-	Status            *PowerupSubscriptionInfoStatus       `json:"status,omitempty"`
-	SubscriptionItems *SubscriptionItems                   `json:"subscription_items,omitempty"`
-	TotalDues         *int32                               `json:"total_dues,omitempty"`
+
+	// If the subscription is deactivated, this is the date it was deactivated.
+	DeactivatedAt    *time.Time             `json:"deactivated_at,omitempty"`
+	Deleted          *bool                  `json:"deleted,omitempty"`
+	Discounts        *SubscriptionDiscounts `json:"discounts,omitempty"`
+	DueInvoicesCount *int32                 `json:"due_invoices_count,omitempty"`
+	DueSince         *time.Time             `json:"due_since,omitempty"`
+	ExchangeRate     *float64               `json:"exchange_rate,omitempty"`
+	Id               *string                `json:"id,omitempty"`
+	NextBillingAt    *time.Time             `json:"next_billing_at,omitempty"`
+
+	// The subtotal of the next invoice excluding tax, with discounts and coupons applied. Only available for plan subscriptions.
+	NextInvoiceTotal  *int64                         `json:"next_invoice_total,omitempty"`
+	StartedAt         *time.Time                     `json:"started_at,omitempty"`
+	Status            *PowerupSubscriptionInfoStatus `json:"status,omitempty"`
+	SubscriptionItems *SubscriptionItems             `json:"subscription_items,omitempty"`
+	TotalDues         *int32                         `json:"total_dues,omitempty"`
+
+	// Date when the trial ends.
+	TrialEndsAt *time.Time `json:"trial_ends_at,omitempty"`
 
 	// Start of the trial period for the subscription. Presence of this value for future subscription implies the subscription will go into in_trial state when it starts.
 	TrialStart *time.Time `json:"trial_start,omitempty"`
-	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
+
+	// Date when the trial started.
+	TrialStartedAt *time.Time `json:"trial_started_at,omitempty"`
+	UpdatedAt      *time.Time `json:"updated_at,omitempty"`
 }
 
 // PowerupSubscriptionInfoCancelReason defines model for PowerupSubscriptionInfo.CancelReason.
@@ -9031,6 +9228,18 @@ type SMSMessagesAggregateFilter struct {
 	Types *[]SMSMessageType `json:"types,omitempty"`
 }
 
+// SMSPricing defines model for SMSPricing.
+type SMSPricing struct {
+	// The currency code for the price.
+	Currency *string `json:"currency,omitempty"`
+
+	// The Chargebee item price ID for this pricing.
+	ItemPriceId *string `json:"item_price_id,omitempty"`
+
+	// Price per SMS segment in the smallest currency unit.
+	PricePerSegment *int64 `json:"price_per_segment,omitempty"`
+}
+
 // Sale defines model for Sale.
 type Sale struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -9412,6 +9621,22 @@ type ScheduledEventsFilter struct {
 	StartsAtTo *time.Time `json:"starts_at_to,omitempty"`
 }
 
+// A pending subscription change scheduled to take effect at end of term (e.g. a downgrade).
+// Present when the customer has scheduled a plan change but the change has not yet applied.
+type ScheduledSubscriptionChange struct {
+	// The billing period unit of the scheduled plan.
+	BillingPeriodUnit *ScheduledSubscriptionChangeBillingPeriodUnit `json:"billing_period_unit,omitempty"`
+
+	// The Chargebee plan ID the subscription will switch to when the change applies.
+	PlanId *string `json:"plan_id,omitempty"`
+
+	// Date when the scheduled change will take effect.
+	ScheduledAt *time.Time `json:"scheduled_at,omitempty"`
+}
+
+// The billing period unit of the scheduled plan.
+type ScheduledSubscriptionChangeBillingPeriodUnit string
+
 // The search query.
 type SearchQuery string
 
@@ -9636,6 +9861,35 @@ type StreamableEntityType string
 type SubscriptionCancellation struct {
 	ChurnElaboration *string                   `json:"churn_elaboration,omitempty"`
 	ChurnReasons     *SubscriptionChurnReasons `json:"churn_reasons,omitempty"`
+}
+
+// SubscriptionCheckout defines model for SubscriptionCheckout.
+type SubscriptionCheckout struct {
+	Url string `json:"url"`
+}
+
+// SubscriptionCheckoutConfirm defines model for SubscriptionCheckoutConfirm.
+type SubscriptionCheckoutConfirm struct {
+	// The Chargebee hosted page ID returned after a successful checkout
+	HostedPageId string `json:"hosted_page_id"`
+}
+
+// SubscriptionCheckoutCreate defines model for SubscriptionCheckoutCreate.
+type SubscriptionCheckoutCreate struct {
+	// The Chargebee item price ID for the selected plan
+	ItemPriceId string `json:"item_price_id"`
+
+	// Optional seat quantity for the subscription. Capped at the plan maximum.
+	Quantity *int32 `json:"quantity,omitempty"`
+}
+
+// SubscriptionCheckoutResult defines model for SubscriptionCheckoutResult.
+type SubscriptionCheckoutResult struct {
+	// Whether the change is scheduled for end of term (true) or applied immediately (false).
+	Scheduled *bool `json:"scheduled,omitempty"`
+
+	// The plan ID that the subscription is scheduled to change to at end of term. Only present when scheduled is true.
+	ScheduledPlanId *string `json:"scheduled_plan_id,omitempty"`
 }
 
 // SubscriptionChurnReason defines model for SubscriptionChurnReason.
@@ -10200,7 +10454,10 @@ type TrialAcknowledgment struct {
 
 // TrialStart defines model for TrialStart.
 type TrialStart struct {
-	SubscriptionType Powerup `json:"subscription_type"`
+	// The Chargebee item price ID for the subscription plan to start a trial for.
+	// Example: Professional-USD-Monthly
+	ItemPriceId      *string  `json:"item_price_id,omitempty"`
+	SubscriptionType *Powerup `json:"subscription_type,omitempty"`
 }
 
 // UnavailableResource defines model for UnavailableResource.
@@ -11903,8 +12160,10 @@ type PreviewCampaignParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand                 `form:"expand,omitempty" json:"expand,omitempty"`
-	Filter CampaignRecipientFilter `form:"filter" json:"filter"`
+	Expand     *Expand                 `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter     CampaignRecipientFilter `form:"filter" json:"filter"`
+	Message    *string                 `form:"message,omitempty" json:"message,omitempty"`
+	IncludeTax *bool                   `form:"include_tax,omitempty" json:"include_tax,omitempty"`
 }
 
 // ListClaimsParams defines parameters for ListClaims.
@@ -11928,6 +12187,15 @@ type CloneCompanyJSONBody CompanyCreate
 
 // CloneCompanyParams defines parameters for CloneCompany.
 type CloneCompanyParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListCreditWalletsParams defines parameters for ListCreditWallets.
+type ListCreditWalletsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -12626,6 +12894,21 @@ type UpdateBillingInfoParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateSubscriptionCheckoutJSONBody defines parameters for CreateSubscriptionCheckout.
+type CreateSubscriptionCheckoutJSONBody SubscriptionCheckoutCreate
+
+// CreateSubscriptionCheckoutParams defines parameters for CreateSubscriptionCheckout.
+type CreateSubscriptionCheckoutParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ConfirmSubscriptionCheckoutJSONBody defines parameters for ConfirmSubscriptionCheckout.
+type ConfirmSubscriptionCheckoutJSONBody SubscriptionCheckoutConfirm
+
 // ListBillingInvoicesParams defines parameters for ListBillingInvoices.
 type ListBillingInvoicesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -12643,7 +12926,10 @@ type CreatePaymentIntentParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand      *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Amount      *int64  `form:"amount,omitempty" json:"amount,omitempty"`
+	Currency    *string `form:"currency,omitempty" json:"currency,omitempty"`
+	ItemPriceId *string `form:"item_price_id,omitempty" json:"item_price_id,omitempty"`
 }
 
 // GetSubscriptionPricingParams defines parameters for GetSubscriptionPricing.
@@ -12851,6 +13137,45 @@ type ListCompanyTypesParams struct {
 	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
 	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
 }
+
+// GetCreditWalletParams defines parameters for GetCreditWallet.
+type GetCreditWalletParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateCreditWalletJSONBody defines parameters for UpdateCreditWallet.
+type UpdateCreditWalletJSONBody CreditWalletAutoTopUpUpdate
+
+// UpdateCreditWalletParams defines parameters for UpdateCreditWallet.
+type UpdateCreditWalletParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListCreditWalletLedgerParams defines parameters for ListCreditWalletLedger.
+type ListCreditWalletLedgerParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// PurchaseCreditWalletCreditsJSONBody defines parameters for PurchaseCreditWalletCredits.
+type PurchaseCreditWalletCreditsJSONBody CreditWalletPurchase
 
 // ListCuisinesParams defines parameters for ListCuisines.
 type ListCuisinesParams struct {
@@ -14865,6 +15190,24 @@ type CancelSubscriptionParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// ReactivatePlanSubscriptionParams defines parameters for ReactivatePlanSubscription.
+type ReactivatePlanSubscriptionParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// RemoveScheduledChangeParams defines parameters for RemoveScheduledChange.
+type RemoveScheduledChangeParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateSubtransactionJSONBody defines parameters for CreateSubtransaction.
 type CreateSubtransactionJSONBody Subtransaction
 
@@ -15494,8 +15837,20 @@ type AcknowledgeTrialEndJSONRequestBody AcknowledgeTrialEndJSONBody
 // UpdateBillingInfoJSONRequestBody defines body for UpdateBillingInfo for application/json ContentType.
 type UpdateBillingInfoJSONRequestBody UpdateBillingInfoJSONBody
 
+// CreateSubscriptionCheckoutJSONRequestBody defines body for CreateSubscriptionCheckout for application/json ContentType.
+type CreateSubscriptionCheckoutJSONRequestBody CreateSubscriptionCheckoutJSONBody
+
+// ConfirmSubscriptionCheckoutJSONRequestBody defines body for ConfirmSubscriptionCheckout for application/json ContentType.
+type ConfirmSubscriptionCheckoutJSONRequestBody ConfirmSubscriptionCheckoutJSONBody
+
 // StartTrialJSONRequestBody defines body for StartTrial for application/json ContentType.
 type StartTrialJSONRequestBody StartTrialJSONBody
+
+// UpdateCreditWalletJSONRequestBody defines body for UpdateCreditWallet for application/json ContentType.
+type UpdateCreditWalletJSONRequestBody UpdateCreditWalletJSONBody
+
+// PurchaseCreditWalletCreditsJSONRequestBody defines body for PurchaseCreditWalletCredits for application/json ContentType.
+type PurchaseCreditWalletCreditsJSONRequestBody PurchaseCreditWalletCreditsJSONBody
 
 // CreateCustomerGroupJSONRequestBody defines body for CreateCustomerGroup for application/json ContentType.
 type CreateCustomerGroupJSONRequestBody CreateCustomerGroupJSONBody
@@ -18048,6 +18403,9 @@ type ClientInterface interface {
 	// GetAmbience request
 	GetAmbience(ctx context.Context, ambienceId string, params *GetAmbienceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListBillingProducts request
+	ListBillingProducts(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateBlockedTime request with any body
 	CreateBlockedTimeWithBody(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18135,6 +18493,9 @@ type ClientInterface interface {
 	CloneCompanyWithBody(ctx context.Context, companyId string, params *CloneCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CloneCompany(ctx context.Context, companyId string, params *CloneCompanyParams, body CloneCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListCreditWallets request
+	ListCreditWallets(ctx context.Context, companyId string, params *ListCreditWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListCustomerGroups request
 	ListCustomerGroups(ctx context.Context, companyId string, params *ListCustomerGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -18299,6 +18660,9 @@ type ClientInterface interface {
 	// ListSMSMessages request
 	ListSMSMessages(ctx context.Context, companyId string, params *ListSMSMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetSMSPricing request
+	GetSMSPricing(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListSpaces request
 	ListSpaces(ctx context.Context, companyId string, params *ListSpacesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18319,6 +18683,16 @@ type ClientInterface interface {
 	UpdateBillingInfoWithBody(ctx context.Context, companyId string, params *UpdateBillingInfoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateBillingInfo(ctx context.Context, companyId string, params *UpdateBillingInfoParams, body UpdateBillingInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateSubscriptionCheckout request with any body
+	CreateSubscriptionCheckoutWithBody(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateSubscriptionCheckout(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, body CreateSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConfirmSubscriptionCheckout request with any body
+	ConfirmSubscriptionCheckoutWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ConfirmSubscriptionCheckout(ctx context.Context, companyId string, body ConfirmSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListBillingInvoices request
 	ListBillingInvoices(ctx context.Context, companyId string, params *ListBillingInvoicesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -18375,6 +18749,22 @@ type ClientInterface interface {
 
 	// ListCompanyTypes request
 	ListCompanyTypes(ctx context.Context, params *ListCompanyTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCreditWallet request
+	GetCreditWallet(ctx context.Context, walletId string, params *GetCreditWalletParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateCreditWallet request with any body
+	UpdateCreditWalletWithBody(ctx context.Context, walletId string, params *UpdateCreditWalletParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateCreditWallet(ctx context.Context, walletId string, params *UpdateCreditWalletParams, body UpdateCreditWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListCreditWalletLedger request
+	ListCreditWalletLedger(ctx context.Context, walletId string, params *ListCreditWalletLedgerParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PurchaseCreditWalletCredits request with any body
+	PurchaseCreditWalletCreditsWithBody(ctx context.Context, walletId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PurchaseCreditWalletCredits(ctx context.Context, walletId string, body PurchaseCreditWalletCreditsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListCuisines request
 	ListCuisines(ctx context.Context, params *ListCuisinesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -19137,6 +19527,12 @@ type ClientInterface interface {
 
 	CancelSubscription(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ReactivatePlanSubscription request
+	ReactivatePlanSubscription(ctx context.Context, subscriptionId string, params *ReactivatePlanSubscriptionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RemoveScheduledChange request
+	RemoveScheduledChange(ctx context.Context, subscriptionId string, params *RemoveScheduledChangeParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateSubtransaction request with any body
 	CreateSubtransactionWithBody(ctx context.Context, params *CreateSubtransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19379,9 +19775,6 @@ type ClientInterface interface {
 	UpdateWorkHoursWithBody(ctx context.Context, workHoursId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateWorkHours(ctx context.Context, workHoursId string, body UpdateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// ListBillingPlans request
-	ListBillingPlans(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) ListBlockedTimeActivities(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -19828,6 +20221,18 @@ func (c *Client) GetAmbience(ctx context.Context, ambienceId string, params *Get
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListBillingProducts(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBillingProductsRequest(c.Server, itemFamilyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateBlockedTimeWithBody(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateBlockedTimeRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
@@ -20202,6 +20607,18 @@ func (c *Client) CloneCompanyWithBody(ctx context.Context, companyId string, par
 
 func (c *Client) CloneCompany(ctx context.Context, companyId string, params *CloneCompanyParams, body CloneCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCloneCompanyRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListCreditWallets(ctx context.Context, companyId string, params *ListCreditWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCreditWalletsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -20872,6 +21289,18 @@ func (c *Client) ListSMSMessages(ctx context.Context, companyId string, params *
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetSMSPricing(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSMSPricingRequest(c.Server, companyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListSpaces(ctx context.Context, companyId string, params *ListSpacesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListSpacesRequest(c.Server, companyId, params)
 	if err != nil {
@@ -20958,6 +21387,54 @@ func (c *Client) UpdateBillingInfoWithBody(ctx context.Context, companyId string
 
 func (c *Client) UpdateBillingInfo(ctx context.Context, companyId string, params *UpdateBillingInfoParams, body UpdateBillingInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateBillingInfoRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSubscriptionCheckoutWithBody(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSubscriptionCheckoutRequestWithBody(c.Server, companyId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSubscriptionCheckout(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, body CreateSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSubscriptionCheckoutRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmSubscriptionCheckoutWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmSubscriptionCheckoutRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ConfirmSubscriptionCheckout(ctx context.Context, companyId string, body ConfirmSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmSubscriptionCheckoutRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -21186,6 +21663,78 @@ func (c *Client) ListWorkHours(ctx context.Context, companyId string, params *Li
 
 func (c *Client) ListCompanyTypes(ctx context.Context, params *ListCompanyTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListCompanyTypesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCreditWallet(ctx context.Context, walletId string, params *GetCreditWalletParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCreditWalletRequest(c.Server, walletId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCreditWalletWithBody(ctx context.Context, walletId string, params *UpdateCreditWalletParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCreditWalletRequestWithBody(c.Server, walletId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCreditWallet(ctx context.Context, walletId string, params *UpdateCreditWalletParams, body UpdateCreditWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCreditWalletRequest(c.Server, walletId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListCreditWalletLedger(ctx context.Context, walletId string, params *ListCreditWalletLedgerParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListCreditWalletLedgerRequest(c.Server, walletId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PurchaseCreditWalletCreditsWithBody(ctx context.Context, walletId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPurchaseCreditWalletCreditsRequestWithBody(c.Server, walletId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PurchaseCreditWalletCredits(ctx context.Context, walletId string, body PurchaseCreditWalletCreditsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPurchaseCreditWalletCreditsRequest(c.Server, walletId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -24556,6 +25105,30 @@ func (c *Client) CancelSubscription(ctx context.Context, subscriptionId string, 
 	return c.Client.Do(req)
 }
 
+func (c *Client) ReactivatePlanSubscription(ctx context.Context, subscriptionId string, params *ReactivatePlanSubscriptionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReactivatePlanSubscriptionRequest(c.Server, subscriptionId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RemoveScheduledChange(ctx context.Context, subscriptionId string, params *RemoveScheduledChangeParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRemoveScheduledChangeRequest(c.Server, subscriptionId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateSubtransactionWithBody(ctx context.Context, params *CreateSubtransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSubtransactionRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
@@ -25614,18 +26187,6 @@ func (c *Client) UpdateWorkHoursWithBody(ctx context.Context, workHoursId string
 
 func (c *Client) UpdateWorkHours(ctx context.Context, workHoursId string, body UpdateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkHoursRequest(c.Server, workHoursId, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) ListBillingPlans(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListBillingPlansRequest(c.Server, itemFamilyId)
 	if err != nil {
 		return nil, err
 	}
@@ -27461,6 +28022,40 @@ func NewGetAmbienceRequest(server string, ambienceId string, params *GetAmbience
 	return req, nil
 }
 
+// NewListBillingProductsRequest generates requests for ListBillingProducts
+func NewListBillingProductsRequest(server string, itemFamilyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "item_family_id", runtime.ParamLocationPath, itemFamilyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/billing/products/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateBlockedTimeRequest calls the generic CreateBlockedTime builder with application/json body
 func NewCreateBlockedTimeRequest(server string, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -29242,6 +29837,38 @@ func NewPreviewCampaignRequest(server string, companyId string, params *PreviewC
 		queryValues.Add("filter", string(queryParamBuf))
 	}
 
+	if params.Message != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "message", runtime.ParamLocationQuery, *params.Message); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.IncludeTax != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "include_tax", runtime.ParamLocationQuery, *params.IncludeTax); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -29431,6 +30058,76 @@ func NewCloneCompanyRequestWithBody(server string, companyId string, params *Clo
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListCreditWalletsRequest generates requests for ListCreditWallets
+func NewListCreditWalletsRequest(server string, companyId string, params *ListCreditWalletsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/credit_wallets", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -33910,6 +34607,40 @@ func NewListSMSMessagesRequest(server string, companyId string, params *ListSMSM
 	return req, nil
 }
 
+// NewGetSMSPricingRequest generates requests for GetSMSPricing
+func NewGetSMSPricingRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/sms_pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListSpacesRequest generates requests for ListSpaces
 func NewListSpacesRequest(server string, companyId string, params *ListSpacesParams) (*http.Request, error) {
 	var err error
@@ -34345,6 +35076,136 @@ func NewUpdateBillingInfoRequestWithBody(server string, companyId string, params
 	return req, nil
 }
 
+// NewCreateSubscriptionCheckoutRequest calls the generic CreateSubscriptionCheckout builder with application/json body
+func NewCreateSubscriptionCheckoutRequest(server string, companyId string, params *CreateSubscriptionCheckoutParams, body CreateSubscriptionCheckoutJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSubscriptionCheckoutRequestWithBody(server, companyId, params, "application/json", bodyReader)
+}
+
+// NewCreateSubscriptionCheckoutRequestWithBody generates requests for CreateSubscriptionCheckout with any type of body
+func NewCreateSubscriptionCheckoutRequestWithBody(server string, companyId string, params *CreateSubscriptionCheckoutParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/subscriptions/checkout", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewConfirmSubscriptionCheckoutRequest calls the generic ConfirmSubscriptionCheckout builder with application/json body
+func NewConfirmSubscriptionCheckoutRequest(server string, companyId string, body ConfirmSubscriptionCheckoutJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConfirmSubscriptionCheckoutRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewConfirmSubscriptionCheckoutRequestWithBody generates requests for ConfirmSubscriptionCheckout with any type of body
+func NewConfirmSubscriptionCheckoutRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/subscriptions/checkout_success", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListBillingInvoicesRequest generates requests for ListBillingInvoices
 func NewListBillingInvoicesRequest(server string, companyId string, params *ListBillingInvoicesParams) (*http.Request, error) {
 	var err error
@@ -34488,6 +35349,54 @@ func NewCreatePaymentIntentRequest(server string, companyId string, params *Crea
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Amount != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "amount", runtime.ParamLocationQuery, *params.Amount); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Currency != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "currency", runtime.ParamLocationQuery, *params.Currency); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.ItemPriceId != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "item_price_id", runtime.ParamLocationQuery, *params.ItemPriceId); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
@@ -35969,6 +36878,296 @@ func NewListCompanyTypesRequest(server string, params *ListCompanyTypesParams) (
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewGetCreditWalletRequest generates requests for GetCreditWallet
+func NewGetCreditWalletRequest(server string, walletId string, params *GetCreditWalletParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/credit_wallets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateCreditWalletRequest calls the generic UpdateCreditWallet builder with application/json body
+func NewUpdateCreditWalletRequest(server string, walletId string, params *UpdateCreditWalletParams, body UpdateCreditWalletJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateCreditWalletRequestWithBody(server, walletId, params, "application/json", bodyReader)
+}
+
+// NewUpdateCreditWalletRequestWithBody generates requests for UpdateCreditWallet with any type of body
+func NewUpdateCreditWalletRequestWithBody(server string, walletId string, params *UpdateCreditWalletParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/credit_wallets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListCreditWalletLedgerRequest generates requests for ListCreditWalletLedger
+func NewListCreditWalletLedgerRequest(server string, walletId string, params *ListCreditWalletLedgerParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/credit_wallets/%s/ledger", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPurchaseCreditWalletCreditsRequest calls the generic PurchaseCreditWalletCredits builder with application/json body
+func NewPurchaseCreditWalletCreditsRequest(server string, walletId string, body PurchaseCreditWalletCreditsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPurchaseCreditWalletCreditsRequestWithBody(server, walletId, "application/json", bodyReader)
+}
+
+// NewPurchaseCreditWalletCreditsRequestWithBody generates requests for PurchaseCreditWalletCredits with any type of body
+func NewPurchaseCreditWalletCreditsRequestWithBody(server string, walletId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/credit_wallets/%s/purchase", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -50795,6 +51994,146 @@ func NewCancelSubscriptionRequestWithBody(server string, subscriptionId string, 
 	return req, nil
 }
 
+// NewReactivatePlanSubscriptionRequest generates requests for ReactivatePlanSubscription
+func NewReactivatePlanSubscriptionRequest(server string, subscriptionId string, params *ReactivatePlanSubscriptionParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "subscription_id", runtime.ParamLocationPath, subscriptionId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/subscriptions/%s/reactivate", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewRemoveScheduledChangeRequest generates requests for RemoveScheduledChange
+func NewRemoveScheduledChangeRequest(server string, subscriptionId string, params *RemoveScheduledChangeParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "subscription_id", runtime.ParamLocationPath, subscriptionId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/subscriptions/%s/remove_scheduled_change", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateSubtransactionRequest calls the generic CreateSubtransaction builder with application/json body
 func NewCreateSubtransactionRequest(server string, params *CreateSubtransactionParams, body CreateSubtransactionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -55060,40 +56399,6 @@ func NewUpdateWorkHoursRequestWithBody(server string, workHoursId string, conten
 	return req, nil
 }
 
-// NewListBillingPlansRequest generates requests for ListBillingPlans
-func NewListBillingPlansRequest(server string, itemFamilyId string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "item_family_id", runtime.ParamLocationPath, itemFamilyId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/%s/plans", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -55239,6 +56544,9 @@ type ClientWithResponsesInterface interface {
 	// GetAmbience request
 	GetAmbienceWithResponse(ctx context.Context, ambienceId string, params *GetAmbienceParams, reqEditors ...RequestEditorFn) (*GetAmbienceResponse, error)
 
+	// ListBillingProducts request
+	ListBillingProductsWithResponse(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingProductsResponse, error)
+
 	// CreateBlockedTime request with any body
 	CreateBlockedTimeWithBodyWithResponse(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error)
 
@@ -55326,6 +56634,9 @@ type ClientWithResponsesInterface interface {
 	CloneCompanyWithBodyWithResponse(ctx context.Context, companyId string, params *CloneCompanyParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CloneCompanyResponse, error)
 
 	CloneCompanyWithResponse(ctx context.Context, companyId string, params *CloneCompanyParams, body CloneCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*CloneCompanyResponse, error)
+
+	// ListCreditWallets request
+	ListCreditWalletsWithResponse(ctx context.Context, companyId string, params *ListCreditWalletsParams, reqEditors ...RequestEditorFn) (*ListCreditWalletsResponse, error)
 
 	// ListCustomerGroups request
 	ListCustomerGroupsWithResponse(ctx context.Context, companyId string, params *ListCustomerGroupsParams, reqEditors ...RequestEditorFn) (*ListCustomerGroupsResponse, error)
@@ -55490,6 +56801,9 @@ type ClientWithResponsesInterface interface {
 	// ListSMSMessages request
 	ListSMSMessagesWithResponse(ctx context.Context, companyId string, params *ListSMSMessagesParams, reqEditors ...RequestEditorFn) (*ListSMSMessagesResponse, error)
 
+	// GetSMSPricing request
+	GetSMSPricingWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*GetSMSPricingResponse, error)
+
 	// ListSpaces request
 	ListSpacesWithResponse(ctx context.Context, companyId string, params *ListSpacesParams, reqEditors ...RequestEditorFn) (*ListSpacesResponse, error)
 
@@ -55510,6 +56824,16 @@ type ClientWithResponsesInterface interface {
 	UpdateBillingInfoWithBodyWithResponse(ctx context.Context, companyId string, params *UpdateBillingInfoParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBillingInfoResponse, error)
 
 	UpdateBillingInfoWithResponse(ctx context.Context, companyId string, params *UpdateBillingInfoParams, body UpdateBillingInfoJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBillingInfoResponse, error)
+
+	// CreateSubscriptionCheckout request with any body
+	CreateSubscriptionCheckoutWithBodyWithResponse(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSubscriptionCheckoutResponse, error)
+
+	CreateSubscriptionCheckoutWithResponse(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, body CreateSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSubscriptionCheckoutResponse, error)
+
+	// ConfirmSubscriptionCheckout request with any body
+	ConfirmSubscriptionCheckoutWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmSubscriptionCheckoutResponse, error)
+
+	ConfirmSubscriptionCheckoutWithResponse(ctx context.Context, companyId string, body ConfirmSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmSubscriptionCheckoutResponse, error)
 
 	// ListBillingInvoices request
 	ListBillingInvoicesWithResponse(ctx context.Context, companyId string, params *ListBillingInvoicesParams, reqEditors ...RequestEditorFn) (*ListBillingInvoicesResponse, error)
@@ -55566,6 +56890,22 @@ type ClientWithResponsesInterface interface {
 
 	// ListCompanyTypes request
 	ListCompanyTypesWithResponse(ctx context.Context, params *ListCompanyTypesParams, reqEditors ...RequestEditorFn) (*ListCompanyTypesResponse, error)
+
+	// GetCreditWallet request
+	GetCreditWalletWithResponse(ctx context.Context, walletId string, params *GetCreditWalletParams, reqEditors ...RequestEditorFn) (*GetCreditWalletResponse, error)
+
+	// UpdateCreditWallet request with any body
+	UpdateCreditWalletWithBodyWithResponse(ctx context.Context, walletId string, params *UpdateCreditWalletParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCreditWalletResponse, error)
+
+	UpdateCreditWalletWithResponse(ctx context.Context, walletId string, params *UpdateCreditWalletParams, body UpdateCreditWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCreditWalletResponse, error)
+
+	// ListCreditWalletLedger request
+	ListCreditWalletLedgerWithResponse(ctx context.Context, walletId string, params *ListCreditWalletLedgerParams, reqEditors ...RequestEditorFn) (*ListCreditWalletLedgerResponse, error)
+
+	// PurchaseCreditWalletCredits request with any body
+	PurchaseCreditWalletCreditsWithBodyWithResponse(ctx context.Context, walletId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PurchaseCreditWalletCreditsResponse, error)
+
+	PurchaseCreditWalletCreditsWithResponse(ctx context.Context, walletId string, body PurchaseCreditWalletCreditsJSONRequestBody, reqEditors ...RequestEditorFn) (*PurchaseCreditWalletCreditsResponse, error)
 
 	// ListCuisines request
 	ListCuisinesWithResponse(ctx context.Context, params *ListCuisinesParams, reqEditors ...RequestEditorFn) (*ListCuisinesResponse, error)
@@ -56328,6 +57668,12 @@ type ClientWithResponsesInterface interface {
 
 	CancelSubscriptionWithResponse(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelSubscriptionResponse, error)
 
+	// ReactivatePlanSubscription request
+	ReactivatePlanSubscriptionWithResponse(ctx context.Context, subscriptionId string, params *ReactivatePlanSubscriptionParams, reqEditors ...RequestEditorFn) (*ReactivatePlanSubscriptionResponse, error)
+
+	// RemoveScheduledChange request
+	RemoveScheduledChangeWithResponse(ctx context.Context, subscriptionId string, params *RemoveScheduledChangeParams, reqEditors ...RequestEditorFn) (*RemoveScheduledChangeResponse, error)
+
 	// CreateSubtransaction request with any body
 	CreateSubtransactionWithBodyWithResponse(ctx context.Context, params *CreateSubtransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSubtransactionResponse, error)
 
@@ -56570,9 +57916,6 @@ type ClientWithResponsesInterface interface {
 	UpdateWorkHoursWithBodyWithResponse(ctx context.Context, workHoursId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkHoursResponse, error)
 
 	UpdateWorkHoursWithResponse(ctx context.Context, workHoursId string, body UpdateWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkHoursResponse, error)
-
-	// ListBillingPlans request
-	ListBillingPlansWithResponse(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingPlansResponse, error)
 }
 
 type ListBlockedTimeActivitiesResponse struct {
@@ -57184,6 +58527,28 @@ func (r GetAmbienceResponse) StatusCode() int {
 	return 0
 }
 
+type ListBillingProductsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingProducts
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBillingProductsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBillingProductsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateBlockedTimeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -57713,6 +59078,28 @@ func (r CloneCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CloneCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListCreditWalletsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CreditWallets
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCreditWalletsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCreditWalletsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -58883,6 +60270,28 @@ func (r ListSMSMessagesResponse) StatusCode() int {
 	return 0
 }
 
+type GetSMSPricingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SMSPricing
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSMSPricingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSMSPricingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListSpacesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -58986,6 +60395,50 @@ func (r UpdateBillingInfoResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateBillingInfoResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateSubscriptionCheckoutResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SubscriptionCheckout
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSubscriptionCheckoutResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSubscriptionCheckoutResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ConfirmSubscriptionCheckoutResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SubscriptionCheckoutResult
+}
+
+// Status returns HTTPResponse.Status
+func (r ConfirmSubscriptionCheckoutResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConfirmSubscriptionCheckoutResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -59381,6 +60834,94 @@ func (r ListCompanyTypesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListCompanyTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCreditWalletResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CreditWallet
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCreditWalletResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCreditWalletResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateCreditWalletResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CreditWallet
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateCreditWalletResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateCreditWalletResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListCreditWalletLedgerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CreditLedgerEntries
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCreditWalletLedgerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCreditWalletLedgerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PurchaseCreditWalletCreditsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CreditWallet
+}
+
+// Status returns HTTPResponse.Status
+func (r PurchaseCreditWalletCreditsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PurchaseCreditWalletCreditsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -63773,6 +65314,48 @@ func (r CancelSubscriptionResponse) StatusCode() int {
 	return 0
 }
 
+type ReactivatePlanSubscriptionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r ReactivatePlanSubscriptionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReactivatePlanSubscriptionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RemoveScheduledChangeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r RemoveScheduledChangeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RemoveScheduledChangeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSubtransactionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -65188,28 +66771,6 @@ func (r UpdateWorkHoursResponse) StatusCode() int {
 	return 0
 }
 
-type ListBillingPlansResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *BillingPlans
-}
-
-// Status returns HTTPResponse.Status
-func (r ListBillingPlansResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListBillingPlansResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 // ListBlockedTimeActivitiesWithResponse request returning *ListBlockedTimeActivitiesResponse
 func (c *ClientWithResponses) ListBlockedTimeActivitiesWithResponse(ctx context.Context, blockedTimeId string, params *ListBlockedTimeActivitiesParams, reqEditors ...RequestEditorFn) (*ListBlockedTimeActivitiesResponse, error) {
 	rsp, err := c.ListBlockedTimeActivities(ctx, blockedTimeId, params, reqEditors...)
@@ -65534,6 +67095,15 @@ func (c *ClientWithResponses) GetAmbienceWithResponse(ctx context.Context, ambie
 	return ParseGetAmbienceResponse(rsp)
 }
 
+// ListBillingProductsWithResponse request returning *ListBillingProductsResponse
+func (c *ClientWithResponses) ListBillingProductsWithResponse(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingProductsResponse, error) {
+	rsp, err := c.ListBillingProducts(ctx, itemFamilyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBillingProductsResponse(rsp)
+}
+
 // CreateBlockedTimeWithBodyWithResponse request with arbitrary body returning *CreateBlockedTimeResponse
 func (c *ClientWithResponses) CreateBlockedTimeWithBodyWithResponse(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error) {
 	rsp, err := c.CreateBlockedTimeWithBody(ctx, params, contentType, body, reqEditors...)
@@ -65812,6 +67382,15 @@ func (c *ClientWithResponses) CloneCompanyWithResponse(ctx context.Context, comp
 		return nil, err
 	}
 	return ParseCloneCompanyResponse(rsp)
+}
+
+// ListCreditWalletsWithResponse request returning *ListCreditWalletsResponse
+func (c *ClientWithResponses) ListCreditWalletsWithResponse(ctx context.Context, companyId string, params *ListCreditWalletsParams, reqEditors ...RequestEditorFn) (*ListCreditWalletsResponse, error) {
+	rsp, err := c.ListCreditWallets(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCreditWalletsResponse(rsp)
 }
 
 // ListCustomerGroupsWithResponse request returning *ListCustomerGroupsResponse
@@ -66307,6 +67886,15 @@ func (c *ClientWithResponses) ListSMSMessagesWithResponse(ctx context.Context, c
 	return ParseListSMSMessagesResponse(rsp)
 }
 
+// GetSMSPricingWithResponse request returning *GetSMSPricingResponse
+func (c *ClientWithResponses) GetSMSPricingWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*GetSMSPricingResponse, error) {
+	rsp, err := c.GetSMSPricing(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSMSPricingResponse(rsp)
+}
+
 // ListSpacesWithResponse request returning *ListSpacesResponse
 func (c *ClientWithResponses) ListSpacesWithResponse(ctx context.Context, companyId string, params *ListSpacesParams, reqEditors ...RequestEditorFn) (*ListSpacesResponse, error) {
 	rsp, err := c.ListSpaces(ctx, companyId, params, reqEditors...)
@@ -66374,6 +67962,40 @@ func (c *ClientWithResponses) UpdateBillingInfoWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseUpdateBillingInfoResponse(rsp)
+}
+
+// CreateSubscriptionCheckoutWithBodyWithResponse request with arbitrary body returning *CreateSubscriptionCheckoutResponse
+func (c *ClientWithResponses) CreateSubscriptionCheckoutWithBodyWithResponse(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSubscriptionCheckoutResponse, error) {
+	rsp, err := c.CreateSubscriptionCheckoutWithBody(ctx, companyId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSubscriptionCheckoutResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSubscriptionCheckoutWithResponse(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, body CreateSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSubscriptionCheckoutResponse, error) {
+	rsp, err := c.CreateSubscriptionCheckout(ctx, companyId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSubscriptionCheckoutResponse(rsp)
+}
+
+// ConfirmSubscriptionCheckoutWithBodyWithResponse request with arbitrary body returning *ConfirmSubscriptionCheckoutResponse
+func (c *ClientWithResponses) ConfirmSubscriptionCheckoutWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmSubscriptionCheckoutResponse, error) {
+	rsp, err := c.ConfirmSubscriptionCheckoutWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmSubscriptionCheckoutResponse(rsp)
+}
+
+func (c *ClientWithResponses) ConfirmSubscriptionCheckoutWithResponse(ctx context.Context, companyId string, body ConfirmSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmSubscriptionCheckoutResponse, error) {
+	rsp, err := c.ConfirmSubscriptionCheckout(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmSubscriptionCheckoutResponse(rsp)
 }
 
 // ListBillingInvoicesWithResponse request returning *ListBillingInvoicesResponse
@@ -66544,6 +68166,58 @@ func (c *ClientWithResponses) ListCompanyTypesWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseListCompanyTypesResponse(rsp)
+}
+
+// GetCreditWalletWithResponse request returning *GetCreditWalletResponse
+func (c *ClientWithResponses) GetCreditWalletWithResponse(ctx context.Context, walletId string, params *GetCreditWalletParams, reqEditors ...RequestEditorFn) (*GetCreditWalletResponse, error) {
+	rsp, err := c.GetCreditWallet(ctx, walletId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCreditWalletResponse(rsp)
+}
+
+// UpdateCreditWalletWithBodyWithResponse request with arbitrary body returning *UpdateCreditWalletResponse
+func (c *ClientWithResponses) UpdateCreditWalletWithBodyWithResponse(ctx context.Context, walletId string, params *UpdateCreditWalletParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCreditWalletResponse, error) {
+	rsp, err := c.UpdateCreditWalletWithBody(ctx, walletId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCreditWalletResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateCreditWalletWithResponse(ctx context.Context, walletId string, params *UpdateCreditWalletParams, body UpdateCreditWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCreditWalletResponse, error) {
+	rsp, err := c.UpdateCreditWallet(ctx, walletId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCreditWalletResponse(rsp)
+}
+
+// ListCreditWalletLedgerWithResponse request returning *ListCreditWalletLedgerResponse
+func (c *ClientWithResponses) ListCreditWalletLedgerWithResponse(ctx context.Context, walletId string, params *ListCreditWalletLedgerParams, reqEditors ...RequestEditorFn) (*ListCreditWalletLedgerResponse, error) {
+	rsp, err := c.ListCreditWalletLedger(ctx, walletId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCreditWalletLedgerResponse(rsp)
+}
+
+// PurchaseCreditWalletCreditsWithBodyWithResponse request with arbitrary body returning *PurchaseCreditWalletCreditsResponse
+func (c *ClientWithResponses) PurchaseCreditWalletCreditsWithBodyWithResponse(ctx context.Context, walletId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PurchaseCreditWalletCreditsResponse, error) {
+	rsp, err := c.PurchaseCreditWalletCreditsWithBody(ctx, walletId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePurchaseCreditWalletCreditsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PurchaseCreditWalletCreditsWithResponse(ctx context.Context, walletId string, body PurchaseCreditWalletCreditsJSONRequestBody, reqEditors ...RequestEditorFn) (*PurchaseCreditWalletCreditsResponse, error) {
+	rsp, err := c.PurchaseCreditWalletCredits(ctx, walletId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePurchaseCreditWalletCreditsResponse(rsp)
 }
 
 // ListCuisinesWithResponse request returning *ListCuisinesResponse
@@ -68987,6 +70661,24 @@ func (c *ClientWithResponses) CancelSubscriptionWithResponse(ctx context.Context
 	return ParseCancelSubscriptionResponse(rsp)
 }
 
+// ReactivatePlanSubscriptionWithResponse request returning *ReactivatePlanSubscriptionResponse
+func (c *ClientWithResponses) ReactivatePlanSubscriptionWithResponse(ctx context.Context, subscriptionId string, params *ReactivatePlanSubscriptionParams, reqEditors ...RequestEditorFn) (*ReactivatePlanSubscriptionResponse, error) {
+	rsp, err := c.ReactivatePlanSubscription(ctx, subscriptionId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReactivatePlanSubscriptionResponse(rsp)
+}
+
+// RemoveScheduledChangeWithResponse request returning *RemoveScheduledChangeResponse
+func (c *ClientWithResponses) RemoveScheduledChangeWithResponse(ctx context.Context, subscriptionId string, params *RemoveScheduledChangeParams, reqEditors ...RequestEditorFn) (*RemoveScheduledChangeResponse, error) {
+	rsp, err := c.RemoveScheduledChange(ctx, subscriptionId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRemoveScheduledChangeResponse(rsp)
+}
+
 // CreateSubtransactionWithBodyWithResponse request with arbitrary body returning *CreateSubtransactionResponse
 func (c *ClientWithResponses) CreateSubtransactionWithBodyWithResponse(ctx context.Context, params *CreateSubtransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSubtransactionResponse, error) {
 	rsp, err := c.CreateSubtransactionWithBody(ctx, params, contentType, body, reqEditors...)
@@ -69764,15 +71456,6 @@ func (c *ClientWithResponses) UpdateWorkHoursWithResponse(ctx context.Context, w
 	return ParseUpdateWorkHoursResponse(rsp)
 }
 
-// ListBillingPlansWithResponse request returning *ListBillingPlansResponse
-func (c *ClientWithResponses) ListBillingPlansWithResponse(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingPlansResponse, error) {
-	rsp, err := c.ListBillingPlans(ctx, itemFamilyId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListBillingPlansResponse(rsp)
-}
-
 // ParseListBlockedTimeActivitiesResponse parses an HTTP response from a ListBlockedTimeActivitiesWithResponse call
 func ParseListBlockedTimeActivitiesResponse(rsp *http.Response) (*ListBlockedTimeActivitiesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -70421,6 +72104,32 @@ func ParseGetAmbienceResponse(rsp *http.Response) (*GetAmbienceResponse, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CategoryResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListBillingProductsResponse parses an HTTP response from a ListBillingProductsWithResponse call
+func ParseListBillingProductsResponse(rsp *http.Response) (*ListBillingProductsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBillingProductsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingProducts
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -71091,6 +72800,32 @@ func ParseCloneCompanyResponse(rsp *http.Response) (*CloneCompanyResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CompanyResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListCreditWalletsResponse parses an HTTP response from a ListCreditWalletsWithResponse call
+func ParseListCreditWalletsResponse(rsp *http.Response) (*ListCreditWalletsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCreditWalletsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreditWallets
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -72438,6 +74173,32 @@ func ParseListSMSMessagesResponse(rsp *http.Response) (*ListSMSMessagesResponse,
 	return response, nil
 }
 
+// ParseGetSMSPricingResponse parses an HTTP response from a GetSMSPricingWithResponse call
+func ParseGetSMSPricingResponse(rsp *http.Response) (*GetSMSPricingResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSMSPricingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SMSPricing
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListSpacesResponse parses an HTTP response from a ListSpacesWithResponse call
 func ParseListSpacesResponse(rsp *http.Response) (*ListSpacesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -72548,6 +74309,58 @@ func ParseUpdateBillingInfoResponse(rsp *http.Response) (*UpdateBillingInfoRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest BillingCustomer
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateSubscriptionCheckoutResponse parses an HTTP response from a CreateSubscriptionCheckoutWithResponse call
+func ParseCreateSubscriptionCheckoutResponse(rsp *http.Response) (*CreateSubscriptionCheckoutResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSubscriptionCheckoutResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SubscriptionCheckout
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseConfirmSubscriptionCheckoutResponse parses an HTTP response from a ConfirmSubscriptionCheckoutWithResponse call
+func ParseConfirmSubscriptionCheckoutResponse(rsp *http.Response) (*ConfirmSubscriptionCheckoutResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConfirmSubscriptionCheckoutResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SubscriptionCheckoutResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -73006,6 +74819,110 @@ func ParseListCompanyTypesResponse(rsp *http.Response) (*ListCompanyTypesRespons
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CompanyTypes
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCreditWalletResponse parses an HTTP response from a GetCreditWalletWithResponse call
+func ParseGetCreditWalletResponse(rsp *http.Response) (*GetCreditWalletResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCreditWalletResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreditWallet
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateCreditWalletResponse parses an HTTP response from a UpdateCreditWalletWithResponse call
+func ParseUpdateCreditWalletResponse(rsp *http.Response) (*UpdateCreditWalletResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateCreditWalletResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreditWallet
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListCreditWalletLedgerResponse parses an HTTP response from a ListCreditWalletLedgerWithResponse call
+func ParseListCreditWalletLedgerResponse(rsp *http.Response) (*ListCreditWalletLedgerResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCreditWalletLedgerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreditLedgerEntries
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePurchaseCreditWalletCreditsResponse parses an HTTP response from a PurchaseCreditWalletCreditsWithResponse call
+func ParsePurchaseCreditWalletCreditsResponse(rsp *http.Response) (*PurchaseCreditWalletCreditsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PurchaseCreditWalletCreditsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreditWallet
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -77849,6 +79766,38 @@ func ParseCancelSubscriptionResponse(rsp *http.Response) (*CancelSubscriptionRes
 	return response, nil
 }
 
+// ParseReactivatePlanSubscriptionResponse parses an HTTP response from a ReactivatePlanSubscriptionWithResponse call
+func ParseReactivatePlanSubscriptionResponse(rsp *http.Response) (*ReactivatePlanSubscriptionResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReactivatePlanSubscriptionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseRemoveScheduledChangeResponse parses an HTTP response from a RemoveScheduledChangeWithResponse call
+func ParseRemoveScheduledChangeResponse(rsp *http.Response) (*RemoveScheduledChangeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RemoveScheduledChangeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseCreateSubtransactionResponse parses an HTTP response from a CreateSubtransactionWithResponse call
 func ParseCreateSubtransactionResponse(rsp *http.Response) (*CreateSubtransactionResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -79376,32 +81325,6 @@ func ParseUpdateWorkHoursResponse(rsp *http.Response) (*UpdateWorkHoursResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest WorkHoursResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseListBillingPlansResponse parses an HTTP response from a ListBillingPlansWithResponse call
-func ParseListBillingPlansResponse(rsp *http.Response) (*ListBillingPlansResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListBillingPlansResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest BillingPlans
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
