@@ -344,6 +344,8 @@ const (
 	CompanyFieldCustomReminder        CompanyField = "custom_reminder"
 	CompanyFieldDescription           CompanyField = "description"
 	CompanyFieldImage                 CompanyField = "image"
+	CompanyFieldTeyaDirect            CompanyField = "teya_direct"
+	CompanyFieldVerifoneEcom          CompanyField = "verifone_ecom"
 )
 
 // Defines values for CompanyPOSSettingsCheckoutFirstTab.
@@ -1524,7 +1526,9 @@ const (
 
 // Defines values for UserField.
 const (
-	TeyaOauth UserField = "teya_oauth"
+	TeyaDirect   UserField = "teya_direct"
+	TeyaOauth    UserField = "teya_oauth"
+	VerifoneEcom UserField = "verifone_ecom"
 )
 
 // Defines values for UserInviteErrorCode.
@@ -1895,13 +1899,16 @@ type AdminCompanyDetails struct {
 	Name       string     `json:"name"`
 
 	// The company's Icelandic national ID (kennitala) used as the claimant identity for no-show claims.
-	NoshowClaimantId *string                   `json:"noshow_claimant_id,omitempty"`
-	PhoneCountryCode *string                   `json:"phone_country_code,omitempty"`
-	PhoneNumber      *string                   `json:"phone_number,omitempty"`
-	SecretaryId      *string                   `json:"secretary_id,omitempty"`
-	Subscriptions    *PowerupSubscriptions     `json:"subscriptions,omitempty"`
-	UpdatedAt        time.Time                 `json:"updated_at"`
-	Users            *AdminCompanyDetailsUsers `json:"users,omitempty"`
+	NoshowClaimantId *string               `json:"noshow_claimant_id,omitempty"`
+	PhoneCountryCode *string               `json:"phone_country_code,omitempty"`
+	PhoneNumber      *string               `json:"phone_number,omitempty"`
+	SecretaryId      *string               `json:"secretary_id,omitempty"`
+	Subscriptions    *PowerupSubscriptions `json:"subscriptions,omitempty"`
+
+	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
+	TeyaDirect *TeyaDirectCredentials    `json:"teya_direct,omitempty"`
+	UpdatedAt  time.Time                 `json:"updated_at"`
+	Users      *AdminCompanyDetailsUsers `json:"users,omitempty"`
 
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
@@ -1915,6 +1922,9 @@ type AdminCompanyDetailsUser struct {
 	Id              *string `json:"id,omitempty"`
 	Name            *string `json:"name,omitempty"`
 	Role            *string `json:"role,omitempty"`
+
+	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
+	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
 
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
@@ -1974,8 +1984,11 @@ type AdminCompanyUpdate struct {
 	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
 	Subscriptions       *PowerupSubscriptions    `json:"subscriptions,omitempty"`
 	Teya                *TeyaConnection          `json:"teya,omitempty"`
-	UpdatedAt           *time.Time               `json:"updated_at,omitempty"`
-	Verifone            *VerifoneConnection      `json:"verifone,omitempty"`
+
+	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
+	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
+	UpdatedAt  *time.Time             `json:"updated_at,omitempty"`
+	Verifone   *VerifoneConnection    `json:"verifone,omitempty"`
 
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
@@ -1990,6 +2003,9 @@ type AdminCompanyUpdate struct {
 type AdminCompanyUpdateFields struct {
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+
+	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
+	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
 
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
@@ -2116,12 +2132,18 @@ type AdminUser struct {
 	Id        string          `json:"id"`
 	Name      *string         `json:"name,omitempty"`
 
+	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
+	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
+
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
 }
 
 // Admin-only user update payload. Designed as a generic envelope so additional admin-only fields can be added over time without breaking existing clients.
 type AdminUserUpdate struct {
+	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
+	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
+
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
 }
@@ -9957,6 +9979,15 @@ type TeyaConnection struct {
 	HasToken *bool `json:"has_token,omitempty"`
 }
 
+// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
+type TeyaDirectCredentials struct {
+	// Whether 3-D Secure is enabled for Teya Direct payments. Company-level only.
+	ThreeDsEnabled *bool `json:"three_ds_enabled,omitempty"`
+
+	// Teya Direct API token used for authenticated direct payment calls
+	Token *string `json:"token,omitempty"`
+}
+
 // TimeRange defines model for TimeRange.
 type TimeRange struct {
 	// End time within the day
@@ -11555,7 +11586,8 @@ type AdminUpdateUserParams struct {
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+	Expand *Expand     `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *UserFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // AdminForceResetPasswordParams defines parameters for AdminForceResetPassword.
@@ -26977,6 +27009,22 @@ func NewAdminUpdateUserRequestWithBody(server string, userId string, params *Adm
 	if params.Expand != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
