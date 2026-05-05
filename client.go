@@ -10235,6 +10235,9 @@ type TeyaConnection struct {
 
 // Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 type TeyaDirectCredentials struct {
+	// Teya Direct merchant ID used for authenticated direct payment calls
+	MerchantId *string `json:"merchant_id,omitempty"`
+
 	// Whether 3-D Secure is enabled for Teya Direct payments. Company-level only.
 	ThreeDsEnabled *bool `json:"three_ds_enabled,omitempty"`
 
