@@ -344,6 +344,7 @@ const (
 	CompanyFieldCustomReminder        CompanyField = "custom_reminder"
 	CompanyFieldDescription           CompanyField = "description"
 	CompanyFieldImage                 CompanyField = "image"
+	CompanyFieldPhoneFriendly         CompanyField = "phone_friendly"
 	CompanyFieldTeyaDirect            CompanyField = "teya_direct"
 	CompanyFieldVerifoneEcom          CompanyField = "verifone_ecom"
 )
@@ -1997,6 +1998,9 @@ type AdminCompanyUpdate struct {
 	// Deprecated, use profile.phone_country_code instead
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 
+	// Custom SMS sender name (phone-friendly name). Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Non-compliant characters are stripped before storage.
+	PhoneFriendly *string `json:"phone_friendly,omitempty"`
+
 	// Deprecated, use profile.phone_number instead
 	PhoneNumber *string             `json:"phone_number,omitempty"`
 	Pos         *CompanyPOSSettings `json:"pos,omitempty"`
@@ -2031,6 +2035,9 @@ type AdminCompanyUpdate struct {
 type AdminCompanyUpdateFields struct {
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
+
+	// Custom SMS sender name (phone-friendly name). Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Non-compliant characters are stripped before storage.
+	PhoneFriendly *string `json:"phone_friendly,omitempty"`
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
