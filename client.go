@@ -1989,6 +1989,9 @@ type AdminCompanyUpdate struct {
 	Migrations     *CompanyMigrations  `json:"migrations,omitempty"`
 	Name           *string             `json:"name,omitempty"`
 
+	// The company's Icelandic national ID (kennitala) used as the claimant identity for no-show claims. Only admins can modify this field.
+	NoshowClaimantId *string `json:"noshow_claimant_id,omitempty"`
+
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
 
@@ -2034,6 +2037,9 @@ type AdminCompanyUpdate struct {
 
 // AdminCompanyUpdateFields defines model for AdminCompanyUpdateFields.
 type AdminCompanyUpdateFields struct {
+	// The company's Icelandic national ID (kennitala) used as the claimant identity for no-show claims. Only admins can modify this field.
+	NoshowClaimantId *string `json:"noshow_claimant_id,omitempty"`
+
 	// Whether no-show claims are enabled for this company. When true, activates no-show subscription and requires SSN in marketplace. When false, deactivates no-show claims functionality. Only admins can modify this field.
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
 
