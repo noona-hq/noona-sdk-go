@@ -1926,11 +1926,14 @@ type AdminCompanyDetails struct {
 	Name       string     `json:"name"`
 
 	// The company's Icelandic national ID (kennitala) used as the claimant identity for no-show claims.
-	NoshowClaimantId *string               `json:"noshow_claimant_id,omitempty"`
-	PhoneCountryCode *string               `json:"phone_country_code,omitempty"`
-	PhoneNumber      *string               `json:"phone_number,omitempty"`
-	SecretaryId      *string               `json:"secretary_id,omitempty"`
-	Subscriptions    *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	NoshowClaimantId *string `json:"noshow_claimant_id,omitempty"`
+	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
+
+	// Custom SMS sender name for this company
+	PhoneFriendly *string               `json:"phone_friendly,omitempty"`
+	PhoneNumber   *string               `json:"phone_number,omitempty"`
+	SecretaryId   *string               `json:"secretary_id,omitempty"`
+	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials    `json:"teya_direct,omitempty"`
