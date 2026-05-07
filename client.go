@@ -485,6 +485,7 @@ const (
 	EmployeeFieldDescription    EmployeeField = "description"
 	EmployeeFieldDisabledAt     EmployeeField = "disabled_at"
 	EmployeeFieldImage          EmployeeField = "image"
+	EmployeeFieldPhoneFriendly  EmployeeField = "phone_friendly"
 )
 
 // Defines values for EnterpriseField.
@@ -2044,6 +2045,12 @@ type AdminCompanyUpdateFields struct {
 
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
+}
+
+// Admin-only employee update payload for company-scoped settings.
+type AdminEmployeeUpdate struct {
+	// Custom SMS sender ID for the employee within this company. Only alphanumeric characters (a-z, A-Z, 0-9), max 10 characters. Unicode characters are transliterated to GSM-7 compatible ASCII.
+	PhoneFriendly *string `json:"phone_friendly,omitempty"`
 }
 
 // AdminFixWorkHoursTimesFailure defines model for AdminFixWorkHoursTimesFailure.
@@ -11790,6 +11797,19 @@ type AdminUpdateCompanyParams struct {
 	Unset  *CompanyFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
+// AdminUpdateEmployeeJSONBody defines parameters for AdminUpdateEmployee.
+type AdminUpdateEmployeeJSONBody AdminEmployeeUpdate
+
+// AdminUpdateEmployeeParams defines parameters for AdminUpdateEmployee.
+type AdminUpdateEmployeeParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand         `form:"expand,omitempty" json:"expand,omitempty"`
+	Unset  *EmployeeFields `form:"unset,omitempty" json:"unset,omitempty"`
+}
+
 // AdminRemoveSecretaryFromCompanyParams defines parameters for AdminRemoveSecretaryFromCompany.
 type AdminRemoveSecretaryFromCompanyParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15790,6 +15810,9 @@ type AdminUpdateAgentClientJSONRequestBody AdminUpdateAgentClientJSONBody
 // AdminUpdateCompanyJSONRequestBody defines body for AdminUpdateCompany for application/json ContentType.
 type AdminUpdateCompanyJSONRequestBody AdminUpdateCompanyJSONBody
 
+// AdminUpdateEmployeeJSONRequestBody defines body for AdminUpdateEmployee for application/json ContentType.
+type AdminUpdateEmployeeJSONRequestBody AdminUpdateEmployeeJSONBody
+
 // AdminAssignSecretaryToCompanyJSONRequestBody defines body for AdminAssignSecretaryToCompany for application/json ContentType.
 type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJSONBody
 
@@ -18362,6 +18385,11 @@ type ClientInterface interface {
 
 	AdminUpdateCompany(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminUpdateEmployee request with any body
+	AdminUpdateEmployeeWithBody(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminUpdateEmployee(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, body AdminUpdateEmployeeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminRemoveSecretaryFromCompany request
 	AdminRemoveSecretaryFromCompany(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19993,6 +20021,30 @@ func (c *Client) AdminUpdateCompanyWithBody(ctx context.Context, companyId strin
 
 func (c *Client) AdminUpdateCompany(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateCompanyRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateEmployeeWithBody(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateEmployeeRequestWithBody(c.Server, companyId, employeeId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateEmployee(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, body AdminUpdateEmployeeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateEmployeeRequest(c.Server, companyId, employeeId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -27036,6 +27088,112 @@ func NewAdminUpdateCompanyRequestWithBody(server string, companyId string, param
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminUpdateEmployeeRequest calls the generic AdminUpdateEmployee builder with application/json body
+func NewAdminUpdateEmployeeRequest(server string, companyId string, employeeId string, params *AdminUpdateEmployeeParams, body AdminUpdateEmployeeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminUpdateEmployeeRequestWithBody(server, companyId, employeeId, params, "application/json", bodyReader)
+}
+
+// NewAdminUpdateEmployeeRequestWithBody generates requests for AdminUpdateEmployee with any type of body
+func NewAdminUpdateEmployeeRequestWithBody(server string, companyId string, employeeId string, params *AdminUpdateEmployeeParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "employee_id", runtime.ParamLocationPath, employeeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/employees/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -56503,6 +56661,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateCompanyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error)
 
+	// AdminUpdateEmployee request with any body
+	AdminUpdateEmployeeWithBodyWithResponse(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateEmployeeResponse, error)
+
+	AdminUpdateEmployeeWithResponse(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, body AdminUpdateEmployeeJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateEmployeeResponse, error)
+
 	// AdminRemoveSecretaryFromCompany request
 	AdminRemoveSecretaryFromCompanyWithResponse(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*AdminRemoveSecretaryFromCompanyResponse, error)
 
@@ -58250,6 +58413,27 @@ func (r AdminUpdateCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminUpdateEmployeeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminUpdateEmployeeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminUpdateEmployeeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -66940,6 +67124,23 @@ func (c *ClientWithResponses) AdminUpdateCompanyWithResponse(ctx context.Context
 	return ParseAdminUpdateCompanyResponse(rsp)
 }
 
+// AdminUpdateEmployeeWithBodyWithResponse request with arbitrary body returning *AdminUpdateEmployeeResponse
+func (c *ClientWithResponses) AdminUpdateEmployeeWithBodyWithResponse(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateEmployeeResponse, error) {
+	rsp, err := c.AdminUpdateEmployeeWithBody(ctx, companyId, employeeId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateEmployeeResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminUpdateEmployeeWithResponse(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, body AdminUpdateEmployeeJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateEmployeeResponse, error) {
+	rsp, err := c.AdminUpdateEmployee(ctx, companyId, employeeId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateEmployeeResponse(rsp)
+}
+
 // AdminRemoveSecretaryFromCompanyWithResponse request returning *AdminRemoveSecretaryFromCompanyResponse
 func (c *ClientWithResponses) AdminRemoveSecretaryFromCompanyWithResponse(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*AdminRemoveSecretaryFromCompanyResponse, error) {
 	rsp, err := c.AdminRemoveSecretaryFromCompany(ctx, companyId, params, reqEditors...)
@@ -71831,6 +72032,22 @@ func ParseAdminUpdateCompanyResponse(rsp *http.Response) (*AdminUpdateCompanyRes
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseAdminUpdateEmployeeResponse parses an HTTP response from a AdminUpdateEmployeeWithResponse call
+func ParseAdminUpdateEmployeeResponse(rsp *http.Response) (*AdminUpdateEmployeeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminUpdateEmployeeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
