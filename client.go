@@ -1948,7 +1948,10 @@ type AdminCompanyDetailsUser struct {
 	Email           *string `json:"email,omitempty"`
 	Id              *string `json:"id,omitempty"`
 	Name            *string `json:"name,omitempty"`
-	Role            *string `json:"role,omitempty"`
+
+	// Custom SMS sender name for this employee
+	PhoneFriendly *string `json:"phone_friendly,omitempty"`
+	Role          *string `json:"role,omitempty"`
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
