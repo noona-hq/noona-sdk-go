@@ -9202,14 +9202,20 @@ type SMSMessage struct {
 	Employee *ExpandableEmployee `json:"employee,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Event            *ExpandableEvent  `json:"event,omitempty"`
-	Id               *string           `json:"id,omitempty"`
-	PhoneCountryCode *string           `json:"phone_country_code,omitempty"`
-	PhoneNumber      *string           `json:"phone_number,omitempty"`
-	SenderName       *string           `json:"sender_name,omitempty"`
-	Status           *SMSMessageStatus `json:"status,omitempty"`
-	Type             *SMSMessageType   `json:"type,omitempty"`
-	UpdatedAt        *time.Time        `json:"updated_at,omitempty"`
+	Event            *ExpandableEvent `json:"event,omitempty"`
+	Id               *string          `json:"id,omitempty"`
+	PhoneCountryCode *string          `json:"phone_country_code,omitempty"`
+	PhoneNumber      *string          `json:"phone_number,omitempty"`
+
+	// SMS provider used to send this message (e.g. infobip, twilio)
+	Provider *string `json:"provider,omitempty"`
+
+	// External reference ID from the SMS provider (e.g. Infobip message ID)
+	ReferenceId *string           `json:"reference_id,omitempty"`
+	SenderName  *string           `json:"sender_name,omitempty"`
+	Status      *SMSMessageStatus `json:"status,omitempty"`
+	Type        *SMSMessageType   `json:"type,omitempty"`
+	UpdatedAt   *time.Time        `json:"updated_at,omitempty"`
 }
 
 // SMSMessageStatus defines model for SMSMessage.Status.
