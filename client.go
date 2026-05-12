@@ -1346,6 +1346,7 @@ const (
 const (
 	OnBlockedTimeUpdated         StreamEventName = "onBlockedTimeUpdated"
 	OnCompanySubscriptionUpdated StreamEventName = "onCompanySubscriptionUpdated"
+	OnCreditWalletUpdated        StreamEventName = "onCreditWalletUpdated"
 	OnEmployeeUpdated            StreamEventName = "onEmployeeUpdated"
 	OnEventTypeGroupUpdated      StreamEventName = "onEventTypeGroupUpdated"
 	OnEventTypeUpdated           StreamEventName = "onEventTypeUpdated"
@@ -1364,6 +1365,7 @@ const (
 const (
 	StreamableEntityTypeBlockedTimes         StreamableEntityType = "blocked_times"
 	StreamableEntityTypeCompanySubscription  StreamableEntityType = "company_subscription"
+	StreamableEntityTypeCreditWallets        StreamableEntityType = "credit_wallets"
 	StreamableEntityTypeEmployees            StreamableEntityType = "employees"
 	StreamableEntityTypeEventTypeGroups      StreamableEntityType = "event_type_groups"
 	StreamableEntityTypeEventTypes           StreamableEntityType = "event_types"
