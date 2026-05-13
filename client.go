@@ -1925,7 +1925,10 @@ type AdminCompanyDetails struct {
 	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
 	Id         string     `json:"id"`
 	LastActive *time.Time `json:"last_active,omitempty"`
-	Name       string     `json:"name"`
+
+	// Cleartext PIN for the locked sections feature. Contains secret material — only admin endpoints return it.
+	LockedSectionsPin *string `json:"locked_sections_pin,omitempty"`
+	Name              string  `json:"name"`
 
 	// The company's Icelandic national ID (kennitala) used as the claimant identity for no-show claims.
 	NoshowClaimantId *string `json:"noshow_claimant_id,omitempty"`
