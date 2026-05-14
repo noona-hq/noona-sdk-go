@@ -7187,10 +7187,7 @@ type NotificationChannel string
 
 // NotificationChannelConfig defines model for NotificationChannelConfig.
 type NotificationChannelConfig struct {
-	Id *string `json:"id,omitempty"`
-
-	// Whether this channel is locked for this notification type
-	Locked     *bool                `json:"locked,omitempty"`
+	Id         *string              `json:"id,omitempty"`
 	ReadableId *NotificationChannel `json:"readable_id,omitempty"`
 	Title      *string              `json:"title,omitempty"`
 }
