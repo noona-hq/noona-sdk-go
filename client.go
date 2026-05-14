@@ -2122,47 +2122,6 @@ type AdminMoveUserRequest struct {
 	SourceCompanyId string `json:"source_company_id"`
 }
 
-// AdminNotificationDefaultsRepairFailure defines model for AdminNotificationDefaultsRepairFailure.
-type AdminNotificationDefaultsRepairFailure struct {
-	CompanyId *string `json:"company_id,omitempty"`
-	Error     *string `json:"error,omitempty"`
-	UserId    *string `json:"user_id,omitempty"`
-}
-
-// AdminNotificationDefaultsRepairRequest defines model for AdminNotificationDefaultsRepairRequest.
-type AdminNotificationDefaultsRepairRequest struct {
-	// If provided, only these companies are processed. Otherwise migrated companies are processed by cursor.
-	CompanyIds *[]string `json:"company_ids,omitempty"`
-
-	// If provided, only companies in these Alpha-2 countries are processed.
-	CountryCodes *[]string `json:"country_codes,omitempty"`
-
-	// Last processed company ID. Only used when company_ids is not provided.
-	Cursor *string `json:"cursor,omitempty"`
-
-	// If true, only preview changes without updating users.
-	DryRun *bool `json:"dry_run,omitempty"`
-
-	// Max companies to process when company_ids is not provided. Default 20, max 200.
-	Limit *int32 `json:"limit,omitempty"`
-}
-
-// AdminNotificationDefaultsRepairResult defines model for AdminNotificationDefaultsRepairResult.
-type AdminNotificationDefaultsRepairResult struct {
-	Failed     *int32                                    `json:"failed,omitempty"`
-	Failures   *[]AdminNotificationDefaultsRepairFailure `json:"failures,omitempty"`
-	HasMore    *bool                                     `json:"has_more,omitempty"`
-	NextCursor *string                                   `json:"next_cursor,omitempty"`
-
-	// Number of companies processed in this request.
-	Total                       *int32 `json:"total,omitempty"`
-	UsersScanned                *int32 `json:"users_scanned,omitempty"`
-	UsersSkippedAlreadyDefault  *int32 `json:"users_skipped_already_default,omitempty"`
-	UsersSkippedCustomized      *int32 `json:"users_skipped_customized,omitempty"`
-	UsersSkippedMissingSettings *int32 `json:"users_skipped_missing_settings,omitempty"`
-	UsersUpdated                *int32 `json:"users_updated,omitempty"`
-}
-
 // AdminSmsRemindersBulkMigrationFailure defines model for AdminSmsRemindersBulkMigrationFailure.
 type AdminSmsRemindersBulkMigrationFailure struct {
 	CompanyId *string `json:"company_id,omitempty"`
@@ -11904,9 +11863,6 @@ type AdminBulkMigrateSmsRemindersJSONBody AdminSmsRemindersBulkMigrationRequest
 // AdminBulkMigrateStaffWorkHoursJSONBody defines parameters for AdminBulkMigrateStaffWorkHours.
 type AdminBulkMigrateStaffWorkHoursJSONBody AdminStaffWorkHoursBulkMigrationRequest
 
-// AdminRepairNotificationDefaultsJSONBody defines parameters for AdminRepairNotificationDefaults.
-type AdminRepairNotificationDefaultsJSONBody AdminNotificationDefaultsRepairRequest
-
 // AdminListSecretariesParams defines parameters for AdminListSecretaries.
 type AdminListSecretariesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15889,9 +15845,6 @@ type AdminBulkMigrateSmsRemindersJSONRequestBody AdminBulkMigrateSmsRemindersJSO
 // AdminBulkMigrateStaffWorkHoursJSONRequestBody defines body for AdminBulkMigrateStaffWorkHours for application/json ContentType.
 type AdminBulkMigrateStaffWorkHoursJSONRequestBody AdminBulkMigrateStaffWorkHoursJSONBody
 
-// AdminRepairNotificationDefaultsJSONRequestBody defines body for AdminRepairNotificationDefaults for application/json ContentType.
-type AdminRepairNotificationDefaultsJSONRequestBody AdminRepairNotificationDefaultsJSONBody
-
 // AdminUpdateUserJSONRequestBody defines body for AdminUpdateUser for application/json ContentType.
 type AdminUpdateUserJSONRequestBody AdminUpdateUserJSONBody
 
@@ -18480,11 +18433,6 @@ type ClientInterface interface {
 
 	AdminBulkMigrateStaffWorkHours(ctx context.Context, body AdminBulkMigrateStaffWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AdminRepairNotificationDefaults request with any body
-	AdminRepairNotificationDefaultsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AdminRepairNotificationDefaults(ctx context.Context, body AdminRepairNotificationDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// AdminListSecretaries request
 	AdminListSecretaries(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -20225,30 +20173,6 @@ func (c *Client) AdminBulkMigrateStaffWorkHoursWithBody(ctx context.Context, con
 
 func (c *Client) AdminBulkMigrateStaffWorkHours(ctx context.Context, body AdminBulkMigrateStaffWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminBulkMigrateStaffWorkHoursRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminRepairNotificationDefaultsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminRepairNotificationDefaultsRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminRepairNotificationDefaults(ctx context.Context, body AdminRepairNotificationDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminRepairNotificationDefaultsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -27615,46 +27539,6 @@ func NewAdminBulkMigrateStaffWorkHoursRequestWithBody(server string, contentType
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/staff-work-hours")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewAdminRepairNotificationDefaultsRequest calls the generic AdminRepairNotificationDefaults builder with application/json body
-func NewAdminRepairNotificationDefaultsRequest(server string, body AdminRepairNotificationDefaultsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAdminRepairNotificationDefaultsRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewAdminRepairNotificationDefaultsRequestWithBody generates requests for AdminRepairNotificationDefaults with any type of body
-func NewAdminRepairNotificationDefaultsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/admin/notifications/defaults-repair")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -56825,11 +56709,6 @@ type ClientWithResponsesInterface interface {
 
 	AdminBulkMigrateStaffWorkHoursWithResponse(ctx context.Context, body AdminBulkMigrateStaffWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateStaffWorkHoursResponse, error)
 
-	// AdminRepairNotificationDefaults request with any body
-	AdminRepairNotificationDefaultsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminRepairNotificationDefaultsResponse, error)
-
-	AdminRepairNotificationDefaultsWithResponse(ctx context.Context, body AdminRepairNotificationDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminRepairNotificationDefaultsResponse, error)
-
 	// AdminListSecretaries request
 	AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error)
 
@@ -58683,28 +58562,6 @@ func (r AdminBulkMigrateStaffWorkHoursResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminBulkMigrateStaffWorkHoursResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type AdminRepairNotificationDefaultsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *AdminNotificationDefaultsRepairResult
-}
-
-// Status returns HTTPResponse.Status
-func (r AdminRepairNotificationDefaultsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AdminRepairNotificationDefaultsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -67381,23 +67238,6 @@ func (c *ClientWithResponses) AdminBulkMigrateStaffWorkHoursWithResponse(ctx con
 	return ParseAdminBulkMigrateStaffWorkHoursResponse(rsp)
 }
 
-// AdminRepairNotificationDefaultsWithBodyWithResponse request with arbitrary body returning *AdminRepairNotificationDefaultsResponse
-func (c *ClientWithResponses) AdminRepairNotificationDefaultsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminRepairNotificationDefaultsResponse, error) {
-	rsp, err := c.AdminRepairNotificationDefaultsWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminRepairNotificationDefaultsResponse(rsp)
-}
-
-func (c *ClientWithResponses) AdminRepairNotificationDefaultsWithResponse(ctx context.Context, body AdminRepairNotificationDefaultsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminRepairNotificationDefaultsResponse, error) {
-	rsp, err := c.AdminRepairNotificationDefaults(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminRepairNotificationDefaultsResponse(rsp)
-}
-
 // AdminListSecretariesWithResponse request returning *AdminListSecretariesResponse
 func (c *ClientWithResponses) AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error) {
 	rsp, err := c.AdminListSecretaries(ctx, params, reqEditors...)
@@ -72333,32 +72173,6 @@ func ParseAdminBulkMigrateStaffWorkHoursResponse(rsp *http.Response) (*AdminBulk
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdminStaffWorkHoursBulkMigrationResult
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseAdminRepairNotificationDefaultsResponse parses an HTTP response from a AdminRepairNotificationDefaultsWithResponse call
-func ParseAdminRepairNotificationDefaultsResponse(rsp *http.Response) (*AdminRepairNotificationDefaultsResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AdminRepairNotificationDefaultsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdminNotificationDefaultsRepairResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
