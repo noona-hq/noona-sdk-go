@@ -2693,8 +2693,8 @@ type BillingProduct struct {
 	Id string `json:"id"`
 
 	// The display name of the plan
-	Name         *string                     `json:"name,omitempty"`
-	PriceVariant *BillingProductPriceVariant `json:"price_variant,omitempty"`
+	Name          *string                       `json:"name,omitempty"`
+	PriceVariants *[]BillingProductPriceVariant `json:"price_variants,omitempty"`
 }
 
 // BillingProductPriceVariant defines model for BillingProductPriceVariant.
