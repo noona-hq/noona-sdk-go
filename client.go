@@ -356,6 +356,7 @@ const (
 	CompanyFieldDescription           CompanyField = "description"
 	CompanyFieldImage                 CompanyField = "image"
 	CompanyFieldPhoneFriendly         CompanyField = "phone_friendly"
+	CompanyFieldQuotas                CompanyField = "quotas"
 	CompanyFieldTeyaDirect            CompanyField = "teya_direct"
 	CompanyFieldVerifoneEcom          CompanyField = "verifone_ecom"
 )
@@ -1948,6 +1949,7 @@ type AdminCompanyDetails struct {
 	// Custom SMS sender name for this company
 	PhoneFriendly *string               `json:"phone_friendly,omitempty"`
 	PhoneNumber   *string               `json:"phone_number,omitempty"`
+	Quotas        *AdminCompanyQuotas   `json:"quotas,omitempty"`
 	SecretaryId   *string               `json:"secretary_id,omitempty"`
 	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
 
@@ -1981,6 +1983,15 @@ type AdminCompanyDetailsUser struct {
 
 // AdminCompanyDetailsUsers defines model for AdminCompanyDetailsUsers.
 type AdminCompanyDetailsUsers []AdminCompanyDetailsUser
+
+// AdminCompanyQuotas defines model for AdminCompanyQuotas.
+type AdminCompanyQuotas struct {
+	// Override limit for direct SMS messages
+	DirectMessages *int32 `json:"direct_messages,omitempty"`
+
+	// Override limit for marketing SMS messages
+	MarketingMessages *int32 `json:"marketing_messages,omitempty"`
+}
 
 // AdminCompanyUpdate defines model for AdminCompanyUpdate.
 type AdminCompanyUpdate struct {
@@ -2031,6 +2042,7 @@ type AdminCompanyUpdate struct {
 	PhoneNumber *string             `json:"phone_number,omitempty"`
 	Pos         *CompanyPOSSettings `json:"pos,omitempty"`
 	Profile     *CompanyProfile     `json:"profile,omitempty"`
+	Quotas      *AdminCompanyQuotas `json:"quotas,omitempty"`
 
 	// An ID that can be used to reference the company in an external system.
 	// This ID is not used by Noona and is not guaranteed to be unique.
@@ -2066,7 +2078,8 @@ type AdminCompanyUpdateFields struct {
 	NoshowClaimsEnabled *bool `json:"noshow_claims_enabled,omitempty"`
 
 	// Custom SMS sender name (phone-friendly name). Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Non-compliant characters are stripped before storage.
-	PhoneFriendly *string `json:"phone_friendly,omitempty"`
+	PhoneFriendly *string             `json:"phone_friendly,omitempty"`
+	Quotas        *AdminCompanyQuotas `json:"quotas,omitempty"`
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
