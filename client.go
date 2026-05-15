@@ -1296,11 +1296,12 @@ const (
 
 // Defines values for SMSMessageStatus.
 const (
-	SMSMessageStatusCreated     SMSMessageStatus = "created"
-	SMSMessageStatusDelivered   SMSMessageStatus = "delivered"
-	SMSMessageStatusFailed      SMSMessageStatus = "failed"
-	SMSMessageStatusProcessing  SMSMessageStatus = "processing"
-	SMSMessageStatusUndelivered SMSMessageStatus = "undelivered"
+	SMSMessageStatusCreated             SMSMessageStatus = "created"
+	SMSMessageStatusDelivered           SMSMessageStatus = "delivered"
+	SMSMessageStatusFailed              SMSMessageStatus = "failed"
+	SMSMessageStatusInsufficientCredits SMSMessageStatus = "insufficient_credits"
+	SMSMessageStatusProcessing          SMSMessageStatus = "processing"
+	SMSMessageStatusUndelivered         SMSMessageStatus = "undelivered"
 )
 
 // Defines values for SMSMessageType.
