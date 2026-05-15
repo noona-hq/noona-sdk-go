@@ -18505,9 +18505,6 @@ type ClientInterface interface {
 	// GetAmbience request
 	GetAmbience(ctx context.Context, ambienceId string, params *GetAmbienceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListBillingProducts request
-	ListBillingProducts(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// CreateBlockedTime request with any body
 	CreateBlockedTimeWithBody(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -18578,6 +18575,9 @@ type ClientInterface interface {
 
 	// DisableApp request
 	DisableApp(ctx context.Context, companyId string, appId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListBillingProducts request
+	ListBillingProducts(ctx context.Context, companyId string, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListBlockedTimes request
 	ListBlockedTimes(ctx context.Context, companyId string, params *ListBlockedTimesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -20347,18 +20347,6 @@ func (c *Client) GetAmbience(ctx context.Context, ambienceId string, params *Get
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListBillingProducts(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListBillingProductsRequest(c.Server, itemFamilyId)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) CreateBlockedTimeWithBody(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateBlockedTimeRequestWithBody(c.Server, params, contentType, body)
 	if err != nil {
@@ -20661,6 +20649,18 @@ func (c *Client) GetApp(ctx context.Context, companyId string, appId string, par
 
 func (c *Client) DisableApp(ctx context.Context, companyId string, appId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDisableAppRequest(c.Server, companyId, appId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListBillingProducts(ctx context.Context, companyId string, itemFamilyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListBillingProductsRequest(c.Server, companyId, itemFamilyId)
 	if err != nil {
 		return nil, err
 	}
@@ -28254,40 +28254,6 @@ func NewGetAmbienceRequest(server string, ambienceId string, params *GetAmbience
 	return req, nil
 }
 
-// NewListBillingProductsRequest generates requests for ListBillingProducts
-func NewListBillingProductsRequest(server string, itemFamilyId string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "item_family_id", runtime.ParamLocationPath, itemFamilyId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/billing/products/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewCreateBlockedTimeRequest calls the generic CreateBlockedTime builder with application/json body
 func NewCreateBlockedTimeRequest(server string, params *CreateBlockedTimeParams, body CreateBlockedTimeJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -29782,6 +29748,47 @@ func NewDisableAppRequest(server string, companyId string, appId string) (*http.
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListBillingProductsRequest generates requests for ListBillingProducts
+func NewListBillingProductsRequest(server string, companyId string, itemFamilyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "item_family_id", runtime.ParamLocationPath, itemFamilyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/billing/products/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -56781,9 +56788,6 @@ type ClientWithResponsesInterface interface {
 	// GetAmbience request
 	GetAmbienceWithResponse(ctx context.Context, ambienceId string, params *GetAmbienceParams, reqEditors ...RequestEditorFn) (*GetAmbienceResponse, error)
 
-	// ListBillingProducts request
-	ListBillingProductsWithResponse(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingProductsResponse, error)
-
 	// CreateBlockedTime request with any body
 	CreateBlockedTimeWithBodyWithResponse(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error)
 
@@ -56854,6 +56858,9 @@ type ClientWithResponsesInterface interface {
 
 	// DisableApp request
 	DisableAppWithResponse(ctx context.Context, companyId string, appId string, reqEditors ...RequestEditorFn) (*DisableAppResponse, error)
+
+	// ListBillingProducts request
+	ListBillingProductsWithResponse(ctx context.Context, companyId string, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingProductsResponse, error)
 
 	// ListBlockedTimes request
 	ListBlockedTimesWithResponse(ctx context.Context, companyId string, params *ListBlockedTimesParams, reqEditors ...RequestEditorFn) (*ListBlockedTimesResponse, error)
@@ -58785,28 +58792,6 @@ func (r GetAmbienceResponse) StatusCode() int {
 	return 0
 }
 
-type ListBillingProductsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *BillingProducts
-}
-
-// Status returns HTTPResponse.Status
-func (r ListBillingProductsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListBillingProductsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type CreateBlockedTimeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -59224,6 +59209,28 @@ func (r DisableAppResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r DisableAppResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListBillingProductsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BillingProducts
+}
+
+// Status returns HTTPResponse.Status
+func (r ListBillingProductsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListBillingProductsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -67370,15 +67377,6 @@ func (c *ClientWithResponses) GetAmbienceWithResponse(ctx context.Context, ambie
 	return ParseGetAmbienceResponse(rsp)
 }
 
-// ListBillingProductsWithResponse request returning *ListBillingProductsResponse
-func (c *ClientWithResponses) ListBillingProductsWithResponse(ctx context.Context, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingProductsResponse, error) {
-	rsp, err := c.ListBillingProducts(ctx, itemFamilyId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListBillingProductsResponse(rsp)
-}
-
 // CreateBlockedTimeWithBodyWithResponse request with arbitrary body returning *CreateBlockedTimeResponse
 func (c *ClientWithResponses) CreateBlockedTimeWithBodyWithResponse(ctx context.Context, params *CreateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateBlockedTimeResponse, error) {
 	rsp, err := c.CreateBlockedTimeWithBody(ctx, params, contentType, body, reqEditors...)
@@ -67604,6 +67602,15 @@ func (c *ClientWithResponses) DisableAppWithResponse(ctx context.Context, compan
 		return nil, err
 	}
 	return ParseDisableAppResponse(rsp)
+}
+
+// ListBillingProductsWithResponse request returning *ListBillingProductsResponse
+func (c *ClientWithResponses) ListBillingProductsWithResponse(ctx context.Context, companyId string, itemFamilyId string, reqEditors ...RequestEditorFn) (*ListBillingProductsResponse, error) {
+	rsp, err := c.ListBillingProducts(ctx, companyId, itemFamilyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListBillingProductsResponse(rsp)
 }
 
 // ListBlockedTimesWithResponse request returning *ListBlockedTimesResponse
@@ -72405,32 +72412,6 @@ func ParseGetAmbienceResponse(rsp *http.Response) (*GetAmbienceResponse, error) 
 	return response, nil
 }
 
-// ParseListBillingProductsResponse parses an HTTP response from a ListBillingProductsWithResponse call
-func ParseListBillingProductsResponse(rsp *http.Response) (*ListBillingProductsResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListBillingProductsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest BillingProducts
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseCreateBlockedTimeResponse parses an HTTP response from a CreateBlockedTimeWithResponse call
 func ParseCreateBlockedTimeResponse(rsp *http.Response) (*CreateBlockedTimeResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -72952,6 +72933,32 @@ func ParseDisableAppResponse(rsp *http.Response) (*DisableAppResponse, error) {
 	response := &DisableAppResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListBillingProductsResponse parses an HTTP response from a ListBillingProductsWithResponse call
+func ParseListBillingProductsResponse(rsp *http.Response) (*ListBillingProductsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListBillingProductsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BillingProducts
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
