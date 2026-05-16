@@ -354,6 +354,7 @@ const (
 	CompanyFieldClaimantId            CompanyField = "claimant_id"
 	CompanyFieldCustomReminder        CompanyField = "custom_reminder"
 	CompanyFieldDescription           CompanyField = "description"
+	CompanyFieldFlags                 CompanyField = "flags"
 	CompanyFieldImage                 CompanyField = "image"
 	CompanyFieldPhoneFriendly         CompanyField = "phone_friendly"
 	CompanyFieldQuotas                CompanyField = "quotas"
@@ -1922,6 +1923,7 @@ type AdminCompanies []AdminCompany
 type AdminCompany struct {
 	CreatedAt        time.Time       `json:"created_at"`
 	DeletedAt        *time.Time      `json:"deleted_at,omitempty"`
+	Flags            *CompanyFlags   `json:"flags,omitempty"`
 	Id               string          `json:"id"`
 	LastActive       *time.Time      `json:"last_active,omitempty"`
 	Name             string          `json:"name"`
@@ -1933,11 +1935,12 @@ type AdminCompany struct {
 
 // AdminCompanyDetails defines model for AdminCompanyDetails.
 type AdminCompanyDetails struct {
-	Country    *Country   `json:"country,omitempty"`
-	CreatedAt  time.Time  `json:"created_at"`
-	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
-	Id         string     `json:"id"`
-	LastActive *time.Time `json:"last_active,omitempty"`
+	Country    *Country      `json:"country,omitempty"`
+	CreatedAt  time.Time     `json:"created_at"`
+	DeletedAt  *time.Time    `json:"deleted_at,omitempty"`
+	Flags      *CompanyFlags `json:"flags,omitempty"`
+	Id         string        `json:"id"`
+	LastActive *time.Time    `json:"last_active,omitempty"`
 
 	// Cleartext PIN for the locked sections feature. Contains secret material — only admin endpoints return it.
 	LockedSectionsPin *string `json:"locked_sections_pin,omitempty"`
@@ -2009,6 +2012,7 @@ type AdminCompanyUpdate struct {
 	// The order/position of this company within its enterprise. Used for custom sorting of companies.
 	EnterpriseOrder *int32                     `json:"enterprise_order,omitempty"`
 	Entitlements    *Entitlements              `json:"entitlements,omitempty"`
+	Flags           *CompanyFlags              `json:"flags,omitempty"`
 	GoogleAnalytics *GoogleAnalyticsConnection `json:"google_analytics,omitempty"`
 
 	// Whether the company has secretary services linked to it
@@ -2072,6 +2076,8 @@ type AdminCompanyUpdate struct {
 
 // AdminCompanyUpdateFields defines model for AdminCompanyUpdateFields.
 type AdminCompanyUpdateFields struct {
+	Flags *CompanyFlags `json:"flags,omitempty"`
+
 	// The company's Icelandic national ID (kennitala) used as the claimant identity for no-show claims. Only admins can modify this field.
 	NoshowClaimantId *string `json:"noshow_claimant_id,omitempty"`
 
@@ -3670,6 +3676,15 @@ type CompanyField string
 
 // CompanyFields defines model for CompanyFields.
 type CompanyFields []CompanyField
+
+// CompanyFlags defines model for CompanyFlags.
+type CompanyFlags struct {
+	// Whether this company is flagged as fraudulent
+	Fraudulent *bool `json:"fraudulent,omitempty"`
+
+	// Whether this is a test company
+	TestCompany *bool `json:"test_company,omitempty"`
+}
 
 // CompanyMarketplace defines model for CompanyMarketplace.
 type CompanyMarketplace struct {
