@@ -1956,6 +1956,7 @@ type AdminCompanyDetails struct {
 	Quotas        *AdminCompanyQuotas   `json:"quotas,omitempty"`
 	SecretaryId   *string               `json:"secretary_id,omitempty"`
 	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
+	Terminals     *[]Terminal           `json:"terminals,omitempty"`
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials    `json:"teya_direct,omitempty"`
@@ -2213,6 +2214,12 @@ type AdminStaffWorkHoursBulkMigrationResult struct {
 
 // AdminStaffWorkHoursBulkMigrationScope defines model for AdminStaffWorkHoursBulkMigrationScope.
 type AdminStaffWorkHoursBulkMigrationScope string
+
+// AdminTerminalUpdate defines model for AdminTerminalUpdate.
+type AdminTerminalUpdate struct {
+	// Whether this terminal is the default terminal for POS sales. Terminals with default=false are available for checkin.
+	Default bool `json:"default"`
+}
 
 // AdminUser defines model for AdminUser.
 type AdminUser struct {
@@ -11913,6 +11920,18 @@ type AdminAssignSecretaryToCompanyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminUpdateTerminalJSONBody defines parameters for AdminUpdateTerminal.
+type AdminUpdateTerminalJSONBody AdminTerminalUpdate
+
+// AdminUpdateTerminalParams defines parameters for AdminUpdateTerminal.
+type AdminUpdateTerminalParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AdminFixWorkHoursTimesJSONBody defines parameters for AdminFixWorkHoursTimes.
 type AdminFixWorkHoursTimesJSONBody AdminFixWorkHoursTimesRequest
 
@@ -15895,6 +15914,9 @@ type AdminUpdateEmployeeJSONRequestBody AdminUpdateEmployeeJSONBody
 // AdminAssignSecretaryToCompanyJSONRequestBody defines body for AdminAssignSecretaryToCompany for application/json ContentType.
 type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJSONBody
 
+// AdminUpdateTerminalJSONRequestBody defines body for AdminUpdateTerminal for application/json ContentType.
+type AdminUpdateTerminalJSONRequestBody AdminUpdateTerminalJSONBody
+
 // AdminFixWorkHoursTimesJSONRequestBody defines body for AdminFixWorkHoursTimes for application/json ContentType.
 type AdminFixWorkHoursTimesJSONRequestBody AdminFixWorkHoursTimesJSONBody
 
@@ -18477,6 +18499,11 @@ type ClientInterface interface {
 
 	AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminUpdateTerminal request with any body
+	AdminUpdateTerminalWithBody(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -20160,6 +20187,30 @@ func (c *Client) AdminAssignSecretaryToCompanyWithBody(ctx context.Context, comp
 
 func (c *Client) AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminAssignSecretaryToCompanyRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateTerminalWithBody(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateTerminalRequestWithBody(c.Server, companyId, terminalId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateTerminalRequest(c.Server, companyId, terminalId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -27488,6 +27539,96 @@ func NewAdminAssignSecretaryToCompanyRequestWithBody(server string, companyId st
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminUpdateTerminalRequest calls the generic AdminUpdateTerminal builder with application/json body
+func NewAdminUpdateTerminalRequest(server string, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminUpdateTerminalRequestWithBody(server, companyId, terminalId, params, "application/json", bodyReader)
+}
+
+// NewAdminUpdateTerminalRequestWithBody generates requests for AdminUpdateTerminal with any type of body
+func NewAdminUpdateTerminalRequestWithBody(server string, companyId string, terminalId string, params *AdminUpdateTerminalParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "terminal_id", runtime.ParamLocationPath, terminalId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/terminals/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -56760,6 +56901,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminAssignSecretaryToCompanyWithResponse(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminAssignSecretaryToCompanyResponse, error)
 
+	// AdminUpdateTerminal request with any body
+	AdminUpdateTerminalWithBodyWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error)
+
+	AdminUpdateTerminalWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error)
+
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
 
@@ -58562,6 +58708,27 @@ func (r AdminAssignSecretaryToCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminAssignSecretaryToCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminUpdateTerminalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminUpdateTerminalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminUpdateTerminalResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -67253,6 +67420,23 @@ func (c *ClientWithResponses) AdminAssignSecretaryToCompanyWithResponse(ctx cont
 	return ParseAdminAssignSecretaryToCompanyResponse(rsp)
 }
 
+// AdminUpdateTerminalWithBodyWithResponse request with arbitrary body returning *AdminUpdateTerminalResponse
+func (c *ClientWithResponses) AdminUpdateTerminalWithBodyWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error) {
+	rsp, err := c.AdminUpdateTerminalWithBody(ctx, companyId, terminalId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateTerminalResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminUpdateTerminalWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error) {
+	rsp, err := c.AdminUpdateTerminal(ctx, companyId, terminalId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateTerminalResponse(rsp)
+}
+
 // AdminFixWorkHoursTimesWithBodyWithResponse request with arbitrary body returning *AdminFixWorkHoursTimesResponse
 func (c *ClientWithResponses) AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error) {
 	rsp, err := c.AdminFixWorkHoursTimesWithBody(ctx, contentType, body, reqEditors...)
@@ -72164,6 +72348,22 @@ func ParseAdminAssignSecretaryToCompanyResponse(rsp *http.Response) (*AdminAssig
 	}
 
 	response := &AdminAssignSecretaryToCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminUpdateTerminalResponse parses an HTTP response from a AdminUpdateTerminalWithResponse call
+func ParseAdminUpdateTerminalResponse(rsp *http.Response) (*AdminUpdateTerminalResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminUpdateTerminalResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
