@@ -18491,6 +18491,9 @@ type ClientInterface interface {
 
 	AdminUpdateEmployee(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, body AdminUpdateEmployeeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminRestoreCompany request
+	AdminRestoreCompany(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminRemoveSecretaryFromCompany request
 	AdminRemoveSecretaryFromCompany(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -20151,6 +20154,18 @@ func (c *Client) AdminUpdateEmployeeWithBody(ctx context.Context, companyId stri
 
 func (c *Client) AdminUpdateEmployee(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, body AdminUpdateEmployeeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateEmployeeRequest(c.Server, companyId, employeeId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminRestoreCompany(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminRestoreCompanyRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -27391,6 +27406,40 @@ func NewAdminUpdateEmployeeRequestWithBody(server string, companyId string, empl
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminRestoreCompanyRequest generates requests for AdminRestoreCompany
+func NewAdminRestoreCompanyRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/restore", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -56893,6 +56942,9 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateEmployeeWithResponse(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, body AdminUpdateEmployeeJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateEmployeeResponse, error)
 
+	// AdminRestoreCompany request
+	AdminRestoreCompanyWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*AdminRestoreCompanyResponse, error)
+
 	// AdminRemoveSecretaryFromCompany request
 	AdminRemoveSecretaryFromCompanyWithResponse(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*AdminRemoveSecretaryFromCompanyResponse, error)
 
@@ -58666,6 +58718,27 @@ func (r AdminUpdateEmployeeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateEmployeeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminRestoreCompanyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminRestoreCompanyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminRestoreCompanyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -67394,6 +67467,15 @@ func (c *ClientWithResponses) AdminUpdateEmployeeWithResponse(ctx context.Contex
 	return ParseAdminUpdateEmployeeResponse(rsp)
 }
 
+// AdminRestoreCompanyWithResponse request returning *AdminRestoreCompanyResponse
+func (c *ClientWithResponses) AdminRestoreCompanyWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*AdminRestoreCompanyResponse, error) {
+	rsp, err := c.AdminRestoreCompany(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminRestoreCompanyResponse(rsp)
+}
+
 // AdminRemoveSecretaryFromCompanyWithResponse request returning *AdminRemoveSecretaryFromCompanyResponse
 func (c *ClientWithResponses) AdminRemoveSecretaryFromCompanyWithResponse(ctx context.Context, companyId string, params *AdminRemoveSecretaryFromCompanyParams, reqEditors ...RequestEditorFn) (*AdminRemoveSecretaryFromCompanyResponse, error) {
 	rsp, err := c.AdminRemoveSecretaryFromCompany(ctx, companyId, params, reqEditors...)
@@ -72316,6 +72398,22 @@ func ParseAdminUpdateEmployeeResponse(rsp *http.Response) (*AdminUpdateEmployeeR
 	}
 
 	response := &AdminUpdateEmployeeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminRestoreCompanyResponse parses an HTTP response from a AdminRestoreCompanyWithResponse call
+func ParseAdminRestoreCompanyResponse(rsp *http.Response) (*AdminRestoreCompanyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminRestoreCompanyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
