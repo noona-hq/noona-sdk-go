@@ -1692,6 +1692,13 @@ const (
 	WaitlistEntryFieldEmployee WaitlistEntryField = "employee"
 )
 
+// Defines values for WebhookErrorCategory.
+const (
+	HttpError    WebhookErrorCategory = "http_error"
+	NetworkError WebhookErrorCategory = "network_error"
+	Success      WebhookErrorCategory = "success"
+)
+
 // Defines values for WebhookEvent.
 const (
 	WebhookEventBlockedTimeCreated WebhookEvent = "blocked_time.created"
@@ -11641,13 +11648,22 @@ type WaitlistNotifications struct {
 // Webhook defines model for Webhook.
 type Webhook struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	App         *ExpandableApp `json:"app,omitempty"`
-	CallbackUrl *string        `json:"callback_url,omitempty"`
+	App *ExpandableApp `json:"app,omitempty"`
+
+	// When the webhook was auto-disabled by the delivery service.
+	AutoDisabledAt *time.Time `json:"auto_disabled_at,omitempty"`
+	CallbackUrl    *string    `json:"callback_url,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company     *ExpandableCompany `json:"company,omitempty"`
-	CreatedAt   *time.Time         `json:"created_at,omitempty"`
-	Description *string            `json:"description,omitempty"`
+	Company *ExpandableCompany `json:"company,omitempty"`
+
+	// Number of consecutive failed delivery attempts since the last success. Reset on success.
+	ConsecutiveFailures *int32     `json:"consecutive_failures,omitempty"`
+	CreatedAt           *time.Time `json:"created_at,omitempty"`
+	Description         *string    `json:"description,omitempty"`
+
+	// When the webhook has been auto-disabled by the delivery service (e.g. by the circuit breaker after repeated failures), this contains a short reason. Empty otherwise.
+	DisabledReason *string `json:"disabled_reason,omitempty"`
 
 	// Whether the webhook is enabled or not
 	Enabled   *bool           `json:"enabled,omitempty"`
@@ -11657,6 +11673,9 @@ type Webhook struct {
 	Title     *string         `json:"title,omitempty"`
 	UpdatedAt *time.Time      `json:"updated_at,omitempty"`
 }
+
+// Coarse classification of a webhook delivery attempt. Network-level errors are deliberately not subdivided to avoid leaking SSRF probing signal (e.g. timeout vs connection-refused vs TLS-error).
+type WebhookErrorCategory string
 
 // WebhookEvent defines model for WebhookEvent.
 type WebhookEvent string
@@ -11695,6 +11714,9 @@ type WebhookInvocation struct {
 type WebhookInvocationResponse struct {
 	Body *string `json:"body,omitempty"`
 	Code *int    `json:"code,omitempty"`
+
+	// Coarse classification of a webhook delivery attempt. Network-level errors are deliberately not subdivided to avoid leaking SSRF probing signal (e.g. timeout vs connection-refused vs TLS-error).
+	ErrorCategory *WebhookErrorCategory `json:"error_category,omitempty"`
 }
 
 // WebhookInvocationResponses defines model for WebhookInvocationResponses.
