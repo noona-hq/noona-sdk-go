@@ -9578,9 +9578,16 @@ type ScheduledEventTier struct {
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
-	NameTranslations TranslationMap            `json:"name_translations"`
-	PaymentSettings  *PaymentSettings          `json:"payment_settings,omitempty"`
-	Variations       []ScheduledEventVariation `json:"variations"`
+	NameTranslations TranslationMap   `json:"name_translations"`
+	PaymentSettings  *PaymentSettings `json:"payment_settings,omitempty"`
+
+	// The reason for tax exemption. This is only used if the tier is tax exempt.
+	// If the tier is not tax exempt, this field is ignored.
+	TaxExemptionReason *string                   `json:"tax_exemption_reason,omitempty"`
+	Variations         []ScheduledEventVariation `json:"variations"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Vat *ExpandableVAT `json:"vat,omitempty"`
 }
 
 // Tier in scheduled event response with availability.
@@ -9631,8 +9638,15 @@ type ScheduledEventTierResponse struct {
 	PaymentSettings  *PaymentSettings `json:"payment_settings,omitempty"`
 
 	// Remaining capacity for this tier.
-	Remaining  *int32                             `json:"remaining,omitempty"`
-	Variations *[]ScheduledEventVariationResponse `json:"variations,omitempty"`
+	Remaining *int32 `json:"remaining,omitempty"`
+
+	// The reason for tax exemption. This is only used if the tier is tax exempt.
+	// If the tier is not tax exempt, this field is ignored.
+	TaxExemptionReason *string                            `json:"tax_exemption_reason,omitempty"`
+	Variations         *[]ScheduledEventVariationResponse `json:"variations,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Vat *ExpandableVAT `json:"vat,omitempty"`
 }
 
 // Request body for updating a scheduled event.
