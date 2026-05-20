@@ -3865,6 +3865,11 @@ type CompanyProfile struct {
 	// The message that is shown to the customer when they try to book more guests than the maximum allowed.
 	ExceedMaxGuestsMessage *string `json:"exceed_max_guests_message,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	ExceedMaxGuestsMessageTranslations *TranslationMap `json:"exceed_max_guests_message_translations,omitempty"`
+
 	// The number of favorites/likes on the company.
 	Favorites *int32 `json:"favorites,omitempty"`
 	Image     *Image `json:"image,omitempty"`
@@ -3948,6 +3953,11 @@ type CompanyProfileCreate struct {
 
 	// The message that is shown to the customer when they try to book more guests than the maximum allowed.
 	ExceedMaxGuestsMessage *string `json:"exceed_max_guests_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	ExceedMaxGuestsMessageTranslations *TranslationMap `json:"exceed_max_guests_message_translations,omitempty"`
 
 	// The number of favorites/likes on the company.
 	Favorites *int32 `json:"favorites,omitempty"`
