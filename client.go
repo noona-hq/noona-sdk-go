@@ -784,6 +784,24 @@ const (
 	NoticeVariantWarning NoticeVariant = "warning"
 )
 
+// Defines values for NotificationActionLinkType.
+const (
+	Hash  NotificationActionLinkType = "hash"
+	Route NotificationActionLinkType = "route"
+)
+
+// Defines values for NotificationAlertBannerType.
+const (
+	AlertBanner NotificationAlertBannerType = "alert_banner"
+)
+
+// Defines values for NotificationAlertBannerSeverity.
+const (
+	NotificationAlertBannerSeverityError   NotificationAlertBannerSeverity = "error"
+	NotificationAlertBannerSeverityInfo    NotificationAlertBannerSeverity = "info"
+	NotificationAlertBannerSeverityWarning NotificationAlertBannerSeverity = "warning"
+)
+
 // Defines values for NotificationBookingOfferStatus.
 const (
 	NotificationBookingOfferStatusApproved NotificationBookingOfferStatus = "approved"
@@ -1694,9 +1712,9 @@ const (
 
 // Defines values for WebhookErrorCategory.
 const (
-	HttpError    WebhookErrorCategory = "http_error"
-	NetworkError WebhookErrorCategory = "network_error"
-	Success      WebhookErrorCategory = "success"
+	WebhookErrorCategoryHttpError    WebhookErrorCategory = "http_error"
+	WebhookErrorCategoryNetworkError WebhookErrorCategory = "network_error"
+	WebhookErrorCategorySuccess      WebhookErrorCategory = "success"
 )
 
 // Defines values for WebhookEvent.
@@ -4363,15 +4381,16 @@ type CreditLedgerEntrySource string
 
 // CreditWallet defines model for CreditWallet.
 type CreditWallet struct {
-	AutoTopUp     *CreditWalletAutoTopUp     `json:"auto_top_up,omitempty"`
-	Balance       *int64                     `json:"balance,omitempty"`
-	Company       *string                    `json:"company,omitempty"`
-	CreatedAt     *time.Time                 `json:"created_at,omitempty"`
-	Currency      *string                    `json:"currency,omitempty"`
-	FreeAllowance *CreditWalletFreeAllowance `json:"free_allowance,omitempty"`
-	Id            *string                    `json:"id,omitempty"`
-	Type          *CreditWalletType          `json:"type,omitempty"`
-	UpdatedAt     *time.Time                 `json:"updated_at,omitempty"`
+	AutoTopUp           *CreditWalletAutoTopUp     `json:"auto_top_up,omitempty"`
+	Balance             *int64                     `json:"balance,omitempty"`
+	Company             *string                    `json:"company,omitempty"`
+	CreatedAt           *time.Time                 `json:"created_at,omitempty"`
+	Currency            *string                    `json:"currency,omitempty"`
+	FreeAllowance       *CreditWalletFreeAllowance `json:"free_allowance,omitempty"`
+	Id                  *string                    `json:"id,omitempty"`
+	LowBalanceThreshold *int64                     `json:"low_balance_threshold,omitempty"`
+	Type                *CreditWalletType          `json:"type,omitempty"`
+	UpdatedAt           *time.Time                 `json:"updated_at,omitempty"`
 }
 
 // CreditWalletAutoTopUp defines model for CreditWalletAutoTopUp.
@@ -7208,6 +7227,54 @@ type Notices []Notice
 type Notification struct {
 	union json.RawMessage
 }
+
+// NotificationActionLinkType defines model for NotificationActionLinkType.
+type NotificationActionLinkType string
+
+// NotificationAlertBanner defines model for NotificationAlertBanner.
+type NotificationAlertBanner struct {
+	// Groups related notifications for interactive actions. Format: {notificationType}:{entityId}
+	ActionGroup *string                         `json:"action_group,omitempty"`
+	Actions     *NotificationAlertBannerActions `json:"actions,omitempty"`
+	CreatedAt   *time.Time                      `json:"created_at,omitempty"`
+
+	// Translation key for the banner body
+	Description *string `json:"description,omitempty"`
+
+	// User who took action on interactive notification
+	HandledBy *string `json:"handled_by,omitempty"`
+	Id        *string `json:"id,omitempty"`
+	Priority  *int32  `json:"priority,omitempty"`
+
+	// The user who should see this notification
+	RecipientUser *string `json:"recipient_user,omitempty"`
+
+	// The employee this notification relates to
+	RelatedEmployee *string                         `json:"related_employee,omitempty"`
+	Severity        NotificationAlertBannerSeverity `json:"severity"`
+
+	// Translation key for the banner title
+	Title     *string                     `json:"title,omitempty"`
+	Type      NotificationAlertBannerType `json:"type"`
+	UpdatedAt *time.Time                  `json:"updated_at,omitempty"`
+}
+
+// NotificationAlertBannerType defines model for NotificationAlertBanner.Type.
+type NotificationAlertBannerType string
+
+// NotificationAlertBannerAction defines model for NotificationAlertBannerAction.
+type NotificationAlertBannerAction struct {
+	// Translation key for the action label
+	Label    string                     `json:"label"`
+	LinkType NotificationActionLinkType `json:"link_type"`
+	Url      string                     `json:"url"`
+}
+
+// NotificationAlertBannerActions defines model for NotificationAlertBannerActions.
+type NotificationAlertBannerActions []NotificationAlertBannerAction
+
+// NotificationAlertBannerSeverity defines model for NotificationAlertBannerSeverity.
+type NotificationAlertBannerSeverity string
 
 // NotificationBookingOffer defines model for NotificationBookingOffer.
 type NotificationBookingOffer struct {
@@ -18112,6 +18179,18 @@ func (t Notification) AsNotificationBookingOffer() (NotificationBookingOffer, er
 }
 
 func (t *Notification) FromNotificationBookingOffer(v NotificationBookingOffer) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Notification) AsNotificationAlertBanner() (NotificationAlertBanner, error) {
+	var body NotificationAlertBanner
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Notification) FromNotificationAlertBanner(v NotificationAlertBanner) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
