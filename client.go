@@ -86,6 +86,17 @@ const (
 	ActorTypeSystem          ActorType = "system"
 )
 
+// Defines values for AdCallToActionType.
+const (
+	CategoryId AdCallToActionType = "category_id"
+	CompanyId  AdCallToActionType = "company_id"
+)
+
+// Defines values for AdSectionFieldType.
+const (
+	AdSectionFieldTypeString AdSectionFieldType = "string"
+)
+
 // Defines values for AdminFixWorkHoursTimesScope.
 const (
 	AdminFixWorkHoursTimesScopeAll    AdminFixWorkHoursTimesScope = "all"
@@ -1931,6 +1942,12 @@ type ActorType string
 // Actors defines model for Actors.
 type Actors []Actor
 
+// AdCallToActionType defines model for AdCallToActionType.
+type AdCallToActionType string
+
+// AdSectionFieldType defines model for AdSectionFieldType.
+type AdSectionFieldType string
+
 // Address defines model for Address.
 type Address struct {
 	City       *string `json:"city,omitempty"`
@@ -1940,6 +1957,82 @@ type Address struct {
 	Region     *string `json:"region,omitempty"`
 	Street     *string `json:"street,omitempty"`
 }
+
+// AdminAd defines model for AdminAd.
+type AdminAd struct {
+	CallToAction     AdminAdCallToAction `json:"call_to_action"`
+	CompanyId        string              `json:"company_id"`
+	CreatedAt        time.Time           `json:"created_at"`
+	DeletedAt        *time.Time          `json:"deleted_at,omitempty"`
+	Id               string              `json:"id"`
+	Language         string              `json:"language"`
+	Liveness         AdminAdLiveness     `json:"liveness"`
+	Location         AdminAdLocation     `json:"location"`
+	LocationRadiusKm int32               `json:"location_radius_km"`
+	Section          AdminAdSection      `json:"section"`
+	UpdatedAt        time.Time           `json:"updated_at"`
+}
+
+// AdminAdCallToAction defines model for AdminAdCallToAction.
+type AdminAdCallToAction struct {
+	Id   string             `json:"id"`
+	Type AdCallToActionType `json:"type"`
+}
+
+// AdminAdCreate defines model for AdminAdCreate.
+type AdminAdCreate struct {
+	CallToActionId   string             `json:"call_to_action_id"`
+	CallToActionType AdCallToActionType `json:"call_to_action_type"`
+	CompanyId        string             `json:"company_id"`
+	EndsAt           time.Time          `json:"ends_at"`
+	Language         string             `json:"language"`
+	Latitude         float64            `json:"latitude"`
+	LocationRadiusKm *int32             `json:"location_radius_km,omitempty"`
+	Longitude        float64            `json:"longitude"`
+	SectionContent   map[string]string  `json:"section_content"`
+	SectionId        string             `json:"section_id"`
+	StartsAt         time.Time          `json:"starts_at"`
+}
+
+// AdminAdLiveness defines model for AdminAdLiveness.
+type AdminAdLiveness struct {
+	EndsAt   time.Time `json:"ends_at"`
+	StartsAt time.Time `json:"starts_at"`
+}
+
+// AdminAdLocation defines model for AdminAdLocation.
+type AdminAdLocation struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+}
+
+// AdminAdSection defines model for AdminAdSection.
+type AdminAdSection struct {
+	Content *map[string]string             `json:"content,omitempty"`
+	Fields  *map[string]AdSectionFieldType `json:"fields,omitempty"`
+	Id      string                         `json:"id"`
+	Name    string                         `json:"name"`
+}
+
+// AdminAdSections defines model for AdminAdSections.
+type AdminAdSections []AdminAdSection
+
+// AdminAdUpdate defines model for AdminAdUpdate.
+type AdminAdUpdate struct {
+	CallToActionId   *string             `json:"call_to_action_id,omitempty"`
+	CallToActionType *AdCallToActionType `json:"call_to_action_type,omitempty"`
+	EndsAt           *time.Time          `json:"ends_at,omitempty"`
+	Language         *string             `json:"language,omitempty"`
+	Latitude         *float64            `json:"latitude,omitempty"`
+	LocationRadiusKm *int32              `json:"location_radius_km,omitempty"`
+	Longitude        *float64            `json:"longitude,omitempty"`
+	SectionContent   *map[string]string  `json:"section_content,omitempty"`
+	SectionId        *string             `json:"section_id,omitempty"`
+	StartsAt         *time.Time          `json:"starts_at,omitempty"`
+}
+
+// AdminAds defines model for AdminAds.
+type AdminAds []AdminAd
 
 // AdminCompanies defines model for AdminCompanies.
 type AdminCompanies []AdminCompany
@@ -11944,6 +12037,69 @@ type ListPaymentActivitiesParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminListAdSectionsParams defines parameters for AdminListAdSections.
+type AdminListAdSectionsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AdminListAdsParams defines parameters for AdminListAds.
+type AdminListAdsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// AdminCreateAdJSONBody defines parameters for AdminCreateAd.
+type AdminCreateAdJSONBody AdminAdCreate
+
+// AdminCreateAdParams defines parameters for AdminCreateAd.
+type AdminCreateAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AdminDeleteAdParams defines parameters for AdminDeleteAd.
+type AdminDeleteAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AdminGetAdParams defines parameters for AdminGetAd.
+type AdminGetAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AdminUpdateAdJSONBody defines parameters for AdminUpdateAd.
+type AdminUpdateAdJSONBody AdminAdUpdate
+
+// AdminUpdateAdParams defines parameters for AdminUpdateAd.
+type AdminUpdateAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AdminCreateAgentClientJSONBody defines parameters for AdminCreateAgentClient.
 type AdminCreateAgentClientJSONBody AgentClientCreate
 
@@ -16012,6 +16168,12 @@ type UpdateWebhookParams struct {
 // UpdateWorkHoursJSONBody defines parameters for UpdateWorkHours.
 type UpdateWorkHoursJSONBody WorkHoursUpdate
 
+// AdminCreateAdJSONRequestBody defines body for AdminCreateAd for application/json ContentType.
+type AdminCreateAdJSONRequestBody AdminCreateAdJSONBody
+
+// AdminUpdateAdJSONRequestBody defines body for AdminUpdateAd for application/json ContentType.
+type AdminUpdateAdJSONRequestBody AdminUpdateAdJSONBody
+
 // AdminCreateAgentClientJSONRequestBody defines body for AdminCreateAgentClient for application/json ContentType.
 type AdminCreateAgentClientJSONRequestBody AdminCreateAgentClientJSONBody
 
@@ -18575,6 +18737,28 @@ type ClientInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminListAdSections request
+	AdminListAdSections(ctx context.Context, params *AdminListAdSectionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminListAds request
+	AdminListAds(ctx context.Context, params *AdminListAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminCreateAd request with any body
+	AdminCreateAdWithBody(ctx context.Context, params *AdminCreateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminCreateAd(ctx context.Context, params *AdminCreateAdParams, body AdminCreateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminDeleteAd request
+	AdminDeleteAd(ctx context.Context, adId string, params *AdminDeleteAdParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminGetAd request
+	AdminGetAd(ctx context.Context, adId string, params *AdminGetAdParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminUpdateAd request with any body
+	AdminUpdateAdWithBody(ctx context.Context, adId string, params *AdminUpdateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminUpdateAd(ctx context.Context, adId string, params *AdminUpdateAdParams, body AdminUpdateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminListAgentClients request
 	AdminListAgentClients(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -20099,6 +20283,102 @@ func (c *Client) ListEventActivities(ctx context.Context, eventId string, params
 
 func (c *Client) ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPaymentActivitiesRequest(c.Server, paymentId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminListAdSections(ctx context.Context, params *AdminListAdSectionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminListAdSectionsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminListAds(ctx context.Context, params *AdminListAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminListAdsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminCreateAdWithBody(ctx context.Context, params *AdminCreateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminCreateAdRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminCreateAd(ctx context.Context, params *AdminCreateAdParams, body AdminCreateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminCreateAdRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminDeleteAd(ctx context.Context, adId string, params *AdminDeleteAdParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminDeleteAdRequest(c.Server, adId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminGetAd(ctx context.Context, adId string, params *AdminGetAdParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminGetAdRequest(c.Server, adId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateAdWithBody(ctx context.Context, adId string, params *AdminUpdateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateAdRequestWithBody(c.Server, adId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateAd(ctx context.Context, adId string, params *AdminUpdateAdParams, body AdminUpdateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateAdRequest(c.Server, adId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -26875,6 +27155,441 @@ func NewListPaymentActivitiesRequest(server string, paymentId string, params *Li
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewAdminListAdSectionsRequest generates requests for AdminListAdSections
+func NewAdminListAdSectionsRequest(server string, params *AdminListAdSectionsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/ad-sections")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminListAdsRequest generates requests for AdminListAds
+func NewAdminListAdsRequest(server string, params *AdminListAdsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/ads")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminCreateAdRequest calls the generic AdminCreateAd builder with application/json body
+func NewAdminCreateAdRequest(server string, params *AdminCreateAdParams, body AdminCreateAdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminCreateAdRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewAdminCreateAdRequestWithBody generates requests for AdminCreateAd with any type of body
+func NewAdminCreateAdRequestWithBody(server string, params *AdminCreateAdParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/ads")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminDeleteAdRequest generates requests for AdminDeleteAd
+func NewAdminDeleteAdRequest(server string, adId string, params *AdminDeleteAdParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_id", runtime.ParamLocationPath, adId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/ads/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminGetAdRequest generates requests for AdminGetAd
+func NewAdminGetAdRequest(server string, adId string, params *AdminGetAdParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_id", runtime.ParamLocationPath, adId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/ads/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminUpdateAdRequest calls the generic AdminUpdateAd builder with application/json body
+func NewAdminUpdateAdRequest(server string, adId string, params *AdminUpdateAdParams, body AdminUpdateAdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminUpdateAdRequestWithBody(server, adId, params, "application/json", bodyReader)
+}
+
+// NewAdminUpdateAdRequestWithBody generates requests for AdminUpdateAd with any type of body
+func NewAdminUpdateAdRequestWithBody(server string, adId string, params *AdminUpdateAdParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_id", runtime.ParamLocationPath, adId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/ads/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -57026,6 +57741,28 @@ type ClientWithResponsesInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivitiesWithResponse(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*ListPaymentActivitiesResponse, error)
 
+	// AdminListAdSections request
+	AdminListAdSectionsWithResponse(ctx context.Context, params *AdminListAdSectionsParams, reqEditors ...RequestEditorFn) (*AdminListAdSectionsResponse, error)
+
+	// AdminListAds request
+	AdminListAdsWithResponse(ctx context.Context, params *AdminListAdsParams, reqEditors ...RequestEditorFn) (*AdminListAdsResponse, error)
+
+	// AdminCreateAd request with any body
+	AdminCreateAdWithBodyWithResponse(ctx context.Context, params *AdminCreateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminCreateAdResponse, error)
+
+	AdminCreateAdWithResponse(ctx context.Context, params *AdminCreateAdParams, body AdminCreateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminCreateAdResponse, error)
+
+	// AdminDeleteAd request
+	AdminDeleteAdWithResponse(ctx context.Context, adId string, params *AdminDeleteAdParams, reqEditors ...RequestEditorFn) (*AdminDeleteAdResponse, error)
+
+	// AdminGetAd request
+	AdminGetAdWithResponse(ctx context.Context, adId string, params *AdminGetAdParams, reqEditors ...RequestEditorFn) (*AdminGetAdResponse, error)
+
+	// AdminUpdateAd request with any body
+	AdminUpdateAdWithBodyWithResponse(ctx context.Context, adId string, params *AdminUpdateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateAdResponse, error)
+
+	AdminUpdateAdWithResponse(ctx context.Context, adId string, params *AdminUpdateAdParams, body AdminUpdateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateAdResponse, error)
+
 	// AdminListAgentClients request
 	AdminListAgentClientsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminListAgentClientsResponse, error)
 
@@ -58604,6 +59341,137 @@ func (r ListPaymentActivitiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPaymentActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminListAdSectionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminAdSections
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminListAdSectionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminListAdSectionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminListAdsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminAds
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminListAdsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminListAdsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminCreateAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminAd
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminCreateAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminCreateAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminDeleteAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminDeleteAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminDeleteAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminGetAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminAd
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminGetAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminGetAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminUpdateAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminAd
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminUpdateAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminUpdateAdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -67461,6 +68329,76 @@ func (c *ClientWithResponses) ListPaymentActivitiesWithResponse(ctx context.Cont
 	return ParseListPaymentActivitiesResponse(rsp)
 }
 
+// AdminListAdSectionsWithResponse request returning *AdminListAdSectionsResponse
+func (c *ClientWithResponses) AdminListAdSectionsWithResponse(ctx context.Context, params *AdminListAdSectionsParams, reqEditors ...RequestEditorFn) (*AdminListAdSectionsResponse, error) {
+	rsp, err := c.AdminListAdSections(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminListAdSectionsResponse(rsp)
+}
+
+// AdminListAdsWithResponse request returning *AdminListAdsResponse
+func (c *ClientWithResponses) AdminListAdsWithResponse(ctx context.Context, params *AdminListAdsParams, reqEditors ...RequestEditorFn) (*AdminListAdsResponse, error) {
+	rsp, err := c.AdminListAds(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminListAdsResponse(rsp)
+}
+
+// AdminCreateAdWithBodyWithResponse request with arbitrary body returning *AdminCreateAdResponse
+func (c *ClientWithResponses) AdminCreateAdWithBodyWithResponse(ctx context.Context, params *AdminCreateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminCreateAdResponse, error) {
+	rsp, err := c.AdminCreateAdWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminCreateAdResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminCreateAdWithResponse(ctx context.Context, params *AdminCreateAdParams, body AdminCreateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminCreateAdResponse, error) {
+	rsp, err := c.AdminCreateAd(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminCreateAdResponse(rsp)
+}
+
+// AdminDeleteAdWithResponse request returning *AdminDeleteAdResponse
+func (c *ClientWithResponses) AdminDeleteAdWithResponse(ctx context.Context, adId string, params *AdminDeleteAdParams, reqEditors ...RequestEditorFn) (*AdminDeleteAdResponse, error) {
+	rsp, err := c.AdminDeleteAd(ctx, adId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminDeleteAdResponse(rsp)
+}
+
+// AdminGetAdWithResponse request returning *AdminGetAdResponse
+func (c *ClientWithResponses) AdminGetAdWithResponse(ctx context.Context, adId string, params *AdminGetAdParams, reqEditors ...RequestEditorFn) (*AdminGetAdResponse, error) {
+	rsp, err := c.AdminGetAd(ctx, adId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminGetAdResponse(rsp)
+}
+
+// AdminUpdateAdWithBodyWithResponse request with arbitrary body returning *AdminUpdateAdResponse
+func (c *ClientWithResponses) AdminUpdateAdWithBodyWithResponse(ctx context.Context, adId string, params *AdminUpdateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateAdResponse, error) {
+	rsp, err := c.AdminUpdateAdWithBody(ctx, adId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateAdResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminUpdateAdWithResponse(ctx context.Context, adId string, params *AdminUpdateAdParams, body AdminUpdateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateAdResponse, error) {
+	rsp, err := c.AdminUpdateAd(ctx, adId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateAdResponse(rsp)
+}
+
 // AdminListAgentClientsWithResponse request returning *AdminListAgentClientsResponse
 func (c *ClientWithResponses) AdminListAgentClientsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminListAgentClientsResponse, error) {
 	rsp, err := c.AdminListAgentClients(ctx, reqEditors...)
@@ -72264,6 +73202,152 @@ func ParseListPaymentActivitiesResponse(rsp *http.Response) (*ListPaymentActivit
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Activities
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminListAdSectionsResponse parses an HTTP response from a AdminListAdSectionsWithResponse call
+func ParseAdminListAdSectionsResponse(rsp *http.Response) (*AdminListAdSectionsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminListAdSectionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminAdSections
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminListAdsResponse parses an HTTP response from a AdminListAdsWithResponse call
+func ParseAdminListAdsResponse(rsp *http.Response) (*AdminListAdsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminListAdsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminAds
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminCreateAdResponse parses an HTTP response from a AdminCreateAdWithResponse call
+func ParseAdminCreateAdResponse(rsp *http.Response) (*AdminCreateAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminCreateAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminAd
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminDeleteAdResponse parses an HTTP response from a AdminDeleteAdWithResponse call
+func ParseAdminDeleteAdResponse(rsp *http.Response) (*AdminDeleteAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminDeleteAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminGetAdResponse parses an HTTP response from a AdminGetAdWithResponse call
+func ParseAdminGetAdResponse(rsp *http.Response) (*AdminGetAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminGetAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminAd
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminUpdateAdResponse parses an HTTP response from a AdminUpdateAdWithResponse call
+func ParseAdminUpdateAdResponse(rsp *http.Response) (*AdminUpdateAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminUpdateAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminAd
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
