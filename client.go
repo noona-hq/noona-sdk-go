@@ -369,6 +369,7 @@ const (
 	CompanyFieldImage                 CompanyField = "image"
 	CompanyFieldPhoneFriendly         CompanyField = "phone_friendly"
 	CompanyFieldQuotas                CompanyField = "quotas"
+	CompanyFieldStraumurEcom          CompanyField = "straumur_ecom"
 	CompanyFieldTeyaDirect            CompanyField = "teya_direct"
 	CompanyFieldVerifoneEcom          CompanyField = "verifone_ecom"
 )
@@ -1598,6 +1599,7 @@ const (
 
 // Defines values for UserField.
 const (
+	StraumurEcom UserField = "straumur_ecom"
 	TeyaDirect   UserField = "teya_direct"
 	TeyaOauth    UserField = "teya_oauth"
 	VerifoneEcom UserField = "verifone_ecom"
@@ -2069,12 +2071,15 @@ type AdminCompanyDetails struct {
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 
 	// Custom SMS sender name for this company
-	PhoneFriendly *string               `json:"phone_friendly,omitempty"`
-	PhoneNumber   *string               `json:"phone_number,omitempty"`
-	Quotas        *AdminCompanyQuotas   `json:"quotas,omitempty"`
-	SecretaryId   *string               `json:"secretary_id,omitempty"`
-	Subscriptions *PowerupSubscriptions `json:"subscriptions,omitempty"`
-	Terminals     *[]Terminal           `json:"terminals,omitempty"`
+	PhoneFriendly *string             `json:"phone_friendly,omitempty"`
+	PhoneNumber   *string             `json:"phone_number,omitempty"`
+	Quotas        *AdminCompanyQuotas `json:"quotas,omitempty"`
+	SecretaryId   *string             `json:"secretary_id,omitempty"`
+
+	// Straumur e-comm credentials used for online payment processing through the Straumur payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	StraumurEcom  *StraumurEcomCredentials `json:"straumur_ecom,omitempty"`
+	Subscriptions *PowerupSubscriptions    `json:"subscriptions,omitempty"`
+	Terminals     *[]Terminal              `json:"terminals,omitempty"`
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials    `json:"teya_direct,omitempty"`
@@ -2096,6 +2101,9 @@ type AdminCompanyDetailsUser struct {
 	// Custom SMS sender name for this employee
 	PhoneFriendly *string `json:"phone_friendly,omitempty"`
 	Role          *string `json:"role,omitempty"`
+
+	// Straumur e-comm credentials used for online payment processing through the Straumur payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	StraumurEcom *StraumurEcomCredentials `json:"straumur_ecom,omitempty"`
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
@@ -2173,6 +2181,9 @@ type AdminCompanyUpdate struct {
 	ReferenceId *string        `json:"reference_id,omitempty"`
 	Signup      *CompanySignup `json:"signup,omitempty"`
 
+	// Straumur e-comm credentials used for online payment processing through the Straumur payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	StraumurEcom *StraumurEcomCredentials `json:"straumur_ecom,omitempty"`
+
 	// The company's subscription (1:1). Replaces the legacy powerup-based subscriptions structure.
 	Subscription        *CompanySubscription     `json:"subscription,omitempty"`
 	SubscriptionDunning *SubscriptionDunningInfo `json:"subscription_dunning,omitempty"`
@@ -2206,6 +2217,9 @@ type AdminCompanyUpdateFields struct {
 	// Custom SMS sender name (phone-friendly name). Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Non-compliant characters are stripped before storage.
 	PhoneFriendly *string             `json:"phone_friendly,omitempty"`
 	Quotas        *AdminCompanyQuotas `json:"quotas,omitempty"`
+
+	// Straumur e-comm credentials used for online payment processing through the Straumur payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	StraumurEcom *StraumurEcomCredentials `json:"straumur_ecom,omitempty"`
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
@@ -2347,6 +2361,9 @@ type AdminUser struct {
 	Id        string          `json:"id"`
 	Name      *string         `json:"name,omitempty"`
 
+	// Straumur e-comm credentials used for online payment processing through the Straumur payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	StraumurEcom *StraumurEcomCredentials `json:"straumur_ecom,omitempty"`
+
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
 
@@ -2356,6 +2373,9 @@ type AdminUser struct {
 
 // Admin-only user update payload. Designed as a generic envelope so additional admin-only fields can be added over time without breaking existing clients.
 type AdminUserUpdate struct {
+	// Straumur e-comm credentials used for online payment processing through the Straumur payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+	StraumurEcom *StraumurEcomCredentials `json:"straumur_ecom,omitempty"`
+
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
 
@@ -10093,6 +10113,15 @@ type StraumurConnectRequest struct {
 type StraumurConnection struct {
 	// True if the user has Straumur credentials saved
 	Connected *bool `json:"connected,omitempty"`
+}
+
+// Straumur e-comm credentials used for online payment processing through the Straumur payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
+type StraumurEcomCredentials struct {
+	// Straumur e-comm API key used for authenticated payment calls
+	ApiKey *string `json:"api_key,omitempty"`
+
+	// Straumur-issued ECOM account identifier (Straumur's API calls this `TerminalIdentifier`). This is not a physical POS terminal ID.
+	TerminalId *string `json:"terminal_id,omitempty"`
 }
 
 // StraumurTerminalOption defines model for StraumurTerminalOption.
