@@ -7761,7 +7761,10 @@ type OAuthToken struct {
 	AccessToken  *string    `json:"access_token,omitempty"`
 	ExpiresAt    *time.Time `json:"expires_at,omitempty"`
 	RefreshToken *string    `json:"refresh_token,omitempty"`
-	TokenType    *string    `json:"token_type,omitempty"`
+
+	// Space-delimited list of scopes granted by this token (RFC 6749 §5.1).
+	Scope     *string `json:"scope,omitempty"`
+	TokenType *string `json:"token_type,omitempty"`
 }
 
 // OAuthTokenRequest defines model for OAuthTokenRequest.
