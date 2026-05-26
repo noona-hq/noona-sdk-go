@@ -360,18 +360,19 @@ const (
 
 // Defines values for CompanyField.
 const (
-	CompanyFieldBookingOfferMessage   CompanyField = "booking_offer_message"
-	CompanyFieldBookingSuccessMessage CompanyField = "booking_success_message"
-	CompanyFieldClaimantId            CompanyField = "claimant_id"
-	CompanyFieldCustomReminder        CompanyField = "custom_reminder"
-	CompanyFieldDescription           CompanyField = "description"
-	CompanyFieldFlags                 CompanyField = "flags"
-	CompanyFieldImage                 CompanyField = "image"
-	CompanyFieldPhoneFriendly         CompanyField = "phone_friendly"
-	CompanyFieldQuotas                CompanyField = "quotas"
-	CompanyFieldStraumurEcom          CompanyField = "straumur_ecom"
-	CompanyFieldTeyaDirect            CompanyField = "teya_direct"
-	CompanyFieldVerifoneEcom          CompanyField = "verifone_ecom"
+	CompanyFieldBookingOfferMessage    CompanyField = "booking_offer_message"
+	CompanyFieldBookingSuccessMessage  CompanyField = "booking_success_message"
+	CompanyFieldClaimantId             CompanyField = "claimant_id"
+	CompanyFieldCustomReminder         CompanyField = "custom_reminder"
+	CompanyFieldDescription            CompanyField = "description"
+	CompanyFieldExceedMaxGuestsMessage CompanyField = "exceed_max_guests_message"
+	CompanyFieldFlags                  CompanyField = "flags"
+	CompanyFieldImage                  CompanyField = "image"
+	CompanyFieldPhoneFriendly          CompanyField = "phone_friendly"
+	CompanyFieldQuotas                 CompanyField = "quotas"
+	CompanyFieldStraumurEcom           CompanyField = "straumur_ecom"
+	CompanyFieldTeyaDirect             CompanyField = "teya_direct"
+	CompanyFieldVerifoneEcom           CompanyField = "verifone_ecom"
 )
 
 // Defines values for CompanyPOSSettingsCheckoutFirstTab.
