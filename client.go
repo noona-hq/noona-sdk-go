@@ -6964,7 +6964,7 @@ type LineItem struct {
 	// The voucher object is accepted and returned when the line item is an amount voucher.
 	Voucher *LineItemVoucher `json:"voucher,omitempty"`
 
-	// Customer ID to assign to the created voucher. When provided, this customer is used instead of automatically assigning the sale's customer. Omit to keep the default auto-assignment behavior.
+	// Optional. If provided, sets the voucher's owner to the specified customer. If omitted or null, the voucher is created without a customer (Gift).
 	VoucherCustomer *string            `json:"voucher_customer,omitempty"`
 	VoucherTemplate *VoucherTemplateID `json:"voucher_template,omitempty"`
 }
