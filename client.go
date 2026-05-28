@@ -1249,13 +1249,15 @@ const (
 
 // Defines values for ReminderErrorType.
 const (
-	AllEmployeesSelected     ReminderErrorType = "all_employees_selected"
-	AllEventTypesSelected    ReminderErrorType = "all_event_types_selected"
-	DefaultReminderNotGlobal ReminderErrorType = "default_reminder_not_global"
-	DuplicateDefaultReminder ReminderErrorType = "duplicate_default_reminder"
-	DuplicateGlobalReminder  ReminderErrorType = "duplicate_global_reminder"
-	NonWhitelistedUrls       ReminderErrorType = "non_whitelisted_urls"
-	Validation               ReminderErrorType = "validation"
+	AllEmployeesSelected        ReminderErrorType = "all_employees_selected"
+	AllEventTypesSelected       ReminderErrorType = "all_event_types_selected"
+	DefaultReminderNotGlobal    ReminderErrorType = "default_reminder_not_global"
+	DuplicateDefaultReminder    ReminderErrorType = "duplicate_default_reminder"
+	DuplicateGlobalReminder     ReminderErrorType = "duplicate_global_reminder"
+	NonWhitelistedUrls          ReminderErrorType = "non_whitelisted_urls"
+	RemindersLockedDuringTrial  ReminderErrorType = "reminders_locked_during_trial"
+	SmsContentLockedDuringTrial ReminderErrorType = "sms_content_locked_during_trial"
+	Validation                  ReminderErrorType = "validation"
 )
 
 // Defines values for ResourceField.
