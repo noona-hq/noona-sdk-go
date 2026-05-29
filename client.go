@@ -6850,15 +6850,21 @@ type Issuer struct {
 	// Business Identification Number
 	Bin *string `json:"bin,omitempty"`
 
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	DefaultVat *ExpandableVAT `json:"default_vat,omitempty"`
+
 	// Extra information to include on invoices.
 	ExtraInvoiceInfo *string `json:"extra_invoice_info,omitempty"`
 
 	// ID of company or employee
-	Id           *string     `json:"id,omitempty"`
-	LegalAddress *string     `json:"legal_address,omitempty"`
-	Name         *string     `json:"name,omitempty"`
-	Other        *string     `json:"other,omitempty"`
-	Type         *IssuerType `json:"type,omitempty"`
+	Id           *string `json:"id,omitempty"`
+	LegalAddress *string `json:"legal_address,omitempty"`
+	Name         *string `json:"name,omitempty"`
+	Other        *string `json:"other,omitempty"`
+
+	// Tax exemption reason code to apply when this issuer creates VAT-exempt line items.
+	TaxExemptionReason *string     `json:"tax_exemption_reason,omitempty"`
+	Type               *IssuerType `json:"type,omitempty"`
 
 	// VAT Identification Number
 	VatId *string `json:"vat_id,omitempty"`
@@ -11031,6 +11037,9 @@ type UserPOSSettings struct {
 
 	// Contact email for fiscalization and invoicing.
 	ContactEmail *openapi_types.Email `json:"contact_email,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	DefaultVat *ExpandableVAT `json:"default_vat,omitempty"`
 
 	// Whether the user is issuing their own invoices or not.
 	Enabled *bool `json:"enabled,omitempty"`
