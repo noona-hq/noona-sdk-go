@@ -63181,6 +63181,7 @@ type CreateEventStatusResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *EventStatus
+	JSON403      *EntitlementError
 }
 
 // Status returns HTTPResponse.Status
@@ -77594,6 +77595,13 @@ func ParseCreateEventStatusResponse(rsp *http.Response) (*CreateEventStatusRespo
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest EntitlementError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	}
 
