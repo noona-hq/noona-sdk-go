@@ -372,6 +372,7 @@ const (
 	CompanyFieldQuotas                 CompanyField = "quotas"
 	CompanyFieldStraumurEcom           CompanyField = "straumur_ecom"
 	CompanyFieldTeyaDirect             CompanyField = "teya_direct"
+	CompanyFieldTrustedSmsSender       CompanyField = "trusted_sms_sender"
 	CompanyFieldVerifoneEcom           CompanyField = "verifone_ecom"
 )
 
@@ -2087,9 +2088,12 @@ type AdminCompanyDetails struct {
 	Terminals     *[]Terminal              `json:"terminals,omitempty"`
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
-	TeyaDirect *TeyaDirectCredentials    `json:"teya_direct,omitempty"`
-	UpdatedAt  time.Time                 `json:"updated_at"`
-	Users      *AdminCompanyDetailsUsers `json:"users,omitempty"`
+	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
+
+	// Whether this company is trusted to send SMS messages containing non-whitelisted URLs or email addresses.
+	TrustedSmsSender *bool                     `json:"trusted_sms_sender,omitempty"`
+	UpdatedAt        time.Time                 `json:"updated_at"`
+	Users            *AdminCompanyDetailsUsers `json:"users,omitempty"`
 
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
@@ -2198,8 +2202,11 @@ type AdminCompanyUpdate struct {
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
-	UpdatedAt  *time.Time             `json:"updated_at,omitempty"`
-	Verifone   *VerifoneConnection    `json:"verifone,omitempty"`
+
+	// Whether this company is trusted to send SMS messages containing non-whitelisted URLs or email addresses. Admin only.
+	TrustedSmsSender *bool               `json:"trusted_sms_sender,omitempty"`
+	UpdatedAt        *time.Time          `json:"updated_at,omitempty"`
+	Verifone         *VerifoneConnection `json:"verifone,omitempty"`
 
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
@@ -2229,6 +2236,9 @@ type AdminCompanyUpdateFields struct {
 
 	// Teya Direct credentials used for direct payment processing. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields. The `three_ds_enabled` field is only meaningful on company-level credentials and is ignored when set on user-level credentials.
 	TeyaDirect *TeyaDirectCredentials `json:"teya_direct,omitempty"`
+
+	// Whether this company is trusted to send SMS messages containing non-whitelisted URLs or email addresses. Admin only.
+	TrustedSmsSender *bool `json:"trusted_sms_sender,omitempty"`
 
 	// Verifone e-comm onboarding credentials used for online payment processing through the Verifone payment gateway. This block contains secret material — only admin endpoints return it. Public company/user responses must never include these fields.
 	VerifoneEcom *VerifoneEcomCredentials `json:"verifone_ecom,omitempty"`
