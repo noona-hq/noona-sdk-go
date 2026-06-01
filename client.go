@@ -406,6 +406,7 @@ const (
 const (
 	CreateCampaignErrorTypeCampaignsDisabled  CreateCampaignErrorType = "campaigns_disabled"
 	CreateCampaignErrorTypeNonWhitelistedUrls CreateCampaignErrorType = "non_whitelisted_urls"
+	CreateCampaignErrorTypePaymentFailed      CreateCampaignErrorType = "payment_failed"
 	CreateCampaignErrorTypeQuotaExceeded      CreateCampaignErrorType = "quota_exceeded"
 	CreateCampaignErrorTypeValidation         CreateCampaignErrorType = "validation"
 )
@@ -423,9 +424,10 @@ const (
 
 // Defines values for CreateSMSErrorType.
 const (
-	CreateSMSErrorTypeNonWhitelistedUrls CreateSMSErrorType = "non_whitelisted_urls"
-	CreateSMSErrorTypeQuotaExceeded      CreateSMSErrorType = "quota_exceeded"
-	CreateSMSErrorTypeValidation         CreateSMSErrorType = "validation"
+	CreateSMSErrorTypeInsufficientCredits CreateSMSErrorType = "insufficient_credits"
+	CreateSMSErrorTypeNonWhitelistedUrls  CreateSMSErrorType = "non_whitelisted_urls"
+	CreateSMSErrorTypeQuotaExceeded       CreateSMSErrorType = "quota_exceeded"
+	CreateSMSErrorTypeValidation          CreateSMSErrorType = "validation"
 )
 
 // Defines values for CreditLedgerEntrySource.
@@ -60194,6 +60196,7 @@ type CreateCampaignResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *CampaignCreateResponse
 	JSON400      *CreateCampaignError
+	JSON402      *CreateCampaignError
 	JSON404      *CreateCampaignError
 	JSON429      *CreateCampaignError
 }
@@ -66420,6 +66423,7 @@ type CreateSMSMessageResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *SMSMessage
 	JSON400      *CreateSMSError
+	JSON402      *CreateSMSError
 	JSON404      *CreateSMSError
 	JSON429      *CreateSMSError
 }
@@ -74146,6 +74150,13 @@ func ParseCreateCampaignResponse(rsp *http.Response) (*CreateCampaignResponse, e
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest CreateCampaignError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest CreateCampaignError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -81246,6 +81257,13 @@ func ParseCreateSMSMessageResponse(rsp *http.Response) (*CreateSMSMessageRespons
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest CreateSMSError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest CreateSMSError
