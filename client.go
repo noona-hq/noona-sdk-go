@@ -3877,6 +3877,10 @@ type CompanyMarketplace struct {
 	// This is used to determine if the company has been onboarded online bookings or not, regardless of the value of `enabled` and `visible`.
 	OnboardedAt *time.Time `json:"onboarded_at,omitempty"`
 
+	// Maximum number of guests that can be auto-confirmed when booking screening is enabled.
+	// A value of 0 or a missing value means all bookings require confirmation.
+	ScreeningCapacity *int32 `json:"screening_capacity,omitempty"`
+
 	// Used when constructing the marketplace url for the company.
 	//
 	// Can include lowercase letters, numbers and dashes.
