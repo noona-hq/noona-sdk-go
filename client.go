@@ -802,8 +802,9 @@ const (
 
 // Defines values for NotificationActionLinkType.
 const (
-	Hash  NotificationActionLinkType = "hash"
-	Route NotificationActionLinkType = "route"
+	External NotificationActionLinkType = "external"
+	Hash     NotificationActionLinkType = "hash"
+	Route    NotificationActionLinkType = "route"
 )
 
 // Defines values for NotificationAlertBannerType.
