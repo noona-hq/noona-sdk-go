@@ -6822,6 +6822,21 @@ type ImportJobStatus string
 // Type of data being imported
 type ImportJobType string
 
+// Per-platform Intercom Messenger JWTs for the authenticated user. Each token is
+// signed (HS256) over the user's id with that platform's Intercom Messenger API
+// Secret and must be passed to the Intercom Messenger on boot for identity
+// verification. A platform's token is omitted when its secret is not configured.
+type IntercomMessengerTokens struct {
+	// JWT to pass to `Intercom.setUserJwt` on the Android Messenger.
+	Android *string `json:"android,omitempty"`
+
+	// JWT to pass to `Intercom.setUserJwt` on the iOS Messenger.
+	Ios *string `json:"ios,omitempty"`
+
+	// JWT to pass as `intercom_user_jwt` on the web Messenger boot/update.
+	Web *string `json:"web,omitempty"`
+}
+
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type InvoicesFilter struct {
 	// Filter by invoice payment status
@@ -10920,14 +10935,20 @@ type User struct {
 	Employees     *Employees           `json:"employees,omitempty"`
 
 	// Indicates whether the user has ever been associated with any company
-	HasOnboarded *bool            `json:"has_onboarded,omitempty"`
-	Id           *string          `json:"id,omitempty"`
-	Image        *Image           `json:"image,omitempty"`
-	IsAdmin      *bool            `json:"is_admin,omitempty"`
-	IsSecretary  *bool            `json:"is_secretary,omitempty"`
-	Locale       *string          `json:"locale,omitempty"`
-	Pos          *UserPOSSettings `json:"pos,omitempty"`
-	Settings     *UserSettings    `json:"settings,omitempty"`
+	HasOnboarded *bool   `json:"has_onboarded,omitempty"`
+	Id           *string `json:"id,omitempty"`
+	Image        *Image  `json:"image,omitempty"`
+
+	// Per-platform Intercom Messenger JWTs for the authenticated user. Each token is
+	// signed (HS256) over the user's id with that platform's Intercom Messenger API
+	// Secret and must be passed to the Intercom Messenger on boot for identity
+	// verification. A platform's token is omitted when its secret is not configured.
+	Intercom    *IntercomMessengerTokens `json:"intercom,omitempty"`
+	IsAdmin     *bool                    `json:"is_admin,omitempty"`
+	IsSecretary *bool                    `json:"is_secretary,omitempty"`
+	Locale      *string                  `json:"locale,omitempty"`
+	Pos         *UserPOSSettings         `json:"pos,omitempty"`
+	Settings    *UserSettings            `json:"settings,omitempty"`
 
 	// The profile of the user
 	UserProfile  *UserProfile  `json:"user_profile,omitempty"`
