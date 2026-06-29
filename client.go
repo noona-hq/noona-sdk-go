@@ -3931,6 +3931,9 @@ type CompanyMessaging struct {
 type CompanyMigrations struct {
 	// Whether the company has been migrated to staff-level work hours.
 	StaffWorkHoursEnabled *bool `json:"staff_work_hours_enabled,omitempty"`
+
+	// Whether the company has been migrated to issuer-level VAT settings.
+	VatSettingsEnabled *bool `json:"vat_settings_enabled,omitempty"`
 }
 
 // CompanyPOSSettings defines model for CompanyPOSSettings.
