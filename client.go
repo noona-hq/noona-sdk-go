@@ -86,15 +86,102 @@ const (
 	ActorTypeSystem          ActorType = "system"
 )
 
+// Defines values for AdActionCompanyType.
+const (
+	AdActionCompanyTypeCompany AdActionCompanyType = "company"
+)
+
+// Defines values for AdActionExperienceType.
+const (
+	Experience AdActionExperienceType = "experience"
+)
+
+// Defines values for AdActionScheduledEventType.
+const (
+	AdActionScheduledEventTypeScheduledEvent AdActionScheduledEventType = "scheduled_event"
+)
+
+// Defines values for AdActionType.
+const (
+	AdActionTypeCompany        AdActionType = "company"
+	AdActionTypeExperience     AdActionType = "experience"
+	AdActionTypeScheduledEvent AdActionType = "scheduled_event"
+	AdActionTypeVoucher        AdActionType = "voucher"
+)
+
+// Defines values for AdActionVoucherType.
+const (
+	AdActionVoucherTypeVoucher AdActionVoucherType = "voucher"
+)
+
 // Defines values for AdCallToActionType.
 const (
 	CategoryId AdCallToActionType = "category_id"
 	CompanyId  AdCallToActionType = "company_id"
 )
 
+// Defines values for AdCampaignEffectiveStatus.
+const (
+	AdCampaignEffectiveStatusEnded         AdCampaignEffectiveStatus = "ended"
+	AdCampaignEffectiveStatusPaused        AdCampaignEffectiveStatus = "paused"
+	AdCampaignEffectiveStatusPausedForDay  AdCampaignEffectiveStatus = "paused_for_day"
+	AdCampaignEffectiveStatusPendingReview AdCampaignEffectiveStatus = "pending_review"
+	AdCampaignEffectiveStatusRunning       AdCampaignEffectiveStatus = "running"
+	AdCampaignEffectiveStatusScheduled     AdCampaignEffectiveStatus = "scheduled"
+	AdCampaignEffectiveStatusStoppedUnpaid AdCampaignEffectiveStatus = "stopped_unpaid"
+)
+
+// Defines values for AdCampaignStatus.
+const (
+	AdCampaignStatusActive AdCampaignStatus = "active"
+	AdCampaignStatusEnded  AdCampaignStatus = "ended"
+	AdCampaignStatusPaused AdCampaignStatus = "paused"
+)
+
+// Defines values for AdCreativeImageType.
+const (
+	AdCreativeImageTypeImage AdCreativeImageType = "image"
+)
+
+// Defines values for AdCreativeTextOverlayType.
+const (
+	AdCreativeTextOverlayTypeTextOverlay AdCreativeTextOverlayType = "text_overlay"
+)
+
+// Defines values for AdCreativeType.
+const (
+	AdCreativeTypeImage       AdCreativeType = "image"
+	AdCreativeTypeTextOverlay AdCreativeType = "text_overlay"
+)
+
+// Defines values for AdEventType.
+const (
+	Click      AdEventType = "click"
+	Impression AdEventType = "impression"
+)
+
+// Defines values for AdPlacementSelectionDiscoveryType.
+const (
+	AdPlacementSelectionDiscoveryTypeDiscovery AdPlacementSelectionDiscoveryType = "discovery"
+)
+
+// Defines values for AdPlacementType.
+const (
+	AdPlacementTypeDiscovery AdPlacementType = "discovery"
+)
+
 // Defines values for AdSectionFieldType.
 const (
 	AdSectionFieldTypeString AdSectionFieldType = "string"
+)
+
+// Defines values for AdStatus.
+const (
+	AdStatusApproved  AdStatus = "approved"
+	AdStatusDraft     AdStatus = "draft"
+	AdStatusInReview  AdStatus = "in_review"
+	AdStatusRejected  AdStatus = "rejected"
+	AdStatusTakenDown AdStatus = "taken_down"
 )
 
 // Defines values for AdminFixWorkHoursTimesScope.
@@ -692,6 +779,7 @@ const (
 
 // Defines values for ImageFolder.
 const (
+	ImageFolderAds             ImageFolder = "ads"
 	ImageFolderCompanyCover    ImageFolder = "company_cover"
 	ImageFolderCompanyProfile  ImageFolder = "company_profile"
 	ImageFolderEmployee        ImageFolder = "employee"
@@ -1221,6 +1309,16 @@ const (
 	PromoCodeValidationErrorCodeUsageLimitReached PromoCodeValidationErrorCode = "usage_limit_reached"
 )
 
+// Defines values for PromotableAdType.
+const (
+	PromotableAdTypeAd PromotableAdType = "ad"
+)
+
+// Defines values for PromotableType.
+const (
+	PromotableTypeAd PromotableType = "ad"
+)
+
 // Defines values for PushNotificationType.
 const (
 	PushNotificationTypeEventCancelledFromMarketplace PushNotificationType = "eventCancelledFromMarketplace"
@@ -1669,10 +1767,10 @@ const (
 
 // Defines values for VoucherFilterStatus.
 const (
-	Expired    VoucherFilterStatus = "expired"
-	FullyUsed  VoucherFilterStatus = "fully_used"
-	NeverUsed  VoucherFilterStatus = "never_used"
-	PartlyUsed VoucherFilterStatus = "partly_used"
+	VoucherFilterStatusExpired    VoucherFilterStatus = "expired"
+	VoucherFilterStatusFullyUsed  VoucherFilterStatus = "fully_used"
+	VoucherFilterStatusNeverUsed  VoucherFilterStatus = "never_used"
+	VoucherFilterStatusPartlyUsed VoucherFilterStatus = "partly_used"
 )
 
 // Defines values for VoucherFilterType.
@@ -1951,11 +2049,237 @@ type ActorType string
 // Actors defines model for Actors.
 type Actors []Actor
 
+// Ad defines model for Ad.
+type Ad struct {
+	Action          *AdAction             `json:"action,omitempty"`
+	CompanyId       *string               `json:"company_id,omitempty"`
+	CreatedAt       *time.Time            `json:"created_at,omitempty"`
+	Creative        *AdCreative           `json:"creative,omitempty"`
+	Id              *string               `json:"id,omitempty"`
+	Language        *string               `json:"language,omitempty"`
+	Name            *string               `json:"name,omitempty"`
+	Placement       *AdPlacementSelection `json:"placement,omitempty"`
+	RejectionReason *string               `json:"rejection_reason,omitempty"`
+	ReviewedAt      *time.Time            `json:"reviewed_at,omitempty"`
+	ReviewedBy      *string               `json:"reviewed_by,omitempty"`
+	Status          *AdStatus             `json:"status,omitempty"`
+	UpdatedAt       *time.Time            `json:"updated_at,omitempty"`
+}
+
+// AdAction defines model for AdAction.
+type AdAction struct {
+	union json.RawMessage
+}
+
+// AdActionBase defines model for AdActionBase.
+type AdActionBase struct {
+	Type *AdActionType `json:"type,omitempty"`
+}
+
+// AdActionCompany defines model for AdActionCompany.
+type AdActionCompany struct {
+	Type *AdActionCompanyType `json:"type,omitempty"`
+}
+
+// AdActionCompanyType defines model for AdActionCompany.Type.
+type AdActionCompanyType string
+
+// AdActionExperience defines model for AdActionExperience.
+type AdActionExperience struct {
+	ExperienceId *string                 `json:"experience_id,omitempty"`
+	Type         *AdActionExperienceType `json:"type,omitempty"`
+}
+
+// AdActionExperienceType defines model for AdActionExperience.Type.
+type AdActionExperienceType string
+
+// AdActionScheduledEvent defines model for AdActionScheduledEvent.
+type AdActionScheduledEvent struct {
+	EventId *string                     `json:"event_id,omitempty"`
+	Type    *AdActionScheduledEventType `json:"type,omitempty"`
+}
+
+// AdActionScheduledEventType defines model for AdActionScheduledEvent.Type.
+type AdActionScheduledEventType string
+
+// AdActionType defines model for AdActionType.
+type AdActionType string
+
+// AdActionVoucher defines model for AdActionVoucher.
+type AdActionVoucher struct {
+	Type              *AdActionVoucherType `json:"type,omitempty"`
+	VoucherTemplateId *string              `json:"voucher_template_id,omitempty"`
+}
+
+// AdActionVoucherType defines model for AdActionVoucher.Type.
+type AdActionVoucherType string
+
 // AdCallToActionType defines model for AdCallToActionType.
 type AdCallToActionType string
 
+// AdCampaign defines model for AdCampaign.
+type AdCampaign struct {
+	Budget      *AdCampaignBudget    `json:"budget,omitempty"`
+	CompanyId   *string              `json:"company_id,omitempty"`
+	CreatedAt   *time.Time           `json:"created_at,omitempty"`
+	Id          *string              `json:"id,omitempty"`
+	Name        *string              `json:"name,omitempty"`
+	Promotables *[]Promotable        `json:"promotables,omitempty"`
+	Schedule    *AdCampaignSchedule  `json:"schedule,omitempty"`
+	Spend       *AdCampaignSpend     `json:"spend,omitempty"`
+	Status      *AdCampaignStatus    `json:"status,omitempty"`
+	Targeting   *AdCampaignTargeting `json:"targeting,omitempty"`
+	UpdatedAt   *time.Time           `json:"updated_at,omitempty"`
+}
+
+// AdCampaignBudget defines model for AdCampaignBudget.
+type AdCampaignBudget struct {
+	Daily *struct {
+		Amount   *float64 `json:"amount,omitempty"`
+		Currency *string  `json:"currency,omitempty"`
+	} `json:"daily,omitempty"`
+	Total *struct {
+		Amount   *float64 `json:"amount,omitempty"`
+		Currency *string  `json:"currency,omitempty"`
+	} `json:"total,omitempty"`
+}
+
+// AdCampaignEffectiveStatus defines model for AdCampaignEffectiveStatus.
+type AdCampaignEffectiveStatus string
+
+// AdCampaignSchedule defines model for AdCampaignSchedule.
+type AdCampaignSchedule struct {
+	EndsAt   *time.Time `json:"ends_at,omitempty"`
+	StartsAt *time.Time `json:"starts_at,omitempty"`
+}
+
+// AdCampaignSpend defines model for AdCampaignSpend.
+type AdCampaignSpend struct {
+	Today *struct {
+		Amount   *float64 `json:"amount,omitempty"`
+		Currency *string  `json:"currency,omitempty"`
+	} `json:"today,omitempty"`
+
+	// ISO date (YYYY-MM-DD) of the current today window
+	TodayDate *string `json:"today_date,omitempty"`
+	Total     *struct {
+		Amount   *float64 `json:"amount,omitempty"`
+		Currency *string  `json:"currency,omitempty"`
+	} `json:"total,omitempty"`
+}
+
+// AdCampaignStatus defines model for AdCampaignStatus.
+type AdCampaignStatus string
+
+// AdCampaignTargeting defines model for AdCampaignTargeting.
+type AdCampaignTargeting struct {
+	Location *LocationLatLng `json:"location,omitempty"`
+
+	// Targeting radius in meters
+	Radius *int32 `json:"radius,omitempty"`
+}
+
+// AdCreative defines model for AdCreative.
+type AdCreative struct {
+	union json.RawMessage
+}
+
+// AdCreativeBase defines model for AdCreativeBase.
+type AdCreativeBase struct {
+	Type *AdCreativeType `json:"type,omitempty"`
+}
+
+// AdCreativeImage defines model for AdCreativeImage.
+type AdCreativeImage struct {
+	Image *Image               `json:"image,omitempty"`
+	Type  *AdCreativeImageType `json:"type,omitempty"`
+}
+
+// AdCreativeImageType defines model for AdCreativeImage.Type.
+type AdCreativeImageType string
+
+// AdCreativeTextOverlay defines model for AdCreativeTextOverlay.
+type AdCreativeTextOverlay struct {
+	Image       *Image                     `json:"image,omitempty"`
+	OverlayText *string                    `json:"overlay_text,omitempty"`
+	Type        *AdCreativeTextOverlayType `json:"type,omitempty"`
+}
+
+// AdCreativeTextOverlayType defines model for AdCreativeTextOverlay.Type.
+type AdCreativeTextOverlayType string
+
+// AdCreativeType defines model for AdCreativeType.
+type AdCreativeType string
+
+// AdEvent defines model for AdEvent.
+type AdEvent struct {
+	AdCampaignId *string `json:"ad_campaign_id,omitempty"`
+	AdId         *string `json:"ad_id,omitempty"`
+	Charge       *struct {
+		Amount   *float64 `json:"amount,omitempty"`
+		Currency *string  `json:"currency,omitempty"`
+	} `json:"charge,omitempty"`
+	CompanyId  *string         `json:"company_id,omitempty"`
+	CreatedAt  *time.Time      `json:"created_at,omitempty"`
+	Id         *string         `json:"id,omitempty"`
+	Location   *LocationLatLng `json:"location,omitempty"`
+	OccurredAt *time.Time      `json:"occurred_at,omitempty"`
+	ServeToken *string         `json:"serve_token,omitempty"`
+	Type       *AdEventType    `json:"type,omitempty"`
+}
+
+// AdEventType defines model for AdEventType.
+type AdEventType string
+
+// AdPlacement defines model for AdPlacement.
+type AdPlacement struct {
+	CreatedAt  *time.Time             `json:"created_at,omitempty"`
+	Id         *string                `json:"id,omitempty"`
+	Key        *string                `json:"key,omitempty"`
+	Name       *string                `json:"name,omitempty"`
+	SizeConfig *AdPlacementSizeConfig `json:"size_config,omitempty"`
+	Type       *AdPlacementType       `json:"type,omitempty"`
+	UpdatedAt  *time.Time             `json:"updated_at,omitempty"`
+}
+
+// AdPlacementSelection defines model for AdPlacementSelection.
+type AdPlacementSelection struct {
+	union json.RawMessage
+}
+
+// AdPlacementSelectionBase defines model for AdPlacementSelectionBase.
+type AdPlacementSelectionBase struct {
+	Type *AdPlacementType `json:"type,omitempty"`
+}
+
+// AdPlacementSelectionDiscovery defines model for AdPlacementSelectionDiscovery.
+type AdPlacementSelectionDiscovery struct {
+	Discovery *struct {
+		AdPlacementId *string `json:"ad_placement_id,omitempty"`
+	} `json:"discovery,omitempty"`
+	Type *AdPlacementSelectionDiscoveryType `json:"type,omitempty"`
+}
+
+// AdPlacementSelectionDiscoveryType defines model for AdPlacementSelectionDiscovery.Type.
+type AdPlacementSelectionDiscoveryType string
+
+// AdPlacementSizeConfig defines model for AdPlacementSizeConfig.
+type AdPlacementSizeConfig struct {
+	AspectRatios *[]string `json:"aspect_ratios,omitempty"`
+	MaxHeight    *int32    `json:"max_height,omitempty"`
+	MaxWidth     *int32    `json:"max_width,omitempty"`
+	MinHeight    *int32    `json:"min_height,omitempty"`
+	MinWidth     *int32    `json:"min_width,omitempty"`
+}
+
+// AdPlacementType defines model for AdPlacementType.
+type AdPlacementType string
+
 // AdSectionFieldType defines model for AdSectionFieldType.
 type AdSectionFieldType string
+
+// AdStatus defines model for AdStatus.
+type AdStatus string
 
 // Address defines model for Address.
 type Address struct {
@@ -8595,6 +8919,30 @@ type PromoCodeValidation struct {
 
 // PromoCodeValidationErrorCode defines model for PromoCodeValidationErrorCode.
 type PromoCodeValidationErrorCode string
+
+// Promotable defines model for Promotable.
+type Promotable struct {
+	union json.RawMessage
+}
+
+// PromotableAd defines model for PromotableAd.
+type PromotableAd struct {
+	Ad *struct {
+		AdId *string `json:"ad_id,omitempty"`
+	} `json:"ad,omitempty"`
+	Type *PromotableAdType `json:"type,omitempty"`
+}
+
+// PromotableAdType defines model for PromotableAd.Type.
+type PromotableAdType string
+
+// PromotableBase defines model for PromotableBase.
+type PromotableBase struct {
+	Type *PromotableType `json:"type,omitempty"`
+}
+
+// PromotableType defines model for PromotableType.
+type PromotableType string
 
 // PublicCompanies defines model for PublicCompanies.
 type PublicCompanies []PublicCompany
@@ -16669,6 +17017,120 @@ type UpdateWebhookJSONRequestBody UpdateWebhookJSONBody
 // UpdateWorkHoursJSONRequestBody defines body for UpdateWorkHours for application/json ContentType.
 type UpdateWorkHoursJSONRequestBody UpdateWorkHoursJSONBody
 
+func (t AdAction) AsAdActionCompany() (AdActionCompany, error) {
+	var body AdActionCompany
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AdAction) FromAdActionCompany(v AdActionCompany) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AdAction) AsAdActionExperience() (AdActionExperience, error) {
+	var body AdActionExperience
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AdAction) FromAdActionExperience(v AdActionExperience) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AdAction) AsAdActionVoucher() (AdActionVoucher, error) {
+	var body AdActionVoucher
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AdAction) FromAdActionVoucher(v AdActionVoucher) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AdAction) AsAdActionScheduledEvent() (AdActionScheduledEvent, error) {
+	var body AdActionScheduledEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AdAction) FromAdActionScheduledEvent(v AdActionScheduledEvent) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AdAction) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AdAction) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t AdCreative) AsAdCreativeImage() (AdCreativeImage, error) {
+	var body AdCreativeImage
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AdCreative) FromAdCreativeImage(v AdCreativeImage) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AdCreative) AsAdCreativeTextOverlay() (AdCreativeTextOverlay, error) {
+	var body AdCreativeTextOverlay
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AdCreative) FromAdCreativeTextOverlay(v AdCreativeTextOverlay) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AdCreative) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AdCreative) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t AdPlacementSelection) AsAdPlacementSelectionDiscovery() (AdPlacementSelectionDiscovery, error) {
+	var body AdPlacementSelectionDiscovery
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AdPlacementSelection) FromAdPlacementSelectionDiscovery(v AdPlacementSelectionDiscovery) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AdPlacementSelection) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *AdPlacementSelection) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 func (t AdyenTransferInstrument) AsAdyenBankAccount() (AdyenBankAccount, error) {
 	var body AdyenBankAccount
 	err := json.Unmarshal(t.union, &body)
@@ -18463,6 +18925,28 @@ func (t Notification) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Notification) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t Promotable) AsPromotableAd() (PromotableAd, error) {
+	var body PromotableAd
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Promotable) FromPromotableAd(v PromotableAd) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Promotable) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Promotable) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
