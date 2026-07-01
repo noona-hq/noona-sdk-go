@@ -2179,6 +2179,16 @@ type AdCampaignTargeting struct {
 	Radius *int32 `json:"radius,omitempty"`
 }
 
+// AdCreate defines model for AdCreate.
+type AdCreate struct {
+	Action    *AdAction             `json:"action,omitempty"`
+	CompanyId string                `json:"company_id"`
+	Creative  *AdCreative           `json:"creative,omitempty"`
+	Language  *string               `json:"language,omitempty"`
+	Name      *string               `json:"name,omitempty"`
+	Placement *AdPlacementSelection `json:"placement,omitempty"`
+}
+
 // AdCreative defines model for AdCreative.
 type AdCreative struct {
 	union json.RawMessage
@@ -2275,11 +2285,23 @@ type AdPlacementSizeConfig struct {
 // AdPlacementType defines model for AdPlacementType.
 type AdPlacementType string
 
+// AdResponse defines model for AdResponse.
+type AdResponse Ad
+
 // AdSectionFieldType defines model for AdSectionFieldType.
 type AdSectionFieldType string
 
 // AdStatus defines model for AdStatus.
 type AdStatus string
+
+// AdUpdate defines model for AdUpdate.
+type AdUpdate struct {
+	Action   *AdAction   `json:"action,omitempty"`
+	Creative *AdCreative `json:"creative,omitempty"`
+	Language *string     `json:"language,omitempty"`
+	Name     *string     `json:"name,omitempty"`
+	Status   *AdStatus   `json:"status,omitempty"`
+}
 
 // Address defines model for Address.
 type Address struct {
@@ -2726,6 +2748,9 @@ type AdminUserUpdate struct {
 
 // AdminUsers defines model for AdminUsers.
 type AdminUsers []AdminUser
+
+// AdsResponse defines model for AdsResponse.
+type AdsResponse []AdResponse
 
 // AdyenBankAccount defines model for AdyenBankAccount.
 type AdyenBankAccount struct {
@@ -12712,6 +12737,48 @@ type AdminMoveUserParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateAdJSONBody defines parameters for CreateAd.
+type CreateAdJSONBody AdCreate
+
+// CreateAdParams defines parameters for CreateAd.
+type CreateAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteAdParams defines parameters for DeleteAd.
+type DeleteAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetAdParams defines parameters for GetAd.
+type GetAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateAdJSONBody defines parameters for UpdateAd.
+type UpdateAdJSONBody AdUpdate
+
+// UpdateAdParams defines parameters for UpdateAd.
+type UpdateAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AgentListCompaniesParams defines parameters for AgentListCompanies.
 type AgentListCompaniesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -12893,6 +12960,16 @@ type ListAllCompanyActivitiesParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// ListAdsParams defines parameters for ListAds.
+type ListAdsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand   `form:"expand,omitempty" json:"expand,omitempty"`
+	Status *AdStatus `form:"status,omitempty" json:"status,omitempty"`
 }
 
 // GetCustomersAggregateParams defines parameters for GetCustomersAggregate.
@@ -16654,6 +16731,12 @@ type AdminUpdateUserJSONRequestBody AdminUpdateUserJSONBody
 // AdminMoveUserJSONRequestBody defines body for AdminMoveUser for application/json ContentType.
 type AdminMoveUserJSONRequestBody AdminMoveUserJSONBody
 
+// CreateAdJSONRequestBody defines body for CreateAd for application/json ContentType.
+type CreateAdJSONRequestBody CreateAdJSONBody
+
+// UpdateAdJSONRequestBody defines body for UpdateAd for application/json ContentType.
+type UpdateAdJSONRequestBody UpdateAdJSONBody
+
 // CreateBlockedTimeJSONRequestBody defines body for CreateBlockedTime for application/json ContentType.
 type CreateBlockedTimeJSONRequestBody CreateBlockedTimeJSONBody
 
@@ -19433,6 +19516,22 @@ type ClientInterface interface {
 
 	AdminMoveUser(ctx context.Context, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateAd request with any body
+	CreateAdWithBody(ctx context.Context, params *CreateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAd(ctx context.Context, params *CreateAdParams, body CreateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteAd request
+	DeleteAd(ctx context.Context, adId string, params *DeleteAdParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetAd request
+	GetAd(ctx context.Context, adId string, params *GetAdParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateAd request with any body
+	UpdateAdWithBody(ctx context.Context, adId string, params *UpdateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateAd(ctx context.Context, adId string, params *UpdateAdParams, body UpdateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AgentListCompanies request
 	AgentListCompanies(ctx context.Context, params *AgentListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19489,6 +19588,9 @@ type ClientInterface interface {
 
 	// ListAllCompanyActivities request
 	ListAllCompanyActivities(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListAds request
+	ListAds(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCustomersAggregate request
 	GetCustomersAggregate(ctx context.Context, companyId string, params *GetCustomersAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -21380,6 +21482,78 @@ func (c *Client) AdminMoveUser(ctx context.Context, userId string, params *Admin
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateAdWithBody(ctx context.Context, params *CreateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAdRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAd(ctx context.Context, params *CreateAdParams, body CreateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAdRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAd(ctx context.Context, adId string, params *DeleteAdParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAdRequest(c.Server, adId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAd(ctx context.Context, adId string, params *GetAdParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAdRequest(c.Server, adId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAdWithBody(ctx context.Context, adId string, params *UpdateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAdRequestWithBody(c.Server, adId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateAd(ctx context.Context, adId string, params *UpdateAdParams, body UpdateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateAdRequest(c.Server, adId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) AgentListCompanies(ctx context.Context, params *AgentListCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAgentListCompaniesRequest(c.Server, params)
 	if err != nil {
@@ -21622,6 +21796,18 @@ func (c *Client) UpdateCompany(ctx context.Context, companyId string, params *Up
 
 func (c *Client) ListAllCompanyActivities(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAllCompanyActivitiesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListAds(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListAdsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -29624,6 +29810,305 @@ func NewAdminMoveUserRequestWithBody(server string, userId string, params *Admin
 	return req, nil
 }
 
+// NewCreateAdRequest calls the generic CreateAd builder with application/json body
+func NewCreateAdRequest(server string, params *CreateAdParams, body CreateAdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAdRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateAdRequestWithBody generates requests for CreateAd with any type of body
+func NewCreateAdRequestWithBody(server string, params *CreateAdParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/ads")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteAdRequest generates requests for DeleteAd
+func NewDeleteAdRequest(server string, adId string, params *DeleteAdParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_id", runtime.ParamLocationPath, adId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/ads/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAdRequest generates requests for GetAd
+func NewGetAdRequest(server string, adId string, params *GetAdParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_id", runtime.ParamLocationPath, adId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/ads/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateAdRequest calls the generic UpdateAd builder with application/json body
+func NewUpdateAdRequest(server string, adId string, params *UpdateAdParams, body UpdateAdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateAdRequestWithBody(server, adId, params, "application/json", bodyReader)
+}
+
+// NewUpdateAdRequestWithBody generates requests for UpdateAd with any type of body
+func NewUpdateAdRequestWithBody(server string, adId string, params *UpdateAdParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_id", runtime.ParamLocationPath, adId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/ads/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewAgentListCompaniesRequest generates requests for AgentListCompanies
 func NewAgentListCompaniesRequest(server string, params *AgentListCompaniesParams) (*http.Request, error) {
 	var err error
@@ -30844,6 +31329,92 @@ func NewListAllCompanyActivitiesRequest(server string, companyId string, params 
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListAdsRequest generates requests for ListAds
+func NewListAdsRequest(server string, companyId string, params *ListAdsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/ads", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Status != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
@@ -58437,6 +59008,22 @@ type ClientWithResponsesInterface interface {
 
 	AdminMoveUserWithResponse(ctx context.Context, userId string, params *AdminMoveUserParams, body AdminMoveUserJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminMoveUserResponse, error)
 
+	// CreateAd request with any body
+	CreateAdWithBodyWithResponse(ctx context.Context, params *CreateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAdResponse, error)
+
+	CreateAdWithResponse(ctx context.Context, params *CreateAdParams, body CreateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAdResponse, error)
+
+	// DeleteAd request
+	DeleteAdWithResponse(ctx context.Context, adId string, params *DeleteAdParams, reqEditors ...RequestEditorFn) (*DeleteAdResponse, error)
+
+	// GetAd request
+	GetAdWithResponse(ctx context.Context, adId string, params *GetAdParams, reqEditors ...RequestEditorFn) (*GetAdResponse, error)
+
+	// UpdateAd request with any body
+	UpdateAdWithBodyWithResponse(ctx context.Context, adId string, params *UpdateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAdResponse, error)
+
+	UpdateAdWithResponse(ctx context.Context, adId string, params *UpdateAdParams, body UpdateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAdResponse, error)
+
 	// AgentListCompanies request
 	AgentListCompaniesWithResponse(ctx context.Context, params *AgentListCompaniesParams, reqEditors ...RequestEditorFn) (*AgentListCompaniesResponse, error)
 
@@ -58493,6 +59080,9 @@ type ClientWithResponsesInterface interface {
 
 	// ListAllCompanyActivities request
 	ListAllCompanyActivitiesWithResponse(ctx context.Context, companyId string, params *ListAllCompanyActivitiesParams, reqEditors ...RequestEditorFn) (*ListAllCompanyActivitiesResponse, error)
+
+	// ListAds request
+	ListAdsWithResponse(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*ListAdsResponse, error)
 
 	// GetCustomersAggregate request
 	GetCustomersAggregateWithResponse(ctx context.Context, companyId string, params *GetCustomersAggregateParams, reqEditors ...RequestEditorFn) (*GetCustomersAggregateResponse, error)
@@ -60557,6 +61147,93 @@ func (r AdminMoveUserResponse) StatusCode() int {
 	return 0
 }
 
+type CreateAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type AgentListCompaniesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -60888,6 +61565,28 @@ func (r ListAllCompanyActivitiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListAllCompanyActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListAdsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdsResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAdsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAdsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -69280,6 +69979,58 @@ func (c *ClientWithResponses) AdminMoveUserWithResponse(ctx context.Context, use
 	return ParseAdminMoveUserResponse(rsp)
 }
 
+// CreateAdWithBodyWithResponse request with arbitrary body returning *CreateAdResponse
+func (c *ClientWithResponses) CreateAdWithBodyWithResponse(ctx context.Context, params *CreateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAdResponse, error) {
+	rsp, err := c.CreateAdWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAdResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAdWithResponse(ctx context.Context, params *CreateAdParams, body CreateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAdResponse, error) {
+	rsp, err := c.CreateAd(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAdResponse(rsp)
+}
+
+// DeleteAdWithResponse request returning *DeleteAdResponse
+func (c *ClientWithResponses) DeleteAdWithResponse(ctx context.Context, adId string, params *DeleteAdParams, reqEditors ...RequestEditorFn) (*DeleteAdResponse, error) {
+	rsp, err := c.DeleteAd(ctx, adId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAdResponse(rsp)
+}
+
+// GetAdWithResponse request returning *GetAdResponse
+func (c *ClientWithResponses) GetAdWithResponse(ctx context.Context, adId string, params *GetAdParams, reqEditors ...RequestEditorFn) (*GetAdResponse, error) {
+	rsp, err := c.GetAd(ctx, adId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAdResponse(rsp)
+}
+
+// UpdateAdWithBodyWithResponse request with arbitrary body returning *UpdateAdResponse
+func (c *ClientWithResponses) UpdateAdWithBodyWithResponse(ctx context.Context, adId string, params *UpdateAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateAdResponse, error) {
+	rsp, err := c.UpdateAdWithBody(ctx, adId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAdResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateAdWithResponse(ctx context.Context, adId string, params *UpdateAdParams, body UpdateAdJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAdResponse, error) {
+	rsp, err := c.UpdateAd(ctx, adId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateAdResponse(rsp)
+}
+
 // AgentListCompaniesWithResponse request returning *AgentListCompaniesResponse
 func (c *ClientWithResponses) AgentListCompaniesWithResponse(ctx context.Context, params *AgentListCompaniesParams, reqEditors ...RequestEditorFn) (*AgentListCompaniesResponse, error) {
 	rsp, err := c.AgentListCompanies(ctx, params, reqEditors...)
@@ -69461,6 +70212,15 @@ func (c *ClientWithResponses) ListAllCompanyActivitiesWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParseListAllCompanyActivitiesResponse(rsp)
+}
+
+// ListAdsWithResponse request returning *ListAdsResponse
+func (c *ClientWithResponses) ListAdsWithResponse(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*ListAdsResponse, error) {
+	rsp, err := c.ListAds(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAdsResponse(rsp)
 }
 
 // GetCustomersAggregateWithResponse request returning *GetCustomersAggregateResponse
@@ -74442,6 +75202,100 @@ func ParseAdminMoveUserResponse(rsp *http.Response) (*AdminMoveUserResponse, err
 	return response, nil
 }
 
+// ParseCreateAdResponse parses an HTTP response from a CreateAdWithResponse call
+func ParseCreateAdResponse(rsp *http.Response) (*CreateAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAdResponse parses an HTTP response from a DeleteAdWithResponse call
+func ParseDeleteAdResponse(rsp *http.Response) (*DeleteAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetAdResponse parses an HTTP response from a GetAdWithResponse call
+func ParseGetAdResponse(rsp *http.Response) (*GetAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateAdResponse parses an HTTP response from a UpdateAdWithResponse call
+func ParseUpdateAdResponse(rsp *http.Response) (*UpdateAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseAgentListCompaniesResponse parses an HTTP response from a AgentListCompaniesWithResponse call
 func ParseAgentListCompaniesResponse(rsp *http.Response) (*AgentListCompaniesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -74871,6 +75725,32 @@ func ParseListAllCompanyActivitiesResponse(rsp *http.Response) (*ListAllCompanyA
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Activities
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListAdsResponse parses an HTTP response from a ListAdsWithResponse call
+func ParseListAdsResponse(rsp *http.Response) (*ListAdsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAdsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdsResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
