@@ -2241,6 +2241,42 @@ type AdEvent struct {
 // AdEventType defines model for AdEventType.
 type AdEventType string
 
+// AdPerformance defines model for AdPerformance.
+type AdPerformance struct {
+	Campaigns *[]struct {
+		CampaignId  *string `json:"campaign_id,omitempty"`
+		Clicks      *int64  `json:"clicks,omitempty"`
+		Impressions *int64  `json:"impressions,omitempty"`
+		Name        *string `json:"name,omitempty"`
+		Spend       *struct {
+			Amount   *float64 `json:"amount,omitempty"`
+			Currency *string  `json:"currency,omitempty"`
+		} `json:"spend,omitempty"`
+	} `json:"campaigns,omitempty"`
+	From   *time.Time `json:"from,omitempty"`
+	To     *time.Time `json:"to,omitempty"`
+	Totals *struct {
+		Clicks      *int64 `json:"clicks,omitempty"`
+		Impressions *int64 `json:"impressions,omitempty"`
+		Spend       *struct {
+			Amount   *float64 `json:"amount,omitempty"`
+			Currency *string  `json:"currency,omitempty"`
+		} `json:"spend,omitempty"`
+	} `json:"totals,omitempty"`
+}
+
+// AdPerformanceFilter defines model for AdPerformanceFilter.
+type AdPerformanceFilter struct {
+	// Optional — narrow results to a single campaign
+	CampaignId *string `json:"campaign_id,omitempty"`
+
+	// Start of the window (inclusive)
+	From time.Time `json:"from"`
+
+	// End of the window (inclusive)
+	To time.Time `json:"to"`
+}
+
 // AdPlacement defines model for AdPlacement.
 type AdPlacement struct {
 	CreatedAt  *time.Time             `json:"created_at,omitempty"`
@@ -12972,6 +13008,16 @@ type ListAdsParams struct {
 	Status *AdStatus `form:"status,omitempty" json:"status,omitempty"`
 }
 
+// GetAdPerformanceParams defines parameters for GetAdPerformance.
+type GetAdPerformanceParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand             `form:"expand,omitempty" json:"expand,omitempty"`
+	Filter AdPerformanceFilter `form:"filter" json:"filter"`
+}
+
 // GetCustomersAggregateParams defines parameters for GetCustomersAggregate.
 type GetCustomersAggregateParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -19592,6 +19638,9 @@ type ClientInterface interface {
 	// ListAds request
 	ListAds(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetAdPerformance request
+	GetAdPerformance(ctx context.Context, companyId string, params *GetAdPerformanceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCustomersAggregate request
 	GetCustomersAggregate(ctx context.Context, companyId string, params *GetCustomersAggregateParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -21808,6 +21857,18 @@ func (c *Client) ListAllCompanyActivities(ctx context.Context, companyId string,
 
 func (c *Client) ListAds(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAdsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAdPerformance(ctx context.Context, companyId string, params *GetAdPerformanceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAdPerformanceRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -31417,6 +31478,82 @@ func NewListAdsRequest(server string, companyId string, params *ListAdsParams) (
 			}
 		}
 
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAdPerformanceRequest generates requests for GetAdPerformance
+func NewGetAdPerformanceRequest(server string, companyId string, params *GetAdPerformanceParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/aggregate/ad_performance", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
@@ -59084,6 +59221,9 @@ type ClientWithResponsesInterface interface {
 	// ListAds request
 	ListAdsWithResponse(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*ListAdsResponse, error)
 
+	// GetAdPerformance request
+	GetAdPerformanceWithResponse(ctx context.Context, companyId string, params *GetAdPerformanceParams, reqEditors ...RequestEditorFn) (*GetAdPerformanceResponse, error)
+
 	// GetCustomersAggregate request
 	GetCustomersAggregateWithResponse(ctx context.Context, companyId string, params *GetCustomersAggregateParams, reqEditors ...RequestEditorFn) (*GetCustomersAggregateResponse, error)
 
@@ -61587,6 +61727,28 @@ func (r ListAdsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListAdsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAdPerformanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdPerformance
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAdPerformanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAdPerformanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -70223,6 +70385,15 @@ func (c *ClientWithResponses) ListAdsWithResponse(ctx context.Context, companyId
 	return ParseListAdsResponse(rsp)
 }
 
+// GetAdPerformanceWithResponse request returning *GetAdPerformanceResponse
+func (c *ClientWithResponses) GetAdPerformanceWithResponse(ctx context.Context, companyId string, params *GetAdPerformanceParams, reqEditors ...RequestEditorFn) (*GetAdPerformanceResponse, error) {
+	rsp, err := c.GetAdPerformance(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAdPerformanceResponse(rsp)
+}
+
 // GetCustomersAggregateWithResponse request returning *GetCustomersAggregateResponse
 func (c *ClientWithResponses) GetCustomersAggregateWithResponse(ctx context.Context, companyId string, params *GetCustomersAggregateParams, reqEditors ...RequestEditorFn) (*GetCustomersAggregateResponse, error) {
 	rsp, err := c.GetCustomersAggregate(ctx, companyId, params, reqEditors...)
@@ -75751,6 +75922,32 @@ func ParseListAdsResponse(rsp *http.Response) (*ListAdsResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAdPerformanceResponse parses an HTTP response from a GetAdPerformanceWithResponse call
+func ParseGetAdPerformanceResponse(rsp *http.Response) (*GetAdPerformanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAdPerformanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdPerformance
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
