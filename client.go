@@ -520,14 +520,16 @@ const (
 
 // Defines values for CreditLedgerEntrySource.
 const (
-	CreditLedgerEntrySourceAutoTopUp CreditLedgerEntrySource = "auto_top_up"
-	CreditLedgerEntrySourceCustom    CreditLedgerEntrySource = "custom"
-	CreditLedgerEntrySourceRefund    CreditLedgerEntrySource = "refund"
-	CreditLedgerEntrySourceTopUp     CreditLedgerEntrySource = "top_up"
+	CreditLedgerEntrySourceAutoTopUp     CreditLedgerEntrySource = "auto_top_up"
+	CreditLedgerEntrySourceCustom        CreditLedgerEntrySource = "custom"
+	CreditLedgerEntrySourceRefund        CreditLedgerEntrySource = "refund"
+	CreditLedgerEntrySourceTopUp         CreditLedgerEntrySource = "top_up"
+	CreditLedgerEntrySourceTopUpPostPaid CreditLedgerEntrySource = "top_up_post_paid"
 )
 
 // Defines values for CreditWalletType.
 const (
+	CreditWalletTypeAds CreditWalletType = "ads"
 	CreditWalletTypeSms CreditWalletType = "sms"
 )
 
