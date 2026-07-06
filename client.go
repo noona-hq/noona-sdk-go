@@ -7220,6 +7220,11 @@ type IntercomMessengerTokens struct {
 	// JWT to pass to `Intercom.setUserJwt` on the Android Messenger.
 	Android *string `json:"android,omitempty"`
 
+	// Short-lived JWT identifying the user to the Fin billing proxy. Signed with a
+	// dedicated secret Intercom never holds (unlike the Messenger JWTs above). Set it
+	// as an Intercom user attribute on Messenger boot/update; never send it elsewhere.
+	FinBillingProxy *string `json:"fin_billing_proxy,omitempty"`
+
 	// JWT to pass to `Intercom.setUserJwt` on the iOS Messenger.
 	Ios *string `json:"ios,omitempty"`
 
