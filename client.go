@@ -829,6 +829,17 @@ const (
 	IssuerTypeEmployee IssuerType = "employee"
 )
 
+// Defines values for IssuerVATAssignmentItemType.
+const (
+	IssuerVATAssignmentItemTypeEventType IssuerVATAssignmentItemType = "event_type"
+	IssuerVATAssignmentItemTypeProduct   IssuerVATAssignmentItemType = "product"
+)
+
+// Defines values for IssuerVATCategoryVatTreatment.
+const (
+	NonVatPayer IssuerVATCategoryVatTreatment = "non_vat_payer"
+)
+
 // Defines values for LanguageCode.
 const (
 	Cs LanguageCode = "cs"
@@ -1890,10 +1901,10 @@ const (
 
 // Defines values for GetEventsAggregateParamsAggregatedFields.
 const (
-	GetEventsAggregateParamsAggregatedFieldsCount          GetEventsAggregateParamsAggregatedFields = "count"
-	GetEventsAggregateParamsAggregatedFieldsHours          GetEventsAggregateParamsAggregatedFields = "hours"
-	GetEventsAggregateParamsAggregatedFieldsNewCustomers   GetEventsAggregateParamsAggregatedFields = "new_customers"
-	GetEventsAggregateParamsAggregatedFieldsNumberOfGuests GetEventsAggregateParamsAggregatedFields = "number_of_guests"
+	Count          GetEventsAggregateParamsAggregatedFields = "count"
+	Hours          GetEventsAggregateParamsAggregatedFields = "hours"
+	NewCustomers   GetEventsAggregateParamsAggregatedFields = "new_customers"
+	NumberOfGuests GetEventsAggregateParamsAggregatedFields = "number_of_guests"
 )
 
 // Defines values for GetSMSMessagesAggregateParamsGroupBy.
@@ -6236,6 +6247,9 @@ type EventType struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Vat *ExpandableVAT `json:"vat,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	VatCategory *ExpandableIssuerVATCategory `json:"vat_category,omitempty"`
 }
 
 // How event is overbookable
@@ -6733,6 +6747,11 @@ type ExpandableGoogleCalendarConnection struct {
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableIssuer struct {
+	union json.RawMessage
+}
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableIssuerVATCategory struct {
 	union json.RawMessage
 }
 
@@ -7299,6 +7318,139 @@ type Issuer struct {
 
 // IssuerType defines model for Issuer.Type.
 type IssuerType string
+
+// IssuerVATAssignment defines model for IssuerVATAssignment.
+type IssuerVATAssignment struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt time.Time         `json:"created_at"`
+	Id        string            `json:"id"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Issuer *ExpandableIssuer `json:"issuer,omitempty"`
+	ItemId string            `json:"item_id"`
+
+	// `event_type` represents services in the HQ product model.
+	ItemType  IssuerVATAssignmentItemType `json:"item_type"`
+	Order     int32                       `json:"order"`
+	UpdatedAt time.Time                   `json:"updated_at"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	VatCategory ExpandableIssuerVATCategory `json:"vat_category"`
+}
+
+// IssuerVATAssignmentCreate defines model for IssuerVATAssignmentCreate.
+type IssuerVATAssignmentCreate struct {
+	CompanyId string `json:"company_id"`
+	ItemId    string `json:"item_id"`
+
+	// `event_type` represents services in the HQ product model.
+	ItemType      IssuerVATAssignmentItemType `json:"item_type"`
+	VatCategoryId string                      `json:"vat_category_id"`
+}
+
+// `event_type` represents services in the HQ product model.
+type IssuerVATAssignmentItemType string
+
+// IssuerVATAssignmentMove defines model for IssuerVATAssignmentMove.
+type IssuerVATAssignmentMove struct {
+	CompanyId     string                        `json:"company_id"`
+	Items         []IssuerVATAssignmentMoveItem `json:"items"`
+	VatCategoryId string                        `json:"vat_category_id"`
+}
+
+// IssuerVATAssignmentMoveItem defines model for IssuerVATAssignmentMoveItem.
+type IssuerVATAssignmentMoveItem struct {
+	ItemId string `json:"item_id"`
+
+	// `event_type` represents services in the HQ product model.
+	ItemType IssuerVATAssignmentItemType `json:"item_type"`
+}
+
+// IssuerVATAssignmentUpdate defines model for IssuerVATAssignmentUpdate.
+type IssuerVATAssignmentUpdate struct {
+	Order         *int32  `json:"order,omitempty"`
+	VatCategoryId *string `json:"vat_category_id,omitempty"`
+}
+
+// IssuerVATAssignments defines model for IssuerVATAssignments.
+type IssuerVATAssignments []IssuerVATAssignment
+
+// IssuerVATCategories defines model for IssuerVATCategories.
+type IssuerVATCategories []IssuerVATCategory
+
+// IssuerVATCategory defines model for IssuerVATCategory.
+type IssuerVATCategory struct {
+	Available bool `json:"available"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt time.Time         `json:"created_at"`
+	Default   bool              `json:"default"`
+	Editable  bool              `json:"editable"`
+	Enabled   bool              `json:"enabled"`
+	Id        string            `json:"id"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Issuer                     *ExpandableIssuer `json:"issuer,omitempty"`
+	LocaleKey                  *string           `json:"locale_key,omitempty"`
+	Order                      int32             `json:"order"`
+	Ratio                      float64           `json:"ratio"`
+	RequiresTaxExemptionReason bool              `json:"requires_tax_exemption_reason"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	SourceVat          *ExpandableVAT                 `json:"source_vat,omitempty"`
+	System             bool                           `json:"system"`
+	TaxExemptionReason *string                        `json:"tax_exemption_reason,omitempty"`
+	Title              *string                        `json:"title,omitempty"`
+	UpdatedAt          time.Time                      `json:"updated_at"`
+	VatTreatment       *IssuerVATCategoryVatTreatment `json:"vat_treatment,omitempty"`
+}
+
+// IssuerVATCategoryVatTreatment defines model for IssuerVATCategory.VatTreatment.
+type IssuerVATCategoryVatTreatment string
+
+// IssuerVATCategoryCreate defines model for IssuerVATCategoryCreate.
+type IssuerVATCategoryCreate struct {
+	Available          *bool   `json:"available,omitempty"`
+	CompanyId          string  `json:"company_id"`
+	Default            *bool   `json:"default,omitempty"`
+	Enabled            *bool   `json:"enabled,omitempty"`
+	Ratio              float64 `json:"ratio"`
+	TaxExemptionReason *string `json:"tax_exemption_reason,omitempty"`
+	Title              *string `json:"title,omitempty"`
+}
+
+// IssuerVATCategoryUpdate defines model for IssuerVATCategoryUpdate.
+type IssuerVATCategoryUpdate struct {
+	Available          *bool    `json:"available,omitempty"`
+	Default            *bool    `json:"default,omitempty"`
+	Enabled            *bool    `json:"enabled,omitempty"`
+	Order              *int32   `json:"order,omitempty"`
+	Ratio              *float64 `json:"ratio,omitempty"`
+	TaxExemptionReason *string  `json:"tax_exemption_reason,omitempty"`
+	Title              *string  `json:"title,omitempty"`
+}
+
+// IssuerVATDefault defines model for IssuerVATDefault.
+type IssuerVATDefault struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany `json:"company"`
+	CreatedAt time.Time         `json:"created_at"`
+	Id        string            `json:"id"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Issuer    *ExpandableIssuer `json:"issuer,omitempty"`
+	UpdatedAt time.Time         `json:"updated_at"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	VatCategory ExpandableIssuerVATCategory `json:"vat_category"`
+}
+
+// IssuerVATDefaultUpdate defines model for IssuerVATDefaultUpdate.
+type IssuerVATDefaultUpdate struct {
+	VatCategoryId string `json:"vat_category_id"`
+}
 
 // Issuers defines model for Issuers.
 type Issuers []Issuer
@@ -8325,6 +8477,9 @@ type OrderedProduct struct {
 	Title              *string `json:"title,omitempty"`
 	UpdatedAt          *int32  `json:"updated_at,omitempty"`
 
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	VatCategory *ExpandableIssuerVATCategory `json:"vat_category,omitempty"`
+
 	// Id of VAT to use for product
 	VatId *string `json:"vat_id,omitempty"`
 }
@@ -8820,6 +8975,9 @@ type Product struct {
 	TaxExemptionReason *string `json:"tax_exemption_reason,omitempty"`
 	Title              *string `json:"title,omitempty"`
 	UpdatedAt          *int32  `json:"updated_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	VatCategory *ExpandableIssuerVATCategory `json:"vat_category,omitempty"`
 
 	// Id of VAT to use for product
 	VatId *string `json:"vat_id,omitempty"`
@@ -13446,6 +13604,27 @@ type ListIssuersParams struct {
 	Filter *IssuersFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
+// GetIssuerVATDefaultParams defines parameters for GetIssuerVATDefault.
+type GetIssuerVATDefaultParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateIssuerVATDefaultJSONBody defines parameters for UpdateIssuerVATDefault.
+type UpdateIssuerVATDefaultJSONBody IssuerVATDefaultUpdate
+
+// UpdateIssuerVATDefaultParams defines parameters for UpdateIssuerVATDefault.
+type UpdateIssuerVATDefaultParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListMemosParams defines parameters for ListMemos.
 type ListMemosParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -13996,6 +14175,27 @@ type ListTransactionsParams struct {
 
 // ListUserInvitesParams defines parameters for ListUserInvites.
 type ListUserInvitesParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// ListIssuerVATAssignmentsParams defines parameters for ListIssuerVATAssignments.
+type ListIssuerVATAssignmentsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand        *Expand                      `form:"expand,omitempty" json:"expand,omitempty"`
+	VatCategoryId *string                      `form:"vat_category_id,omitempty" json:"vat_category_id,omitempty"`
+	ItemType      *IssuerVATAssignmentItemType `form:"item_type,omitempty" json:"item_type,omitempty"`
+	ItemId        *string                      `form:"item_id,omitempty" json:"item_id,omitempty"`
+}
+
+// ListIssuerVATCategoriesParams defines parameters for ListIssuerVATCategories.
+type ListIssuerVATCategoriesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -16531,6 +16731,66 @@ type GetCountryInfoParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateIssuerVATAssignmentJSONBody defines parameters for CreateIssuerVATAssignment.
+type CreateIssuerVATAssignmentJSONBody IssuerVATAssignmentCreate
+
+// CreateIssuerVATAssignmentParams defines parameters for CreateIssuerVATAssignment.
+type CreateIssuerVATAssignmentParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// MoveIssuerVATAssignmentsJSONBody defines parameters for MoveIssuerVATAssignments.
+type MoveIssuerVATAssignmentsJSONBody IssuerVATAssignmentMove
+
+// MoveIssuerVATAssignmentsParams defines parameters for MoveIssuerVATAssignments.
+type MoveIssuerVATAssignmentsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateIssuerVATAssignmentJSONBody defines parameters for UpdateIssuerVATAssignment.
+type UpdateIssuerVATAssignmentJSONBody IssuerVATAssignmentUpdate
+
+// UpdateIssuerVATAssignmentParams defines parameters for UpdateIssuerVATAssignment.
+type UpdateIssuerVATAssignmentParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// CreateIssuerVATCategoryJSONBody defines parameters for CreateIssuerVATCategory.
+type CreateIssuerVATCategoryJSONBody IssuerVATCategoryCreate
+
+// CreateIssuerVATCategoryParams defines parameters for CreateIssuerVATCategory.
+type CreateIssuerVATCategoryParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateIssuerVATCategoryJSONBody defines parameters for UpdateIssuerVATCategory.
+type UpdateIssuerVATCategoryJSONBody IssuerVATCategoryUpdate
+
+// UpdateIssuerVATCategoryParams defines parameters for UpdateIssuerVATCategory.
+type UpdateIssuerVATCategoryParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // ListVerificationRequestsParams defines parameters for ListVerificationRequests.
 type ListVerificationRequestsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -16816,6 +17076,9 @@ type CloneCompanyJSONRequestBody CloneCompanyJSONBody
 
 // UpdateEmployeeJSONRequestBody defines body for UpdateEmployee for application/json ContentType.
 type UpdateEmployeeJSONRequestBody UpdateEmployeeJSONBody
+
+// UpdateIssuerVATDefaultJSONRequestBody defines body for UpdateIssuerVATDefault for application/json ContentType.
+type UpdateIssuerVATDefaultJSONRequestBody UpdateIssuerVATDefaultJSONBody
 
 // MoveCompanyToEnterpriseJSONRequestBody defines body for MoveCompanyToEnterprise for application/json ContentType.
 type MoveCompanyToEnterpriseJSONRequestBody MoveCompanyToEnterpriseJSONBody
@@ -17119,6 +17382,21 @@ type CreateUserInviteJSONRequestBody CreateUserInviteJSONBody
 
 // ConsumeUserInviteJSONRequestBody defines body for ConsumeUserInvite for application/json ContentType.
 type ConsumeUserInviteJSONRequestBody ConsumeUserInviteJSONBody
+
+// CreateIssuerVATAssignmentJSONRequestBody defines body for CreateIssuerVATAssignment for application/json ContentType.
+type CreateIssuerVATAssignmentJSONRequestBody CreateIssuerVATAssignmentJSONBody
+
+// MoveIssuerVATAssignmentsJSONRequestBody defines body for MoveIssuerVATAssignments for application/json ContentType.
+type MoveIssuerVATAssignmentsJSONRequestBody MoveIssuerVATAssignmentsJSONBody
+
+// UpdateIssuerVATAssignmentJSONRequestBody defines body for UpdateIssuerVATAssignment for application/json ContentType.
+type UpdateIssuerVATAssignmentJSONRequestBody UpdateIssuerVATAssignmentJSONBody
+
+// CreateIssuerVATCategoryJSONRequestBody defines body for CreateIssuerVATCategory for application/json ContentType.
+type CreateIssuerVATCategoryJSONRequestBody CreateIssuerVATCategoryJSONBody
+
+// UpdateIssuerVATCategoryJSONRequestBody defines body for UpdateIssuerVATCategory for application/json ContentType.
+type UpdateIssuerVATCategoryJSONRequestBody UpdateIssuerVATCategoryJSONBody
 
 // UpdateVerificationRequestJSONRequestBody defines body for UpdateVerificationRequest for application/json ContentType.
 type UpdateVerificationRequestJSONRequestBody UpdateVerificationRequestJSONBody
@@ -18181,6 +18459,40 @@ func (t ExpandableIssuer) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ExpandableIssuer) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableIssuerVATCategory) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableIssuerVATCategory) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableIssuerVATCategory) AsIssuerVATCategory() (IssuerVATCategory, error) {
+	var body IssuerVATCategory
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableIssuerVATCategory) FromIssuerVATCategory(v IssuerVATCategory) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableIssuerVATCategory) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableIssuerVATCategory) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -19759,6 +20071,14 @@ type ClientInterface interface {
 	// ListIssuers request
 	ListIssuers(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetIssuerVATDefault request
+	GetIssuerVATDefault(ctx context.Context, companyId string, issuerId string, params *GetIssuerVATDefaultParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateIssuerVATDefault request with any body
+	UpdateIssuerVATDefaultWithBody(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateIssuerVATDefault(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, body UpdateIssuerVATDefaultJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListMemos request
 	ListMemos(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -19922,6 +20242,12 @@ type ClientInterface interface {
 
 	// ListUserInvites request
 	ListUserInvites(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListIssuerVATAssignments request
+	ListIssuerVATAssignments(ctx context.Context, companyId string, params *ListIssuerVATAssignmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListIssuerVATCategories request
+	ListIssuerVATCategories(ctx context.Context, companyId string, params *ListIssuerVATCategoriesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListVATs request
 	ListVATs(ctx context.Context, companyId string, params *ListVATsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -20878,6 +21204,31 @@ type ClientInterface interface {
 
 	// GetCountryInfo request
 	GetCountryInfo(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateIssuerVATAssignment request with any body
+	CreateIssuerVATAssignmentWithBody(ctx context.Context, params *CreateIssuerVATAssignmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateIssuerVATAssignment(ctx context.Context, params *CreateIssuerVATAssignmentParams, body CreateIssuerVATAssignmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// MoveIssuerVATAssignments request with any body
+	MoveIssuerVATAssignmentsWithBody(ctx context.Context, params *MoveIssuerVATAssignmentsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	MoveIssuerVATAssignments(ctx context.Context, params *MoveIssuerVATAssignmentsParams, body MoveIssuerVATAssignmentsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateIssuerVATAssignment request with any body
+	UpdateIssuerVATAssignmentWithBody(ctx context.Context, assignmentId string, params *UpdateIssuerVATAssignmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateIssuerVATAssignment(ctx context.Context, assignmentId string, params *UpdateIssuerVATAssignmentParams, body UpdateIssuerVATAssignmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateIssuerVATCategory request with any body
+	CreateIssuerVATCategoryWithBody(ctx context.Context, params *CreateIssuerVATCategoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateIssuerVATCategory(ctx context.Context, params *CreateIssuerVATCategoryParams, body CreateIssuerVATCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateIssuerVATCategory request with any body
+	UpdateIssuerVATCategoryWithBody(ctx context.Context, categoryId string, params *UpdateIssuerVATCategoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateIssuerVATCategory(ctx context.Context, categoryId string, params *UpdateIssuerVATCategoryParams, body UpdateIssuerVATCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListVerificationRequests request
 	ListVerificationRequests(ctx context.Context, params *ListVerificationRequestsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -22342,6 +22693,42 @@ func (c *Client) ListIssuers(ctx context.Context, companyId string, params *List
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetIssuerVATDefault(ctx context.Context, companyId string, issuerId string, params *GetIssuerVATDefaultParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetIssuerVATDefaultRequest(c.Server, companyId, issuerId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIssuerVATDefaultWithBody(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIssuerVATDefaultRequestWithBody(c.Server, companyId, issuerId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIssuerVATDefault(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, body UpdateIssuerVATDefaultJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIssuerVATDefaultRequest(c.Server, companyId, issuerId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListMemos(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListMemosRequest(c.Server, companyId, params)
 	if err != nil {
@@ -23016,6 +23403,30 @@ func (c *Client) ListTransactions(ctx context.Context, companyId string, params 
 
 func (c *Client) ListUserInvites(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListUserInvitesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListIssuerVATAssignments(ctx context.Context, companyId string, params *ListIssuerVATAssignmentsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListIssuerVATAssignmentsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListIssuerVATCategories(ctx context.Context, companyId string, params *ListIssuerVATCategoriesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListIssuerVATCategoriesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -27216,6 +27627,126 @@ func (c *Client) DeleteUserInvite(ctx context.Context, userInviteId string, para
 
 func (c *Client) GetCountryInfo(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCountryInfoRequest(c.Server, countryCode, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateIssuerVATAssignmentWithBody(ctx context.Context, params *CreateIssuerVATAssignmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateIssuerVATAssignmentRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateIssuerVATAssignment(ctx context.Context, params *CreateIssuerVATAssignmentParams, body CreateIssuerVATAssignmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateIssuerVATAssignmentRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MoveIssuerVATAssignmentsWithBody(ctx context.Context, params *MoveIssuerVATAssignmentsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMoveIssuerVATAssignmentsRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MoveIssuerVATAssignments(ctx context.Context, params *MoveIssuerVATAssignmentsParams, body MoveIssuerVATAssignmentsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMoveIssuerVATAssignmentsRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIssuerVATAssignmentWithBody(ctx context.Context, assignmentId string, params *UpdateIssuerVATAssignmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIssuerVATAssignmentRequestWithBody(c.Server, assignmentId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIssuerVATAssignment(ctx context.Context, assignmentId string, params *UpdateIssuerVATAssignmentParams, body UpdateIssuerVATAssignmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIssuerVATAssignmentRequest(c.Server, assignmentId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateIssuerVATCategoryWithBody(ctx context.Context, params *CreateIssuerVATCategoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateIssuerVATCategoryRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateIssuerVATCategory(ctx context.Context, params *CreateIssuerVATCategoryParams, body CreateIssuerVATCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateIssuerVATCategoryRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIssuerVATCategoryWithBody(ctx context.Context, categoryId string, params *UpdateIssuerVATCategoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIssuerVATCategoryRequestWithBody(c.Server, categoryId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIssuerVATCategory(ctx context.Context, categoryId string, params *UpdateIssuerVATCategoryParams, body UpdateIssuerVATCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIssuerVATCategoryRequest(c.Server, categoryId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -34628,6 +35159,173 @@ func NewListIssuersRequest(server string, companyId string, params *ListIssuersP
 	return req, nil
 }
 
+// NewGetIssuerVATDefaultRequest generates requests for GetIssuerVATDefault
+func NewGetIssuerVATDefaultRequest(server string, companyId string, issuerId string, params *GetIssuerVATDefaultParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "issuer_id", runtime.ParamLocationPath, issuerId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/issuers/%s/vat_default", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateIssuerVATDefaultRequest calls the generic UpdateIssuerVATDefault builder with application/json body
+func NewUpdateIssuerVATDefaultRequest(server string, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, body UpdateIssuerVATDefaultJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateIssuerVATDefaultRequestWithBody(server, companyId, issuerId, params, "application/json", bodyReader)
+}
+
+// NewUpdateIssuerVATDefaultRequestWithBody generates requests for UpdateIssuerVATDefault with any type of body
+func NewUpdateIssuerVATDefaultRequestWithBody(server string, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "issuer_id", runtime.ParamLocationPath, issuerId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/issuers/%s/vat_default", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListMemosRequest generates requests for ListMemos
 func NewListMemosRequest(server string, companyId string, params *ListMemosParams) (*http.Request, error) {
 	var err error
@@ -38708,6 +39406,194 @@ func NewListUserInvitesRequest(server string, companyId string, params *ListUser
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/user_invites", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListIssuerVATAssignmentsRequest generates requests for ListIssuerVATAssignments
+func NewListIssuerVATAssignmentsRequest(server string, companyId string, params *ListIssuerVATAssignmentsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/vat_assignments", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.VatCategoryId != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "vat_category_id", runtime.ParamLocationQuery, *params.VatCategoryId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.ItemType != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "item_type", runtime.ParamLocationQuery, *params.ItemType); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.ItemId != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "item_id", runtime.ParamLocationQuery, *params.ItemId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListIssuerVATCategoriesRequest generates requests for ListIssuerVATCategories
+func NewListIssuerVATCategoriesRequest(server string, companyId string, params *ListIssuerVATCategoriesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/vat_categories", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -57319,6 +58205,400 @@ func NewGetCountryInfoRequest(server string, countryCode string, params *GetCoun
 	return req, nil
 }
 
+// NewCreateIssuerVATAssignmentRequest calls the generic CreateIssuerVATAssignment builder with application/json body
+func NewCreateIssuerVATAssignmentRequest(server string, params *CreateIssuerVATAssignmentParams, body CreateIssuerVATAssignmentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateIssuerVATAssignmentRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateIssuerVATAssignmentRequestWithBody generates requests for CreateIssuerVATAssignment with any type of body
+func NewCreateIssuerVATAssignmentRequestWithBody(server string, params *CreateIssuerVATAssignmentParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/vat_assignments")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMoveIssuerVATAssignmentsRequest calls the generic MoveIssuerVATAssignments builder with application/json body
+func NewMoveIssuerVATAssignmentsRequest(server string, params *MoveIssuerVATAssignmentsParams, body MoveIssuerVATAssignmentsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMoveIssuerVATAssignmentsRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewMoveIssuerVATAssignmentsRequestWithBody generates requests for MoveIssuerVATAssignments with any type of body
+func NewMoveIssuerVATAssignmentsRequestWithBody(server string, params *MoveIssuerVATAssignmentsParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/vat_assignments/move")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdateIssuerVATAssignmentRequest calls the generic UpdateIssuerVATAssignment builder with application/json body
+func NewUpdateIssuerVATAssignmentRequest(server string, assignmentId string, params *UpdateIssuerVATAssignmentParams, body UpdateIssuerVATAssignmentJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateIssuerVATAssignmentRequestWithBody(server, assignmentId, params, "application/json", bodyReader)
+}
+
+// NewUpdateIssuerVATAssignmentRequestWithBody generates requests for UpdateIssuerVATAssignment with any type of body
+func NewUpdateIssuerVATAssignmentRequestWithBody(server string, assignmentId string, params *UpdateIssuerVATAssignmentParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "assignment_id", runtime.ParamLocationPath, assignmentId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/vat_assignments/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateIssuerVATCategoryRequest calls the generic CreateIssuerVATCategory builder with application/json body
+func NewCreateIssuerVATCategoryRequest(server string, params *CreateIssuerVATCategoryParams, body CreateIssuerVATCategoryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateIssuerVATCategoryRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateIssuerVATCategoryRequestWithBody generates requests for CreateIssuerVATCategory with any type of body
+func NewCreateIssuerVATCategoryRequestWithBody(server string, params *CreateIssuerVATCategoryParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/vat_categories")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdateIssuerVATCategoryRequest calls the generic UpdateIssuerVATCategory builder with application/json body
+func NewUpdateIssuerVATCategoryRequest(server string, categoryId string, params *UpdateIssuerVATCategoryParams, body UpdateIssuerVATCategoryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateIssuerVATCategoryRequestWithBody(server, categoryId, params, "application/json", bodyReader)
+}
+
+// NewUpdateIssuerVATCategoryRequestWithBody generates requests for UpdateIssuerVATCategory with any type of body
+func NewUpdateIssuerVATCategoryRequestWithBody(server string, categoryId string, params *UpdateIssuerVATCategoryParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "category_id", runtime.ParamLocationPath, categoryId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/vat_categories/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListVerificationRequestsRequest generates requests for ListVerificationRequests
 func NewListVerificationRequestsRequest(server string, params *ListVerificationRequestsParams) (*http.Request, error) {
 	var err error
@@ -59342,6 +60622,14 @@ type ClientWithResponsesInterface interface {
 	// ListIssuers request
 	ListIssuersWithResponse(ctx context.Context, companyId string, params *ListIssuersParams, reqEditors ...RequestEditorFn) (*ListIssuersResponse, error)
 
+	// GetIssuerVATDefault request
+	GetIssuerVATDefaultWithResponse(ctx context.Context, companyId string, issuerId string, params *GetIssuerVATDefaultParams, reqEditors ...RequestEditorFn) (*GetIssuerVATDefaultResponse, error)
+
+	// UpdateIssuerVATDefault request with any body
+	UpdateIssuerVATDefaultWithBodyWithResponse(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIssuerVATDefaultResponse, error)
+
+	UpdateIssuerVATDefaultWithResponse(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, body UpdateIssuerVATDefaultJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIssuerVATDefaultResponse, error)
+
 	// ListMemos request
 	ListMemosWithResponse(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*ListMemosResponse, error)
 
@@ -59505,6 +60793,12 @@ type ClientWithResponsesInterface interface {
 
 	// ListUserInvites request
 	ListUserInvitesWithResponse(ctx context.Context, companyId string, params *ListUserInvitesParams, reqEditors ...RequestEditorFn) (*ListUserInvitesResponse, error)
+
+	// ListIssuerVATAssignments request
+	ListIssuerVATAssignmentsWithResponse(ctx context.Context, companyId string, params *ListIssuerVATAssignmentsParams, reqEditors ...RequestEditorFn) (*ListIssuerVATAssignmentsResponse, error)
+
+	// ListIssuerVATCategories request
+	ListIssuerVATCategoriesWithResponse(ctx context.Context, companyId string, params *ListIssuerVATCategoriesParams, reqEditors ...RequestEditorFn) (*ListIssuerVATCategoriesResponse, error)
 
 	// ListVATs request
 	ListVATsWithResponse(ctx context.Context, companyId string, params *ListVATsParams, reqEditors ...RequestEditorFn) (*ListVATsResponse, error)
@@ -60461,6 +61755,31 @@ type ClientWithResponsesInterface interface {
 
 	// GetCountryInfo request
 	GetCountryInfoWithResponse(ctx context.Context, countryCode string, params *GetCountryInfoParams, reqEditors ...RequestEditorFn) (*GetCountryInfoResponse, error)
+
+	// CreateIssuerVATAssignment request with any body
+	CreateIssuerVATAssignmentWithBodyWithResponse(ctx context.Context, params *CreateIssuerVATAssignmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIssuerVATAssignmentResponse, error)
+
+	CreateIssuerVATAssignmentWithResponse(ctx context.Context, params *CreateIssuerVATAssignmentParams, body CreateIssuerVATAssignmentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateIssuerVATAssignmentResponse, error)
+
+	// MoveIssuerVATAssignments request with any body
+	MoveIssuerVATAssignmentsWithBodyWithResponse(ctx context.Context, params *MoveIssuerVATAssignmentsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MoveIssuerVATAssignmentsResponse, error)
+
+	MoveIssuerVATAssignmentsWithResponse(ctx context.Context, params *MoveIssuerVATAssignmentsParams, body MoveIssuerVATAssignmentsJSONRequestBody, reqEditors ...RequestEditorFn) (*MoveIssuerVATAssignmentsResponse, error)
+
+	// UpdateIssuerVATAssignment request with any body
+	UpdateIssuerVATAssignmentWithBodyWithResponse(ctx context.Context, assignmentId string, params *UpdateIssuerVATAssignmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIssuerVATAssignmentResponse, error)
+
+	UpdateIssuerVATAssignmentWithResponse(ctx context.Context, assignmentId string, params *UpdateIssuerVATAssignmentParams, body UpdateIssuerVATAssignmentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIssuerVATAssignmentResponse, error)
+
+	// CreateIssuerVATCategory request with any body
+	CreateIssuerVATCategoryWithBodyWithResponse(ctx context.Context, params *CreateIssuerVATCategoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIssuerVATCategoryResponse, error)
+
+	CreateIssuerVATCategoryWithResponse(ctx context.Context, params *CreateIssuerVATCategoryParams, body CreateIssuerVATCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateIssuerVATCategoryResponse, error)
+
+	// UpdateIssuerVATCategory request with any body
+	UpdateIssuerVATCategoryWithBodyWithResponse(ctx context.Context, categoryId string, params *UpdateIssuerVATCategoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIssuerVATCategoryResponse, error)
+
+	UpdateIssuerVATCategoryWithResponse(ctx context.Context, categoryId string, params *UpdateIssuerVATCategoryParams, body UpdateIssuerVATCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIssuerVATCategoryResponse, error)
 
 	// ListVerificationRequests request
 	ListVerificationRequestsWithResponse(ctx context.Context, params *ListVerificationRequestsParams, reqEditors ...RequestEditorFn) (*ListVerificationRequestsResponse, error)
@@ -62532,6 +63851,50 @@ func (r ListIssuersResponse) StatusCode() int {
 	return 0
 }
 
+type GetIssuerVATDefaultResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IssuerVATDefault
+}
+
+// Status returns HTTPResponse.Status
+func (r GetIssuerVATDefaultResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetIssuerVATDefaultResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateIssuerVATDefaultResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IssuerVATDefault
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateIssuerVATDefaultResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateIssuerVATDefaultResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListMemosResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -63623,6 +64986,50 @@ func (r ListUserInvitesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListUserInvitesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListIssuerVATAssignmentsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IssuerVATAssignments
+}
+
+// Status returns HTTPResponse.Status
+func (r ListIssuerVATAssignmentsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListIssuerVATAssignmentsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListIssuerVATCategoriesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IssuerVATCategories
+}
+
+// Status returns HTTPResponse.Status
+func (r ListIssuerVATCategoriesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListIssuerVATCategoriesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -69215,6 +70622,116 @@ func (r GetCountryInfoResponse) StatusCode() int {
 	return 0
 }
 
+type CreateIssuerVATAssignmentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IssuerVATAssignment
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateIssuerVATAssignmentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateIssuerVATAssignmentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MoveIssuerVATAssignmentsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IssuerVATAssignments
+}
+
+// Status returns HTTPResponse.Status
+func (r MoveIssuerVATAssignmentsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MoveIssuerVATAssignmentsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateIssuerVATAssignmentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IssuerVATAssignment
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateIssuerVATAssignmentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateIssuerVATAssignmentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateIssuerVATCategoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IssuerVATCategory
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateIssuerVATCategoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateIssuerVATCategoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateIssuerVATCategoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IssuerVATCategory
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateIssuerVATCategoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateIssuerVATCategoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListVerificationRequestsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -70740,6 +72257,32 @@ func (c *ClientWithResponses) ListIssuersWithResponse(ctx context.Context, compa
 	return ParseListIssuersResponse(rsp)
 }
 
+// GetIssuerVATDefaultWithResponse request returning *GetIssuerVATDefaultResponse
+func (c *ClientWithResponses) GetIssuerVATDefaultWithResponse(ctx context.Context, companyId string, issuerId string, params *GetIssuerVATDefaultParams, reqEditors ...RequestEditorFn) (*GetIssuerVATDefaultResponse, error) {
+	rsp, err := c.GetIssuerVATDefault(ctx, companyId, issuerId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetIssuerVATDefaultResponse(rsp)
+}
+
+// UpdateIssuerVATDefaultWithBodyWithResponse request with arbitrary body returning *UpdateIssuerVATDefaultResponse
+func (c *ClientWithResponses) UpdateIssuerVATDefaultWithBodyWithResponse(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIssuerVATDefaultResponse, error) {
+	rsp, err := c.UpdateIssuerVATDefaultWithBody(ctx, companyId, issuerId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIssuerVATDefaultResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateIssuerVATDefaultWithResponse(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, body UpdateIssuerVATDefaultJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIssuerVATDefaultResponse, error) {
+	rsp, err := c.UpdateIssuerVATDefault(ctx, companyId, issuerId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIssuerVATDefaultResponse(rsp)
+}
+
 // ListMemosWithResponse request returning *ListMemosResponse
 func (c *ClientWithResponses) ListMemosWithResponse(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*ListMemosResponse, error) {
 	rsp, err := c.ListMemos(ctx, companyId, params, reqEditors...)
@@ -71244,6 +72787,24 @@ func (c *ClientWithResponses) ListUserInvitesWithResponse(ctx context.Context, c
 		return nil, err
 	}
 	return ParseListUserInvitesResponse(rsp)
+}
+
+// ListIssuerVATAssignmentsWithResponse request returning *ListIssuerVATAssignmentsResponse
+func (c *ClientWithResponses) ListIssuerVATAssignmentsWithResponse(ctx context.Context, companyId string, params *ListIssuerVATAssignmentsParams, reqEditors ...RequestEditorFn) (*ListIssuerVATAssignmentsResponse, error) {
+	rsp, err := c.ListIssuerVATAssignments(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListIssuerVATAssignmentsResponse(rsp)
+}
+
+// ListIssuerVATCategoriesWithResponse request returning *ListIssuerVATCategoriesResponse
+func (c *ClientWithResponses) ListIssuerVATCategoriesWithResponse(ctx context.Context, companyId string, params *ListIssuerVATCategoriesParams, reqEditors ...RequestEditorFn) (*ListIssuerVATCategoriesResponse, error) {
+	rsp, err := c.ListIssuerVATCategories(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListIssuerVATCategoriesResponse(rsp)
 }
 
 // ListVATsWithResponse request returning *ListVATsResponse
@@ -74302,6 +75863,91 @@ func (c *ClientWithResponses) GetCountryInfoWithResponse(ctx context.Context, co
 	return ParseGetCountryInfoResponse(rsp)
 }
 
+// CreateIssuerVATAssignmentWithBodyWithResponse request with arbitrary body returning *CreateIssuerVATAssignmentResponse
+func (c *ClientWithResponses) CreateIssuerVATAssignmentWithBodyWithResponse(ctx context.Context, params *CreateIssuerVATAssignmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIssuerVATAssignmentResponse, error) {
+	rsp, err := c.CreateIssuerVATAssignmentWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateIssuerVATAssignmentResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateIssuerVATAssignmentWithResponse(ctx context.Context, params *CreateIssuerVATAssignmentParams, body CreateIssuerVATAssignmentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateIssuerVATAssignmentResponse, error) {
+	rsp, err := c.CreateIssuerVATAssignment(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateIssuerVATAssignmentResponse(rsp)
+}
+
+// MoveIssuerVATAssignmentsWithBodyWithResponse request with arbitrary body returning *MoveIssuerVATAssignmentsResponse
+func (c *ClientWithResponses) MoveIssuerVATAssignmentsWithBodyWithResponse(ctx context.Context, params *MoveIssuerVATAssignmentsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MoveIssuerVATAssignmentsResponse, error) {
+	rsp, err := c.MoveIssuerVATAssignmentsWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMoveIssuerVATAssignmentsResponse(rsp)
+}
+
+func (c *ClientWithResponses) MoveIssuerVATAssignmentsWithResponse(ctx context.Context, params *MoveIssuerVATAssignmentsParams, body MoveIssuerVATAssignmentsJSONRequestBody, reqEditors ...RequestEditorFn) (*MoveIssuerVATAssignmentsResponse, error) {
+	rsp, err := c.MoveIssuerVATAssignments(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMoveIssuerVATAssignmentsResponse(rsp)
+}
+
+// UpdateIssuerVATAssignmentWithBodyWithResponse request with arbitrary body returning *UpdateIssuerVATAssignmentResponse
+func (c *ClientWithResponses) UpdateIssuerVATAssignmentWithBodyWithResponse(ctx context.Context, assignmentId string, params *UpdateIssuerVATAssignmentParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIssuerVATAssignmentResponse, error) {
+	rsp, err := c.UpdateIssuerVATAssignmentWithBody(ctx, assignmentId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIssuerVATAssignmentResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateIssuerVATAssignmentWithResponse(ctx context.Context, assignmentId string, params *UpdateIssuerVATAssignmentParams, body UpdateIssuerVATAssignmentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIssuerVATAssignmentResponse, error) {
+	rsp, err := c.UpdateIssuerVATAssignment(ctx, assignmentId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIssuerVATAssignmentResponse(rsp)
+}
+
+// CreateIssuerVATCategoryWithBodyWithResponse request with arbitrary body returning *CreateIssuerVATCategoryResponse
+func (c *ClientWithResponses) CreateIssuerVATCategoryWithBodyWithResponse(ctx context.Context, params *CreateIssuerVATCategoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIssuerVATCategoryResponse, error) {
+	rsp, err := c.CreateIssuerVATCategoryWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateIssuerVATCategoryResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateIssuerVATCategoryWithResponse(ctx context.Context, params *CreateIssuerVATCategoryParams, body CreateIssuerVATCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateIssuerVATCategoryResponse, error) {
+	rsp, err := c.CreateIssuerVATCategory(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateIssuerVATCategoryResponse(rsp)
+}
+
+// UpdateIssuerVATCategoryWithBodyWithResponse request with arbitrary body returning *UpdateIssuerVATCategoryResponse
+func (c *ClientWithResponses) UpdateIssuerVATCategoryWithBodyWithResponse(ctx context.Context, categoryId string, params *UpdateIssuerVATCategoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIssuerVATCategoryResponse, error) {
+	rsp, err := c.UpdateIssuerVATCategoryWithBody(ctx, categoryId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIssuerVATCategoryResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateIssuerVATCategoryWithResponse(ctx context.Context, categoryId string, params *UpdateIssuerVATCategoryParams, body UpdateIssuerVATCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIssuerVATCategoryResponse, error) {
+	rsp, err := c.UpdateIssuerVATCategory(ctx, categoryId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIssuerVATCategoryResponse(rsp)
+}
+
 // ListVerificationRequestsWithResponse request returning *ListVerificationRequestsResponse
 func (c *ClientWithResponses) ListVerificationRequestsWithResponse(ctx context.Context, params *ListVerificationRequestsParams, reqEditors ...RequestEditorFn) (*ListVerificationRequestsResponse, error) {
 	rsp, err := c.ListVerificationRequests(ctx, params, reqEditors...)
@@ -76869,6 +78515,58 @@ func ParseListIssuersResponse(rsp *http.Response) (*ListIssuersResponse, error) 
 	return response, nil
 }
 
+// ParseGetIssuerVATDefaultResponse parses an HTTP response from a GetIssuerVATDefaultWithResponse call
+func ParseGetIssuerVATDefaultResponse(rsp *http.Response) (*GetIssuerVATDefaultResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetIssuerVATDefaultResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATDefault
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateIssuerVATDefaultResponse parses an HTTP response from a UpdateIssuerVATDefaultWithResponse call
+func ParseUpdateIssuerVATDefaultResponse(rsp *http.Response) (*UpdateIssuerVATDefaultResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateIssuerVATDefaultResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATDefault
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListMemosResponse parses an HTTP response from a ListMemosWithResponse call
 func ParseListMemosResponse(rsp *http.Response) (*ListMemosResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -78108,6 +79806,58 @@ func ParseListUserInvitesResponse(rsp *http.Response) (*ListUserInvitesResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest UserInvites
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListIssuerVATAssignmentsResponse parses an HTTP response from a ListIssuerVATAssignmentsWithResponse call
+func ParseListIssuerVATAssignmentsResponse(rsp *http.Response) (*ListIssuerVATAssignmentsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListIssuerVATAssignmentsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATAssignments
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListIssuerVATCategoriesResponse parses an HTTP response from a ListIssuerVATCategoriesWithResponse call
+func ParseListIssuerVATCategoriesResponse(rsp *http.Response) (*ListIssuerVATCategoriesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListIssuerVATCategoriesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATCategories
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -84262,6 +86012,136 @@ func ParseGetCountryInfoResponse(rsp *http.Response) (*GetCountryInfoResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CountryInfo
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateIssuerVATAssignmentResponse parses an HTTP response from a CreateIssuerVATAssignmentWithResponse call
+func ParseCreateIssuerVATAssignmentResponse(rsp *http.Response) (*CreateIssuerVATAssignmentResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateIssuerVATAssignmentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATAssignment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseMoveIssuerVATAssignmentsResponse parses an HTTP response from a MoveIssuerVATAssignmentsWithResponse call
+func ParseMoveIssuerVATAssignmentsResponse(rsp *http.Response) (*MoveIssuerVATAssignmentsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MoveIssuerVATAssignmentsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATAssignments
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateIssuerVATAssignmentResponse parses an HTTP response from a UpdateIssuerVATAssignmentWithResponse call
+func ParseUpdateIssuerVATAssignmentResponse(rsp *http.Response) (*UpdateIssuerVATAssignmentResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateIssuerVATAssignmentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATAssignment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateIssuerVATCategoryResponse parses an HTTP response from a CreateIssuerVATCategoryWithResponse call
+func ParseCreateIssuerVATCategoryResponse(rsp *http.Response) (*CreateIssuerVATCategoryResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateIssuerVATCategoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATCategory
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateIssuerVATCategoryResponse parses an HTTP response from a UpdateIssuerVATCategoryWithResponse call
+func ParseUpdateIssuerVATCategoryResponse(rsp *http.Response) (*UpdateIssuerVATCategoryResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateIssuerVATCategoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATCategory
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
