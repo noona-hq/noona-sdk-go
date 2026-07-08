@@ -20094,6 +20094,9 @@ type ClientInterface interface {
 	// MigrateStaffWorkHours request
 	MigrateStaffWorkHours(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MigrateCompanyVATSettings request
+	MigrateCompanyVATSettings(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// MoveCompanyToEnterprise request with any body
 	MoveCompanyToEnterpriseWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -22779,6 +22782,18 @@ func (c *Client) MigrateCompanyReminders(ctx context.Context, companyId string, 
 
 func (c *Client) MigrateStaffWorkHours(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMigrateStaffWorkHoursRequest(c.Server, companyId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MigrateCompanyVATSettings(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMigrateCompanyVATSettingsRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -35627,6 +35642,40 @@ func NewMigrateStaffWorkHoursRequest(server string, companyId string) (*http.Req
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/migrate-staff-work-hours", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewMigrateCompanyVATSettingsRequest generates requests for MigrateCompanyVATSettings
+func NewMigrateCompanyVATSettingsRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/migrate-vat-settings", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -60645,6 +60694,9 @@ type ClientWithResponsesInterface interface {
 	// MigrateStaffWorkHours request
 	MigrateStaffWorkHoursWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateStaffWorkHoursResponse, error)
 
+	// MigrateCompanyVATSettings request
+	MigrateCompanyVATSettingsWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyVATSettingsResponse, error)
+
 	// MoveCompanyToEnterprise request with any body
 	MoveCompanyToEnterpriseWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MoveCompanyToEnterpriseResponse, error)
 
@@ -63997,6 +64049,27 @@ func (r MigrateStaffWorkHoursResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r MigrateStaffWorkHoursResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MigrateCompanyVATSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r MigrateCompanyVATSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MigrateCompanyVATSettingsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -72328,6 +72401,15 @@ func (c *ClientWithResponses) MigrateStaffWorkHoursWithResponse(ctx context.Cont
 	return ParseMigrateStaffWorkHoursResponse(rsp)
 }
 
+// MigrateCompanyVATSettingsWithResponse request returning *MigrateCompanyVATSettingsResponse
+func (c *ClientWithResponses) MigrateCompanyVATSettingsWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigrateCompanyVATSettingsResponse, error) {
+	rsp, err := c.MigrateCompanyVATSettings(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMigrateCompanyVATSettingsResponse(rsp)
+}
+
 // MoveCompanyToEnterpriseWithBodyWithResponse request with arbitrary body returning *MoveCompanyToEnterpriseResponse
 func (c *ClientWithResponses) MoveCompanyToEnterpriseWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MoveCompanyToEnterpriseResponse, error) {
 	rsp, err := c.MoveCompanyToEnterpriseWithBody(ctx, companyId, contentType, body, reqEditors...)
@@ -78670,6 +78752,22 @@ func ParseMigrateStaffWorkHoursResponse(rsp *http.Response) (*MigrateStaffWorkHo
 	}
 
 	response := &MigrateStaffWorkHoursResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseMigrateCompanyVATSettingsResponse parses an HTTP response from a MigrateCompanyVATSettingsWithResponse call
+func ParseMigrateCompanyVATSettingsResponse(rsp *http.Response) (*MigrateCompanyVATSettingsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MigrateCompanyVATSettingsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
