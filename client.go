@@ -14957,6 +14957,9 @@ type GetCompanyFiscalizationDataParams struct {
 // UpsertCompanyFiscalizationDataJSONBody defines parameters for UpsertCompanyFiscalizationData.
 type UpsertCompanyFiscalizationDataJSONBody FiscalizationOnboarding
 
+// RestartCompanyFiscalizationOnboardingJSONBody defines parameters for RestartCompanyFiscalizationOnboarding.
+type RestartCompanyFiscalizationOnboardingJSONBody FiscalizationOnboarding
+
 // GetFiscalizationReportParams defines parameters for GetFiscalizationReport.
 type GetFiscalizationReportParams struct {
 	From time.Time `form:"from" json:"from"`
@@ -14993,6 +14996,9 @@ type RefundFiscalizedTransactionParams struct {
 
 // UpsertUserFiscalizationDataJSONBody defines parameters for UpsertUserFiscalizationData.
 type UpsertUserFiscalizationDataJSONBody FiscalizationOnboarding
+
+// RestartUserFiscalizationOnboardingJSONBody defines parameters for RestartUserFiscalizationOnboarding.
+type RestartUserFiscalizationOnboardingJSONBody FiscalizationOnboarding
 
 // UpdateUserFiscalizationStatusJSONBody defines parameters for UpdateUserFiscalizationStatus.
 type UpdateUserFiscalizationStatusJSONBody FiscalizationStatusUpdateRequest
@@ -17196,6 +17202,9 @@ type UpdateEventJSONRequestBody UpdateEventJSONBody
 // UpsertCompanyFiscalizationDataJSONRequestBody defines body for UpsertCompanyFiscalizationData for application/json ContentType.
 type UpsertCompanyFiscalizationDataJSONRequestBody UpsertCompanyFiscalizationDataJSONBody
 
+// RestartCompanyFiscalizationOnboardingJSONRequestBody defines body for RestartCompanyFiscalizationOnboarding for application/json ContentType.
+type RestartCompanyFiscalizationOnboardingJSONRequestBody RestartCompanyFiscalizationOnboardingJSONBody
+
 // UpdateCompanyFiscalizationStatusJSONRequestBody defines body for UpdateCompanyFiscalizationStatus for application/json ContentType.
 type UpdateCompanyFiscalizationStatusJSONRequestBody UpdateCompanyFiscalizationStatusJSONBody
 
@@ -17204,6 +17213,9 @@ type FiscalizeTransactionJSONRequestBody FiscalizeTransactionJSONBody
 
 // UpsertUserFiscalizationDataJSONRequestBody defines body for UpsertUserFiscalizationData for application/json ContentType.
 type UpsertUserFiscalizationDataJSONRequestBody UpsertUserFiscalizationDataJSONBody
+
+// RestartUserFiscalizationOnboardingJSONRequestBody defines body for RestartUserFiscalizationOnboarding for application/json ContentType.
+type RestartUserFiscalizationOnboardingJSONRequestBody RestartUserFiscalizationOnboardingJSONBody
 
 // UpdateUserFiscalizationStatusJSONRequestBody defines body for UpdateUserFiscalizationStatus for application/json ContentType.
 type UpdateUserFiscalizationStatusJSONRequestBody UpdateUserFiscalizationStatusJSONBody
@@ -20524,6 +20536,11 @@ type ClientInterface interface {
 
 	UpsertCompanyFiscalizationData(ctx context.Context, companyId string, body UpsertCompanyFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// RestartCompanyFiscalizationOnboarding request with any body
+	RestartCompanyFiscalizationOnboardingWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RestartCompanyFiscalizationOnboarding(ctx context.Context, companyId string, body RestartCompanyFiscalizationOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// MigratePortugalCompanyToATProvider request
 	MigratePortugalCompanyToATProvider(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -20559,6 +20576,11 @@ type ClientInterface interface {
 	UpsertUserFiscalizationDataWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpsertUserFiscalizationData(ctx context.Context, userId string, body UpsertUserFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RestartUserFiscalizationOnboarding request with any body
+	RestartUserFiscalizationOnboardingWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RestartUserFiscalizationOnboarding(ctx context.Context, userId string, body RestartUserFiscalizationOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateUserFiscalizationStatus request with any body
 	UpdateUserFiscalizationStatusWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -24528,6 +24550,30 @@ func (c *Client) UpsertCompanyFiscalizationData(ctx context.Context, companyId s
 	return c.Client.Do(req)
 }
 
+func (c *Client) RestartCompanyFiscalizationOnboardingWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRestartCompanyFiscalizationOnboardingRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RestartCompanyFiscalizationOnboarding(ctx context.Context, companyId string, body RestartCompanyFiscalizationOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRestartCompanyFiscalizationOnboardingRequest(c.Server, companyId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) MigratePortugalCompanyToATProvider(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMigratePortugalCompanyToATProviderRequest(c.Server, companyId)
 	if err != nil {
@@ -24674,6 +24720,30 @@ func (c *Client) UpsertUserFiscalizationDataWithBody(ctx context.Context, userId
 
 func (c *Client) UpsertUserFiscalizationData(ctx context.Context, userId string, body UpsertUserFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpsertUserFiscalizationDataRequest(c.Server, userId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RestartUserFiscalizationOnboardingWithBody(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRestartUserFiscalizationOnboardingRequestWithBody(c.Server, userId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RestartUserFiscalizationOnboarding(ctx context.Context, userId string, body RestartUserFiscalizationOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRestartUserFiscalizationOnboardingRequest(c.Server, userId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -44923,6 +44993,53 @@ func NewUpsertCompanyFiscalizationDataRequestWithBody(server string, companyId s
 	return req, nil
 }
 
+// NewRestartCompanyFiscalizationOnboardingRequest calls the generic RestartCompanyFiscalizationOnboarding builder with application/json body
+func NewRestartCompanyFiscalizationOnboardingRequest(server string, companyId string, body RestartCompanyFiscalizationOnboardingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRestartCompanyFiscalizationOnboardingRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewRestartCompanyFiscalizationOnboardingRequestWithBody generates requests for RestartCompanyFiscalizationOnboarding with any type of body
+func NewRestartCompanyFiscalizationOnboardingRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/companies/%s/onboarding/restart", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewMigratePortugalCompanyToATProviderRequest generates requests for MigratePortugalCompanyToATProvider
 func NewMigratePortugalCompanyToATProviderRequest(server string, companyId string) (*http.Request, error) {
 	var err error
@@ -45351,6 +45468,53 @@ func NewUpsertUserFiscalizationDataRequestWithBody(server string, userId string,
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/users/%s/onboarding", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRestartUserFiscalizationOnboardingRequest calls the generic RestartUserFiscalizationOnboarding builder with application/json body
+func NewRestartUserFiscalizationOnboardingRequest(server string, userId string, body RestartUserFiscalizationOnboardingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRestartUserFiscalizationOnboardingRequestWithBody(server, userId, "application/json", bodyReader)
+}
+
+// NewRestartUserFiscalizationOnboardingRequestWithBody generates requests for RestartUserFiscalizationOnboarding with any type of body
+func NewRestartUserFiscalizationOnboardingRequestWithBody(server string, userId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_id", runtime.ParamLocationPath, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/fiscalizations/users/%s/onboarding/restart", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -61124,6 +61288,11 @@ type ClientWithResponsesInterface interface {
 
 	UpsertCompanyFiscalizationDataWithResponse(ctx context.Context, companyId string, body UpsertCompanyFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertCompanyFiscalizationDataResponse, error)
 
+	// RestartCompanyFiscalizationOnboarding request with any body
+	RestartCompanyFiscalizationOnboardingWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RestartCompanyFiscalizationOnboardingResponse, error)
+
+	RestartCompanyFiscalizationOnboardingWithResponse(ctx context.Context, companyId string, body RestartCompanyFiscalizationOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*RestartCompanyFiscalizationOnboardingResponse, error)
+
 	// MigratePortugalCompanyToATProvider request
 	MigratePortugalCompanyToATProviderWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigratePortugalCompanyToATProviderResponse, error)
 
@@ -61159,6 +61328,11 @@ type ClientWithResponsesInterface interface {
 	UpsertUserFiscalizationDataWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertUserFiscalizationDataResponse, error)
 
 	UpsertUserFiscalizationDataWithResponse(ctx context.Context, userId string, body UpsertUserFiscalizationDataJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertUserFiscalizationDataResponse, error)
+
+	// RestartUserFiscalizationOnboarding request with any body
+	RestartUserFiscalizationOnboardingWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RestartUserFiscalizationOnboardingResponse, error)
+
+	RestartUserFiscalizationOnboardingWithResponse(ctx context.Context, userId string, body RestartUserFiscalizationOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*RestartUserFiscalizationOnboardingResponse, error)
 
 	// UpdateUserFiscalizationStatus request with any body
 	UpdateUserFiscalizationStatusWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserFiscalizationStatusResponse, error)
@@ -66586,6 +66760,28 @@ func (r UpsertCompanyFiscalizationDataResponse) StatusCode() int {
 	return 0
 }
 
+type RestartCompanyFiscalizationOnboardingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FiscalizationOnboarding
+}
+
+// Status returns HTTPResponse.Status
+func (r RestartCompanyFiscalizationOnboardingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RestartCompanyFiscalizationOnboardingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type MigratePortugalCompanyToATProviderResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -66798,6 +66994,28 @@ func (r UpsertUserFiscalizationDataResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpsertUserFiscalizationDataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RestartUserFiscalizationOnboardingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *FiscalizationOnboarding
+}
+
+// Status returns HTTPResponse.Status
+func (r RestartUserFiscalizationOnboardingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RestartUserFiscalizationOnboardingResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -73684,6 +73902,23 @@ func (c *ClientWithResponses) UpsertCompanyFiscalizationDataWithResponse(ctx con
 	return ParseUpsertCompanyFiscalizationDataResponse(rsp)
 }
 
+// RestartCompanyFiscalizationOnboardingWithBodyWithResponse request with arbitrary body returning *RestartCompanyFiscalizationOnboardingResponse
+func (c *ClientWithResponses) RestartCompanyFiscalizationOnboardingWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RestartCompanyFiscalizationOnboardingResponse, error) {
+	rsp, err := c.RestartCompanyFiscalizationOnboardingWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRestartCompanyFiscalizationOnboardingResponse(rsp)
+}
+
+func (c *ClientWithResponses) RestartCompanyFiscalizationOnboardingWithResponse(ctx context.Context, companyId string, body RestartCompanyFiscalizationOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*RestartCompanyFiscalizationOnboardingResponse, error) {
+	rsp, err := c.RestartCompanyFiscalizationOnboarding(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRestartCompanyFiscalizationOnboardingResponse(rsp)
+}
+
 // MigratePortugalCompanyToATProviderWithResponse request returning *MigratePortugalCompanyToATProviderResponse
 func (c *ClientWithResponses) MigratePortugalCompanyToATProviderWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*MigratePortugalCompanyToATProviderResponse, error) {
 	rsp, err := c.MigratePortugalCompanyToATProvider(ctx, companyId, reqEditors...)
@@ -73796,6 +74031,23 @@ func (c *ClientWithResponses) UpsertUserFiscalizationDataWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseUpsertUserFiscalizationDataResponse(rsp)
+}
+
+// RestartUserFiscalizationOnboardingWithBodyWithResponse request with arbitrary body returning *RestartUserFiscalizationOnboardingResponse
+func (c *ClientWithResponses) RestartUserFiscalizationOnboardingWithBodyWithResponse(ctx context.Context, userId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RestartUserFiscalizationOnboardingResponse, error) {
+	rsp, err := c.RestartUserFiscalizationOnboardingWithBody(ctx, userId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRestartUserFiscalizationOnboardingResponse(rsp)
+}
+
+func (c *ClientWithResponses) RestartUserFiscalizationOnboardingWithResponse(ctx context.Context, userId string, body RestartUserFiscalizationOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*RestartUserFiscalizationOnboardingResponse, error) {
+	rsp, err := c.RestartUserFiscalizationOnboarding(ctx, userId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRestartUserFiscalizationOnboardingResponse(rsp)
 }
 
 // UpdateUserFiscalizationStatusWithBodyWithResponse request with arbitrary body returning *UpdateUserFiscalizationStatusResponse
@@ -81639,6 +81891,32 @@ func ParseUpsertCompanyFiscalizationDataResponse(rsp *http.Response) (*UpsertCom
 	return response, nil
 }
 
+// ParseRestartCompanyFiscalizationOnboardingResponse parses an HTTP response from a RestartCompanyFiscalizationOnboardingWithResponse call
+func ParseRestartCompanyFiscalizationOnboardingResponse(rsp *http.Response) (*RestartCompanyFiscalizationOnboardingResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RestartCompanyFiscalizationOnboardingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FiscalizationOnboarding
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseMigratePortugalCompanyToATProviderResponse parses an HTTP response from a MigratePortugalCompanyToATProviderWithResponse call
 func ParseMigratePortugalCompanyToATProviderResponse(rsp *http.Response) (*MigratePortugalCompanyToATProviderResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -81859,6 +82137,32 @@ func ParseUpsertUserFiscalizationDataResponse(rsp *http.Response) (*UpsertUserFi
 	}
 
 	response := &UpsertUserFiscalizationDataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest FiscalizationOnboarding
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRestartUserFiscalizationOnboardingResponse parses an HTTP response from a RestartUserFiscalizationOnboardingWithResponse call
+func ParseRestartUserFiscalizationOnboardingResponse(rsp *http.Response) (*RestartUserFiscalizationOnboardingResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RestartUserFiscalizationOnboardingResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
