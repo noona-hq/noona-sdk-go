@@ -10216,6 +10216,13 @@ type SalesMetrics struct {
 	Transactions *AmountMetricsByDay `json:"transactions,omitempty"`
 }
 
+// Identity token for the authenticated user. Pass it to the Salesforce chat widget
+// to verify the user's identity. Omitted when not configured.
+type SalesforceChatIdentity struct {
+	// Token to pass to the Salesforce chat widget for identity verification.
+	Token *string `json:"token,omitempty"`
+}
+
 // SaltpayBankAccount defines model for SaltpayBankAccount.
 type SaltpayBankAccount struct {
 	AccountNumber *string `json:"account_number,omitempty"`
@@ -11546,7 +11553,11 @@ type User struct {
 	IsSecretary *bool                    `json:"is_secretary,omitempty"`
 	Locale      *string                  `json:"locale,omitempty"`
 	Pos         *UserPOSSettings         `json:"pos,omitempty"`
-	Settings    *UserSettings            `json:"settings,omitempty"`
+
+	// Identity token for the authenticated user. Pass it to the Salesforce chat widget
+	// to verify the user's identity. Omitted when not configured.
+	SalesforceChat *SalesforceChatIdentity `json:"salesforce_chat,omitempty"`
+	Settings       *UserSettings           `json:"settings,omitempty"`
 
 	// The profile of the user
 	UserProfile  *UserProfile  `json:"user_profile,omitempty"`
