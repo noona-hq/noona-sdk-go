@@ -11412,6 +11412,9 @@ type Transaction struct {
 	Employees     *[]ExpandableEmployee `json:"employees,omitempty"`
 	Fiscalization *string               `json:"fiscalization,omitempty"`
 
+	// Fiscalization provider type
+	FiscalizationProvider *FiscalizationProvider `json:"fiscalization_provider,omitempty"`
+
 	// Warning message if fiscalization failed but transaction was completed
 	FiscalizationWarning *string `json:"fiscalization_warning,omitempty"`
 	Id                   *string `json:"id,omitempty"`
