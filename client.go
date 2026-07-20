@@ -10704,11 +10704,6 @@ type Secretary struct {
 	Name string `json:"name"`
 }
 
-// SendCustomerDataRequest defines model for SendCustomerDataRequest.
-type SendCustomerDataRequest struct {
-	Email string `json:"email"`
-}
-
 // SendTransactionReceiptRequest defines model for SendTransactionReceiptRequest.
 type SendTransactionReceiptRequest struct {
 	Email string `json:"email"`
@@ -14646,9 +14641,6 @@ type GetCustomerFileParams struct {
 // MergeCustomersJSONBody defines parameters for MergeCustomers.
 type MergeCustomersJSONBody MergeCustomersRequest
 
-// SendCustomerDataJSONBody defines parameters for SendCustomerData.
-type SendCustomerDataJSONBody SendCustomerDataRequest
-
 // SendCustomerDataParams defines parameters for SendCustomerData.
 type SendCustomerDataParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -17298,9 +17290,6 @@ type UpdateCustomerJSONRequestBody UpdateCustomerJSONBody
 
 // MergeCustomersJSONRequestBody defines body for MergeCustomers for application/json ContentType.
 type MergeCustomersJSONRequestBody MergeCustomersJSONBody
-
-// SendCustomerDataJSONRequestBody defines body for SendCustomerData for application/json ContentType.
-type SendCustomerDataJSONRequestBody SendCustomerDataJSONBody
 
 // CreateEmployeeJSONRequestBody defines body for CreateEmployee for application/json ContentType.
 type CreateEmployeeJSONRequestBody CreateEmployeeJSONBody
@@ -20574,10 +20563,8 @@ type ClientInterface interface {
 
 	MergeCustomers(ctx context.Context, customerId string, body MergeCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// SendCustomerData request with any body
-	SendCustomerDataWithBody(ctx context.Context, customerId string, params *SendCustomerDataParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	SendCustomerData(ctx context.Context, customerId string, params *SendCustomerDataParams, body SendCustomerDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// SendCustomerData request
+	SendCustomerData(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListDietaries request
 	ListDietaries(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -24151,20 +24138,8 @@ func (c *Client) MergeCustomers(ctx context.Context, customerId string, body Mer
 	return c.Client.Do(req)
 }
 
-func (c *Client) SendCustomerDataWithBody(ctx context.Context, customerId string, params *SendCustomerDataParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSendCustomerDataRequestWithBody(c.Server, customerId, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) SendCustomerData(ctx context.Context, customerId string, params *SendCustomerDataParams, body SendCustomerDataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSendCustomerDataRequest(c.Server, customerId, params, body)
+func (c *Client) SendCustomerData(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSendCustomerDataRequest(c.Server, customerId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -42329,19 +42304,8 @@ func NewMergeCustomersRequestWithBody(server string, customerId string, contentT
 	return req, nil
 }
 
-// NewSendCustomerDataRequest calls the generic SendCustomerData builder with application/json body
-func NewSendCustomerDataRequest(server string, customerId string, params *SendCustomerDataParams, body SendCustomerDataJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewSendCustomerDataRequestWithBody(server, customerId, params, "application/json", bodyReader)
-}
-
-// NewSendCustomerDataRequestWithBody generates requests for SendCustomerData with any type of body
-func NewSendCustomerDataRequestWithBody(server string, customerId string, params *SendCustomerDataParams, contentType string, body io.Reader) (*http.Request, error) {
+// NewSendCustomerDataRequest generates requests for SendCustomerData
+func NewSendCustomerDataRequest(server string, customerId string, params *SendCustomerDataParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -42402,12 +42366,10 @@ func NewSendCustomerDataRequestWithBody(server string, customerId string, params
 
 	queryURL.RawQuery = queryValues.Encode()
 
-	req, err := http.NewRequest("POST", queryURL.String(), body)
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -61729,10 +61691,8 @@ type ClientWithResponsesInterface interface {
 
 	MergeCustomersWithResponse(ctx context.Context, customerId string, body MergeCustomersJSONRequestBody, reqEditors ...RequestEditorFn) (*MergeCustomersResponse, error)
 
-	// SendCustomerData request with any body
-	SendCustomerDataWithBodyWithResponse(ctx context.Context, customerId string, params *SendCustomerDataParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendCustomerDataResponse, error)
-
-	SendCustomerDataWithResponse(ctx context.Context, customerId string, params *SendCustomerDataParams, body SendCustomerDataJSONRequestBody, reqEditors ...RequestEditorFn) (*SendCustomerDataResponse, error)
+	// SendCustomerData request
+	SendCustomerDataWithResponse(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*SendCustomerDataResponse, error)
 
 	// ListDietaries request
 	ListDietariesWithResponse(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*ListDietariesResponse, error)
@@ -74153,17 +74113,9 @@ func (c *ClientWithResponses) MergeCustomersWithResponse(ctx context.Context, cu
 	return ParseMergeCustomersResponse(rsp)
 }
 
-// SendCustomerDataWithBodyWithResponse request with arbitrary body returning *SendCustomerDataResponse
-func (c *ClientWithResponses) SendCustomerDataWithBodyWithResponse(ctx context.Context, customerId string, params *SendCustomerDataParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SendCustomerDataResponse, error) {
-	rsp, err := c.SendCustomerDataWithBody(ctx, customerId, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseSendCustomerDataResponse(rsp)
-}
-
-func (c *ClientWithResponses) SendCustomerDataWithResponse(ctx context.Context, customerId string, params *SendCustomerDataParams, body SendCustomerDataJSONRequestBody, reqEditors ...RequestEditorFn) (*SendCustomerDataResponse, error) {
-	rsp, err := c.SendCustomerData(ctx, customerId, params, body, reqEditors...)
+// SendCustomerDataWithResponse request returning *SendCustomerDataResponse
+func (c *ClientWithResponses) SendCustomerDataWithResponse(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*SendCustomerDataResponse, error) {
+	rsp, err := c.SendCustomerData(ctx, customerId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
