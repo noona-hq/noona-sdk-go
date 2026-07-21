@@ -599,6 +599,7 @@ const (
 	InsufficientPermissions        EmployeeCreationErrorCode = "insufficient_permissions"
 	InvalidEmailFormat             EmployeeCreationErrorCode = "invalid_email_format"
 	InvalidMarketplaceSettings     EmployeeCreationErrorCode = "invalid_marketplace_settings"
+	InvalidName                    EmployeeCreationErrorCode = "invalid_name"
 	InvalidRole                    EmployeeCreationErrorCode = "invalid_role"
 )
 
