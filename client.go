@@ -20066,6 +20066,9 @@ type ClientInterface interface {
 	// AdminRestoreEmployee request
 	AdminRestoreEmployee(ctx context.Context, companyId string, employeeId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminGetPaymentMethodPortal request
+	AdminGetPaymentMethodPortal(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminRestoreCompany request
 	AdminRestoreCompany(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -21972,6 +21975,18 @@ func (c *Client) AdminUpdateEmployee(ctx context.Context, companyId string, empl
 
 func (c *Client) AdminRestoreEmployee(ctx context.Context, companyId string, employeeId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminRestoreEmployeeRequest(c.Server, companyId, employeeId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminGetPaymentMethodPortal(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminGetPaymentMethodPortalRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -30252,6 +30267,40 @@ func NewAdminRestoreEmployeeRequest(server string, companyId string, employeeId 
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/employees/%s/restore", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminGetPaymentMethodPortalRequest generates requests for AdminGetPaymentMethodPortal
+func NewAdminGetPaymentMethodPortalRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/payment_method_portal", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -61250,6 +61299,9 @@ type ClientWithResponsesInterface interface {
 	// AdminRestoreEmployee request
 	AdminRestoreEmployeeWithResponse(ctx context.Context, companyId string, employeeId string, reqEditors ...RequestEditorFn) (*AdminRestoreEmployeeResponse, error)
 
+	// AdminGetPaymentMethodPortal request
+	AdminGetPaymentMethodPortalWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*AdminGetPaymentMethodPortalResponse, error)
+
 	// AdminRestoreCompany request
 	AdminRestoreCompanyWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*AdminRestoreCompanyResponse, error)
 
@@ -63319,6 +63371,28 @@ func (r AdminRestoreEmployeeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminRestoreEmployeeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminGetPaymentMethodPortalResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ManagePaymentSources
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminGetPaymentMethodPortalResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminGetPaymentMethodPortalResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -72610,6 +72684,15 @@ func (c *ClientWithResponses) AdminRestoreEmployeeWithResponse(ctx context.Conte
 	return ParseAdminRestoreEmployeeResponse(rsp)
 }
 
+// AdminGetPaymentMethodPortalWithResponse request returning *AdminGetPaymentMethodPortalResponse
+func (c *ClientWithResponses) AdminGetPaymentMethodPortalWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*AdminGetPaymentMethodPortalResponse, error) {
+	rsp, err := c.AdminGetPaymentMethodPortal(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminGetPaymentMethodPortalResponse(rsp)
+}
+
 // AdminRestoreCompanyWithResponse request returning *AdminRestoreCompanyResponse
 func (c *ClientWithResponses) AdminRestoreCompanyWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*AdminRestoreCompanyResponse, error) {
 	rsp, err := c.AdminRestoreCompany(ctx, companyId, reqEditors...)
@@ -78026,6 +78109,32 @@ func ParseAdminRestoreEmployeeResponse(rsp *http.Response) (*AdminRestoreEmploye
 	response := &AdminRestoreEmployeeResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminGetPaymentMethodPortalResponse parses an HTTP response from a AdminGetPaymentMethodPortalWithResponse call
+func ParseAdminGetPaymentMethodPortalResponse(rsp *http.Response) (*AdminGetPaymentMethodPortalResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminGetPaymentMethodPortalResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ManagePaymentSources
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
