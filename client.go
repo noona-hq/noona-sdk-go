@@ -816,6 +816,7 @@ const (
 	ImportJobStatusFailed     ImportJobStatus = "failed"
 	ImportJobStatusPending    ImportJobStatus = "pending"
 	ImportJobStatusProcessing ImportJobStatus = "processing"
+	ImportJobStatusReverted   ImportJobStatus = "reverted"
 )
 
 // Defines values for ImportJobType.
@@ -7280,6 +7281,15 @@ type ImportJob struct {
 
 	// Number of rows processed so far
 	ProcessedRows *int32 `json:"processed_rows,omitempty"`
+
+	// When the import job was reverted
+	RevertedAt *time.Time `json:"reverted_at,omitempty"`
+
+	// ID of the user who reverted the import job
+	RevertedBy *string `json:"reverted_by,omitempty"`
+
+	// Number of rows soft-deleted when the import job was reverted
+	RevertedRows *int32 `json:"reverted_rows,omitempty"`
 
 	// Total number of rows in the import file
 	RowCount int32 `json:"row_count"`
@@ -15168,6 +15178,15 @@ type CreateImportJobParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// RevertImportJobParams defines parameters for RevertImportJob.
+type RevertImportJobParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AdyenCompanyOnboardingStatusParams defines parameters for AdyenCompanyOnboardingStatus.
 type AdyenCompanyOnboardingStatusParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -20800,6 +20819,9 @@ type ClientInterface interface {
 
 	CreateImportJob(ctx context.Context, params *CreateImportJobParams, body CreateImportJobJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// RevertImportJob request
+	RevertImportJob(ctx context.Context, id string, params *RevertImportJobParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdyenCompanyOnboardingStatus request
 	AdyenCompanyOnboardingStatus(ctx context.Context, companyId string, params *AdyenCompanyOnboardingStatusParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -25131,6 +25153,18 @@ func (c *Client) CreateImportJobWithBody(ctx context.Context, params *CreateImpo
 
 func (c *Client) CreateImportJob(ctx context.Context, params *CreateImportJobParams, body CreateImportJobJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateImportJobRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RevertImportJob(ctx context.Context, id string, params *RevertImportJobParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRevertImportJobRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -46472,6 +46506,76 @@ func NewCreateImportJobRequestWithBody(server string, params *CreateImportJobPar
 	return req, nil
 }
 
+// NewRevertImportJobRequest generates requests for RevertImportJob
+func NewRevertImportJobRequest(server string, id string, params *RevertImportJobParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/imports/%s/revert", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewAdyenCompanyOnboardingStatusRequest generates requests for AdyenCompanyOnboardingStatus
 func NewAdyenCompanyOnboardingStatusRequest(server string, companyId string, params *AdyenCompanyOnboardingStatusParams) (*http.Request, error) {
 	var err error
@@ -62033,6 +62137,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateImportJobWithResponse(ctx context.Context, params *CreateImportJobParams, body CreateImportJobJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateImportJobResponse, error)
 
+	// RevertImportJob request
+	RevertImportJobWithResponse(ctx context.Context, id string, params *RevertImportJobParams, reqEditors ...RequestEditorFn) (*RevertImportJobResponse, error)
+
 	// AdyenCompanyOnboardingStatus request
 	AdyenCompanyOnboardingStatusWithResponse(ctx context.Context, companyId string, params *AdyenCompanyOnboardingStatusParams, reqEditors ...RequestEditorFn) (*AdyenCompanyOnboardingStatusResponse, error)
 
@@ -67933,6 +68040,28 @@ func (r CreateImportJobResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateImportJobResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RevertImportJobResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ImportJob
+}
+
+// Status returns HTTPResponse.Status
+func (r RevertImportJobResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RevertImportJobResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -74994,6 +75123,15 @@ func (c *ClientWithResponses) CreateImportJobWithResponse(ctx context.Context, p
 		return nil, err
 	}
 	return ParseCreateImportJobResponse(rsp)
+}
+
+// RevertImportJobWithResponse request returning *RevertImportJobResponse
+func (c *ClientWithResponses) RevertImportJobWithResponse(ctx context.Context, id string, params *RevertImportJobParams, reqEditors ...RequestEditorFn) (*RevertImportJobResponse, error) {
+	rsp, err := c.RevertImportJob(ctx, id, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRevertImportJobResponse(rsp)
 }
 
 // AdyenCompanyOnboardingStatusWithResponse request returning *AdyenCompanyOnboardingStatusResponse
@@ -83308,6 +83446,32 @@ func ParseCreateImportJobResponse(rsp *http.Response) (*CreateImportJobResponse,
 	}
 
 	response := &CreateImportJobResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ImportJob
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRevertImportJobResponse parses an HTTP response from a RevertImportJobWithResponse call
+func ParseRevertImportJobResponse(rsp *http.Response) (*RevertImportJobResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RevertImportJobResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
