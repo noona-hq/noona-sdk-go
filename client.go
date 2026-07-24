@@ -793,6 +793,22 @@ const (
 	GoalFirstOnlineBooking GoalTemplate = "goal_first_online_booking"
 )
 
+// Defines values for HostedPageState.
+const (
+	HostedPageStateAcknowledged HostedPageState = "acknowledged"
+	HostedPageStateCancelled    HostedPageState = "cancelled"
+	HostedPageStateCreated      HostedPageState = "created"
+	HostedPageStateFailed       HostedPageState = "failed"
+	HostedPageStateRequested    HostedPageState = "requested"
+	HostedPageStateSucceeded    HostedPageState = "succeeded"
+)
+
+// Defines values for HostedPageType.
+const (
+	CheckoutExisting HostedPageType = "checkout_existing"
+	CheckoutNew      HostedPageType = "checkout_new"
+)
+
 // Defines values for ImageFolder.
 const (
 	ImageFolderAds             ImageFolder = "ads"
@@ -1257,9 +1273,9 @@ const (
 
 // Defines values for PowerupSubscriptionStatus.
 const (
-	Active PowerupSubscriptionStatus = "active"
-	Quit   PowerupSubscriptionStatus = "quit"
-	Trial  PowerupSubscriptionStatus = "trial"
+	PowerupSubscriptionStatusActive PowerupSubscriptionStatus = "active"
+	PowerupSubscriptionStatusQuit   PowerupSubscriptionStatus = "quit"
+	PowerupSubscriptionStatusTrial  PowerupSubscriptionStatus = "trial"
 )
 
 // Defines values for PowerupSubscriptionInfoCancelReason.
@@ -7235,6 +7251,12 @@ type HolidaysFilter struct {
 	To time.Time `json:"to"`
 }
 
+// The Chargebee hosted page state
+type HostedPageState string
+
+// The Chargebee hosted page type
+type HostedPageType string
+
 // ID defines model for ID.
 type ID string
 
@@ -10953,7 +10975,24 @@ type SubscriptionCancellation struct {
 
 // SubscriptionCheckout defines model for SubscriptionCheckout.
 type SubscriptionCheckout struct {
-	Url string `json:"url"`
+	// Hosted page creation time as unix epoch seconds, as returned by Chargebee
+	CreatedAt *int64 `json:"created_at,omitempty"`
+
+	// Whether the hosted page is embeddable
+	Embed *bool `json:"embed,omitempty"`
+
+	// Hosted page expiry time as unix epoch seconds, as returned by Chargebee
+	ExpiresAt *int64 `json:"expires_at,omitempty"`
+
+	// The Chargebee hosted page ID
+	Id string `json:"id"`
+
+	// The Chargebee hosted page state
+	State HostedPageState `json:"state"`
+
+	// The Chargebee hosted page type
+	Type HostedPageType `json:"type"`
+	Url  string         `json:"url"`
 }
 
 // SubscriptionCheckoutConfirm defines model for SubscriptionCheckoutConfirm.
