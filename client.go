@@ -1583,6 +1583,16 @@ const (
 	StreamableEntityTypeTransactions         StreamableEntityType = "transactions"
 )
 
+// Defines values for SubscriptionCheckoutStatusState.
+const (
+	Acknowledged SubscriptionCheckoutStatusState = "acknowledged"
+	Cancelled    SubscriptionCheckoutStatusState = "cancelled"
+	Created      SubscriptionCheckoutStatusState = "created"
+	Failed       SubscriptionCheckoutStatusState = "failed"
+	Requested    SubscriptionCheckoutStatusState = "requested"
+	Succeeded    SubscriptionCheckoutStatusState = "succeeded"
+)
+
 // Defines values for SubscriptionChurnReason.
 const (
 	ClosingBusiness SubscriptionChurnReason = "closing_business"
@@ -11018,6 +11028,15 @@ type SubscriptionCheckoutResult struct {
 	// The plan ID that the subscription is scheduled to change to at end of term. Only present when scheduled is true.
 	ScheduledPlanId *string `json:"scheduled_plan_id,omitempty"`
 }
+
+// SubscriptionCheckoutStatus defines model for SubscriptionCheckoutStatus.
+type SubscriptionCheckoutStatus struct {
+	// The current state of the hosted checkout page
+	State SubscriptionCheckoutStatusState `json:"state"`
+}
+
+// The current state of the hosted checkout page
+type SubscriptionCheckoutStatusState string
 
 // SubscriptionChurnReason defines model for SubscriptionChurnReason.
 type SubscriptionChurnReason string
@@ -20508,6 +20527,9 @@ type ClientInterface interface {
 
 	CreateSubscriptionCheckout(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, body CreateSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetSubscriptionCheckoutStatus request
+	GetSubscriptionCheckoutStatus(ctx context.Context, companyId string, hostedPageId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ConfirmSubscriptionCheckout request with any body
 	ConfirmSubscriptionCheckoutWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -23668,6 +23690,18 @@ func (c *Client) CreateSubscriptionCheckoutWithBody(ctx context.Context, company
 
 func (c *Client) CreateSubscriptionCheckout(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, body CreateSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSubscriptionCheckoutRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSubscriptionCheckoutStatus(ctx context.Context, companyId string, hostedPageId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSubscriptionCheckoutStatusRequest(c.Server, companyId, hostedPageId)
 	if err != nil {
 		return nil, err
 	}
@@ -39328,6 +39362,47 @@ func NewCreateSubscriptionCheckoutRequestWithBody(server string, companyId strin
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetSubscriptionCheckoutStatusRequest generates requests for GetSubscriptionCheckoutStatus
+func NewGetSubscriptionCheckoutStatusRequest(server string, companyId string, hostedPageId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "hosted_page_id", runtime.ParamLocationPath, hostedPageId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/subscriptions/checkout/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -61826,6 +61901,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateSubscriptionCheckoutWithResponse(ctx context.Context, companyId string, params *CreateSubscriptionCheckoutParams, body CreateSubscriptionCheckoutJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSubscriptionCheckoutResponse, error)
 
+	// GetSubscriptionCheckoutStatus request
+	GetSubscriptionCheckoutStatusWithResponse(ctx context.Context, companyId string, hostedPageId string, reqEditors ...RequestEditorFn) (*GetSubscriptionCheckoutStatusResponse, error)
+
 	// ConfirmSubscriptionCheckout request with any body
 	ConfirmSubscriptionCheckoutWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmSubscriptionCheckoutResponse, error)
 
@@ -65978,6 +66056,28 @@ func (r CreateSubscriptionCheckoutResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateSubscriptionCheckoutResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSubscriptionCheckoutStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SubscriptionCheckoutStatus
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSubscriptionCheckoutStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSubscriptionCheckoutStatusResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -74052,6 +74152,15 @@ func (c *ClientWithResponses) CreateSubscriptionCheckoutWithResponse(ctx context
 	return ParseCreateSubscriptionCheckoutResponse(rsp)
 }
 
+// GetSubscriptionCheckoutStatusWithResponse request returning *GetSubscriptionCheckoutStatusResponse
+func (c *ClientWithResponses) GetSubscriptionCheckoutStatusWithResponse(ctx context.Context, companyId string, hostedPageId string, reqEditors ...RequestEditorFn) (*GetSubscriptionCheckoutStatusResponse, error) {
+	rsp, err := c.GetSubscriptionCheckoutStatus(ctx, companyId, hostedPageId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSubscriptionCheckoutStatusResponse(rsp)
+}
+
 // ConfirmSubscriptionCheckoutWithBodyWithResponse request with arbitrary body returning *ConfirmSubscriptionCheckoutResponse
 func (c *ClientWithResponses) ConfirmSubscriptionCheckoutWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmSubscriptionCheckoutResponse, error) {
 	rsp, err := c.ConfirmSubscriptionCheckoutWithBody(ctx, companyId, contentType, body, reqEditors...)
@@ -81115,6 +81224,32 @@ func ParseCreateSubscriptionCheckoutResponse(rsp *http.Response) (*CreateSubscri
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest SubscriptionCheckout
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSubscriptionCheckoutStatusResponse parses an HTTP response from a GetSubscriptionCheckoutStatusWithResponse call
+func ParseGetSubscriptionCheckoutStatusResponse(rsp *http.Response) (*GetSubscriptionCheckoutStatusResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSubscriptionCheckoutStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SubscriptionCheckoutStatus
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
