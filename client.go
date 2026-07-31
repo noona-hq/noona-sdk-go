@@ -874,6 +874,7 @@ const (
 // Defines values for LanguageCode.
 const (
 	Cs LanguageCode = "cs"
+	De LanguageCode = "de"
 	En LanguageCode = "en"
 	Es LanguageCode = "es"
 	Fr LanguageCode = "fr"
