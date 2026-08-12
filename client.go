@@ -559,6 +559,11 @@ const (
 	Soft         CustomerDeletionBehaviorType = "soft"
 )
 
+// Defines values for CustomerGroupSystemType.
+const (
+	CustomerGroupSystemTypeBlacklist CustomerGroupSystemType = "blacklist"
+)
+
 // Defines values for DeleteAdErrorCode.
 const (
 	ReferencedByActiveCampaign DeleteAdErrorCode = "referenced_by_active_campaign"
@@ -636,6 +641,7 @@ const (
 	EntitlementFeatureIDActivityLog                 EntitlementFeatureID = "activity_log"
 	EntitlementFeatureIDBasicPos                    EntitlementFeatureID = "basic_pos"
 	EntitlementFeatureIDBasicRoles                  EntitlementFeatureID = "basic_roles"
+	EntitlementFeatureIDBlacklist                   EntitlementFeatureID = "blacklist"
 	EntitlementFeatureIDBookableResources           EntitlementFeatureID = "bookable_resources"
 	EntitlementFeatureIDBookingHistory              EntitlementFeatureID = "booking_history"
 	EntitlementFeatureIDBookingOffers               EntitlementFeatureID = "booking_offers"
@@ -4379,7 +4385,8 @@ type CompanyMarketplace struct {
 
 	// Maximum number of guests that can be auto-confirmed when booking screening is enabled.
 	// A value of 0 or a missing value means all bookings require confirmation.
-	ScreeningCapacity *int32 `json:"screening_capacity,omitempty"`
+	ScreeningCapacity *int32                      `json:"screening_capacity,omitempty"`
+	Security          *CompanyMarketplaceSecurity `json:"security,omitempty"`
 
 	// Used when constructing the marketplace url for the company.
 	//
@@ -4401,6 +4408,19 @@ type CompanyMarketplace struct {
 	//
 	// This allows customers to add themselves to the waitlist at company.
 	WaitlistEnabled *bool `json:"waitlist_enabled,omitempty"`
+}
+
+// CompanyMarketplaceSecurity defines model for CompanyMarketplaceSecurity.
+type CompanyMarketplaceSecurity struct {
+	Blacklist *CompanyMarketplaceSecurityBlacklist `json:"blacklist,omitempty"`
+}
+
+// CompanyMarketplaceSecurityBlacklist defines model for CompanyMarketplaceSecurityBlacklist.
+type CompanyMarketplaceSecurityBlacklist struct {
+	Enabled *bool `json:"enabled,omitempty"`
+
+	// Optional custom message shown when a blacklisted customer is prevented from booking. The localized system default is used when omitted or empty.
+	RejectionReason *string `json:"rejection_reason,omitempty"`
 }
 
 // CompanyMessaging defines model for CompanyMessaging.
@@ -5236,13 +5256,17 @@ type CustomerFilter struct {
 
 // CustomerGroup defines model for CustomerGroup.
 type CustomerGroup struct {
-	Company     *string    `json:"company,omitempty"`
-	CreatedAt   *time.Time `json:"created_at,omitempty"`
-	Description *string    `json:"description,omitempty"`
-	Id          *string    `json:"id,omitempty"`
-	Title       *string    `json:"title,omitempty"`
-	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+	Company     *string                  `json:"company,omitempty"`
+	CreatedAt   *time.Time               `json:"created_at,omitempty"`
+	Description *string                  `json:"description,omitempty"`
+	Id          *string                  `json:"id,omitempty"`
+	SystemType  *CustomerGroupSystemType `json:"system_type,omitempty"`
+	Title       *string                  `json:"title,omitempty"`
+	UpdatedAt   *time.Time               `json:"updated_at,omitempty"`
 }
+
+// CustomerGroupSystemType defines model for CustomerGroupSystemType.
+type CustomerGroupSystemType string
 
 // CustomerGroups defines model for CustomerGroups.
 type CustomerGroups []CustomerGroup
