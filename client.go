@@ -1091,6 +1091,7 @@ const (
 	PushNotificationsRead OAuthScope = "push_notifications:read"
 	RemindersRead         OAuthScope = "reminders:read"
 	RemindersWrite        OAuthScope = "reminders:write"
+	ReportsRead           OAuthScope = "reports:read"
 	ReportsWrite          OAuthScope = "reports:write"
 	ResourcesRead         OAuthScope = "resources:read"
 	ResourcesWrite        OAuthScope = "resources:write"
@@ -10353,6 +10354,36 @@ type SaleFields []SaleField
 // Sales defines model for Sales.
 type Sales []Sale
 
+// SalesByEmployeeFilter defines model for SalesByEmployeeFilter.
+type SalesByEmployeeFilter struct {
+	EmployeeIds *[]string `json:"employee_ids,omitempty"`
+	From        time.Time `json:"from"`
+	IssuerIds   *[]string `json:"issuer_ids,omitempty"`
+	To          time.Time `json:"to"`
+}
+
+// SalesByEmployeeReport defines model for SalesByEmployeeReport.
+type SalesByEmployeeReport []SalesByEmployeeRow
+
+// SalesByEmployeeRow defines model for SalesByEmployeeRow.
+type SalesByEmployeeRow struct {
+	ClaimAmountExclVat   float64 `json:"claim_amount_excl_vat"`
+	ClaimAmountInclVat   float64 `json:"claim_amount_incl_vat"`
+	EmployeeId           *string `json:"employee_id"`
+	EmployeeName         *string `json:"employee_name,omitempty"`
+	ProductAmountExclVat float64 `json:"product_amount_excl_vat"`
+	ProductAmountInclVat float64 `json:"product_amount_incl_vat"`
+	ReturnQuantity       int32   `json:"return_quantity"`
+	SaleQuantity         int32   `json:"sale_quantity"`
+	UnknownAmountExclVat float64 `json:"unknown_amount_excl_vat"`
+	UnknownAmountInclVat float64 `json:"unknown_amount_incl_vat"`
+	VoucherAmountExclVat float64 `json:"voucher_amount_excl_vat"`
+	VoucherAmountInclVat float64 `json:"voucher_amount_incl_vat"`
+	WorkAmountExclVat    float64 `json:"work_amount_excl_vat"`
+	WorkAmountExemptVat  float64 `json:"work_amount_exempt_vat"`
+	WorkAmountInclVat    float64 `json:"work_amount_incl_vat"`
+}
+
 // SalesMetrics defines model for SalesMetrics.
 type SalesMetrics struct {
 	Payments     *AmountMetricsByDay `json:"payments,omitempty"`
@@ -14083,6 +14114,11 @@ type ListRemindersParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// GetSalesByEmployeeReportParams defines parameters for GetSalesByEmployeeReport.
+type GetSalesByEmployeeReportParams struct {
+	Filter SalesByEmployeeFilter `form:"filter" json:"filter"`
 }
 
 // ListResourceGroupsParams defines parameters for ListResourceGroups.
@@ -20469,6 +20505,9 @@ type ClientInterface interface {
 	// ListReminders request
 	ListReminders(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetSalesByEmployeeReport request
+	GetSalesByEmployeeReport(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListResourceGroups request
 	ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -23439,6 +23478,18 @@ func (c *Client) ListPushNotifications(ctx context.Context, companyId string, pa
 
 func (c *Client) ListReminders(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListRemindersRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSalesByEmployeeReport(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSalesByEmployeeReportRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -37897,6 +37948,50 @@ func NewListRemindersRequest(server string, companyId string, params *ListRemind
 			queryValues.Add("pagination", string(queryParamBuf))
 		}
 
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSalesByEmployeeReportRequest generates requests for GetSalesByEmployeeReport
+func NewGetSalesByEmployeeReportRequest(server string, companyId string, params *GetSalesByEmployeeReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/sales-by-employee", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
@@ -61843,6 +61938,9 @@ type ClientWithResponsesInterface interface {
 	// ListReminders request
 	ListRemindersWithResponse(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*ListRemindersResponse, error)
 
+	// GetSalesByEmployeeReport request
+	GetSalesByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetSalesByEmployeeReportResponse, error)
+
 	// ListResourceGroups request
 	ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error)
 
@@ -65684,6 +65782,28 @@ func (r ListRemindersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListRemindersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSalesByEmployeeReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SalesByEmployeeReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSalesByEmployeeReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSalesByEmployeeReportResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -73968,6 +74088,15 @@ func (c *ClientWithResponses) ListRemindersWithResponse(ctx context.Context, com
 	return ParseListRemindersResponse(rsp)
 }
 
+// GetSalesByEmployeeReportWithResponse request returning *GetSalesByEmployeeReportResponse
+func (c *ClientWithResponses) GetSalesByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetSalesByEmployeeReportResponse, error) {
+	rsp, err := c.GetSalesByEmployeeReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSalesByEmployeeReportResponse(rsp)
+}
+
 // ListResourceGroupsWithResponse request returning *ListResourceGroupsResponse
 func (c *ClientWithResponses) ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error) {
 	rsp, err := c.ListResourceGroups(ctx, companyId, params, reqEditors...)
@@ -80796,6 +80925,32 @@ func ParseListRemindersResponse(rsp *http.Response) (*ListRemindersResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Reminders
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSalesByEmployeeReportResponse parses an HTTP response from a GetSalesByEmployeeReportWithResponse call
+func ParseGetSalesByEmployeeReportResponse(rsp *http.Response) (*GetSalesByEmployeeReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSalesByEmployeeReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SalesByEmployeeReport
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
