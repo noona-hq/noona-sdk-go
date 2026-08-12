@@ -184,6 +184,32 @@ const (
 	AdStatusTakenDown AdStatus = "taken_down"
 )
 
+// Defines values for AdminBlacklistBulkMigrationAnomaly.
+const (
+	MissingClientGroupsEntitlement AdminBlacklistBulkMigrationAnomaly = "missing_client_groups_entitlement"
+	MissingGroup                   AdminBlacklistBulkMigrationAnomaly = "missing_group"
+	MultipleLegacyGroups           AdminBlacklistBulkMigrationAnomaly = "multiple_legacy_groups"
+	MultipleSystemGroups           AdminBlacklistBulkMigrationAnomaly = "multiple_system_groups"
+	NoMigrationCandidate           AdminBlacklistBulkMigrationAnomaly = "no_migration_candidate"
+)
+
+// Defines values for AdminBlacklistBulkMigrationStatus.
+const (
+	AdminBlacklistBulkMigrationStatusAlreadyMigrated AdminBlacklistBulkMigrationStatus = "already_migrated"
+	AdminBlacklistBulkMigrationStatusFailed          AdminBlacklistBulkMigrationStatus = "failed"
+	AdminBlacklistBulkMigrationStatusMigrated        AdminBlacklistBulkMigrationStatus = "migrated"
+	AdminBlacklistBulkMigrationStatusReady           AdminBlacklistBulkMigrationStatus = "ready"
+	AdminBlacklistBulkMigrationStatusSkipped         AdminBlacklistBulkMigrationStatus = "skipped"
+)
+
+// Defines values for AdminBlacklistEntitlementsMigrationStatus.
+const (
+	AdminBlacklistEntitlementsMigrationStatusAlreadySynced AdminBlacklistEntitlementsMigrationStatus = "already_synced"
+	AdminBlacklistEntitlementsMigrationStatusFailed        AdminBlacklistEntitlementsMigrationStatus = "failed"
+	AdminBlacklistEntitlementsMigrationStatusReady         AdminBlacklistEntitlementsMigrationStatus = "ready"
+	AdminBlacklistEntitlementsMigrationStatusSynced        AdminBlacklistEntitlementsMigrationStatus = "synced"
+)
+
 // Defines values for AdminFixWorkHoursTimesScope.
 const (
 	AdminFixWorkHoursTimesScopeAll    AdminFixWorkHoursTimesScope = "all"
@@ -2543,6 +2569,116 @@ type AdminAdUpdate struct {
 
 // AdminAds defines model for AdminAds.
 type AdminAds []AdminAd
+
+// AdminBlacklistBulkMigrationAnomaly defines model for AdminBlacklistBulkMigrationAnomaly.
+type AdminBlacklistBulkMigrationAnomaly string
+
+// AdminBlacklistBulkMigrationCompanyResult defines model for AdminBlacklistBulkMigrationCompanyResult.
+type AdminBlacklistBulkMigrationCompanyResult struct {
+	// Whether the standalone Blacklist app currently has an active OAuth grant for this company.
+	ActiveInstallation bool                                 `json:"active_installation"`
+	Anomalies          []AdminBlacklistBulkMigrationAnomaly `json:"anomalies"`
+
+	// Native blacklist setting value before this operation.
+	BlacklistWasEnabled bool    `json:"blacklist_was_enabled"`
+	CanonicalGroupId    *string `json:"canonical_group_id,omitempty"`
+
+	// Whether the canonical group already had system_type=blacklist before this operation.
+	CanonicalGroupWasSystem bool   `json:"canonical_group_was_system"`
+	CompanyId               string `json:"company_id"`
+
+	// Whether this operation created an empty native blacklist group.
+	CreatedGroup bool `json:"created_group"`
+
+	// Number of customers in any legacy or native blacklist group before this operation.
+	CustomerCount    int32   `json:"customer_count"`
+	Error            *string `json:"error,omitempty"`
+	LegacyGroupCount int32   `json:"legacy_group_count"`
+
+	// Number of customers that received the canonical group membership during this operation.
+	MembershipsAdded int32                             `json:"memberships_added"`
+	Status           AdminBlacklistBulkMigrationStatus `json:"status"`
+	SystemGroupCount int32                             `json:"system_group_count"`
+}
+
+// AdminBlacklistBulkMigrationRequest defines model for AdminBlacklistBulkMigrationRequest.
+type AdminBlacklistBulkMigrationRequest struct {
+	// ID of the standalone Blacklist marketplace application.
+	ApplicationId string `json:"application_id"`
+
+	// If provided, only these companies are processed. Cannot be used together with cursor.
+	CompanyIds *[]string `json:"company_ids,omitempty"`
+
+	// Cursor for iterating migration candidates in ascending company ID order. Cannot be used together with company_ids.
+	Cursor *string `json:"cursor,omitempty"`
+
+	// Required. If true, inspect and report without mutating data.
+	DryRun *bool `json:"dry_run,omitempty"`
+
+	// Maximum number of migration candidates to process in this request.
+	Limit *int32 `json:"limit,omitempty"`
+}
+
+// AdminBlacklistBulkMigrationResult defines model for AdminBlacklistBulkMigrationResult.
+type AdminBlacklistBulkMigrationResult struct {
+	// Number of unique companies with an active OAuth grant for the supplied application.
+	ActiveInstallations int32                                      `json:"active_installations"`
+	AlreadyMigrated     int32                                      `json:"already_migrated"`
+	Companies           []AdminBlacklistBulkMigrationCompanyResult `json:"companies"`
+	Failed              int32                                      `json:"failed"`
+	HasMore             bool                                       `json:"has_more"`
+
+	// Number of companies with an exact-title Blacklist group but no active OAuth grant.
+	InactiveCandidates int32   `json:"inactive_candidates"`
+	Migrated           int32   `json:"migrated"`
+	NextCursor         *string `json:"next_cursor,omitempty"`
+	Skipped            int32   `json:"skipped"`
+
+	// Number of companies processed in this response.
+	Total int32 `json:"total"`
+}
+
+// AdminBlacklistBulkMigrationStatus defines model for AdminBlacklistBulkMigrationStatus.
+type AdminBlacklistBulkMigrationStatus string
+
+// AdminBlacklistEntitlementsMigrationCompanyResult defines model for AdminBlacklistEntitlementsMigrationCompanyResult.
+type AdminBlacklistEntitlementsMigrationCompanyResult struct {
+	CompanyId      string                                    `json:"company_id"`
+	Error          *string                                   `json:"error,omitempty"`
+	PlanId         string                                    `json:"plan_id"`
+	Status         AdminBlacklistEntitlementsMigrationStatus `json:"status"`
+	SubscriptionId string                                    `json:"subscription_id"`
+}
+
+// AdminBlacklistEntitlementsMigrationRequest defines model for AdminBlacklistEntitlementsMigrationRequest.
+type AdminBlacklistEntitlementsMigrationRequest struct {
+	// If provided, only these companies are processed. Cannot be used together with cursor.
+	CompanyIds *[]string `json:"company_ids,omitempty"`
+
+	// Cursor for iterating eligible companies in ascending company ID order. Cannot be used together with company_ids.
+	Cursor *string `json:"cursor,omitempty"`
+
+	// Required. If true, inspect and report without mutating data.
+	DryRun *bool `json:"dry_run,omitempty"`
+
+	// Maximum number of eligible subscriptions to process in this request.
+	Limit *int32 `json:"limit,omitempty"`
+}
+
+// AdminBlacklistEntitlementsMigrationResult defines model for AdminBlacklistEntitlementsMigrationResult.
+type AdminBlacklistEntitlementsMigrationResult struct {
+	AlreadySynced int32                                              `json:"already_synced"`
+	Companies     []AdminBlacklistEntitlementsMigrationCompanyResult `json:"companies"`
+	Failed        int32                                              `json:"failed"`
+	HasMore       bool                                               `json:"has_more"`
+	NextCursor    *string                                            `json:"next_cursor,omitempty"`
+	Ready         int32                                              `json:"ready"`
+	Synced        int32                                              `json:"synced"`
+	Total         int32                                              `json:"total"`
+}
+
+// AdminBlacklistEntitlementsMigrationStatus defines model for AdminBlacklistEntitlementsMigrationStatus.
+type AdminBlacklistEntitlementsMigrationStatus string
 
 // AdminCompanies defines model for AdminCompanies.
 type AdminCompanies []AdminCompany
@@ -13161,6 +13297,12 @@ type AdminUpdateTerminalParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminBulkMigrateBlacklistJSONBody defines parameters for AdminBulkMigrateBlacklist.
+type AdminBulkMigrateBlacklistJSONBody AdminBlacklistBulkMigrationRequest
+
+// AdminBulkMigrateBlacklistEntitlementsJSONBody defines parameters for AdminBulkMigrateBlacklistEntitlements.
+type AdminBulkMigrateBlacklistEntitlementsJSONBody AdminBlacklistEntitlementsMigrationRequest
+
 // AdminFixWorkHoursTimesJSONBody defines parameters for AdminFixWorkHoursTimes.
 type AdminFixWorkHoursTimesJSONBody AdminFixWorkHoursTimesRequest
 
@@ -17349,6 +17491,12 @@ type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJ
 // AdminUpdateTerminalJSONRequestBody defines body for AdminUpdateTerminal for application/json ContentType.
 type AdminUpdateTerminalJSONRequestBody AdminUpdateTerminalJSONBody
 
+// AdminBulkMigrateBlacklistJSONRequestBody defines body for AdminBulkMigrateBlacklist for application/json ContentType.
+type AdminBulkMigrateBlacklistJSONRequestBody AdminBulkMigrateBlacklistJSONBody
+
+// AdminBulkMigrateBlacklistEntitlementsJSONRequestBody defines body for AdminBulkMigrateBlacklistEntitlements for application/json ContentType.
+type AdminBulkMigrateBlacklistEntitlementsJSONRequestBody AdminBulkMigrateBlacklistEntitlementsJSONBody
+
 // AdminFixWorkHoursTimesJSONRequestBody defines body for AdminFixWorkHoursTimes for application/json ContentType.
 type AdminFixWorkHoursTimesJSONRequestBody AdminFixWorkHoursTimesJSONBody
 
@@ -20223,6 +20371,16 @@ type ClientInterface interface {
 
 	AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminBulkMigrateBlacklist request with any body
+	AdminBulkMigrateBlacklistWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminBulkMigrateBlacklist(ctx context.Context, body AdminBulkMigrateBlacklistJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminBulkMigrateBlacklistEntitlements request with any body
+	AdminBulkMigrateBlacklistEntitlementsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminBulkMigrateBlacklistEntitlements(ctx context.Context, body AdminBulkMigrateBlacklistEntitlementsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -22206,6 +22364,54 @@ func (c *Client) AdminUpdateTerminalWithBody(ctx context.Context, companyId stri
 
 func (c *Client) AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateTerminalRequest(c.Server, companyId, terminalId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBulkMigrateBlacklistWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBulkMigrateBlacklistRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBulkMigrateBlacklist(ctx context.Context, body AdminBulkMigrateBlacklistJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBulkMigrateBlacklistRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBulkMigrateBlacklistEntitlementsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBulkMigrateBlacklistEntitlementsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBulkMigrateBlacklistEntitlements(ctx context.Context, body AdminBulkMigrateBlacklistEntitlementsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBulkMigrateBlacklistEntitlementsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -30767,6 +30973,86 @@ func NewAdminUpdateTerminalRequestWithBody(server string, companyId string, term
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminBulkMigrateBlacklistRequest calls the generic AdminBulkMigrateBlacklist builder with application/json body
+func NewAdminBulkMigrateBlacklistRequest(server string, body AdminBulkMigrateBlacklistJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminBulkMigrateBlacklistRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminBulkMigrateBlacklistRequestWithBody generates requests for AdminBulkMigrateBlacklist with any type of body
+func NewAdminBulkMigrateBlacklistRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/blacklist")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminBulkMigrateBlacklistEntitlementsRequest calls the generic AdminBulkMigrateBlacklistEntitlements builder with application/json body
+func NewAdminBulkMigrateBlacklistEntitlementsRequest(server string, body AdminBulkMigrateBlacklistEntitlementsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminBulkMigrateBlacklistEntitlementsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminBulkMigrateBlacklistEntitlementsRequestWithBody generates requests for AdminBulkMigrateBlacklistEntitlements with any type of body
+func NewAdminBulkMigrateBlacklistEntitlementsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/blacklist-entitlements")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
@@ -61656,6 +61942,16 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateTerminalWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error)
 
+	// AdminBulkMigrateBlacklist request with any body
+	AdminBulkMigrateBlacklistWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistResponse, error)
+
+	AdminBulkMigrateBlacklistWithResponse(ctx context.Context, body AdminBulkMigrateBlacklistJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistResponse, error)
+
+	// AdminBulkMigrateBlacklistEntitlements request with any body
+	AdminBulkMigrateBlacklistEntitlementsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistEntitlementsResponse, error)
+
+	AdminBulkMigrateBlacklistEntitlementsWithResponse(ctx context.Context, body AdminBulkMigrateBlacklistEntitlementsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistEntitlementsResponse, error)
+
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
 
@@ -63824,6 +64120,50 @@ func (r AdminUpdateTerminalResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateTerminalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminBulkMigrateBlacklistResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminBlacklistBulkMigrationResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminBulkMigrateBlacklistResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminBulkMigrateBlacklistResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminBulkMigrateBlacklistEntitlementsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminBlacklistEntitlementsMigrationResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminBulkMigrateBlacklistEntitlementsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminBulkMigrateBlacklistEntitlementsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -73158,6 +73498,40 @@ func (c *ClientWithResponses) AdminUpdateTerminalWithResponse(ctx context.Contex
 	return ParseAdminUpdateTerminalResponse(rsp)
 }
 
+// AdminBulkMigrateBlacklistWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateBlacklistResponse
+func (c *ClientWithResponses) AdminBulkMigrateBlacklistWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistResponse, error) {
+	rsp, err := c.AdminBulkMigrateBlacklistWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBulkMigrateBlacklistResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminBulkMigrateBlacklistWithResponse(ctx context.Context, body AdminBulkMigrateBlacklistJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistResponse, error) {
+	rsp, err := c.AdminBulkMigrateBlacklist(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBulkMigrateBlacklistResponse(rsp)
+}
+
+// AdminBulkMigrateBlacklistEntitlementsWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateBlacklistEntitlementsResponse
+func (c *ClientWithResponses) AdminBulkMigrateBlacklistEntitlementsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistEntitlementsResponse, error) {
+	rsp, err := c.AdminBulkMigrateBlacklistEntitlementsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBulkMigrateBlacklistEntitlementsResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminBulkMigrateBlacklistEntitlementsWithResponse(ctx context.Context, body AdminBulkMigrateBlacklistEntitlementsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistEntitlementsResponse, error) {
+	rsp, err := c.AdminBulkMigrateBlacklistEntitlements(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBulkMigrateBlacklistEntitlementsResponse(rsp)
+}
+
 // AdminFixWorkHoursTimesWithBodyWithResponse request with arbitrary body returning *AdminFixWorkHoursTimesResponse
 func (c *ClientWithResponses) AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error) {
 	rsp, err := c.AdminFixWorkHoursTimesWithBody(ctx, contentType, body, reqEditors...)
@@ -78639,6 +79013,58 @@ func ParseAdminUpdateTerminalResponse(rsp *http.Response) (*AdminUpdateTerminalR
 	response := &AdminUpdateTerminalResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminBulkMigrateBlacklistResponse parses an HTTP response from a AdminBulkMigrateBlacklistWithResponse call
+func ParseAdminBulkMigrateBlacklistResponse(rsp *http.Response) (*AdminBulkMigrateBlacklistResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminBulkMigrateBlacklistResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminBlacklistBulkMigrationResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminBulkMigrateBlacklistEntitlementsResponse parses an HTTP response from a AdminBulkMigrateBlacklistEntitlementsWithResponse call
+func ParseAdminBulkMigrateBlacklistEntitlementsResponse(rsp *http.Response) (*AdminBulkMigrateBlacklistEntitlementsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminBulkMigrateBlacklistEntitlementsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminBlacklistEntitlementsMigrationResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
