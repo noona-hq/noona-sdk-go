@@ -1190,9 +1190,11 @@ const (
 
 // Defines values for PaymentProvider.
 const (
-	Adyen      PaymentProvider = "adyen"
-	Teya       PaymentProvider = "teya"
-	Teyadirect PaymentProvider = "teyadirect"
+	PaymentProviderAdyen      PaymentProvider = "adyen"
+	PaymentProviderStraumur   PaymentProvider = "straumur"
+	PaymentProviderTeya       PaymentProvider = "teya"
+	PaymentProviderTeyadirect PaymentProvider = "teyadirect"
+	PaymentProviderVerifone   PaymentProvider = "verifone"
 )
 
 // Defines values for PaymentReason.
@@ -1710,7 +1712,7 @@ const (
 
 // Defines values for SubtransactionDataStraumurTerminalType.
 const (
-	Straumur SubtransactionDataStraumurTerminalType = "straumur"
+	SubtransactionDataStraumurTerminalTypeStraumur SubtransactionDataStraumurTerminalType = "straumur"
 )
 
 // Defines values for SubtransactionDataTerminalType.
@@ -8824,8 +8826,11 @@ type Payment struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	MarketplaceUser *ExpandableMarketplaceUser `json:"marketplace_user,omitempty"`
-	Provider        *PaymentProvider           `json:"provider,omitempty"`
-	Reason          *PaymentReason             `json:"reason,omitempty"`
+
+	// The provider that processed the payment. The `teya` value is the retired
+	// legacy Teya provider and only appears on historical payments.
+	Provider *PaymentProvider `json:"provider,omitempty"`
+	Reason   *PaymentReason   `json:"reason,omitempty"`
 
 	// Reference from payment service provider
 	Reference *string `json:"reference,omitempty"`
@@ -8853,7 +8858,8 @@ type Payment struct {
 	UpdatedAt         *time.Time     `json:"updated_at,omitempty"`
 }
 
-// PaymentProvider defines model for Payment.Provider.
+// The provider that processed the payment. The `teya` value is the retired
+// legacy Teya provider and only appears on historical payments.
 type PaymentProvider string
 
 // PaymentReason defines model for Payment.Reason.
@@ -10557,34 +10563,13 @@ type SalesforceChatIdentity struct {
 	Token *string `json:"token,omitempty"`
 }
 
-// SaltpayBankAccount defines model for SaltpayBankAccount.
-type SaltpayBankAccount struct {
-	AccountNumber *string `json:"account_number,omitempty"`
-	AccountType   *string `json:"account_type,omitempty"`
-	BankCode      *string `json:"bank_code,omitempty"`
-
-	// The company ID tied to the bank account.
-	CompanyId *string `json:"company_id,omitempty"`
-
-	// Deprecated: use company_id instead
-	EnterpriseId *string `json:"enterprise_id,omitempty"`
-	Id           *string `json:"id,omitempty"`
-	Kennitala    *string `json:"kennitala,omitempty"`
-
-	// The user ID tied to the bank account.
-	//
-	// **Note:** A user can only tie a bank account to his own user ID.
-	UserId *string `json:"user_id,omitempty"`
-}
-
 // SaltpayCompanies defines model for SaltpayCompanies.
 type SaltpayCompanies []SaltpayCompany
 
 // SaltpayCompany defines model for SaltpayCompany.
 type SaltpayCompany struct {
-	BankAccount *SaltpayBankAccount `json:"bank_account,omitempty"`
-	Id          *string             `json:"id,omitempty"`
-	Name        *string             `json:"name,omitempty"`
+	Id   *string `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // SaltpayStore defines model for SaltpayStore.
@@ -15522,18 +15507,6 @@ type ListSaltpayCompaniesParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// LinkSaltpayBankAccountJSONBody defines parameters for LinkSaltpayBankAccount.
-type LinkSaltpayBankAccountJSONBody SaltpayBankAccount
-
-// LinkSaltpayBankAccountParams defines parameters for LinkSaltpayBankAccount.
-type LinkSaltpayBankAccountParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
 // ListSaltpayStoresAtCompanyParams defines parameters for ListSaltpayStoresAtCompany.
 type ListSaltpayStoresAtCompanyParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -17664,9 +17637,6 @@ type AdyenUserOnboardingJSONRequestBody AdyenUserOnboardingJSONBody
 
 // UpdateMozrestBookingChannelJSONRequestBody defines body for UpdateMozrestBookingChannel for application/json ContentType.
 type UpdateMozrestBookingChannelJSONRequestBody UpdateMozrestBookingChannelJSONBody
-
-// LinkSaltpayBankAccountJSONRequestBody defines body for LinkSaltpayBankAccount for application/json ContentType.
-type LinkSaltpayBankAccountJSONRequestBody LinkSaltpayBankAccountJSONBody
 
 // UpdateSaltpayTerminalJSONRequestBody defines body for UpdateSaltpayTerminal for application/json ContentType.
 type UpdateSaltpayTerminalJSONRequestBody UpdateSaltpayTerminalJSONBody
@@ -21131,11 +21101,6 @@ type ClientInterface interface {
 
 	// ListSaltpayCompanies request
 	ListSaltpayCompanies(ctx context.Context, params *ListSaltpayCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// LinkSaltpayBankAccount request with any body
-	LinkSaltpayBankAccountWithBody(ctx context.Context, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	LinkSaltpayBankAccount(ctx context.Context, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, body LinkSaltpayBankAccountJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListSaltpayStoresAtCompany request
 	ListSaltpayStoresAtCompany(ctx context.Context, companyId string, params *ListSaltpayStoresAtCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -25640,30 +25605,6 @@ func (c *Client) UpdateMozrestBookingChannel(ctx context.Context, companyId stri
 
 func (c *Client) ListSaltpayCompanies(ctx context.Context, params *ListSaltpayCompaniesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListSaltpayCompaniesRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) LinkSaltpayBankAccountWithBody(ctx context.Context, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewLinkSaltpayBankAccountRequestWithBody(c.Server, companyId, bankAccountId, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) LinkSaltpayBankAccount(ctx context.Context, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, body LinkSaltpayBankAccountJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewLinkSaltpayBankAccountRequest(c.Server, companyId, bankAccountId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -47645,96 +47586,6 @@ func NewListSaltpayCompaniesRequest(server string, params *ListSaltpayCompaniesP
 	return req, nil
 }
 
-// NewLinkSaltpayBankAccountRequest calls the generic LinkSaltpayBankAccount builder with application/json body
-func NewLinkSaltpayBankAccountRequest(server string, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, body LinkSaltpayBankAccountJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewLinkSaltpayBankAccountRequestWithBody(server, companyId, bankAccountId, params, "application/json", bodyReader)
-}
-
-// NewLinkSaltpayBankAccountRequestWithBody generates requests for LinkSaltpayBankAccount with any type of body
-func NewLinkSaltpayBankAccountRequestWithBody(server string, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "bank_account_id", runtime.ParamLocationPath, bankAccountId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/integrations/saltpay/companies/%s/bank_accounts/%s", pathParam0, pathParam1)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewListSaltpayStoresAtCompanyRequest generates requests for ListSaltpayStoresAtCompany
 func NewListSaltpayStoresAtCompanyRequest(server string, companyId string, params *ListSaltpayStoresAtCompanyParams) (*http.Request, error) {
 	var err error
@@ -62703,11 +62554,6 @@ type ClientWithResponsesInterface interface {
 	// ListSaltpayCompanies request
 	ListSaltpayCompaniesWithResponse(ctx context.Context, params *ListSaltpayCompaniesParams, reqEditors ...RequestEditorFn) (*ListSaltpayCompaniesResponse, error)
 
-	// LinkSaltpayBankAccount request with any body
-	LinkSaltpayBankAccountWithBodyWithResponse(ctx context.Context, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LinkSaltpayBankAccountResponse, error)
-
-	LinkSaltpayBankAccountWithResponse(ctx context.Context, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, body LinkSaltpayBankAccountJSONRequestBody, reqEditors ...RequestEditorFn) (*LinkSaltpayBankAccountResponse, error)
-
 	// ListSaltpayStoresAtCompany request
 	ListSaltpayStoresAtCompanyWithResponse(ctx context.Context, companyId string, params *ListSaltpayStoresAtCompanyParams, reqEditors ...RequestEditorFn) (*ListSaltpayStoresAtCompanyResponse, error)
 
@@ -68840,28 +68686,6 @@ func (r ListSaltpayCompaniesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListSaltpayCompaniesResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type LinkSaltpayBankAccountResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *SettlementAccount
-}
-
-// Status returns HTTPResponse.Status
-func (r LinkSaltpayBankAccountResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r LinkSaltpayBankAccountResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -75895,23 +75719,6 @@ func (c *ClientWithResponses) ListSaltpayCompaniesWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseListSaltpayCompaniesResponse(rsp)
-}
-
-// LinkSaltpayBankAccountWithBodyWithResponse request with arbitrary body returning *LinkSaltpayBankAccountResponse
-func (c *ClientWithResponses) LinkSaltpayBankAccountWithBodyWithResponse(ctx context.Context, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LinkSaltpayBankAccountResponse, error) {
-	rsp, err := c.LinkSaltpayBankAccountWithBody(ctx, companyId, bankAccountId, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseLinkSaltpayBankAccountResponse(rsp)
-}
-
-func (c *ClientWithResponses) LinkSaltpayBankAccountWithResponse(ctx context.Context, companyId string, bankAccountId string, params *LinkSaltpayBankAccountParams, body LinkSaltpayBankAccountJSONRequestBody, reqEditors ...RequestEditorFn) (*LinkSaltpayBankAccountResponse, error) {
-	rsp, err := c.LinkSaltpayBankAccount(ctx, companyId, bankAccountId, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseLinkSaltpayBankAccountResponse(rsp)
 }
 
 // ListSaltpayStoresAtCompanyWithResponse request returning *ListSaltpayStoresAtCompanyResponse
@@ -84441,32 +84248,6 @@ func ParseListSaltpayCompaniesResponse(rsp *http.Response) (*ListSaltpayCompanie
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest SaltpayCompanies
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseLinkSaltpayBankAccountResponse parses an HTTP response from a LinkSaltpayBankAccountWithResponse call
-func ParseLinkSaltpayBankAccountResponse(rsp *http.Response) (*LinkSaltpayBankAccountResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &LinkSaltpayBankAccountResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest SettlementAccount
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
