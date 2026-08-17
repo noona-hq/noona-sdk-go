@@ -13585,6 +13585,9 @@ type ListAdCampaignsParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand           `form:"expand,omitempty" json:"expand,omitempty"`
 	Status *AdCampaignStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Filter to campaigns whose promotables reference this ad
+	AdId *string `form:"ad_id,omitempty" json:"ad_id,omitempty"`
 }
 
 // ListAdsParams defines parameters for ListAds.
@@ -33115,6 +33118,22 @@ func NewListAdCampaignsRequest(server string, companyId string, params *ListAdCa
 	if params.Status != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.AdId != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ad_id", runtime.ParamLocationQuery, *params.AdId); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
