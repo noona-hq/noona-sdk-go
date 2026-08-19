@@ -6537,6 +6537,14 @@ type EventType struct {
 // How event is overbookable
 type EventTypeOverbookable string
 
+// EventTypeBulkCreateItem defines model for EventTypeBulkCreateItem.
+type EventTypeBulkCreateItem struct {
+	EventType EventType `json:"event_type"`
+
+	// Titles of the event type group hierarchy to place the event type in, ordered root to leaf. Each level is matched against existing groups on exact title under the same parent, and created when no group matches. Event types are placed in the leaf group. When omitted or empty the event type joins the default group.
+	GroupPath *[]string `json:"group_path,omitempty"`
+}
+
 // EventTypeCategories defines model for EventTypeCategories.
 type EventTypeCategories []EventTypeCategory
 
@@ -6632,6 +6640,46 @@ type EventTypeDurationRule struct {
 
 // EventTypeDurationRuleType defines model for EventTypeDurationRule.Type.
 type EventTypeDurationRuleType string
+
+// EventTypeExtraction defines model for EventTypeExtraction.
+type EventTypeExtraction struct {
+	// Distinct categories referenced by the extracted services
+	Categories []EventTypeExtractionCategory `json:"categories"`
+
+	// Extracted services in source order
+	EventTypes []EventTypeExtractionEventType `json:"event_types"`
+}
+
+// EventTypeExtractionCategory defines model for EventTypeExtractionCategory.
+type EventTypeExtractionCategory struct {
+	// True if the category exists as a grouping in the source, false if it was suggested by the AI
+	DetectedFromSource bool   `json:"detected_from_source"`
+	Name               string `json:"name"`
+}
+
+// EventTypeExtractionEventType defines model for EventTypeExtractionEventType.
+type EventTypeExtractionEventType struct {
+	// Short descriptive text accompanying the service in the source
+	Description *string `json:"description,omitempty"`
+
+	// Duration in minutes, when visible in the source
+	DurationMinutes *int32 `json:"duration_minutes,omitempty"`
+
+	// The service name, verbatim in the source language
+	Name string `json:"name"`
+
+	// Numeric price as shown in the source (the lower bound when the source shows a range), assumed to already be in the company's account currency — no currency detection or conversion is performed
+	Price *float64 `json:"price,omitempty"`
+
+	// Upper bound of the price when the source shows a range; absent for single prices. Same currency assumption as price
+	PriceUpper *float64 `json:"price_upper,omitempty"`
+
+	// Name of the category the service belongs to, either detected in the source or suggested
+	SourceCategory *string `json:"source_category,omitempty"`
+
+	// Name of the nested group under source_category when the source organizes services in a tree-like structure or prices them across a variant matrix; absent for flat lists
+	SourceSubcategory *string `json:"source_subcategory,omitempty"`
+}
 
 // EventTypeField defines model for EventTypeField.
 type EventTypeField string
@@ -6767,6 +6815,18 @@ type EventTypeVariations []EventTypeVariation
 
 // EventTypes defines model for EventTypes.
 type EventTypes []EventType
+
+// EventTypesBulkCreate defines model for EventTypesBulkCreate.
+type EventTypesBulkCreate struct {
+	// Event types to create. Max 200 items.
+	EventTypes []EventTypeBulkCreateItem `json:"event_types"`
+}
+
+// EventTypesBulkCreated defines model for EventTypesBulkCreated.
+type EventTypesBulkCreated struct {
+	// Created event types in request order
+	EventTypes []EventType `json:"event_types"`
+}
 
 // [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
 type EventUpdateBehavior struct {
@@ -13936,6 +13996,9 @@ type ListEventTypesParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// BulkCreateEventTypesJSONBody defines parameters for BulkCreateEventTypes.
+type BulkCreateEventTypesJSONBody EventTypesBulkCreate
+
 // ListEventsParams defines parameters for ListEvents.
 type ListEventsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -17521,6 +17584,9 @@ type CloneCompanyJSONRequestBody CloneCompanyJSONBody
 // UpdateEmployeeJSONRequestBody defines body for UpdateEmployee for application/json ContentType.
 type UpdateEmployeeJSONRequestBody UpdateEmployeeJSONBody
 
+// BulkCreateEventTypesJSONRequestBody defines body for BulkCreateEventTypes for application/json ContentType.
+type BulkCreateEventTypesJSONRequestBody BulkCreateEventTypesJSONBody
+
 // UpdateIssuerVATDefaultJSONRequestBody defines body for UpdateIssuerVATDefault for application/json ContentType.
 type UpdateIssuerVATDefaultJSONRequestBody UpdateIssuerVATDefaultJSONBody
 
@@ -20551,11 +20617,19 @@ type ClientInterface interface {
 	// ListEventTypeCategoryGroupsForCompany request
 	ListEventTypeCategoryGroupsForCompany(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsForCompanyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ExtractEventTypes request with any body
+	ExtractEventTypesWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListEventTypeGroups request
 	ListEventTypeGroups(ctx context.Context, companyId string, params *ListEventTypeGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListEventTypes request
 	ListEventTypes(ctx context.Context, companyId string, params *ListEventTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BulkCreateEventTypes request with any body
+	BulkCreateEventTypesWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkCreateEventTypes(ctx context.Context, companyId string, body BulkCreateEventTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListEvents request
 	ListEvents(ctx context.Context, companyId string, params *ListEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -23242,6 +23316,18 @@ func (c *Client) ListEventTypeCategoryGroupsForCompany(ctx context.Context, comp
 	return c.Client.Do(req)
 }
 
+func (c *Client) ExtractEventTypesWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewExtractEventTypesRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListEventTypeGroups(ctx context.Context, companyId string, params *ListEventTypeGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListEventTypeGroupsRequest(c.Server, companyId, params)
 	if err != nil {
@@ -23256,6 +23342,30 @@ func (c *Client) ListEventTypeGroups(ctx context.Context, companyId string, para
 
 func (c *Client) ListEventTypes(ctx context.Context, companyId string, params *ListEventTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListEventTypesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkCreateEventTypesWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkCreateEventTypesRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkCreateEventTypes(ctx context.Context, companyId string, body BulkCreateEventTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkCreateEventTypesRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -35436,6 +35546,42 @@ func NewListEventTypeCategoryGroupsForCompanyRequest(server string, companyId st
 	return req, nil
 }
 
+// NewExtractEventTypesRequestWithBody generates requests for ExtractEventTypes with any type of body
+func NewExtractEventTypesRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/event_type_extractions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListEventTypeGroupsRequest generates requests for ListEventTypeGroups
 func NewListEventTypeGroupsRequest(server string, companyId string, params *ListEventTypeGroupsParams) (*http.Request, error) {
 	var err error
@@ -35612,6 +35758,53 @@ func NewListEventTypesRequest(server string, companyId string, params *ListEvent
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewBulkCreateEventTypesRequest calls the generic BulkCreateEventTypes builder with application/json body
+func NewBulkCreateEventTypesRequest(server string, companyId string, body BulkCreateEventTypesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkCreateEventTypesRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewBulkCreateEventTypesRequestWithBody generates requests for BulkCreateEventTypes with any type of body
+func NewBulkCreateEventTypesRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/event_types/bulk", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -62019,11 +62212,19 @@ type ClientWithResponsesInterface interface {
 	// ListEventTypeCategoryGroupsForCompany request
 	ListEventTypeCategoryGroupsForCompanyWithResponse(ctx context.Context, companyId string, params *ListEventTypeCategoryGroupsForCompanyParams, reqEditors ...RequestEditorFn) (*ListEventTypeCategoryGroupsForCompanyResponse, error)
 
+	// ExtractEventTypes request with any body
+	ExtractEventTypesWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExtractEventTypesResponse, error)
+
 	// ListEventTypeGroups request
 	ListEventTypeGroupsWithResponse(ctx context.Context, companyId string, params *ListEventTypeGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeGroupsResponse, error)
 
 	// ListEventTypes request
 	ListEventTypesWithResponse(ctx context.Context, companyId string, params *ListEventTypesParams, reqEditors ...RequestEditorFn) (*ListEventTypesResponse, error)
+
+	// BulkCreateEventTypes request with any body
+	BulkCreateEventTypesWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateEventTypesResponse, error)
+
+	BulkCreateEventTypesWithResponse(ctx context.Context, companyId string, body BulkCreateEventTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkCreateEventTypesResponse, error)
 
 	// ListEvents request
 	ListEventsWithResponse(ctx context.Context, companyId string, params *ListEventsParams, reqEditors ...RequestEditorFn) (*ListEventsResponse, error)
@@ -65249,6 +65450,29 @@ func (r ListEventTypeCategoryGroupsForCompanyResponse) StatusCode() int {
 	return 0
 }
 
+type ExtractEventTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventTypeExtraction
+	JSON429      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ExtractEventTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ExtractEventTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListEventTypeGroupsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -65287,6 +65511,28 @@ func (r ListEventTypesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListEventTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type BulkCreateEventTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventTypesBulkCreated
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkCreateEventTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkCreateEventTypesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -73998,6 +74244,15 @@ func (c *ClientWithResponses) ListEventTypeCategoryGroupsForCompanyWithResponse(
 	return ParseListEventTypeCategoryGroupsForCompanyResponse(rsp)
 }
 
+// ExtractEventTypesWithBodyWithResponse request with arbitrary body returning *ExtractEventTypesResponse
+func (c *ClientWithResponses) ExtractEventTypesWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ExtractEventTypesResponse, error) {
+	rsp, err := c.ExtractEventTypesWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseExtractEventTypesResponse(rsp)
+}
+
 // ListEventTypeGroupsWithResponse request returning *ListEventTypeGroupsResponse
 func (c *ClientWithResponses) ListEventTypeGroupsWithResponse(ctx context.Context, companyId string, params *ListEventTypeGroupsParams, reqEditors ...RequestEditorFn) (*ListEventTypeGroupsResponse, error) {
 	rsp, err := c.ListEventTypeGroups(ctx, companyId, params, reqEditors...)
@@ -74014,6 +74269,23 @@ func (c *ClientWithResponses) ListEventTypesWithResponse(ctx context.Context, co
 		return nil, err
 	}
 	return ParseListEventTypesResponse(rsp)
+}
+
+// BulkCreateEventTypesWithBodyWithResponse request with arbitrary body returning *BulkCreateEventTypesResponse
+func (c *ClientWithResponses) BulkCreateEventTypesWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateEventTypesResponse, error) {
+	rsp, err := c.BulkCreateEventTypesWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkCreateEventTypesResponse(rsp)
+}
+
+func (c *ClientWithResponses) BulkCreateEventTypesWithResponse(ctx context.Context, companyId string, body BulkCreateEventTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkCreateEventTypesResponse, error) {
+	rsp, err := c.BulkCreateEventTypes(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkCreateEventTypesResponse(rsp)
 }
 
 // ListEventsWithResponse request returning *ListEventsResponse
@@ -80339,6 +80611,39 @@ func ParseListEventTypeCategoryGroupsForCompanyResponse(rsp *http.Response) (*Li
 	return response, nil
 }
 
+// ParseExtractEventTypesResponse parses an HTTP response from a ExtractEventTypesWithResponse call
+func ParseExtractEventTypesResponse(rsp *http.Response) (*ExtractEventTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ExtractEventTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventTypeExtraction
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListEventTypeGroupsResponse parses an HTTP response from a ListEventTypeGroupsWithResponse call
 func ParseListEventTypeGroupsResponse(rsp *http.Response) (*ListEventTypeGroupsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -80381,6 +80686,32 @@ func ParseListEventTypesResponse(rsp *http.Response) (*ListEventTypesResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest EventTypes
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkCreateEventTypesResponse parses an HTTP response from a BulkCreateEventTypesWithResponse call
+func ParseBulkCreateEventTypesResponse(rsp *http.Response) (*BulkCreateEventTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkCreateEventTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventTypesBulkCreated
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
