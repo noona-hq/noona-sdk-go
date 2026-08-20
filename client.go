@@ -2468,6 +2468,17 @@ type AdPlacementSizeConfig struct {
 // AdPlacementType defines model for AdPlacementType.
 type AdPlacementType string
 
+// AdPreviewToken defines model for AdPreviewToken.
+type AdPreviewToken struct {
+	ExpiresAt time.Time `json:"expires_at"`
+	Token     string    `json:"token"`
+}
+
+// AdPreviewTokenCreate defines model for AdPreviewTokenCreate.
+type AdPreviewTokenCreate struct {
+	AdId string `json:"ad_id"`
+}
+
 // AdResponse defines model for AdResponse.
 type AdResponse Ad
 
@@ -13145,6 +13156,18 @@ type ListPaymentActivitiesParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateAdPreviewTokenJSONBody defines parameters for CreateAdPreviewToken.
+type CreateAdPreviewTokenJSONBody AdPreviewTokenCreate
+
+// CreateAdPreviewTokenParams defines parameters for CreateAdPreviewToken.
+type CreateAdPreviewTokenParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateAdCampaignJSONBody defines parameters for CreateAdCampaign.
 type CreateAdCampaignJSONBody AdCampaignCreate
 
@@ -17500,6 +17523,9 @@ type UpdateWebhookParams struct {
 // UpdateWorkHoursJSONBody defines parameters for UpdateWorkHours.
 type UpdateWorkHoursJSONBody WorkHoursUpdate
 
+// CreateAdPreviewTokenJSONRequestBody defines body for CreateAdPreviewToken for application/json ContentType.
+type CreateAdPreviewTokenJSONRequestBody CreateAdPreviewTokenJSONBody
+
 // CreateAdCampaignJSONRequestBody defines body for CreateAdCampaign for application/json ContentType.
 type CreateAdCampaignJSONRequestBody CreateAdCampaignJSONBody
 
@@ -20312,6 +20338,11 @@ type ClientInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateAdPreviewToken request with any body
+	CreateAdPreviewTokenWithBody(ctx context.Context, params *CreateAdPreviewTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateAdPreviewToken(ctx context.Context, params *CreateAdPreviewTokenParams, body CreateAdPreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateAdCampaign request with any body
 	CreateAdCampaignWithBody(ctx context.Context, params *CreateAdCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -21974,6 +22005,30 @@ func (c *Client) ListEventActivities(ctx context.Context, eventId string, params
 
 func (c *Client) ListPaymentActivities(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListPaymentActivitiesRequest(c.Server, paymentId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAdPreviewTokenWithBody(ctx context.Context, params *CreateAdPreviewTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAdPreviewTokenRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAdPreviewToken(ctx context.Context, params *CreateAdPreviewTokenParams, body CreateAdPreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateAdPreviewTokenRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -29362,6 +29417,82 @@ func NewListPaymentActivitiesRequest(server string, paymentId string, params *Li
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewCreateAdPreviewTokenRequest calls the generic CreateAdPreviewToken builder with application/json body
+func NewCreateAdPreviewTokenRequest(server string, params *CreateAdPreviewTokenParams, body CreateAdPreviewTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAdPreviewTokenRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateAdPreviewTokenRequestWithBody generates requests for CreateAdPreviewToken with any type of body
+func NewCreateAdPreviewTokenRequestWithBody(server string, params *CreateAdPreviewTokenParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/ad-preview-tokens")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -61907,6 +62038,11 @@ type ClientWithResponsesInterface interface {
 	// ListPaymentActivities request
 	ListPaymentActivitiesWithResponse(ctx context.Context, paymentId string, params *ListPaymentActivitiesParams, reqEditors ...RequestEditorFn) (*ListPaymentActivitiesResponse, error)
 
+	// CreateAdPreviewToken request with any body
+	CreateAdPreviewTokenWithBodyWithResponse(ctx context.Context, params *CreateAdPreviewTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAdPreviewTokenResponse, error)
+
+	CreateAdPreviewTokenWithResponse(ctx context.Context, params *CreateAdPreviewTokenParams, body CreateAdPreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAdPreviewTokenResponse, error)
+
 	// CreateAdCampaign request with any body
 	CreateAdCampaignWithBodyWithResponse(ctx context.Context, params *CreateAdCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAdCampaignResponse, error)
 
@@ -63623,6 +63759,28 @@ func (r ListPaymentActivitiesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListPaymentActivitiesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAdPreviewTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdPreviewToken
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAdPreviewTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAdPreviewTokenResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -73273,6 +73431,23 @@ func (c *ClientWithResponses) ListPaymentActivitiesWithResponse(ctx context.Cont
 	return ParseListPaymentActivitiesResponse(rsp)
 }
 
+// CreateAdPreviewTokenWithBodyWithResponse request with arbitrary body returning *CreateAdPreviewTokenResponse
+func (c *ClientWithResponses) CreateAdPreviewTokenWithBodyWithResponse(ctx context.Context, params *CreateAdPreviewTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAdPreviewTokenResponse, error) {
+	rsp, err := c.CreateAdPreviewTokenWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAdPreviewTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAdPreviewTokenWithResponse(ctx context.Context, params *CreateAdPreviewTokenParams, body CreateAdPreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAdPreviewTokenResponse, error) {
+	rsp, err := c.CreateAdPreviewToken(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAdPreviewTokenResponse(rsp)
+}
+
 // CreateAdCampaignWithBodyWithResponse request with arbitrary body returning *CreateAdCampaignResponse
 func (c *ClientWithResponses) CreateAdCampaignWithBodyWithResponse(ctx context.Context, params *CreateAdCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateAdCampaignResponse, error) {
 	rsp, err := c.CreateAdCampaignWithBody(ctx, params, contentType, body, reqEditors...)
@@ -78520,6 +78695,32 @@ func ParseListPaymentActivitiesResponse(rsp *http.Response) (*ListPaymentActivit
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Activities
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAdPreviewTokenResponse parses an HTTP response from a CreateAdPreviewTokenWithResponse call
+func ParseCreateAdPreviewTokenResponse(rsp *http.Response) (*CreateAdPreviewTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAdPreviewTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdPreviewToken
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
