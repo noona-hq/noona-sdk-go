@@ -830,6 +830,13 @@ const (
 	GoalFirstOnlineBooking GoalTemplate = "goal_first_online_booking"
 )
 
+// Defines values for Granularity.
+const (
+	GranularityDay   Granularity = "day"
+	GranularityMonth Granularity = "month"
+	GranularityWeek  Granularity = "week"
+)
+
 // Defines values for HostedPageState.
 const (
 	HostedPageStateAcknowledged HostedPageState = "acknowledged"
@@ -1657,10 +1664,10 @@ const (
 
 // Defines values for SubscriptionDiscountPeriodUnit.
 const (
-	Day   SubscriptionDiscountPeriodUnit = "day"
-	Month SubscriptionDiscountPeriodUnit = "month"
-	Week  SubscriptionDiscountPeriodUnit = "week"
-	Year  SubscriptionDiscountPeriodUnit = "year"
+	SubscriptionDiscountPeriodUnitDay   SubscriptionDiscountPeriodUnit = "day"
+	SubscriptionDiscountPeriodUnitMonth SubscriptionDiscountPeriodUnit = "month"
+	SubscriptionDiscountPeriodUnitWeek  SubscriptionDiscountPeriodUnit = "week"
+	SubscriptionDiscountPeriodUnitYear  SubscriptionDiscountPeriodUnit = "year"
 )
 
 // Defines values for SubscriptionItemItemType.
@@ -2405,7 +2412,19 @@ type AdPerformance struct {
 			Currency *string  `json:"currency,omitempty"`
 		} `json:"spend,omitempty"`
 	} `json:"campaigns,omitempty"`
-	From   *time.Time `json:"from,omitempty"`
+	From *time.Time `json:"from,omitempty"`
+
+	// Bucketed time series, present only when `granularity` was set on the request. Buckets with no activity are omitted (no gap-filling).
+	Series *[]struct {
+		// Truncated start of the bucket (UTC for M1).
+		BucketAt    *time.Time `json:"bucket_at,omitempty"`
+		Clicks      *int64     `json:"clicks,omitempty"`
+		Impressions *int64     `json:"impressions,omitempty"`
+		Spend       *struct {
+			Amount   *float64 `json:"amount,omitempty"`
+			Currency *string  `json:"currency,omitempty"`
+		} `json:"spend,omitempty"`
+	} `json:"series,omitempty"`
 	To     *time.Time `json:"to,omitempty"`
 	Totals *struct {
 		Clicks      *int64 `json:"clicks,omitempty"`
@@ -2423,7 +2442,8 @@ type AdPerformanceFilter struct {
 	CampaignId *string `json:"campaign_id,omitempty"`
 
 	// Start of the window (inclusive)
-	From time.Time `json:"from"`
+	From        time.Time    `json:"from"`
+	Granularity *Granularity `json:"granularity,omitempty"`
 
 	// End of the window (inclusive)
 	To time.Time `json:"to"`
@@ -7492,6 +7512,9 @@ type GoogleCalendarConnection struct {
 	// Whether events should be synced between Noona and Google Calendar.
 	SyncEvents *bool `json:"sync_events,omitempty"`
 }
+
+// Granularity defines model for Granularity.
+type Granularity string
 
 // GroupProduct defines model for GroupProduct.
 type GroupProduct struct {
