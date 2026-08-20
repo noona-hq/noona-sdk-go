@@ -553,6 +553,7 @@ const (
 
 // Defines values for CreditLedgerEntrySource.
 const (
+	CreditLedgerEntrySourceAdEvent       CreditLedgerEntrySource = "ad_event"
 	CreditLedgerEntrySourceAutoTopUp     CreditLedgerEntrySource = "auto_top_up"
 	CreditLedgerEntrySourceCustom        CreditLedgerEntrySource = "custom"
 	CreditLedgerEntrySourceRefund        CreditLedgerEntrySource = "refund"
@@ -2235,16 +2236,17 @@ type AdCampaign struct {
 	Budget *AdCampaignBudget `json:"budget,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company     *ExpandableCompany   `json:"company,omitempty"`
-	CreatedAt   *time.Time           `json:"created_at,omitempty"`
-	Id          *string              `json:"id,omitempty"`
-	Name        *string              `json:"name,omitempty"`
-	Promotables *[]Promotable        `json:"promotables,omitempty"`
-	Schedule    *AdCampaignSchedule  `json:"schedule,omitempty"`
-	Spend       *AdCampaignSpend     `json:"spend,omitempty"`
-	Status      *AdCampaignStatus    `json:"status,omitempty"`
-	Targeting   *AdCampaignTargeting `json:"targeting,omitempty"`
-	UpdatedAt   *time.Time           `json:"updated_at,omitempty"`
+	Company      *ExpandableCompany   `json:"company,omitempty"`
+	CreatedAt    *time.Time           `json:"created_at,omitempty"`
+	Id           *string              `json:"id,omitempty"`
+	Name         *string              `json:"name,omitempty"`
+	PausedForDay *bool                `json:"paused_for_day,omitempty"`
+	Promotables  *[]Promotable        `json:"promotables,omitempty"`
+	Schedule     *AdCampaignSchedule  `json:"schedule,omitempty"`
+	Spend        *AdCampaignSpend     `json:"spend,omitempty"`
+	Status       *AdCampaignStatus    `json:"status,omitempty"`
+	Targeting    *AdCampaignTargeting `json:"targeting,omitempty"`
+	UpdatedAt    *time.Time           `json:"updated_at,omitempty"`
 }
 
 // AdCampaignBudget defines model for AdCampaignBudget.
@@ -2282,6 +2284,7 @@ type AdCampaignResponse struct {
 	EffectiveStatus *AdCampaignEffectiveStatus `json:"effective_status,omitempty"`
 	Id              *string                    `json:"id,omitempty"`
 	Name            *string                    `json:"name,omitempty"`
+	PausedForDay    *bool                      `json:"paused_for_day,omitempty"`
 	Promotables     *[]Promotable              `json:"promotables,omitempty"`
 	Schedule        *AdCampaignSchedule        `json:"schedule,omitempty"`
 	Spend           *AdCampaignSpend           `json:"spend,omitempty"`
