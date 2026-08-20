@@ -122,13 +122,14 @@ const (
 
 // Defines values for AdCampaignEffectiveStatus.
 const (
-	AdCampaignEffectiveStatusEnded         AdCampaignEffectiveStatus = "ended"
-	AdCampaignEffectiveStatusPaused        AdCampaignEffectiveStatus = "paused"
-	AdCampaignEffectiveStatusPausedForDay  AdCampaignEffectiveStatus = "paused_for_day"
-	AdCampaignEffectiveStatusPendingReview AdCampaignEffectiveStatus = "pending_review"
-	AdCampaignEffectiveStatusRunning       AdCampaignEffectiveStatus = "running"
-	AdCampaignEffectiveStatusScheduled     AdCampaignEffectiveStatus = "scheduled"
-	AdCampaignEffectiveStatusStoppedUnpaid AdCampaignEffectiveStatus = "stopped_unpaid"
+	AdCampaignEffectiveStatusEnded            AdCampaignEffectiveStatus = "ended"
+	AdCampaignEffectiveStatusPaused           AdCampaignEffectiveStatus = "paused"
+	AdCampaignEffectiveStatusPausedForDay     AdCampaignEffectiveStatus = "paused_for_day"
+	AdCampaignEffectiveStatusPendingReview    AdCampaignEffectiveStatus = "pending_review"
+	AdCampaignEffectiveStatusRunning          AdCampaignEffectiveStatus = "running"
+	AdCampaignEffectiveStatusScheduled        AdCampaignEffectiveStatus = "scheduled"
+	AdCampaignEffectiveStatusStoppedNoBalance AdCampaignEffectiveStatus = "stopped_no_balance"
+	AdCampaignEffectiveStatusStoppedUnpaid    AdCampaignEffectiveStatus = "stopped_unpaid"
 )
 
 // Defines values for AdCampaignStatus.
