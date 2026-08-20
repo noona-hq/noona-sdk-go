@@ -175,6 +175,11 @@ const (
 	AdSectionFieldTypeString AdSectionFieldType = "string"
 )
 
+// Defines values for AdStateTransitionErrorCode.
+const (
+	IllegalStatusTransition AdStateTransitionErrorCode = "illegal_status_transition"
+)
+
 // Defines values for AdStatus.
 const (
 	AdStatusApproved  AdStatus = "approved"
@@ -2485,6 +2490,17 @@ type AdResponse Ad
 // AdSectionFieldType defines model for AdSectionFieldType.
 type AdSectionFieldType string
 
+// AdStateTransitionError defines model for AdStateTransitionError.
+type AdStateTransitionError struct {
+	AttemptedStatus AdStatus                   `json:"attempted_status"`
+	Code            AdStateTransitionErrorCode `json:"code"`
+	CurrentStatus   AdStatus                   `json:"current_status"`
+	Message         string                     `json:"message"`
+}
+
+// AdStateTransitionErrorCode defines model for AdStateTransitionErrorCode.
+type AdStateTransitionErrorCode string
+
 // AdStatus defines model for AdStatus.
 type AdStatus string
 
@@ -2932,6 +2948,13 @@ type AdminFixWorkHoursTimesResult struct {
 
 // AdminFixWorkHoursTimesScope defines model for AdminFixWorkHoursTimesScope.
 type AdminFixWorkHoursTimesScope string
+
+// AdminMarketplaceAdUpdate defines model for AdminMarketplaceAdUpdate.
+type AdminMarketplaceAdUpdate struct {
+	// Required when status is rejected or taken_down.
+	Reason *string  `json:"reason,omitempty"`
+	Status AdStatus `json:"status"`
+}
 
 // AdminMoveUserRequest defines model for AdminMoveUserRequest.
 type AdminMoveUserRequest struct {
@@ -13365,6 +13388,41 @@ type AdminUpdateTerminalParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminListMarketplaceAdsParams defines parameters for AdminListMarketplaceAds.
+type AdminListMarketplaceAdsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand    *Expand   `form:"expand,omitempty" json:"expand,omitempty"`
+	Status    *AdStatus `form:"status,omitempty" json:"status,omitempty"`
+	CompanyId *string   `form:"company_id,omitempty" json:"company_id,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
+// AdminGetMarketplaceAdParams defines parameters for AdminGetMarketplaceAd.
+type AdminGetMarketplaceAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AdminUpdateMarketplaceAdJSONBody defines parameters for AdminUpdateMarketplaceAd.
+type AdminUpdateMarketplaceAdJSONBody AdminMarketplaceAdUpdate
+
+// AdminUpdateMarketplaceAdParams defines parameters for AdminUpdateMarketplaceAd.
+type AdminUpdateMarketplaceAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AdminBulkMigrateBlacklistJSONBody defines parameters for AdminBulkMigrateBlacklist.
 type AdminBulkMigrateBlacklistJSONBody AdminBlacklistBulkMigrationRequest
 
@@ -17556,6 +17614,9 @@ type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJ
 // AdminUpdateTerminalJSONRequestBody defines body for AdminUpdateTerminal for application/json ContentType.
 type AdminUpdateTerminalJSONRequestBody AdminUpdateTerminalJSONBody
 
+// AdminUpdateMarketplaceAdJSONRequestBody defines body for AdminUpdateMarketplaceAd for application/json ContentType.
+type AdminUpdateMarketplaceAdJSONRequestBody AdminUpdateMarketplaceAdJSONBody
+
 // AdminBulkMigrateBlacklistJSONRequestBody defines body for AdminBulkMigrateBlacklist for application/json ContentType.
 type AdminBulkMigrateBlacklistJSONRequestBody AdminBulkMigrateBlacklistJSONBody
 
@@ -20441,6 +20502,17 @@ type ClientInterface interface {
 
 	AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminListMarketplaceAds request
+	AdminListMarketplaceAds(ctx context.Context, params *AdminListMarketplaceAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminGetMarketplaceAd request
+	AdminGetMarketplaceAd(ctx context.Context, adId string, params *AdminGetMarketplaceAdParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminUpdateMarketplaceAd request with any body
+	AdminUpdateMarketplaceAdWithBody(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminUpdateMarketplaceAd(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminBulkMigrateBlacklist request with any body
 	AdminBulkMigrateBlacklistWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -22461,6 +22533,54 @@ func (c *Client) AdminUpdateTerminalWithBody(ctx context.Context, companyId stri
 
 func (c *Client) AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateTerminalRequest(c.Server, companyId, terminalId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminListMarketplaceAds(ctx context.Context, params *AdminListMarketplaceAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminListMarketplaceAdsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminGetMarketplaceAd(ctx context.Context, adId string, params *AdminGetMarketplaceAdParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminGetMarketplaceAdRequest(c.Server, adId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateMarketplaceAdWithBody(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateMarketplaceAdRequestWithBody(c.Server, adId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminUpdateMarketplaceAd(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminUpdateMarketplaceAdRequest(c.Server, adId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -31114,6 +31234,264 @@ func NewAdminUpdateTerminalRequestWithBody(server string, companyId string, term
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/terminals/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminListMarketplaceAdsRequest generates requests for AdminListMarketplaceAds
+func NewAdminListMarketplaceAdsRequest(server string, params *AdminListMarketplaceAdsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/marketplace-ads")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Status != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.CompanyId != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "company_id", runtime.ParamLocationQuery, *params.CompanyId); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminGetMarketplaceAdRequest generates requests for AdminGetMarketplaceAd
+func NewAdminGetMarketplaceAdRequest(server string, adId string, params *AdminGetMarketplaceAdParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_id", runtime.ParamLocationPath, adId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/marketplace-ads/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAdminUpdateMarketplaceAdRequest calls the generic AdminUpdateMarketplaceAd builder with application/json body
+func NewAdminUpdateMarketplaceAdRequest(server string, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminUpdateMarketplaceAdRequestWithBody(server, adId, params, "application/json", bodyReader)
+}
+
+// NewAdminUpdateMarketplaceAdRequestWithBody generates requests for AdminUpdateMarketplaceAd with any type of body
+func NewAdminUpdateMarketplaceAdRequestWithBody(server string, adId string, params *AdminUpdateMarketplaceAdParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_id", runtime.ParamLocationPath, adId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/marketplace-ads/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -62141,6 +62519,17 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateTerminalWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error)
 
+	// AdminListMarketplaceAds request
+	AdminListMarketplaceAdsWithResponse(ctx context.Context, params *AdminListMarketplaceAdsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdsResponse, error)
+
+	// AdminGetMarketplaceAd request
+	AdminGetMarketplaceAdWithResponse(ctx context.Context, adId string, params *AdminGetMarketplaceAdParams, reqEditors ...RequestEditorFn) (*AdminGetMarketplaceAdResponse, error)
+
+	// AdminUpdateMarketplaceAd request with any body
+	AdminUpdateMarketplaceAdWithBodyWithResponse(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateMarketplaceAdResponse, error)
+
+	AdminUpdateMarketplaceAdWithResponse(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateMarketplaceAdResponse, error)
+
 	// AdminBulkMigrateBlacklist request with any body
 	AdminBulkMigrateBlacklistWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistResponse, error)
 
@@ -64344,6 +64733,73 @@ func (r AdminUpdateTerminalResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateTerminalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminListMarketplaceAdsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdsResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminListMarketplaceAdsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminListMarketplaceAdsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminGetMarketplaceAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminGetMarketplaceAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminGetMarketplaceAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminUpdateMarketplaceAdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdResponse
+	JSON409      *AdStateTransitionError
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminUpdateMarketplaceAdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminUpdateMarketplaceAdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -73762,6 +74218,41 @@ func (c *ClientWithResponses) AdminUpdateTerminalWithResponse(ctx context.Contex
 	return ParseAdminUpdateTerminalResponse(rsp)
 }
 
+// AdminListMarketplaceAdsWithResponse request returning *AdminListMarketplaceAdsResponse
+func (c *ClientWithResponses) AdminListMarketplaceAdsWithResponse(ctx context.Context, params *AdminListMarketplaceAdsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdsResponse, error) {
+	rsp, err := c.AdminListMarketplaceAds(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminListMarketplaceAdsResponse(rsp)
+}
+
+// AdminGetMarketplaceAdWithResponse request returning *AdminGetMarketplaceAdResponse
+func (c *ClientWithResponses) AdminGetMarketplaceAdWithResponse(ctx context.Context, adId string, params *AdminGetMarketplaceAdParams, reqEditors ...RequestEditorFn) (*AdminGetMarketplaceAdResponse, error) {
+	rsp, err := c.AdminGetMarketplaceAd(ctx, adId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminGetMarketplaceAdResponse(rsp)
+}
+
+// AdminUpdateMarketplaceAdWithBodyWithResponse request with arbitrary body returning *AdminUpdateMarketplaceAdResponse
+func (c *ClientWithResponses) AdminUpdateMarketplaceAdWithBodyWithResponse(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateMarketplaceAdResponse, error) {
+	rsp, err := c.AdminUpdateMarketplaceAdWithBody(ctx, adId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateMarketplaceAdResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminUpdateMarketplaceAdWithResponse(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateMarketplaceAdResponse, error) {
+	rsp, err := c.AdminUpdateMarketplaceAd(ctx, adId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminUpdateMarketplaceAdResponse(rsp)
+}
+
 // AdminBulkMigrateBlacklistWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateBlacklistResponse
 func (c *ClientWithResponses) AdminBulkMigrateBlacklistWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateBlacklistResponse, error) {
 	rsp, err := c.AdminBulkMigrateBlacklistWithBody(ctx, contentType, body, reqEditors...)
@@ -79312,6 +79803,91 @@ func ParseAdminUpdateTerminalResponse(rsp *http.Response) (*AdminUpdateTerminalR
 	response := &AdminUpdateTerminalResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminListMarketplaceAdsResponse parses an HTTP response from a AdminListMarketplaceAdsWithResponse call
+func ParseAdminListMarketplaceAdsResponse(rsp *http.Response) (*AdminListMarketplaceAdsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminListMarketplaceAdsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminGetMarketplaceAdResponse parses an HTTP response from a AdminGetMarketplaceAdWithResponse call
+func ParseAdminGetMarketplaceAdResponse(rsp *http.Response) (*AdminGetMarketplaceAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminGetMarketplaceAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminUpdateMarketplaceAdResponse parses an HTTP response from a AdminUpdateMarketplaceAdWithResponse call
+func ParseAdminUpdateMarketplaceAdResponse(rsp *http.Response) (*AdminUpdateMarketplaceAdResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminUpdateMarketplaceAdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest AdStateTransitionError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	}
 
 	return response, nil
