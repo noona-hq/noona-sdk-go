@@ -5800,6 +5800,51 @@ type EmployeeSMSSettings struct {
 	From *string `json:"from,omitempty"`
 }
 
+// EmployeeSalesBreakdownFilter defines model for EmployeeSalesBreakdownFilter.
+type EmployeeSalesBreakdownFilter struct {
+	EmployeeId string    `json:"employee_id"`
+	From       time.Time `json:"from"`
+	IssuerIds  *[]string `json:"issuer_ids,omitempty"`
+	To         time.Time `json:"to"`
+}
+
+// One of service, product, voucher, claim, or unknown.
+type EmployeeSalesBreakdownItemType string
+
+// EmployeeSalesBreakdownReport defines model for EmployeeSalesBreakdownReport.
+type EmployeeSalesBreakdownReport []EmployeeSalesBreakdownRow
+
+// EmployeeSalesBreakdownRow defines model for EmployeeSalesBreakdownRow.
+type EmployeeSalesBreakdownRow struct {
+	ClaimAmountExclVat float64 `json:"claim_amount_excl_vat"`
+	ClaimAmountInclVat float64 `json:"claim_amount_incl_vat"`
+	ItemId             string  `json:"item_id"`
+	ItemName           *string `json:"item_name,omitempty"`
+
+	// One of service, product, voucher, claim, or unknown.
+	ItemType             EmployeeSalesBreakdownItemType `json:"item_type"`
+	ProductAmountExclVat float64                        `json:"product_amount_excl_vat"`
+	ProductAmountInclVat float64                        `json:"product_amount_incl_vat"`
+	ReturnQuantity       int64                          `json:"return_quantity"`
+	SaleQuantity         int64                          `json:"sale_quantity"`
+	TotalAmountExclVat   float64                        `json:"total_amount_excl_vat"`
+	TotalAmountInclVat   float64                        `json:"total_amount_incl_vat"`
+	UnknownAmountExclVat float64                        `json:"unknown_amount_excl_vat"`
+	UnknownAmountInclVat float64                        `json:"unknown_amount_incl_vat"`
+	VoucherAmountExclVat float64                        `json:"voucher_amount_excl_vat"`
+	VoucherAmountInclVat float64                        `json:"voucher_amount_incl_vat"`
+	VoucherSessionsTotal *int32                         `json:"voucher_sessions_total,omitempty"`
+
+	// One of amount or service.
+	VoucherType         *EmployeeSalesBreakdownVoucherType `json:"voucher_type,omitempty"`
+	WorkAmountExclVat   float64                            `json:"work_amount_excl_vat"`
+	WorkAmountExemptVat float64                            `json:"work_amount_exempt_vat"`
+	WorkAmountInclVat   float64                            `json:"work_amount_incl_vat"`
+}
+
+// One of amount or service.
+type EmployeeSalesBreakdownVoucherType string
+
 // EmployeeState defines model for EmployeeState.
 type EmployeeState string
 
@@ -10641,14 +10686,6 @@ type SaleFields []SaleField
 // Sales defines model for Sales.
 type Sales []Sale
 
-// SalesByEmployeeFilter defines model for SalesByEmployeeFilter.
-type SalesByEmployeeFilter struct {
-	EmployeeIds *[]string `json:"employee_ids,omitempty"`
-	From        time.Time `json:"from"`
-	IssuerIds   *[]string `json:"issuer_ids,omitempty"`
-	To          time.Time `json:"to"`
-}
-
 // SalesByEmployeeReport defines model for SalesByEmployeeReport.
 type SalesByEmployeeReport []SalesByEmployeeRow
 
@@ -10660,8 +10697,10 @@ type SalesByEmployeeRow struct {
 	EmployeeName         *string `json:"employee_name,omitempty"`
 	ProductAmountExclVat float64 `json:"product_amount_excl_vat"`
 	ProductAmountInclVat float64 `json:"product_amount_incl_vat"`
-	ReturnQuantity       int32   `json:"return_quantity"`
-	SaleQuantity         int32   `json:"sale_quantity"`
+	ReturnQuantity       int64   `json:"return_quantity"`
+	SaleQuantity         int64   `json:"sale_quantity"`
+	TotalAmountExclVat   float64 `json:"total_amount_excl_vat"`
+	TotalAmountInclVat   float64 `json:"total_amount_incl_vat"`
 	UnknownAmountExclVat float64 `json:"unknown_amount_excl_vat"`
 	UnknownAmountInclVat float64 `json:"unknown_amount_incl_vat"`
 	VoucherAmountExclVat float64 `json:"voucher_amount_excl_vat"`
@@ -10671,10 +10710,69 @@ type SalesByEmployeeRow struct {
 	WorkAmountInclVat    float64 `json:"work_amount_incl_vat"`
 }
 
+// SalesByProductReport defines model for SalesByProductReport.
+type SalesByProductReport []SalesByProductRow
+
+// SalesByProductRow defines model for SalesByProductRow.
+type SalesByProductRow struct {
+	AmountExclVat  float64 `json:"amount_excl_vat"`
+	AmountInclVat  float64 `json:"amount_incl_vat"`
+	ProductId      string  `json:"product_id"`
+	ProductName    *string `json:"product_name,omitempty"`
+	ReturnQuantity int64   `json:"return_quantity"`
+	SaleQuantity   int64   `json:"sale_quantity"`
+}
+
+// SalesByServiceReport defines model for SalesByServiceReport.
+type SalesByServiceReport []SalesByServiceRow
+
+// SalesByServiceRow defines model for SalesByServiceRow.
+type SalesByServiceRow struct {
+	AmountExclVat   float64 `json:"amount_excl_vat"`
+	AmountExemptVat float64 `json:"amount_exempt_vat"`
+	AmountInclVat   float64 `json:"amount_incl_vat"`
+	ReturnQuantity  int64   `json:"return_quantity"`
+	SaleQuantity    int64   `json:"sale_quantity"`
+	ServiceId       string  `json:"service_id"`
+	ServiceName     *string `json:"service_name,omitempty"`
+}
+
+// SalesByVATCategoryReport defines model for SalesByVATCategoryReport.
+type SalesByVATCategoryReport []SalesByVATCategoryRow
+
+// SalesByVATCategoryRow defines model for SalesByVATCategoryRow.
+type SalesByVATCategoryRow struct {
+	AmountExclVat  float64 `json:"amount_excl_vat"`
+	AmountInclVat  float64 `json:"amount_incl_vat"`
+	ReturnQuantity int64   `json:"return_quantity"`
+	SaleQuantity   int64   `json:"sale_quantity"`
+	VatRatio       float64 `json:"vat_ratio"`
+}
+
 // SalesMetrics defines model for SalesMetrics.
 type SalesMetrics struct {
 	Payments     *AmountMetricsByDay `json:"payments,omitempty"`
 	Transactions *AmountMetricsByDay `json:"transactions,omitempty"`
+}
+
+// SalesReportDateRangeFilter defines model for SalesReportDateRangeFilter.
+type SalesReportDateRangeFilter struct {
+	From time.Time `json:"from"`
+	To   time.Time `json:"to"`
+}
+
+// SalesReportFilter defines model for SalesReportFilter.
+type SalesReportFilter struct {
+	EmployeeIds *[]string `json:"employee_ids,omitempty"`
+	From        time.Time `json:"from"`
+	IssuerIds   *[]string `json:"issuer_ids,omitempty"`
+	To          time.Time `json:"to"`
+}
+
+// SalesReportFilterOptions defines model for SalesReportFilterOptions.
+type SalesReportFilterOptions struct {
+	EmployeeIds []string `json:"employee_ids"`
+	IssuerIds   []string `json:"issuer_ids"`
 }
 
 // Identity token for the authenticated user. Pass it to the Salesforce chat widget
@@ -14441,9 +14539,34 @@ type ListRemindersParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// GetEmployeeSalesBreakdownReportParams defines parameters for GetEmployeeSalesBreakdownReport.
+type GetEmployeeSalesBreakdownReportParams struct {
+	Filter EmployeeSalesBreakdownFilter `form:"filter" json:"filter"`
+}
+
 // GetSalesByEmployeeReportParams defines parameters for GetSalesByEmployeeReport.
 type GetSalesByEmployeeReportParams struct {
-	Filter SalesByEmployeeFilter `form:"filter" json:"filter"`
+	Filter SalesReportFilter `form:"filter" json:"filter"`
+}
+
+// GetSalesByProductReportParams defines parameters for GetSalesByProductReport.
+type GetSalesByProductReportParams struct {
+	Filter SalesReportFilter `form:"filter" json:"filter"`
+}
+
+// GetSalesByServiceReportParams defines parameters for GetSalesByServiceReport.
+type GetSalesByServiceReportParams struct {
+	Filter SalesReportFilter `form:"filter" json:"filter"`
+}
+
+// GetSalesByVATCategoryReportParams defines parameters for GetSalesByVATCategoryReport.
+type GetSalesByVATCategoryReportParams struct {
+	Filter SalesReportFilter `form:"filter" json:"filter"`
+}
+
+// GetSalesReportFilterOptionsParams defines parameters for GetSalesReportFilterOptions.
+type GetSalesReportFilterOptionsParams struct {
+	Filter SalesReportDateRangeFilter `form:"filter" json:"filter"`
 }
 
 // ListResourceGroupsParams defines parameters for ListResourceGroups.
@@ -20864,8 +20987,23 @@ type ClientInterface interface {
 	// ListReminders request
 	ListReminders(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetEmployeeSalesBreakdownReport request
+	GetEmployeeSalesBreakdownReport(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetSalesByEmployeeReport request
 	GetSalesByEmployeeReport(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSalesByProductReport request
+	GetSalesByProductReport(ctx context.Context, companyId string, params *GetSalesByProductReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSalesByServiceReport request
+	GetSalesByServiceReport(ctx context.Context, companyId string, params *GetSalesByServiceReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSalesByVATCategoryReport request
+	GetSalesByVATCategoryReport(ctx context.Context, companyId string, params *GetSalesByVATCategoryReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetSalesReportFilterOptions request
+	GetSalesReportFilterOptions(ctx context.Context, companyId string, params *GetSalesReportFilterOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListResourceGroups request
 	ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -23998,8 +24136,68 @@ func (c *Client) ListReminders(ctx context.Context, companyId string, params *Li
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetEmployeeSalesBreakdownReport(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEmployeeSalesBreakdownReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetSalesByEmployeeReport(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSalesByEmployeeReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSalesByProductReport(ctx context.Context, companyId string, params *GetSalesByProductReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSalesByProductReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSalesByServiceReport(ctx context.Context, companyId string, params *GetSalesByServiceReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSalesByServiceReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSalesByVATCategoryReport(ctx context.Context, companyId string, params *GetSalesByVATCategoryReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSalesByVATCategoryReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSalesReportFilterOptions(ctx context.Context, companyId string, params *GetSalesReportFilterOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSalesReportFilterOptionsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -38959,6 +39157,50 @@ func NewListRemindersRequest(server string, companyId string, params *ListRemind
 	return req, nil
 }
 
+// NewGetEmployeeSalesBreakdownReportRequest generates requests for GetEmployeeSalesBreakdownReport
+func NewGetEmployeeSalesBreakdownReportRequest(server string, companyId string, params *GetEmployeeSalesBreakdownReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/employee-sales-breakdown", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetSalesByEmployeeReportRequest generates requests for GetSalesByEmployeeReport
 func NewGetSalesByEmployeeReportRequest(server string, companyId string, params *GetSalesByEmployeeReportParams) (*http.Request, error) {
 	var err error
@@ -38976,6 +39218,182 @@ func NewGetSalesByEmployeeReportRequest(server string, companyId string, params 
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/sales-by-employee", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSalesByProductReportRequest generates requests for GetSalesByProductReport
+func NewGetSalesByProductReportRequest(server string, companyId string, params *GetSalesByProductReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/sales-by-product", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSalesByServiceReportRequest generates requests for GetSalesByServiceReport
+func NewGetSalesByServiceReportRequest(server string, companyId string, params *GetSalesByServiceReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/sales-by-service", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSalesByVATCategoryReportRequest generates requests for GetSalesByVATCategoryReport
+func NewGetSalesByVATCategoryReportRequest(server string, companyId string, params *GetSalesByVATCategoryReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/sales-by-vat-category", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSalesReportFilterOptionsRequest generates requests for GetSalesReportFilterOptions
+func NewGetSalesReportFilterOptionsRequest(server string, companyId string, params *GetSalesReportFilterOptionsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/sales-filter-options", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -62881,8 +63299,23 @@ type ClientWithResponsesInterface interface {
 	// ListReminders request
 	ListRemindersWithResponse(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*ListRemindersResponse, error)
 
+	// GetEmployeeSalesBreakdownReport request
+	GetEmployeeSalesBreakdownReportWithResponse(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*GetEmployeeSalesBreakdownReportResponse, error)
+
 	// GetSalesByEmployeeReport request
 	GetSalesByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetSalesByEmployeeReportResponse, error)
+
+	// GetSalesByProductReport request
+	GetSalesByProductReportWithResponse(ctx context.Context, companyId string, params *GetSalesByProductReportParams, reqEditors ...RequestEditorFn) (*GetSalesByProductReportResponse, error)
+
+	// GetSalesByServiceReport request
+	GetSalesByServiceReportWithResponse(ctx context.Context, companyId string, params *GetSalesByServiceReportParams, reqEditors ...RequestEditorFn) (*GetSalesByServiceReportResponse, error)
+
+	// GetSalesByVATCategoryReport request
+	GetSalesByVATCategoryReportWithResponse(ctx context.Context, companyId string, params *GetSalesByVATCategoryReportParams, reqEditors ...RequestEditorFn) (*GetSalesByVATCategoryReportResponse, error)
+
+	// GetSalesReportFilterOptions request
+	GetSalesReportFilterOptionsWithResponse(ctx context.Context, companyId string, params *GetSalesReportFilterOptionsParams, reqEditors ...RequestEditorFn) (*GetSalesReportFilterOptionsResponse, error)
 
 	// ListResourceGroups request
 	ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error)
@@ -66904,6 +67337,28 @@ func (r ListRemindersResponse) StatusCode() int {
 	return 0
 }
 
+type GetEmployeeSalesBreakdownReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EmployeeSalesBreakdownReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetEmployeeSalesBreakdownReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetEmployeeSalesBreakdownReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetSalesByEmployeeReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -66920,6 +67375,94 @@ func (r GetSalesByEmployeeReportResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSalesByEmployeeReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSalesByProductReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SalesByProductReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSalesByProductReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSalesByProductReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSalesByServiceReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SalesByServiceReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSalesByServiceReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSalesByServiceReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSalesByVATCategoryReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SalesByVATCategoryReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSalesByVATCategoryReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSalesByVATCategoryReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSalesReportFilterOptionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SalesReportFilterOptions
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSalesReportFilterOptionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSalesReportFilterOptionsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -75294,6 +75837,15 @@ func (c *ClientWithResponses) ListRemindersWithResponse(ctx context.Context, com
 	return ParseListRemindersResponse(rsp)
 }
 
+// GetEmployeeSalesBreakdownReportWithResponse request returning *GetEmployeeSalesBreakdownReportResponse
+func (c *ClientWithResponses) GetEmployeeSalesBreakdownReportWithResponse(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*GetEmployeeSalesBreakdownReportResponse, error) {
+	rsp, err := c.GetEmployeeSalesBreakdownReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetEmployeeSalesBreakdownReportResponse(rsp)
+}
+
 // GetSalesByEmployeeReportWithResponse request returning *GetSalesByEmployeeReportResponse
 func (c *ClientWithResponses) GetSalesByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetSalesByEmployeeReportResponse, error) {
 	rsp, err := c.GetSalesByEmployeeReport(ctx, companyId, params, reqEditors...)
@@ -75301,6 +75853,42 @@ func (c *ClientWithResponses) GetSalesByEmployeeReportWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParseGetSalesByEmployeeReportResponse(rsp)
+}
+
+// GetSalesByProductReportWithResponse request returning *GetSalesByProductReportResponse
+func (c *ClientWithResponses) GetSalesByProductReportWithResponse(ctx context.Context, companyId string, params *GetSalesByProductReportParams, reqEditors ...RequestEditorFn) (*GetSalesByProductReportResponse, error) {
+	rsp, err := c.GetSalesByProductReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSalesByProductReportResponse(rsp)
+}
+
+// GetSalesByServiceReportWithResponse request returning *GetSalesByServiceReportResponse
+func (c *ClientWithResponses) GetSalesByServiceReportWithResponse(ctx context.Context, companyId string, params *GetSalesByServiceReportParams, reqEditors ...RequestEditorFn) (*GetSalesByServiceReportResponse, error) {
+	rsp, err := c.GetSalesByServiceReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSalesByServiceReportResponse(rsp)
+}
+
+// GetSalesByVATCategoryReportWithResponse request returning *GetSalesByVATCategoryReportResponse
+func (c *ClientWithResponses) GetSalesByVATCategoryReportWithResponse(ctx context.Context, companyId string, params *GetSalesByVATCategoryReportParams, reqEditors ...RequestEditorFn) (*GetSalesByVATCategoryReportResponse, error) {
+	rsp, err := c.GetSalesByVATCategoryReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSalesByVATCategoryReportResponse(rsp)
+}
+
+// GetSalesReportFilterOptionsWithResponse request returning *GetSalesReportFilterOptionsResponse
+func (c *ClientWithResponses) GetSalesReportFilterOptionsWithResponse(ctx context.Context, companyId string, params *GetSalesReportFilterOptionsParams, reqEditors ...RequestEditorFn) (*GetSalesReportFilterOptionsResponse, error) {
+	rsp, err := c.GetSalesReportFilterOptions(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSalesReportFilterOptionsResponse(rsp)
 }
 
 // ListResourceGroupsWithResponse request returning *ListResourceGroupsResponse
@@ -82346,6 +82934,32 @@ func ParseListRemindersResponse(rsp *http.Response) (*ListRemindersResponse, err
 	return response, nil
 }
 
+// ParseGetEmployeeSalesBreakdownReportResponse parses an HTTP response from a GetEmployeeSalesBreakdownReportWithResponse call
+func ParseGetEmployeeSalesBreakdownReportResponse(rsp *http.Response) (*GetEmployeeSalesBreakdownReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetEmployeeSalesBreakdownReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EmployeeSalesBreakdownReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetSalesByEmployeeReportResponse parses an HTTP response from a GetSalesByEmployeeReportWithResponse call
 func ParseGetSalesByEmployeeReportResponse(rsp *http.Response) (*GetSalesByEmployeeReportResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -82362,6 +82976,110 @@ func ParseGetSalesByEmployeeReportResponse(rsp *http.Response) (*GetSalesByEmplo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest SalesByEmployeeReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSalesByProductReportResponse parses an HTTP response from a GetSalesByProductReportWithResponse call
+func ParseGetSalesByProductReportResponse(rsp *http.Response) (*GetSalesByProductReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSalesByProductReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SalesByProductReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSalesByServiceReportResponse parses an HTTP response from a GetSalesByServiceReportWithResponse call
+func ParseGetSalesByServiceReportResponse(rsp *http.Response) (*GetSalesByServiceReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSalesByServiceReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SalesByServiceReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSalesByVATCategoryReportResponse parses an HTTP response from a GetSalesByVATCategoryReportWithResponse call
+func ParseGetSalesByVATCategoryReportResponse(rsp *http.Response) (*GetSalesByVATCategoryReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSalesByVATCategoryReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SalesByVATCategoryReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSalesReportFilterOptionsResponse parses an HTTP response from a GetSalesReportFilterOptionsWithResponse call
+func ParseGetSalesReportFilterOptionsResponse(rsp *http.Response) (*GetSalesReportFilterOptionsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSalesReportFilterOptionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SalesReportFilterOptions
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
