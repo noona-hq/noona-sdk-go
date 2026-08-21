@@ -256,6 +256,13 @@ const (
 	ApplicationPaymentTypeSubscription ApplicationPaymentType = "subscription"
 )
 
+// Defines values for ApplicationCreatedPaymentType.
+const (
+	ApplicationCreatedPaymentTypeFree         ApplicationCreatedPaymentType = "free"
+	ApplicationCreatedPaymentTypeOneTime      ApplicationCreatedPaymentType = "one-time"
+	ApplicationCreatedPaymentTypeSubscription ApplicationCreatedPaymentType = "subscription"
+)
+
 // Defines values for ApplicationEventEvent.
 const (
 	Installed   ApplicationEventEvent = "installed"
@@ -1659,9 +1666,9 @@ const (
 
 // Defines values for SubscriptionDiscountDurationType.
 const (
-	Forever       SubscriptionDiscountDurationType = "forever"
-	LimitedPeriod SubscriptionDiscountDurationType = "limited_period"
-	OneTime       SubscriptionDiscountDurationType = "one_time"
+	SubscriptionDiscountDurationTypeForever       SubscriptionDiscountDurationType = "forever"
+	SubscriptionDiscountDurationTypeLimitedPeriod SubscriptionDiscountDurationType = "limited_period"
+	SubscriptionDiscountDurationTypeOneTime       SubscriptionDiscountDurationType = "one_time"
 )
 
 // Defines values for SubscriptionDiscountPeriodUnit.
@@ -3284,10 +3291,9 @@ type Application struct {
 	About *string `json:"about,omitempty"`
 
 	// If true, the application will be listed in the Noona App Store.
-	AppStore     *bool   `json:"app_store,omitempty"`
-	Approved     *bool   `json:"approved,omitempty"`
-	ClientId     *string `json:"client_id,omitempty"`
-	ClientSecret *string `json:"client_secret,omitempty"`
+	AppStore *bool   `json:"app_store,omitempty"`
+	Approved *bool   `json:"approved,omitempty"`
+	ClientId *string `json:"client_id,omitempty"`
 
 	// The countries the application is available in.
 	//
@@ -3306,9 +3312,10 @@ type Application struct {
 	DeveloperName           *string         `json:"developer_name,omitempty"`
 
 	// Home page or documentation for your application.
-	DeveloperUrl *string `json:"developer_url,omitempty"`
-	Id           *string `json:"id,omitempty"`
-	Logo         *string `json:"logo,omitempty"`
+	DeveloperUrl       *string `json:"developer_url,omitempty"`
+	Id                 *string `json:"id,omitempty"`
+	Logo               *string `json:"logo,omitempty"`
+	MaskedClientSecret *string `json:"masked_client_secret,omitempty"`
 
 	// Shown to the user when they are asked to give consent.
 	Name *string `json:"name,omitempty"`
@@ -3349,6 +3356,81 @@ type Application struct {
 
 // ApplicationPaymentType defines model for Application.PaymentType.
 type ApplicationPaymentType string
+
+// ApplicationCreated defines model for ApplicationCreated.
+type ApplicationCreated struct {
+	// A longer description of the application which opens in a modal and support HTML.
+	About *string `json:"about,omitempty"`
+
+	// If true, the application will be listed in the Noona App Store.
+	AppStore *bool   `json:"app_store,omitempty"`
+	Approved *bool   `json:"approved,omitempty"`
+	ClientId *string `json:"client_id,omitempty"`
+
+	// The raw client secret. Only returned when the application is created and cannot be retrieved again.
+	ClientSecret string `json:"client_secret"`
+
+	// The countries the application is available in.
+	//
+	// If omitted or empty, the application is available in all countries.
+	Countries *[]string  `json:"countries,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	Currency  *string    `json:"currency,omitempty"`
+
+	// Short text about the functionality of the app that appears next to the icon in the list.
+	Description *string `json:"description,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	DescriptionTranslations *TranslationMap `json:"description_translations,omitempty"`
+	DeveloperName           *string         `json:"developer_name,omitempty"`
+
+	// Home page or documentation for your application.
+	DeveloperUrl       *string `json:"developer_url,omitempty"`
+	Id                 *string `json:"id,omitempty"`
+	Logo               *string `json:"logo,omitempty"`
+	MaskedClientSecret *string `json:"masked_client_secret,omitempty"`
+
+	// Shown to the user when they are asked to give consent.
+	Name *string `json:"name,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	NameTranslations *TranslationMap                `json:"name_translations,omitempty"`
+	PaymentType      *ApplicationCreatedPaymentType `json:"payment_type,omitempty"`
+
+	// Price in x100 format. (100 is 1.00)
+	Price *int32 `json:"price,omitempty"`
+
+	// If true, the application will be usable from outside of the company.
+	Public       *bool        `json:"public,omitempty"`
+	RedirectUris *[]string    `json:"redirect_uris,omitempty"`
+	Scopes       *OAuthScopes `json:"scopes,omitempty"`
+
+	// If `true`, the application will appear in the navigation within Noona HQ.
+	//
+	// When clicked, the application's main redirect_uri will be displayed in an iFrame.
+	ShowInNavigation *bool `json:"show_in_navigation,omitempty"`
+
+	// Short text that is displayed to the user when uninstalling the app.
+	UninstallMessage *string `json:"uninstall_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	UninstallMessageTranslations *TranslationMap `json:"uninstall_message_translations,omitempty"`
+	UpdatedAt                    *time.Time      `json:"updated_at,omitempty"`
+
+	// The verticals the application is available in.
+	//
+	// If omitted or empty, the application is available for all verticals.
+	Verticals *[]CompanyVertical `json:"verticals,omitempty"`
+}
+
+// ApplicationCreatedPaymentType defines model for ApplicationCreated.PaymentType.
+type ApplicationCreatedPaymentType string
 
 // ApplicationEvent defines model for ApplicationEvent.
 type ApplicationEvent struct {
@@ -70690,7 +70772,7 @@ func (r ListOAuthApplicationsResponse) StatusCode() int {
 type CreateOAuthApplicationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Application
+	JSON200      *ApplicationCreated
 }
 
 // Status returns HTTPResponse.Status
@@ -86755,7 +86837,7 @@ func ParseCreateOAuthApplicationResponse(rsp *http.Response) (*CreateOAuthApplic
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Application
+		var dest ApplicationCreated
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
