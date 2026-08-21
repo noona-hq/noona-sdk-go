@@ -9282,6 +9282,23 @@ type PaymentStatus string
 // Payments defines model for Payments.
 type Payments []Payment
 
+// PaymentsByEmployeeReport defines model for PaymentsByEmployeeReport.
+type PaymentsByEmployeeReport []PaymentsByEmployeeRow
+
+// PaymentsByEmployeeRow defines model for PaymentsByEmployeeRow.
+type PaymentsByEmployeeRow struct {
+	EmployeeId   *string `json:"employee_id"`
+	EmployeeName *string `json:"employee_name,omitempty"`
+	PaymentCount int32   `json:"payment_count"`
+	TotalAmount  float64 `json:"total_amount"`
+}
+
+// PaymentsReportFilter defines model for PaymentsReportFilter.
+type PaymentsReportFilter struct {
+	From time.Time `json:"from"`
+	To   time.Time `json:"to"`
+}
+
 // Permission defines model for Permission.
 type Permission string
 
@@ -14624,6 +14641,11 @@ type ListRemindersParams struct {
 // GetEmployeeSalesBreakdownReportParams defines parameters for GetEmployeeSalesBreakdownReport.
 type GetEmployeeSalesBreakdownReportParams struct {
 	Filter EmployeeSalesBreakdownFilter `form:"filter" json:"filter"`
+}
+
+// GetPaymentsByEmployeeReportParams defines parameters for GetPaymentsByEmployeeReport.
+type GetPaymentsByEmployeeReportParams struct {
+	Filter PaymentsReportFilter `form:"filter" json:"filter"`
 }
 
 // GetSalesByEmployeeReportParams defines parameters for GetSalesByEmployeeReport.
@@ -21072,6 +21094,9 @@ type ClientInterface interface {
 	// GetEmployeeSalesBreakdownReport request
 	GetEmployeeSalesBreakdownReport(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetPaymentsByEmployeeReport request
+	GetPaymentsByEmployeeReport(ctx context.Context, companyId string, params *GetPaymentsByEmployeeReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetSalesByEmployeeReport request
 	GetSalesByEmployeeReport(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24220,6 +24245,18 @@ func (c *Client) ListReminders(ctx context.Context, companyId string, params *Li
 
 func (c *Client) GetEmployeeSalesBreakdownReport(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetEmployeeSalesBreakdownReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPaymentsByEmployeeReport(ctx context.Context, companyId string, params *GetPaymentsByEmployeeReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPaymentsByEmployeeReportRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -39256,6 +39293,50 @@ func NewGetEmployeeSalesBreakdownReportRequest(server string, companyId string, 
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/employee-sales-breakdown", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetPaymentsByEmployeeReportRequest generates requests for GetPaymentsByEmployeeReport
+func NewGetPaymentsByEmployeeReportRequest(server string, companyId string, params *GetPaymentsByEmployeeReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/payments-by-employee", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -63384,6 +63465,9 @@ type ClientWithResponsesInterface interface {
 	// GetEmployeeSalesBreakdownReport request
 	GetEmployeeSalesBreakdownReportWithResponse(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*GetEmployeeSalesBreakdownReportResponse, error)
 
+	// GetPaymentsByEmployeeReport request
+	GetPaymentsByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetPaymentsByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetPaymentsByEmployeeReportResponse, error)
+
 	// GetSalesByEmployeeReport request
 	GetSalesByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetSalesByEmployeeReportResponse, error)
 
@@ -67435,6 +67519,28 @@ func (r GetEmployeeSalesBreakdownReportResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetEmployeeSalesBreakdownReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPaymentsByEmployeeReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PaymentsByEmployeeReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPaymentsByEmployeeReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPaymentsByEmployeeReportResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -75928,6 +76034,15 @@ func (c *ClientWithResponses) GetEmployeeSalesBreakdownReportWithResponse(ctx co
 	return ParseGetEmployeeSalesBreakdownReportResponse(rsp)
 }
 
+// GetPaymentsByEmployeeReportWithResponse request returning *GetPaymentsByEmployeeReportResponse
+func (c *ClientWithResponses) GetPaymentsByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetPaymentsByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetPaymentsByEmployeeReportResponse, error) {
+	rsp, err := c.GetPaymentsByEmployeeReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPaymentsByEmployeeReportResponse(rsp)
+}
+
 // GetSalesByEmployeeReportWithResponse request returning *GetSalesByEmployeeReportResponse
 func (c *ClientWithResponses) GetSalesByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetSalesByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetSalesByEmployeeReportResponse, error) {
 	rsp, err := c.GetSalesByEmployeeReport(ctx, companyId, params, reqEditors...)
@@ -83032,6 +83147,32 @@ func ParseGetEmployeeSalesBreakdownReportResponse(rsp *http.Response) (*GetEmplo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest EmployeeSalesBreakdownReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPaymentsByEmployeeReportResponse parses an HTTP response from a GetPaymentsByEmployeeReportWithResponse call
+func ParseGetPaymentsByEmployeeReportResponse(rsp *http.Response) (*GetPaymentsByEmployeeReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPaymentsByEmployeeReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PaymentsByEmployeeReport
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
