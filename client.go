@@ -9282,6 +9282,35 @@ type PaymentStatus string
 // Payments defines model for Payments.
 type Payments []Payment
 
+// PaymentsByDayReport defines model for PaymentsByDayReport.
+type PaymentsByDayReport struct {
+	Rows   []PaymentsByDayRow   `json:"rows"`
+	Totals *PaymentsByDayTotals `json:"totals,omitempty"`
+}
+
+// PaymentsByDayRow defines model for PaymentsByDayRow.
+type PaymentsByDayRow struct {
+	BookingsCreatedAmount float64 `json:"bookings_created_amount"`
+	BookingsServedAmount  float64 `json:"bookings_served_amount"`
+	Date                  string  `json:"date"`
+	NoshowChargedAmount   float64 `json:"noshow_charged_amount"`
+	PaylinkChargedAmount  float64 `json:"paylink_charged_amount"`
+	PaymentsSettledAmount float64 `json:"payments_settled_amount"`
+	SettlementFeesAmount  float64 `json:"settlement_fees_amount"`
+	VouchersSoldAmount    float64 `json:"vouchers_sold_amount"`
+}
+
+// PaymentsByDayTotals defines model for PaymentsByDayTotals.
+type PaymentsByDayTotals struct {
+	BookingsCreatedAmount float64 `json:"bookings_created_amount"`
+	BookingsServedAmount  float64 `json:"bookings_served_amount"`
+	NoshowChargedAmount   float64 `json:"noshow_charged_amount"`
+	PaylinkChargedAmount  float64 `json:"paylink_charged_amount"`
+	PaymentsSettledAmount float64 `json:"payments_settled_amount"`
+	SettlementFeesAmount  float64 `json:"settlement_fees_amount"`
+	VouchersSoldAmount    float64 `json:"vouchers_sold_amount"`
+}
+
 // PaymentsByEmployeeReport defines model for PaymentsByEmployeeReport.
 type PaymentsByEmployeeReport []PaymentsByEmployeeRow
 
@@ -14641,6 +14670,11 @@ type ListRemindersParams struct {
 // GetEmployeeSalesBreakdownReportParams defines parameters for GetEmployeeSalesBreakdownReport.
 type GetEmployeeSalesBreakdownReportParams struct {
 	Filter EmployeeSalesBreakdownFilter `form:"filter" json:"filter"`
+}
+
+// GetPaymentsByDayReportParams defines parameters for GetPaymentsByDayReport.
+type GetPaymentsByDayReportParams struct {
+	Filter PaymentsReportFilter `form:"filter" json:"filter"`
 }
 
 // GetPaymentsByEmployeeReportParams defines parameters for GetPaymentsByEmployeeReport.
@@ -21094,6 +21128,9 @@ type ClientInterface interface {
 	// GetEmployeeSalesBreakdownReport request
 	GetEmployeeSalesBreakdownReport(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetPaymentsByDayReport request
+	GetPaymentsByDayReport(ctx context.Context, companyId string, params *GetPaymentsByDayReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetPaymentsByEmployeeReport request
 	GetPaymentsByEmployeeReport(ctx context.Context, companyId string, params *GetPaymentsByEmployeeReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24245,6 +24282,18 @@ func (c *Client) ListReminders(ctx context.Context, companyId string, params *Li
 
 func (c *Client) GetEmployeeSalesBreakdownReport(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetEmployeeSalesBreakdownReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPaymentsByDayReport(ctx context.Context, companyId string, params *GetPaymentsByDayReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetPaymentsByDayReportRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -39293,6 +39342,50 @@ func NewGetEmployeeSalesBreakdownReportRequest(server string, companyId string, 
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/employee-sales-breakdown", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetPaymentsByDayReportRequest generates requests for GetPaymentsByDayReport
+func NewGetPaymentsByDayReportRequest(server string, companyId string, params *GetPaymentsByDayReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/payments-by-day", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -63465,6 +63558,9 @@ type ClientWithResponsesInterface interface {
 	// GetEmployeeSalesBreakdownReport request
 	GetEmployeeSalesBreakdownReportWithResponse(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*GetEmployeeSalesBreakdownReportResponse, error)
 
+	// GetPaymentsByDayReport request
+	GetPaymentsByDayReportWithResponse(ctx context.Context, companyId string, params *GetPaymentsByDayReportParams, reqEditors ...RequestEditorFn) (*GetPaymentsByDayReportResponse, error)
+
 	// GetPaymentsByEmployeeReport request
 	GetPaymentsByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetPaymentsByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetPaymentsByEmployeeReportResponse, error)
 
@@ -67519,6 +67615,28 @@ func (r GetEmployeeSalesBreakdownReportResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetEmployeeSalesBreakdownReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPaymentsByDayReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PaymentsByDayReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPaymentsByDayReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPaymentsByDayReportResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -76034,6 +76152,15 @@ func (c *ClientWithResponses) GetEmployeeSalesBreakdownReportWithResponse(ctx co
 	return ParseGetEmployeeSalesBreakdownReportResponse(rsp)
 }
 
+// GetPaymentsByDayReportWithResponse request returning *GetPaymentsByDayReportResponse
+func (c *ClientWithResponses) GetPaymentsByDayReportWithResponse(ctx context.Context, companyId string, params *GetPaymentsByDayReportParams, reqEditors ...RequestEditorFn) (*GetPaymentsByDayReportResponse, error) {
+	rsp, err := c.GetPaymentsByDayReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPaymentsByDayReportResponse(rsp)
+}
+
 // GetPaymentsByEmployeeReportWithResponse request returning *GetPaymentsByEmployeeReportResponse
 func (c *ClientWithResponses) GetPaymentsByEmployeeReportWithResponse(ctx context.Context, companyId string, params *GetPaymentsByEmployeeReportParams, reqEditors ...RequestEditorFn) (*GetPaymentsByEmployeeReportResponse, error) {
 	rsp, err := c.GetPaymentsByEmployeeReport(ctx, companyId, params, reqEditors...)
@@ -83147,6 +83274,32 @@ func ParseGetEmployeeSalesBreakdownReportResponse(rsp *http.Response) (*GetEmplo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest EmployeeSalesBreakdownReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPaymentsByDayReportResponse parses an HTTP response from a GetPaymentsByDayReportWithResponse call
+func ParseGetPaymentsByDayReportResponse(rsp *http.Response) (*GetPaymentsByDayReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPaymentsByDayReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PaymentsByDayReport
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
