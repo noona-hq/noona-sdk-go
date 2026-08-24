@@ -11432,6 +11432,35 @@ type SpacesFilter struct {
 	Types *[]SpaceType `json:"types,omitempty"`
 }
 
+// StaffSalesByPaymentMethodEmployeeRow defines model for StaffSalesByPaymentMethodEmployeeRow.
+type StaffSalesByPaymentMethodEmployeeRow struct {
+	EmployeeId     string                                      `json:"employee_id"`
+	EmployeeName   *string                                     `json:"employee_name,omitempty"`
+	PaymentMethods []StaffSalesByPaymentMethodPaymentMethodRow `json:"payment_methods"`
+}
+
+// StaffSalesByPaymentMethodInvalidTransaction defines model for StaffSalesByPaymentMethodInvalidTransaction.
+type StaffSalesByPaymentMethodInvalidTransaction struct {
+	InvoiceNumber *int64  `json:"invoice_number,omitempty"`
+	SaleId        *string `json:"sale_id,omitempty"`
+	TransactionId string  `json:"transaction_id"`
+}
+
+// StaffSalesByPaymentMethodPaymentMethodRow defines model for StaffSalesByPaymentMethodPaymentMethodRow.
+type StaffSalesByPaymentMethodPaymentMethodRow struct {
+	Amount                  float64 `json:"amount"`
+	PaymentMethodId         string  `json:"payment_method_id"`
+	PaymentMethodInstanceId string  `json:"payment_method_instance_id"`
+	PaymentMethodName       string  `json:"payment_method_name"`
+}
+
+// StaffSalesByPaymentMethodReport defines model for StaffSalesByPaymentMethodReport.
+type StaffSalesByPaymentMethodReport struct {
+	Employees           []StaffSalesByPaymentMethodEmployeeRow        `json:"employees"`
+	InvalidTransactions []StaffSalesByPaymentMethodInvalidTransaction `json:"invalid_transactions"`
+	PaymentMethods      []StaffSalesByPaymentMethodPaymentMethodRow   `json:"payment_methods"`
+}
+
 // StraumurConnectRequest defines model for StraumurConnectRequest.
 type StraumurConnectRequest struct {
 	// Straumur API key
@@ -14724,6 +14753,11 @@ type GetSalesByVATCategoryReportParams struct {
 // GetSalesReportFilterOptionsParams defines parameters for GetSalesReportFilterOptions.
 type GetSalesReportFilterOptionsParams struct {
 	Filter SalesReportDateRangeFilter `form:"filter" json:"filter"`
+}
+
+// GetStaffSalesByPaymentMethodReportParams defines parameters for GetStaffSalesByPaymentMethodReport.
+type GetStaffSalesByPaymentMethodReportParams struct {
+	Filter PaymentsReportFilter `form:"filter" json:"filter"`
 }
 
 // ListResourceGroupsParams defines parameters for ListResourceGroups.
@@ -21171,6 +21205,9 @@ type ClientInterface interface {
 	// GetSalesReportFilterOptions request
 	GetSalesReportFilterOptions(ctx context.Context, companyId string, params *GetSalesReportFilterOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetStaffSalesByPaymentMethodReport request
+	GetStaffSalesByPaymentMethodReport(ctx context.Context, companyId string, params *GetStaffSalesByPaymentMethodReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListResourceGroups request
 	ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24400,6 +24437,18 @@ func (c *Client) GetSalesByVATCategoryReport(ctx context.Context, companyId stri
 
 func (c *Client) GetSalesReportFilterOptions(ctx context.Context, companyId string, params *GetSalesReportFilterOptionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSalesReportFilterOptionsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStaffSalesByPaymentMethodReport(ctx context.Context, companyId string, params *GetStaffSalesByPaymentMethodReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStaffSalesByPaymentMethodReportRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -39728,6 +39777,50 @@ func NewGetSalesReportFilterOptionsRequest(server string, companyId string, para
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/sales-filter-options", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStaffSalesByPaymentMethodReportRequest generates requests for GetStaffSalesByPaymentMethodReport
+func NewGetStaffSalesByPaymentMethodReportRequest(server string, companyId string, params *GetStaffSalesByPaymentMethodReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/staff-sales-by-payment-method", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -63660,6 +63753,9 @@ type ClientWithResponsesInterface interface {
 	// GetSalesReportFilterOptions request
 	GetSalesReportFilterOptionsWithResponse(ctx context.Context, companyId string, params *GetSalesReportFilterOptionsParams, reqEditors ...RequestEditorFn) (*GetSalesReportFilterOptionsResponse, error)
 
+	// GetStaffSalesByPaymentMethodReport request
+	GetStaffSalesByPaymentMethodReportWithResponse(ctx context.Context, companyId string, params *GetStaffSalesByPaymentMethodReportParams, reqEditors ...RequestEditorFn) (*GetStaffSalesByPaymentMethodReportResponse, error)
+
 	// ListResourceGroups request
 	ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error)
 
@@ -67872,6 +67968,28 @@ func (r GetSalesReportFilterOptionsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetSalesReportFilterOptionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStaffSalesByPaymentMethodReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StaffSalesByPaymentMethodReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStaffSalesByPaymentMethodReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStaffSalesByPaymentMethodReportResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -76327,6 +76445,15 @@ func (c *ClientWithResponses) GetSalesReportFilterOptionsWithResponse(ctx contex
 	return ParseGetSalesReportFilterOptionsResponse(rsp)
 }
 
+// GetStaffSalesByPaymentMethodReportWithResponse request returning *GetStaffSalesByPaymentMethodReportResponse
+func (c *ClientWithResponses) GetStaffSalesByPaymentMethodReportWithResponse(ctx context.Context, companyId string, params *GetStaffSalesByPaymentMethodReportParams, reqEditors ...RequestEditorFn) (*GetStaffSalesByPaymentMethodReportResponse, error) {
+	rsp, err := c.GetStaffSalesByPaymentMethodReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStaffSalesByPaymentMethodReportResponse(rsp)
+}
+
 // ListResourceGroupsWithResponse request returning *ListResourceGroupsResponse
 func (c *ClientWithResponses) ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error) {
 	rsp, err := c.ListResourceGroups(ctx, companyId, params, reqEditors...)
@@ -83594,6 +83721,32 @@ func ParseGetSalesReportFilterOptionsResponse(rsp *http.Response) (*GetSalesRepo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest SalesReportFilterOptions
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetStaffSalesByPaymentMethodReportResponse parses an HTTP response from a GetStaffSalesByPaymentMethodReportWithResponse call
+func ParseGetStaffSalesByPaymentMethodReportResponse(rsp *http.Response) (*GetStaffSalesByPaymentMethodReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStaffSalesByPaymentMethodReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StaffSalesByPaymentMethodReport
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
