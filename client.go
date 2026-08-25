@@ -190,6 +190,14 @@ const (
 	AdStatusTakenDown AdStatus = "taken_down"
 )
 
+// Defines values for AdminAppointmentsProBlacklistEntitlementsMigrationStatus.
+const (
+	AdminAppointmentsProBlacklistEntitlementsMigrationStatusAlreadySynced AdminAppointmentsProBlacklistEntitlementsMigrationStatus = "already_synced"
+	AdminAppointmentsProBlacklistEntitlementsMigrationStatusFailed        AdminAppointmentsProBlacklistEntitlementsMigrationStatus = "failed"
+	AdminAppointmentsProBlacklistEntitlementsMigrationStatusReady         AdminAppointmentsProBlacklistEntitlementsMigrationStatus = "ready"
+	AdminAppointmentsProBlacklistEntitlementsMigrationStatusSynced        AdminAppointmentsProBlacklistEntitlementsMigrationStatus = "synced"
+)
+
 // Defines values for AdminFixWorkHoursTimesScope.
 const (
 	AdminFixWorkHoursTimesScopeAll    AdminFixWorkHoursTimesScope = "all"
@@ -1862,10 +1870,10 @@ const (
 
 // Defines values for VoucherFilterStatus.
 const (
-	VoucherFilterStatusExpired    VoucherFilterStatus = "expired"
-	VoucherFilterStatusFullyUsed  VoucherFilterStatus = "fully_used"
-	VoucherFilterStatusNeverUsed  VoucherFilterStatus = "never_used"
-	VoucherFilterStatusPartlyUsed VoucherFilterStatus = "partly_used"
+	Expired    VoucherFilterStatus = "expired"
+	FullyUsed  VoucherFilterStatus = "fully_used"
+	NeverUsed  VoucherFilterStatus = "never_used"
+	PartlyUsed VoucherFilterStatus = "partly_used"
 )
 
 // Defines values for VoucherFilterType.
@@ -2603,6 +2611,44 @@ type AdminAdUpdate struct {
 
 // AdminAds defines model for AdminAds.
 type AdminAds []AdminAd
+
+// AdminAppointmentsProBlacklistEntitlementsMigrationCompanyResult defines model for AdminAppointmentsProBlacklistEntitlementsMigrationCompanyResult.
+type AdminAppointmentsProBlacklistEntitlementsMigrationCompanyResult struct {
+	CompanyId string                                                   `json:"company_id"`
+	Error     *string                                                  `json:"error,omitempty"`
+	PowerupId *string                                                  `json:"powerup_id,omitempty"`
+	Status    AdminAppointmentsProBlacklistEntitlementsMigrationStatus `json:"status"`
+}
+
+// AdminAppointmentsProBlacklistEntitlementsMigrationRequest defines model for AdminAppointmentsProBlacklistEntitlementsMigrationRequest.
+type AdminAppointmentsProBlacklistEntitlementsMigrationRequest struct {
+	// If provided, only these companies are processed. Cannot be used together with cursor.
+	CompanyIds *[]string `json:"company_ids,omitempty"`
+
+	// Cursor for iterating eligible companies in ascending company ID order. Cannot be used together with company_ids.
+	Cursor *string `json:"cursor,omitempty"`
+
+	// Required. If true, inspect and report without mutating data.
+	DryRun *bool `json:"dry_run,omitempty"`
+
+	// Maximum number of active Appointments Pro companies to process in this request.
+	Limit *int32 `json:"limit,omitempty"`
+}
+
+// AdminAppointmentsProBlacklistEntitlementsMigrationResult defines model for AdminAppointmentsProBlacklistEntitlementsMigrationResult.
+type AdminAppointmentsProBlacklistEntitlementsMigrationResult struct {
+	AlreadySynced int32                                                             `json:"already_synced"`
+	Companies     []AdminAppointmentsProBlacklistEntitlementsMigrationCompanyResult `json:"companies"`
+	Failed        int32                                                             `json:"failed"`
+	HasMore       bool                                                              `json:"has_more"`
+	NextCursor    *string                                                           `json:"next_cursor,omitempty"`
+	Ready         int32                                                             `json:"ready"`
+	Synced        int32                                                             `json:"synced"`
+	Total         int32                                                             `json:"total"`
+}
+
+// AdminAppointmentsProBlacklistEntitlementsMigrationStatus defines model for AdminAppointmentsProBlacklistEntitlementsMigrationStatus.
+type AdminAppointmentsProBlacklistEntitlementsMigrationStatus string
 
 // AdminCompanies defines model for AdminCompanies.
 type AdminCompanies []AdminCompany
@@ -13583,6 +13629,9 @@ type AdminUpdateMarketplaceAdParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONBody defines parameters for AdminBulkMigrateAppointmentsProBlacklistEntitlements.
+type AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONBody AdminAppointmentsProBlacklistEntitlementsMigrationRequest
+
 // AdminFixWorkHoursTimesJSONBody defines parameters for AdminFixWorkHoursTimes.
 type AdminFixWorkHoursTimesJSONBody AdminFixWorkHoursTimesRequest
 
@@ -17816,6 +17865,9 @@ type AdminUpdateTerminalJSONRequestBody AdminUpdateTerminalJSONBody
 // AdminUpdateMarketplaceAdJSONRequestBody defines body for AdminUpdateMarketplaceAd for application/json ContentType.
 type AdminUpdateMarketplaceAdJSONRequestBody AdminUpdateMarketplaceAdJSONBody
 
+// AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONRequestBody defines body for AdminBulkMigrateAppointmentsProBlacklistEntitlements for application/json ContentType.
+type AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONRequestBody AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONBody
+
 // AdminFixWorkHoursTimesJSONRequestBody defines body for AdminFixWorkHoursTimes for application/json ContentType.
 type AdminFixWorkHoursTimesJSONRequestBody AdminFixWorkHoursTimesJSONBody
 
@@ -20706,6 +20758,11 @@ type ClientInterface interface {
 
 	AdminUpdateMarketplaceAd(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminBulkMigrateAppointmentsProBlacklistEntitlements request with any body
+	AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminBulkMigrateAppointmentsProBlacklistEntitlements(ctx context.Context, body AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -22791,6 +22848,30 @@ func (c *Client) AdminUpdateMarketplaceAdWithBody(ctx context.Context, adId stri
 
 func (c *Client) AdminUpdateMarketplaceAd(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateMarketplaceAdRequest(c.Server, adId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBulkMigrateAppointmentsProBlacklistEntitlementsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBulkMigrateAppointmentsProBlacklistEntitlements(ctx context.Context, body AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBulkMigrateAppointmentsProBlacklistEntitlementsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -31806,6 +31887,46 @@ func NewAdminUpdateMarketplaceAdRequestWithBody(server string, adId string, para
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminBulkMigrateAppointmentsProBlacklistEntitlementsRequest calls the generic AdminBulkMigrateAppointmentsProBlacklistEntitlements builder with application/json body
+func NewAdminBulkMigrateAppointmentsProBlacklistEntitlementsRequest(server string, body AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminBulkMigrateAppointmentsProBlacklistEntitlementsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminBulkMigrateAppointmentsProBlacklistEntitlementsRequestWithBody generates requests for AdminBulkMigrateAppointmentsProBlacklistEntitlements with any type of body
+func NewAdminBulkMigrateAppointmentsProBlacklistEntitlementsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/appointments-pro-blacklist-entitlements")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
@@ -63116,6 +63237,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateMarketplaceAdWithResponse(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateMarketplaceAdResponse, error)
 
+	// AdminBulkMigrateAppointmentsProBlacklistEntitlements request with any body
+	AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse, error)
+
+	AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithResponse(ctx context.Context, body AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse, error)
+
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
 
@@ -65403,6 +65529,28 @@ func (r AdminUpdateMarketplaceAdResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateMarketplaceAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminAppointmentsProBlacklistEntitlementsMigrationResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -75010,6 +75158,23 @@ func (c *ClientWithResponses) AdminUpdateMarketplaceAdWithResponse(ctx context.C
 	return ParseAdminUpdateMarketplaceAdResponse(rsp)
 }
 
+// AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse
+func (c *ClientWithResponses) AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse, error) {
+	rsp, err := c.AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithResponse(ctx context.Context, body AdminBulkMigrateAppointmentsProBlacklistEntitlementsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse, error) {
+	rsp, err := c.AdminBulkMigrateAppointmentsProBlacklistEntitlements(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse(rsp)
+}
+
 // AdminFixWorkHoursTimesWithBodyWithResponse request with arbitrary body returning *AdminFixWorkHoursTimesResponse
 func (c *ClientWithResponses) AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error) {
 	rsp, err := c.AdminFixWorkHoursTimesWithBody(ctx, contentType, body, reqEditors...)
@@ -80691,6 +80856,32 @@ func ParseAdminUpdateMarketplaceAdResponse(rsp *http.Response) (*AdminUpdateMark
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse parses an HTTP response from a AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithResponse call
+func ParseAdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse(rsp *http.Response) (*AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminAppointmentsProBlacklistEntitlementsMigrationResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
