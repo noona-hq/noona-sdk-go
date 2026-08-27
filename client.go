@@ -810,6 +810,13 @@ const (
 	TaxExemptionCodeMissingError FiscalizeTransactionErrorCode = "tax_exemption_code_missing_error"
 )
 
+// Defines values for GiftVoucherGroupType.
+const (
+	GiftVoucherGroupTypeAmount  GiftVoucherGroupType = "amount"
+	GiftVoucherGroupTypeSeries  GiftVoucherGroupType = "series"
+	GiftVoucherGroupTypeService GiftVoucherGroupType = "service"
+)
+
 // Defines values for GoalTemplate.
 const (
 	GoalFirstOnlineBooking GoalTemplate = "goal_first_online_booking"
@@ -1903,8 +1910,8 @@ const (
 
 // Defines values for VoucherTemplateUpdateType.
 const (
-	VoucherTemplateUpdateTypeAmount  VoucherTemplateUpdateType = "amount"
-	VoucherTemplateUpdateTypeService VoucherTemplateUpdateType = "service"
+	Amount  VoucherTemplateUpdateType = "amount"
+	Service VoucherTemplateUpdateType = "service"
 )
 
 // Defines values for VoucherTransactionOrigin.
@@ -7525,6 +7532,23 @@ type GenericStreamFilter struct {
 	// Clients will receive notifications when any of the specified entity types
 	// are created, updated, or deleted within the company.
 	EntityTypes []StreamableEntityType `json:"entity_types"`
+}
+
+// GiftVoucherGroupType defines model for GiftVoucherGroupType.
+type GiftVoucherGroupType string
+
+// GiftVouchersReport defines model for GiftVouchersReport.
+type GiftVouchersReport []GiftVouchersReportRow
+
+// GiftVouchersReportRow defines model for GiftVouchersReportRow.
+type GiftVouchersReportRow struct {
+	GroupName    string               `json:"group_name"`
+	GroupType    GiftVoucherGroupType `json:"group_type"`
+	SoldAmount   float64              `json:"sold_amount"`
+	SoldQuantity int32                `json:"sold_quantity"`
+	UsedAmount   float64              `json:"used_amount"`
+	UsedQuantity int32                `json:"used_quantity"`
+	VatRate      *float64             `json:"vat_rate,omitempty"`
 }
 
 // Goal defines model for Goal.
@@ -14690,6 +14714,11 @@ type GetEmployeeSalesBreakdownReportParams struct {
 	Filter EmployeeSalesBreakdownFilter `form:"filter" json:"filter"`
 }
 
+// GetGiftVouchersReportParams defines parameters for GetGiftVouchersReport.
+type GetGiftVouchersReportParams struct {
+	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+}
+
 // GetPaymentsByDayReportParams defines parameters for GetPaymentsByDayReport.
 type GetPaymentsByDayReportParams struct {
 	Filter PaymentsReportFilter `form:"filter" json:"filter"`
@@ -21261,6 +21290,9 @@ type ClientInterface interface {
 	// GetEmployeeSalesBreakdownReport request
 	GetEmployeeSalesBreakdownReport(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetGiftVouchersReport request
+	GetGiftVouchersReport(ctx context.Context, companyId string, params *GetGiftVouchersReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetPaymentsByDayReport request
 	GetPaymentsByDayReport(ctx context.Context, companyId string, params *GetPaymentsByDayReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24433,6 +24465,18 @@ func (c *Client) ListReminders(ctx context.Context, companyId string, params *Li
 
 func (c *Client) GetEmployeeSalesBreakdownReport(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetEmployeeSalesBreakdownReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetGiftVouchersReport(ctx context.Context, companyId string, params *GetGiftVouchersReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetGiftVouchersReportRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -39623,6 +39667,50 @@ func NewGetEmployeeSalesBreakdownReportRequest(server string, companyId string, 
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/employee-sales-breakdown", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetGiftVouchersReportRequest generates requests for GetGiftVouchersReport
+func NewGetGiftVouchersReportRequest(server string, companyId string, params *GetGiftVouchersReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/gift-vouchers", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -63930,6 +64018,9 @@ type ClientWithResponsesInterface interface {
 	// GetEmployeeSalesBreakdownReport request
 	GetEmployeeSalesBreakdownReportWithResponse(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*GetEmployeeSalesBreakdownReportResponse, error)
 
+	// GetGiftVouchersReport request
+	GetGiftVouchersReportWithResponse(ctx context.Context, companyId string, params *GetGiftVouchersReportParams, reqEditors ...RequestEditorFn) (*GetGiftVouchersReportResponse, error)
+
 	// GetPaymentsByDayReport request
 	GetPaymentsByDayReportWithResponse(ctx context.Context, companyId string, params *GetPaymentsByDayReportParams, reqEditors ...RequestEditorFn) (*GetPaymentsByDayReportResponse, error)
 
@@ -68015,6 +68106,28 @@ func (r GetEmployeeSalesBreakdownReportResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetEmployeeSalesBreakdownReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetGiftVouchersReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *GiftVouchersReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetGiftVouchersReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetGiftVouchersReportResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -76605,6 +76718,15 @@ func (c *ClientWithResponses) GetEmployeeSalesBreakdownReportWithResponse(ctx co
 	return ParseGetEmployeeSalesBreakdownReportResponse(rsp)
 }
 
+// GetGiftVouchersReportWithResponse request returning *GetGiftVouchersReportResponse
+func (c *ClientWithResponses) GetGiftVouchersReportWithResponse(ctx context.Context, companyId string, params *GetGiftVouchersReportParams, reqEditors ...RequestEditorFn) (*GetGiftVouchersReportResponse, error) {
+	rsp, err := c.GetGiftVouchersReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetGiftVouchersReportResponse(rsp)
+}
+
 // GetPaymentsByDayReportWithResponse request returning *GetPaymentsByDayReportResponse
 func (c *ClientWithResponses) GetPaymentsByDayReportWithResponse(ctx context.Context, companyId string, params *GetPaymentsByDayReportParams, reqEditors ...RequestEditorFn) (*GetPaymentsByDayReportResponse, error) {
 	rsp, err := c.GetPaymentsByDayReport(ctx, companyId, params, reqEditors...)
@@ -83771,6 +83893,32 @@ func ParseGetEmployeeSalesBreakdownReportResponse(rsp *http.Response) (*GetEmplo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest EmployeeSalesBreakdownReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetGiftVouchersReportResponse parses an HTTP response from a GetGiftVouchersReportWithResponse call
+func ParseGetGiftVouchersReportResponse(rsp *http.Response) (*GetGiftVouchersReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetGiftVouchersReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest GiftVouchersReport
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
