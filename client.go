@@ -4423,6 +4423,19 @@ type ClaimsFilter struct {
 	CreatedAt *DateFilter `json:"created_at,omitempty"`
 }
 
+// ClaimsReport defines model for ClaimsReport.
+type ClaimsReport []ClaimsReportRow
+
+// ClaimsReportRow defines model for ClaimsReportRow.
+type ClaimsReportRow struct {
+	AmountPaidExclFee float64 `json:"amount_paid_excl_fee"`
+	EmployeeName      string  `json:"employee_name"`
+	TotalAmountPaid   float64 `json:"total_amount_paid"`
+	TotalAmountSent   float64 `json:"total_amount_sent"`
+	TotalClaimsPaid   int32   `json:"total_claims_paid"`
+	TotalClaimsSent   int32   `json:"total_claims_sent"`
+}
+
 // CommissionConfig defines model for CommissionConfig.
 type CommissionConfig struct {
 	union json.RawMessage
@@ -14709,6 +14722,11 @@ type ListRemindersParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// GetClaimsReportParams defines parameters for GetClaimsReport.
+type GetClaimsReportParams struct {
+	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+}
+
 // GetEmployeeSalesBreakdownReportParams defines parameters for GetEmployeeSalesBreakdownReport.
 type GetEmployeeSalesBreakdownReportParams struct {
 	Filter EmployeeSalesBreakdownFilter `form:"filter" json:"filter"`
@@ -21287,6 +21305,9 @@ type ClientInterface interface {
 	// ListReminders request
 	ListReminders(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetClaimsReport request
+	GetClaimsReport(ctx context.Context, companyId string, params *GetClaimsReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetEmployeeSalesBreakdownReport request
 	GetEmployeeSalesBreakdownReport(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24453,6 +24474,18 @@ func (c *Client) ListPushNotifications(ctx context.Context, companyId string, pa
 
 func (c *Client) ListReminders(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListRemindersRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetClaimsReport(ctx context.Context, companyId string, params *GetClaimsReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetClaimsReportRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -39638,6 +39671,50 @@ func NewListRemindersRequest(server string, companyId string, params *ListRemind
 			queryValues.Add("pagination", string(queryParamBuf))
 		}
 
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetClaimsReportRequest generates requests for GetClaimsReport
+func NewGetClaimsReportRequest(server string, companyId string, params *GetClaimsReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/claims", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
@@ -64015,6 +64092,9 @@ type ClientWithResponsesInterface interface {
 	// ListReminders request
 	ListRemindersWithResponse(ctx context.Context, companyId string, params *ListRemindersParams, reqEditors ...RequestEditorFn) (*ListRemindersResponse, error)
 
+	// GetClaimsReport request
+	GetClaimsReportWithResponse(ctx context.Context, companyId string, params *GetClaimsReportParams, reqEditors ...RequestEditorFn) (*GetClaimsReportResponse, error)
+
 	// GetEmployeeSalesBreakdownReport request
 	GetEmployeeSalesBreakdownReportWithResponse(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*GetEmployeeSalesBreakdownReportResponse, error)
 
@@ -68084,6 +68164,28 @@ func (r ListRemindersResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListRemindersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetClaimsReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ClaimsReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetClaimsReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetClaimsReportResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -76709,6 +76811,15 @@ func (c *ClientWithResponses) ListRemindersWithResponse(ctx context.Context, com
 	return ParseListRemindersResponse(rsp)
 }
 
+// GetClaimsReportWithResponse request returning *GetClaimsReportResponse
+func (c *ClientWithResponses) GetClaimsReportWithResponse(ctx context.Context, companyId string, params *GetClaimsReportParams, reqEditors ...RequestEditorFn) (*GetClaimsReportResponse, error) {
+	rsp, err := c.GetClaimsReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetClaimsReportResponse(rsp)
+}
+
 // GetEmployeeSalesBreakdownReportWithResponse request returning *GetEmployeeSalesBreakdownReportResponse
 func (c *ClientWithResponses) GetEmployeeSalesBreakdownReportWithResponse(ctx context.Context, companyId string, params *GetEmployeeSalesBreakdownReportParams, reqEditors ...RequestEditorFn) (*GetEmployeeSalesBreakdownReportResponse, error) {
 	rsp, err := c.GetEmployeeSalesBreakdownReport(ctx, companyId, params, reqEditors...)
@@ -83867,6 +83978,32 @@ func ParseListRemindersResponse(rsp *http.Response) (*ListRemindersResponse, err
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Reminders
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetClaimsReportResponse parses an HTTP response from a GetClaimsReportWithResponse call
+func ParseGetClaimsReportResponse(rsp *http.Response) (*GetClaimsReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetClaimsReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ClaimsReport
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
