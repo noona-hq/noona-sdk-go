@@ -12053,6 +12053,40 @@ type Token struct {
 // Tokens defines model for Tokens.
 type Tokens []Token
 
+// TotalBookingsGroup defines model for TotalBookingsGroup.
+type TotalBookingsGroup struct {
+	EventTypeColor             *string                  `json:"event_type_color,omitempty"`
+	EventTypeId                *string                  `json:"event_type_id"`
+	EventTypeTitle             *string                  `json:"event_type_title,omitempty"`
+	EventTypeTitleTranslations *map[string]string       `json:"event_type_title_translations,omitempty"`
+	NumberOfGuests             int32                    `json:"number_of_guests"`
+	NumberOfReservations       int32                    `json:"number_of_reservations"`
+	PrepaidGuests              int32                    `json:"prepaid_guests"`
+	PrepaymentAmount           float64                  `json:"prepayment_amount"`
+	Variations                 []TotalBookingsVariation `json:"variations"`
+}
+
+// TotalBookingsReport defines model for TotalBookingsReport.
+type TotalBookingsReport struct {
+	Groups               []TotalBookingsGroup `json:"groups"`
+	NumberOfGuests       int32                `json:"number_of_guests"`
+	NumberOfReservations int32                `json:"number_of_reservations"`
+	PrepaidGuests        int32                `json:"prepaid_guests"`
+	PrepaymentAmount     float64              `json:"prepayment_amount"`
+}
+
+// TotalBookingsVariation defines model for TotalBookingsVariation.
+type TotalBookingsVariation struct {
+	HasOwnLabel                bool               `json:"has_own_label"`
+	NumberOfGuests             int32              `json:"number_of_guests"`
+	NumberOfReservations       int32              `json:"number_of_reservations"`
+	PrepaidGuests              int32              `json:"prepaid_guests"`
+	PrepaymentAmount           float64            `json:"prepayment_amount"`
+	VariationId                *string            `json:"variation_id"`
+	VariationLabel             *string            `json:"variation_label,omitempty"`
+	VariationLabelTranslations *map[string]string `json:"variation_label_translations,omitempty"`
+}
+
 // Transaction defines model for Transaction.
 type Transaction struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -14802,6 +14836,11 @@ type GetSalesReportFilterOptionsParams struct {
 
 // GetStaffSalesByPaymentMethodReportParams defines parameters for GetStaffSalesByPaymentMethodReport.
 type GetStaffSalesByPaymentMethodReportParams struct {
+	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+}
+
+// GetTotalBookingsReportParams defines parameters for GetTotalBookingsReport.
+type GetTotalBookingsReportParams struct {
 	Filter PaymentsReportFilter `form:"filter" json:"filter"`
 }
 
@@ -21367,6 +21406,9 @@ type ClientInterface interface {
 	// GetStaffSalesByPaymentMethodReport request
 	GetStaffSalesByPaymentMethodReport(ctx context.Context, companyId string, params *GetStaffSalesByPaymentMethodReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetTotalBookingsReport request
+	GetTotalBookingsReport(ctx context.Context, companyId string, params *GetTotalBookingsReportParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListResourceGroups request
 	ListResourceGroups(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24656,6 +24698,18 @@ func (c *Client) GetSalesReportFilterOptions(ctx context.Context, companyId stri
 
 func (c *Client) GetStaffSalesByPaymentMethodReport(ctx context.Context, companyId string, params *GetStaffSalesByPaymentMethodReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetStaffSalesByPaymentMethodReportRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTotalBookingsReport(ctx context.Context, companyId string, params *GetTotalBookingsReportParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTotalBookingsReportRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -40266,6 +40320,50 @@ func NewGetStaffSalesByPaymentMethodReportRequest(server string, companyId strin
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/staff-sales-by-payment-method", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if queryParamBuf, err := json.Marshal(params.Filter); err != nil {
+		return nil, err
+	} else {
+		queryValues.Add("filter", string(queryParamBuf))
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTotalBookingsReportRequest generates requests for GetTotalBookingsReport
+func NewGetTotalBookingsReportRequest(server string, companyId string, params *GetTotalBookingsReportParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/reports/total-bookings", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -64213,6 +64311,9 @@ type ClientWithResponsesInterface interface {
 	// GetStaffSalesByPaymentMethodReport request
 	GetStaffSalesByPaymentMethodReportWithResponse(ctx context.Context, companyId string, params *GetStaffSalesByPaymentMethodReportParams, reqEditors ...RequestEditorFn) (*GetStaffSalesByPaymentMethodReportResponse, error)
 
+	// GetTotalBookingsReport request
+	GetTotalBookingsReportWithResponse(ctx context.Context, companyId string, params *GetTotalBookingsReportParams, reqEditors ...RequestEditorFn) (*GetTotalBookingsReportResponse, error)
+
 	// ListResourceGroups request
 	ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error)
 
@@ -68535,6 +68636,28 @@ func (r GetStaffSalesByPaymentMethodReportResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetStaffSalesByPaymentMethodReportResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTotalBookingsReportResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TotalBookingsReport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTotalBookingsReportResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTotalBookingsReportResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -77035,6 +77158,15 @@ func (c *ClientWithResponses) GetStaffSalesByPaymentMethodReportWithResponse(ctx
 	return ParseGetStaffSalesByPaymentMethodReportResponse(rsp)
 }
 
+// GetTotalBookingsReportWithResponse request returning *GetTotalBookingsReportResponse
+func (c *ClientWithResponses) GetTotalBookingsReportWithResponse(ctx context.Context, companyId string, params *GetTotalBookingsReportParams, reqEditors ...RequestEditorFn) (*GetTotalBookingsReportResponse, error) {
+	rsp, err := c.GetTotalBookingsReport(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTotalBookingsReportResponse(rsp)
+}
+
 // ListResourceGroupsWithResponse request returning *ListResourceGroupsResponse
 func (c *ClientWithResponses) ListResourceGroupsWithResponse(ctx context.Context, companyId string, params *ListResourceGroupsParams, reqEditors ...RequestEditorFn) (*ListResourceGroupsResponse, error) {
 	rsp, err := c.ListResourceGroups(ctx, companyId, params, reqEditors...)
@@ -84432,6 +84564,32 @@ func ParseGetStaffSalesByPaymentMethodReportResponse(rsp *http.Response) (*GetSt
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest StaffSalesByPaymentMethodReport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTotalBookingsReportResponse parses an HTTP response from a GetTotalBookingsReportWithResponse call
+func ParseGetTotalBookingsReportResponse(rsp *http.Response) (*GetTotalBookingsReportResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTotalBookingsReportResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TotalBookingsReport
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
