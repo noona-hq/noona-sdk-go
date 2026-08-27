@@ -155,12 +155,6 @@ const (
 	AdCreativeTypeTextOverlay AdCreativeType = "text_overlay"
 )
 
-// Defines values for AdEventType.
-const (
-	Click      AdEventType = "click"
-	Impression AdEventType = "impression"
-)
-
 // Defines values for AdPlacementSelectionDiscoveryType.
 const (
 	AdPlacementSelectionDiscoveryTypeDiscovery AdPlacementSelectionDiscoveryType = "discovery"
@@ -1392,11 +1386,6 @@ const (
 	PromoCodeValidationErrorCodeUsageLimitReached PromoCodeValidationErrorCode = "usage_limit_reached"
 )
 
-// Defines values for PromotableAdType.
-const (
-	PromotableAdTypeAd PromotableAdType = "ad"
-)
-
 // Defines values for PromotableCreateAdType.
 const (
 	PromotableCreateAdTypeAd PromotableCreateAdType = "ad"
@@ -2154,19 +2143,26 @@ type Actors []Actor
 
 // Ad defines model for Ad.
 type Ad struct {
-	Action          *AdAction             `json:"action,omitempty"`
-	CompanyId       *string               `json:"company_id,omitempty"`
-	CreatedAt       *time.Time            `json:"created_at,omitempty"`
-	Creative        *AdCreative           `json:"creative,omitempty"`
-	Id              *string               `json:"id,omitempty"`
-	Language        *string               `json:"language,omitempty"`
-	Name            *string               `json:"name,omitempty"`
-	Placement       *AdPlacementSelection `json:"placement,omitempty"`
-	RejectionReason *string               `json:"rejection_reason,omitempty"`
-	ReviewedAt      *time.Time            `json:"reviewed_at,omitempty"`
-	ReviewedBy      *string               `json:"reviewed_by,omitempty"`
-	Status          *AdStatus             `json:"status,omitempty"`
-	UpdatedAt       *time.Time            `json:"updated_at,omitempty"`
+	// Where the ad leads when tapped, discriminated by `type`: exactly one of the
+	// destination attributes is present. `company` carries no attribute of its own —
+	// that destination is the ad's own company, on `Ad.company`.
+	//
+	// Mirrors `ServedAdAction` on the marketplace surface. The request form keeps its
+	// `_id` fields; only the response references entities, so each can expand.
+	Action *AdActionResponse `json:"action,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company         *ExpandableCompany            `json:"company,omitempty"`
+	CreatedAt       *time.Time                    `json:"created_at,omitempty"`
+	Creative        *AdCreative                   `json:"creative,omitempty"`
+	Id              *string                       `json:"id,omitempty"`
+	Language        *string                       `json:"language,omitempty"`
+	Name            *string                       `json:"name,omitempty"`
+	Placement       *AdPlacementSelectionResponse `json:"placement,omitempty"`
+	RejectionReason *string                       `json:"rejection_reason,omitempty"`
+	ReviewedAt      *time.Time                    `json:"reviewed_at,omitempty"`
+	Status          *AdStatus                     `json:"status,omitempty"`
+	UpdatedAt       *time.Time                    `json:"updated_at,omitempty"`
 }
 
 // AdAction defines model for AdAction.
@@ -2195,6 +2191,24 @@ type AdActionExperience struct {
 
 // AdActionExperienceType defines model for AdActionExperience.Type.
 type AdActionExperienceType string
+
+// Where the ad leads when tapped, discriminated by `type`: exactly one of the
+// destination attributes is present. `company` carries no attribute of its own —
+// that destination is the ad's own company, on `Ad.company`.
+//
+// Mirrors `ServedAdAction` on the marketplace surface. The request form keeps its
+// `_id` fields; only the response references entities, so each can expand.
+type AdActionResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	EventType *ExpandableEventType `json:"event_type,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	ScheduledEvent *ExpandableScheduledEvent `json:"scheduled_event,omitempty"`
+	Type           AdActionType              `json:"type"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	VoucherTemplate *ExpandableVoucherTemplate `json:"voucher_template,omitempty"`
+}
 
 // AdActionScheduledEvent defines model for AdActionScheduledEvent.
 type AdActionScheduledEvent struct {
@@ -2240,24 +2254,25 @@ type AdCampaign struct {
 
 // AdCampaignBudget defines model for AdCampaignBudget.
 type AdCampaignBudget struct {
-	Daily *struct {
-		Amount   *float64 `json:"amount,omitempty"`
-		Currency *string  `json:"currency,omitempty"`
-	} `json:"daily,omitempty"`
-	Total *struct {
-		Amount   *float64 `json:"amount,omitempty"`
-		Currency *string  `json:"currency,omitempty"`
-	} `json:"total,omitempty"`
+	Daily Money  `json:"daily"`
+	Total *Money `json:"total,omitempty"`
+}
+
+// Budget amounts are denominated in the company's own currency, which is why no currency is accepted here: an ad event charge is priced in the company currency, and a budget in any other currency could never be compared against the spend accumulated against it.
+type AdCampaignBudgetInput struct {
+	Daily MoneyInput  `json:"daily"`
+	Total *MoneyInput `json:"total,omitempty"`
 }
 
 // AdCampaignCreate defines model for AdCampaignCreate.
 type AdCampaignCreate struct {
-	Budget      AdCampaignBudget     `json:"budget"`
-	CompanyId   string               `json:"company_id"`
-	Name        string               `json:"name"`
-	Promotables []PromotableCreate   `json:"promotables"`
-	Schedule    *AdCampaignSchedule  `json:"schedule,omitempty"`
-	Targeting   *AdCampaignTargeting `json:"targeting,omitempty"`
+	// Budget amounts are denominated in the company's own currency, which is why no currency is accepted here: an ad event charge is priced in the company currency, and a budget in any other currency could never be compared against the spend accumulated against it.
+	Budget      AdCampaignBudgetInput `json:"budget"`
+	CompanyId   string                `json:"company_id"`
+	Name        string                `json:"name"`
+	Promotables []PromotableCreate    `json:"promotables"`
+	Schedule    *AdCampaignSchedule   `json:"schedule,omitempty"`
+	Targeting   *AdCampaignTargeting  `json:"targeting,omitempty"`
 }
 
 // AdCampaignEffectiveStatus defines model for AdCampaignEffectiveStatus.
@@ -2293,17 +2308,11 @@ type AdCampaignSchedule struct {
 
 // AdCampaignSpend defines model for AdCampaignSpend.
 type AdCampaignSpend struct {
-	Today *struct {
-		Amount   *float64 `json:"amount,omitempty"`
-		Currency *string  `json:"currency,omitempty"`
-	} `json:"today,omitempty"`
+	Today *Money `json:"today,omitempty"`
 
 	// ISO date (YYYY-MM-DD) of the current today window
 	TodayDate *string `json:"today_date,omitempty"`
-	Total     *struct {
-		Amount   *float64 `json:"amount,omitempty"`
-		Currency *string  `json:"currency,omitempty"`
-	} `json:"total,omitempty"`
+	Total     *Money  `json:"total,omitempty"`
 }
 
 // AdCampaignStatus defines model for AdCampaignStatus.
@@ -2319,9 +2328,10 @@ type AdCampaignTargeting struct {
 
 // AdCampaignUpdate defines model for AdCampaignUpdate.
 type AdCampaignUpdate struct {
-	Budget      *AdCampaignBudget `json:"budget,omitempty"`
-	Name        *string           `json:"name,omitempty"`
-	Promotables *[]Promotable     `json:"promotables,omitempty"`
+	// Budget amounts are denominated in the company's own currency, which is why no currency is accepted here: an ad event charge is priced in the company currency, and a budget in any other currency could never be compared against the spend accumulated against it.
+	Budget      *AdCampaignBudgetInput `json:"budget,omitempty"`
+	Name        *string                `json:"name,omitempty"`
+	Promotables *[]PromotableUpdate    `json:"promotables,omitempty"`
 	Schedule    *struct {
 		EndsAt *time.Time `json:"ends_at,omitempty"`
 	} `json:"schedule,omitempty"`
@@ -2373,33 +2383,14 @@ type AdCreativeTextOverlayType string
 // AdCreativeType defines model for AdCreativeType.
 type AdCreativeType string
 
-// AdEvent defines model for AdEvent.
-type AdEvent struct {
-	AdCampaignId *string `json:"ad_campaign_id,omitempty"`
-	AdId         *string `json:"ad_id,omitempty"`
-	Charge       *struct {
-		Amount   *float64 `json:"amount,omitempty"`
-		Currency *string  `json:"currency,omitempty"`
-	} `json:"charge,omitempty"`
-	CompanyId  *string         `json:"company_id,omitempty"`
-	CreatedAt  *time.Time      `json:"created_at,omitempty"`
-	Id         *string         `json:"id,omitempty"`
-	Location   *LocationLatLng `json:"location,omitempty"`
-	OccurredAt *time.Time      `json:"occurred_at,omitempty"`
-	ServeToken *string         `json:"serve_token,omitempty"`
-	Type       *AdEventType    `json:"type,omitempty"`
-}
-
-// AdEventType defines model for AdEventType.
-type AdEventType string
-
 // AdPerformance defines model for AdPerformance.
 type AdPerformance struct {
 	Campaigns *[]struct {
-		CampaignId  *string `json:"campaign_id,omitempty"`
-		Clicks      *int64  `json:"clicks,omitempty"`
-		Impressions *int64  `json:"impressions,omitempty"`
-		Name        *string `json:"name,omitempty"`
+		// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+		AdCampaign  *ExpandableAdCampaign `json:"ad_campaign,omitempty"`
+		Clicks      *int64                `json:"clicks,omitempty"`
+		Impressions *int64                `json:"impressions,omitempty"`
+		Name        *string               `json:"name,omitempty"`
 		Spend       *struct {
 			Amount   *float64 `json:"amount,omitempty"`
 			Currency *string  `json:"currency,omitempty"`
@@ -2473,6 +2464,15 @@ type AdPlacementSelectionDiscovery struct {
 
 // AdPlacementSelectionDiscoveryType defines model for AdPlacementSelectionDiscovery.Type.
 type AdPlacementSelectionDiscoveryType string
+
+// AdPlacementSelectionResponse defines model for AdPlacementSelectionResponse.
+type AdPlacementSelectionResponse struct {
+	Discovery *struct {
+		// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+		AdPlacement *ExpandableAdPlacement `json:"ad_placement,omitempty"`
+	} `json:"discovery,omitempty"`
+	Type AdPlacementType `json:"type"`
+}
 
 // AdPlacementSizeConfig defines model for AdPlacementSizeConfig.
 type AdPlacementSizeConfig struct {
@@ -2890,12 +2890,42 @@ type AdminFixWorkHoursTimesResult struct {
 // AdminFixWorkHoursTimesScope defines model for AdminFixWorkHoursTimesScope.
 type AdminFixWorkHoursTimesScope string
 
+// AdminMarketplaceAdResponse defines model for AdminMarketplaceAdResponse.
+type AdminMarketplaceAdResponse struct {
+	// Where the ad leads when tapped, discriminated by `type`: exactly one of the
+	// destination attributes is present. `company` carries no attribute of its own —
+	// that destination is the ad's own company, on `Ad.company`.
+	//
+	// Mirrors `ServedAdAction` on the marketplace surface. The request form keeps its
+	// `_id` fields; only the response references entities, so each can expand.
+	Action *AdActionResponse `json:"action,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company         *ExpandableCompany            `json:"company,omitempty"`
+	CreatedAt       *time.Time                    `json:"created_at,omitempty"`
+	Creative        *AdCreative                   `json:"creative,omitempty"`
+	Id              *string                       `json:"id,omitempty"`
+	Language        *string                       `json:"language,omitempty"`
+	Name            *string                       `json:"name,omitempty"`
+	Placement       *AdPlacementSelectionResponse `json:"placement,omitempty"`
+	RejectionReason *string                       `json:"rejection_reason,omitempty"`
+	ReviewedAt      *time.Time                    `json:"reviewed_at,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	ReviewedBy *ExpandableActor `json:"reviewed_by,omitempty"`
+	Status     *AdStatus        `json:"status,omitempty"`
+	UpdatedAt  *time.Time       `json:"updated_at,omitempty"`
+}
+
 // AdminMarketplaceAdUpdate defines model for AdminMarketplaceAdUpdate.
 type AdminMarketplaceAdUpdate struct {
 	// Required when status is rejected or taken_down.
 	Reason *string  `json:"reason,omitempty"`
 	Status AdStatus `json:"status"`
 }
+
+// AdminMarketplaceAdsResponse defines model for AdminMarketplaceAdsResponse.
+type AdminMarketplaceAdsResponse []AdminMarketplaceAdResponse
 
 // AdminMoveUserRequest defines model for AdminMoveUserRequest.
 type AdminMoveUserRequest struct {
@@ -7090,6 +7120,21 @@ type ExpandableActor struct {
 }
 
 // [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableAd struct {
+	union json.RawMessage
+}
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableAdCampaign struct {
+	union json.RawMessage
+}
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+type ExpandableAdPlacement struct {
+	union json.RawMessage
+}
+
+// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 type ExpandableApp struct {
 	union json.RawMessage
 }
@@ -8248,6 +8293,17 @@ type MemosResponse []MemoResponse
 type MergeCustomersRequest struct {
 	// List of customer IDs to merge into the target customer
 	CustomerIds []string `json:"customer_ids"`
+}
+
+// Money defines model for Money.
+type Money struct {
+	Amount   float64 `json:"amount"`
+	Currency string  `json:"currency"`
+}
+
+// MoneyInput defines model for MoneyInput.
+type MoneyInput struct {
+	Amount float64 `json:"amount"`
 }
 
 // MoveToEnterpriseRequest defines model for MoveToEnterpriseRequest.
@@ -9651,25 +9707,11 @@ type PromoCodeValidation struct {
 // PromoCodeValidationErrorCode defines model for PromoCodeValidationErrorCode.
 type PromoCodeValidationErrorCode string
 
-// Promotable defines model for Promotable.
+// Flat and type-discriminated, like AdActionResponse: the expand framework can resolve a union only at the end of a path, so a oneOf wrapper here would make `ad` unexpandable.
 type Promotable struct {
-	union json.RawMessage
-}
-
-// PromotableAd defines model for PromotableAd.
-type PromotableAd struct {
-	Ad *struct {
-		AdId *string `json:"ad_id,omitempty"`
-	} `json:"ad,omitempty"`
-	Type *PromotableAdType `json:"type,omitempty"`
-}
-
-// PromotableAdType defines model for PromotableAd.Type.
-type PromotableAdType string
-
-// PromotableBase defines model for PromotableBase.
-type PromotableBase struct {
-	Type *PromotableType `json:"type,omitempty"`
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Ad   *ExpandableAd  `json:"ad,omitempty"`
+	Type PromotableType `json:"type"`
 }
 
 // PromotableCreate defines model for PromotableCreate.
@@ -9704,6 +9746,11 @@ type PromotableCreateInlineAdType string
 
 // PromotableType defines model for PromotableType.
 type PromotableType string
+
+// Only the by-reference form. Updating a campaign cannot create an ad, so the inline variant accepted on create has no meaning here.
+type PromotableUpdate struct {
+	union json.RawMessage
+}
 
 // PublicCompanies defines model for PublicCompanies.
 type PublicCompanies []PublicCompany
@@ -13430,6 +13477,18 @@ type UpdateAdCampaignParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminCreateAdPreviewTokenJSONBody defines parameters for AdminCreateAdPreviewToken.
+type AdminCreateAdPreviewTokenJSONBody AdPreviewTokenCreate
+
+// AdminCreateAdPreviewTokenParams defines parameters for AdminCreateAdPreviewToken.
+type AdminCreateAdPreviewTokenParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // AdminListAdSectionsParams defines parameters for AdminListAdSections.
 type AdminListAdSectionsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -13622,6 +13681,15 @@ type AdminUpdateMarketplaceAdJSONBody AdminMarketplaceAdUpdate
 
 // AdminUpdateMarketplaceAdParams defines parameters for AdminUpdateMarketplaceAd.
 type AdminUpdateMarketplaceAdParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// AdminListMarketplaceAdCampaignsParams defines parameters for AdminListMarketplaceAdCampaigns.
+type AdminListMarketplaceAdCampaignsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -17838,6 +17906,9 @@ type CreateAdCampaignJSONRequestBody CreateAdCampaignJSONBody
 // UpdateAdCampaignJSONRequestBody defines body for UpdateAdCampaign for application/json ContentType.
 type UpdateAdCampaignJSONRequestBody UpdateAdCampaignJSONBody
 
+// AdminCreateAdPreviewTokenJSONRequestBody defines body for AdminCreateAdPreviewToken for application/json ContentType.
+type AdminCreateAdPreviewTokenJSONRequestBody AdminCreateAdPreviewTokenJSONBody
+
 // AdminCreateAdJSONRequestBody defines body for AdminCreateAd for application/json ContentType.
 type AdminCreateAdJSONRequestBody AdminCreateAdJSONBody
 
@@ -18757,6 +18828,108 @@ func (t ExpandableActor) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ExpandableActor) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableAd) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableAd) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableAd) AsAd() (Ad, error) {
+	var body Ad
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableAd) FromAd(v Ad) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableAd) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableAd) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableAdCampaign) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableAdCampaign) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableAdCampaign) AsAdCampaign() (AdCampaign, error) {
+	var body AdCampaign
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableAdCampaign) FromAdCampaign(v AdCampaign) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableAdCampaign) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableAdCampaign) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t ExpandableAdPlacement) AsID() (ID, error) {
+	var body ID
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableAdPlacement) FromID(v ID) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableAdPlacement) AsAdPlacement() (AdPlacement, error) {
+	var body AdPlacement
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *ExpandableAdPlacement) FromAdPlacement(v AdPlacement) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t ExpandableAdPlacement) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ExpandableAdPlacement) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -20219,28 +20392,6 @@ func (t *Notification) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-func (t Promotable) AsPromotableAd() (PromotableAd, error) {
-	var body PromotableAd
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-func (t *Promotable) FromPromotableAd(v PromotableAd) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-func (t Promotable) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *Promotable) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
 func (t PromotableCreate) AsPromotableCreateAd() (PromotableCreateAd, error) {
 	var body PromotableCreateAd
 	err := json.Unmarshal(t.union, &body)
@@ -20271,6 +20422,28 @@ func (t PromotableCreate) MarshalJSON() ([]byte, error) {
 }
 
 func (t *PromotableCreate) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t PromotableUpdate) AsPromotableCreateAd() (PromotableCreateAd, error) {
+	var body PromotableCreateAd
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *PromotableUpdate) FromPromotableCreateAd(v PromotableCreateAd) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t PromotableUpdate) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PromotableUpdate) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -20662,6 +20835,11 @@ type ClientInterface interface {
 
 	UpdateAdCampaign(ctx context.Context, adCampaignId string, params *UpdateAdCampaignParams, body UpdateAdCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminCreateAdPreviewToken request with any body
+	AdminCreateAdPreviewTokenWithBody(ctx context.Context, params *AdminCreateAdPreviewTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminCreateAdPreviewToken(ctx context.Context, params *AdminCreateAdPreviewTokenParams, body AdminCreateAdPreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminListAdSections request
 	AdminListAdSections(ctx context.Context, params *AdminListAdSectionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -20757,6 +20935,9 @@ type ClientInterface interface {
 	AdminUpdateMarketplaceAdWithBody(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	AdminUpdateMarketplaceAd(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminListMarketplaceAdCampaigns request
+	AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AdminBulkMigrateAppointmentsProBlacklistEntitlements request with any body
 	AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -22438,6 +22619,30 @@ func (c *Client) UpdateAdCampaign(ctx context.Context, adCampaignId string, para
 	return c.Client.Do(req)
 }
 
+func (c *Client) AdminCreateAdPreviewTokenWithBody(ctx context.Context, params *AdminCreateAdPreviewTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminCreateAdPreviewTokenRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminCreateAdPreviewToken(ctx context.Context, params *AdminCreateAdPreviewTokenParams, body AdminCreateAdPreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminCreateAdPreviewTokenRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) AdminListAdSections(ctx context.Context, params *AdminListAdSectionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminListAdSectionsRequest(c.Server, params)
 	if err != nil {
@@ -22848,6 +23053,18 @@ func (c *Client) AdminUpdateMarketplaceAdWithBody(ctx context.Context, adId stri
 
 func (c *Client) AdminUpdateMarketplaceAd(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateMarketplaceAdRequest(c.Server, adId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminListMarketplaceAdCampaignsRequest(c.Server, adId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -30197,6 +30414,82 @@ func NewUpdateAdCampaignRequestWithBody(server string, adCampaignId string, para
 	return req, nil
 }
 
+// NewAdminCreateAdPreviewTokenRequest calls the generic AdminCreateAdPreviewToken builder with application/json body
+func NewAdminCreateAdPreviewTokenRequest(server string, params *AdminCreateAdPreviewTokenParams, body AdminCreateAdPreviewTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminCreateAdPreviewTokenRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewAdminCreateAdPreviewTokenRequestWithBody generates requests for AdminCreateAdPreviewToken with any type of body
+func NewAdminCreateAdPreviewTokenRequestWithBody(server string, params *AdminCreateAdPreviewTokenParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/ad-preview-tokens")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewAdminListAdSectionsRequest generates requests for AdminListAdSections
 func NewAdminListAdSectionsRequest(server string, params *AdminListAdSectionsParams) (*http.Request, error) {
 	var err error
@@ -31894,6 +32187,76 @@ func NewAdminUpdateMarketplaceAdRequestWithBody(server string, adId string, para
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminListMarketplaceAdCampaignsRequest generates requests for AdminListMarketplaceAdCampaigns
+func NewAdminListMarketplaceAdCampaignsRequest(server string, adId string, params *AdminListMarketplaceAdCampaignsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_id", runtime.ParamLocationPath, adId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/marketplace-ads/%s/campaigns", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -63141,6 +63504,11 @@ type ClientWithResponsesInterface interface {
 
 	UpdateAdCampaignWithResponse(ctx context.Context, adCampaignId string, params *UpdateAdCampaignParams, body UpdateAdCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateAdCampaignResponse, error)
 
+	// AdminCreateAdPreviewToken request with any body
+	AdminCreateAdPreviewTokenWithBodyWithResponse(ctx context.Context, params *AdminCreateAdPreviewTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminCreateAdPreviewTokenResponse, error)
+
+	AdminCreateAdPreviewTokenWithResponse(ctx context.Context, params *AdminCreateAdPreviewTokenParams, body AdminCreateAdPreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminCreateAdPreviewTokenResponse, error)
+
 	// AdminListAdSections request
 	AdminListAdSectionsWithResponse(ctx context.Context, params *AdminListAdSectionsParams, reqEditors ...RequestEditorFn) (*AdminListAdSectionsResponse, error)
 
@@ -63236,6 +63604,9 @@ type ClientWithResponsesInterface interface {
 	AdminUpdateMarketplaceAdWithBodyWithResponse(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateMarketplaceAdResponse, error)
 
 	AdminUpdateMarketplaceAdWithResponse(ctx context.Context, adId string, params *AdminUpdateMarketplaceAdParams, body AdminUpdateMarketplaceAdJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateMarketplaceAdResponse, error)
+
+	// AdminListMarketplaceAdCampaigns request
+	AdminListMarketplaceAdCampaignsWithResponse(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdCampaignsResponse, error)
 
 	// AdminBulkMigrateAppointmentsProBlacklistEntitlements request with any body
 	AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse, error)
@@ -64971,6 +65342,28 @@ func (r UpdateAdCampaignResponse) StatusCode() int {
 	return 0
 }
 
+type AdminCreateAdPreviewTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdPreviewToken
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminCreateAdPreviewTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminCreateAdPreviewTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type AdminListAdSectionsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -65471,7 +65864,7 @@ func (r AdminUpdateTerminalResponse) StatusCode() int {
 type AdminListMarketplaceAdsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *AdsResponse
+	JSON200      *AdminMarketplaceAdsResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -65493,7 +65886,7 @@ func (r AdminListMarketplaceAdsResponse) StatusCode() int {
 type AdminGetMarketplaceAdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *AdResponse
+	JSON200      *AdminMarketplaceAdResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -65515,7 +65908,7 @@ func (r AdminGetMarketplaceAdResponse) StatusCode() int {
 type AdminUpdateMarketplaceAdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *AdResponse
+	JSON200      *AdminMarketplaceAdResponse
 	JSON409      *AdStateTransitionError
 }
 
@@ -65529,6 +65922,28 @@ func (r AdminUpdateMarketplaceAdResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateMarketplaceAdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminListMarketplaceAdCampaignsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdCampaignsResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminListMarketplaceAdCampaignsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminListMarketplaceAdCampaignsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -74852,6 +75267,23 @@ func (c *ClientWithResponses) UpdateAdCampaignWithResponse(ctx context.Context, 
 	return ParseUpdateAdCampaignResponse(rsp)
 }
 
+// AdminCreateAdPreviewTokenWithBodyWithResponse request with arbitrary body returning *AdminCreateAdPreviewTokenResponse
+func (c *ClientWithResponses) AdminCreateAdPreviewTokenWithBodyWithResponse(ctx context.Context, params *AdminCreateAdPreviewTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminCreateAdPreviewTokenResponse, error) {
+	rsp, err := c.AdminCreateAdPreviewTokenWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminCreateAdPreviewTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminCreateAdPreviewTokenWithResponse(ctx context.Context, params *AdminCreateAdPreviewTokenParams, body AdminCreateAdPreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminCreateAdPreviewTokenResponse, error) {
+	rsp, err := c.AdminCreateAdPreviewToken(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminCreateAdPreviewTokenResponse(rsp)
+}
+
 // AdminListAdSectionsWithResponse request returning *AdminListAdSectionsResponse
 func (c *ClientWithResponses) AdminListAdSectionsWithResponse(ctx context.Context, params *AdminListAdSectionsParams, reqEditors ...RequestEditorFn) (*AdminListAdSectionsResponse, error) {
 	rsp, err := c.AdminListAdSections(ctx, params, reqEditors...)
@@ -75156,6 +75588,15 @@ func (c *ClientWithResponses) AdminUpdateMarketplaceAdWithResponse(ctx context.C
 		return nil, err
 	}
 	return ParseAdminUpdateMarketplaceAdResponse(rsp)
+}
+
+// AdminListMarketplaceAdCampaignsWithResponse request returning *AdminListMarketplaceAdCampaignsResponse
+func (c *ClientWithResponses) AdminListMarketplaceAdCampaignsWithResponse(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdCampaignsResponse, error) {
+	rsp, err := c.AdminListMarketplaceAdCampaigns(ctx, adId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminListMarketplaceAdCampaignsResponse(rsp)
 }
 
 // AdminBulkMigrateAppointmentsProBlacklistEntitlementsWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateAppointmentsProBlacklistEntitlementsResponse
@@ -80269,6 +80710,32 @@ func ParseUpdateAdCampaignResponse(rsp *http.Response) (*UpdateAdCampaignRespons
 	return response, nil
 }
 
+// ParseAdminCreateAdPreviewTokenResponse parses an HTTP response from a AdminCreateAdPreviewTokenWithResponse call
+func ParseAdminCreateAdPreviewTokenResponse(rsp *http.Response) (*AdminCreateAdPreviewTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminCreateAdPreviewTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdPreviewToken
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseAdminListAdSectionsResponse parses an HTTP response from a AdminListAdSectionsWithResponse call
 func ParseAdminListAdSectionsResponse(rsp *http.Response) (*AdminListAdSectionsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -80792,7 +81259,7 @@ func ParseAdminListMarketplaceAdsResponse(rsp *http.Response) (*AdminListMarketp
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdsResponse
+		var dest AdminMarketplaceAdsResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -80818,7 +81285,7 @@ func ParseAdminGetMarketplaceAdResponse(rsp *http.Response) (*AdminGetMarketplac
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdResponse
+		var dest AdminMarketplaceAdResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -80844,7 +81311,7 @@ func ParseAdminUpdateMarketplaceAdResponse(rsp *http.Response) (*AdminUpdateMark
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdResponse
+		var dest AdminMarketplaceAdResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -80856,6 +81323,32 @@ func ParseAdminUpdateMarketplaceAdResponse(rsp *http.Response) (*AdminUpdateMark
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminListMarketplaceAdCampaignsResponse parses an HTTP response from a AdminListMarketplaceAdCampaignsWithResponse call
+func ParseAdminListMarketplaceAdCampaignsResponse(rsp *http.Response) (*AdminListMarketplaceAdCampaignsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminListMarketplaceAdCampaignsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdCampaignsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
