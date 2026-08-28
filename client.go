@@ -5826,7 +5826,10 @@ type EmployeeSalesBreakdownFilter struct {
 type EmployeeSalesBreakdownItemType string
 
 // EmployeeSalesBreakdownReport defines model for EmployeeSalesBreakdownReport.
-type EmployeeSalesBreakdownReport []EmployeeSalesBreakdownRow
+type EmployeeSalesBreakdownReport struct {
+	Rows   []EmployeeSalesBreakdownRow `json:"rows"`
+	Totals SalesBreakdownTotals        `json:"totals"`
+}
 
 // EmployeeSalesBreakdownRow defines model for EmployeeSalesBreakdownRow.
 type EmployeeSalesBreakdownRow struct {
@@ -10780,8 +10783,38 @@ type SaleFields []SaleField
 // Sales defines model for Sales.
 type Sales []Sale
 
+// SalesAmountTotals defines model for SalesAmountTotals.
+type SalesAmountTotals struct {
+	AmountExclVat  float64 `json:"amount_excl_vat"`
+	AmountInclVat  float64 `json:"amount_incl_vat"`
+	ReturnQuantity int64   `json:"return_quantity"`
+	SaleQuantity   int64   `json:"sale_quantity"`
+}
+
+// SalesBreakdownTotals defines model for SalesBreakdownTotals.
+type SalesBreakdownTotals struct {
+	ClaimAmountExclVat   float64 `json:"claim_amount_excl_vat"`
+	ClaimAmountInclVat   float64 `json:"claim_amount_incl_vat"`
+	ProductAmountExclVat float64 `json:"product_amount_excl_vat"`
+	ProductAmountInclVat float64 `json:"product_amount_incl_vat"`
+	ReturnQuantity       int64   `json:"return_quantity"`
+	SaleQuantity         int64   `json:"sale_quantity"`
+	TotalAmountExclVat   float64 `json:"total_amount_excl_vat"`
+	TotalAmountInclVat   float64 `json:"total_amount_incl_vat"`
+	UnknownAmountExclVat float64 `json:"unknown_amount_excl_vat"`
+	UnknownAmountInclVat float64 `json:"unknown_amount_incl_vat"`
+	VoucherAmountExclVat float64 `json:"voucher_amount_excl_vat"`
+	VoucherAmountInclVat float64 `json:"voucher_amount_incl_vat"`
+	WorkAmountExclVat    float64 `json:"work_amount_excl_vat"`
+	WorkAmountExemptVat  float64 `json:"work_amount_exempt_vat"`
+	WorkAmountInclVat    float64 `json:"work_amount_incl_vat"`
+}
+
 // SalesByEmployeeReport defines model for SalesByEmployeeReport.
-type SalesByEmployeeReport []SalesByEmployeeRow
+type SalesByEmployeeReport struct {
+	Rows   []SalesByEmployeeRow `json:"rows"`
+	Totals SalesBreakdownTotals `json:"totals"`
+}
 
 // SalesByEmployeeRow defines model for SalesByEmployeeRow.
 type SalesByEmployeeRow struct {
@@ -10805,7 +10838,10 @@ type SalesByEmployeeRow struct {
 }
 
 // SalesByPaymentMethodReport defines model for SalesByPaymentMethodReport.
-type SalesByPaymentMethodReport []SalesByPaymentMethodRow
+type SalesByPaymentMethodReport struct {
+	Rows   []SalesByPaymentMethodRow  `json:"rows"`
+	Totals SalesByPaymentMethodTotals `json:"totals"`
+}
 
 // SalesByPaymentMethodRow defines model for SalesByPaymentMethodRow.
 type SalesByPaymentMethodRow struct {
@@ -10818,8 +10854,18 @@ type SalesByPaymentMethodRow struct {
 	TransactionCount        int32   `json:"transaction_count"`
 }
 
+// SalesByPaymentMethodTotals defines model for SalesByPaymentMethodTotals.
+type SalesByPaymentMethodTotals struct {
+	RefundCount      int32   `json:"refund_count"`
+	TotalAmount      float64 `json:"total_amount"`
+	TransactionCount int32   `json:"transaction_count"`
+}
+
 // SalesByProductReport defines model for SalesByProductReport.
-type SalesByProductReport []SalesByProductRow
+type SalesByProductReport struct {
+	Rows   []SalesByProductRow `json:"rows"`
+	Totals SalesAmountTotals   `json:"totals"`
+}
 
 // SalesByProductRow defines model for SalesByProductRow.
 type SalesByProductRow struct {
@@ -10832,7 +10878,10 @@ type SalesByProductRow struct {
 }
 
 // SalesByServiceReport defines model for SalesByServiceReport.
-type SalesByServiceReport []SalesByServiceRow
+type SalesByServiceReport struct {
+	Rows   []SalesByServiceRow  `json:"rows"`
+	Totals SalesByServiceTotals `json:"totals"`
+}
 
 // SalesByServiceRow defines model for SalesByServiceRow.
 type SalesByServiceRow struct {
@@ -10845,8 +10894,20 @@ type SalesByServiceRow struct {
 	ServiceName     *string `json:"service_name,omitempty"`
 }
 
+// SalesByServiceTotals defines model for SalesByServiceTotals.
+type SalesByServiceTotals struct {
+	AmountExclVat   float64 `json:"amount_excl_vat"`
+	AmountExemptVat float64 `json:"amount_exempt_vat"`
+	AmountInclVat   float64 `json:"amount_incl_vat"`
+	ReturnQuantity  int64   `json:"return_quantity"`
+	SaleQuantity    int64   `json:"sale_quantity"`
+}
+
 // SalesByVATCategoryReport defines model for SalesByVATCategoryReport.
-type SalesByVATCategoryReport []SalesByVATCategoryRow
+type SalesByVATCategoryReport struct {
+	Rows   []SalesByVATCategoryRow `json:"rows"`
+	Totals SalesAmountTotals       `json:"totals"`
+}
 
 // SalesByVATCategoryRow defines model for SalesByVATCategoryRow.
 type SalesByVATCategoryRow struct {
