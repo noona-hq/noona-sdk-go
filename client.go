@@ -14180,6 +14180,9 @@ type ListAdsParams struct {
 
 	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+
+	// Finds ads by name and by the overlay text of a text-overlay creative (case-insensitive partial match). Every word in the term has to appear in one of those two fields, but the words can be in any order, so `midweek offer` also finds an ad called `Offer for midweek`. Applies alongside `filter`, not instead of it, and `X-Total-Count` is the number of ads left after both.
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
 }
 
 // GetAdPerformanceParams defines parameters for GetAdPerformance.
@@ -34722,6 +34725,22 @@ func NewListAdsRequest(server string, companyId string, params *ListAdsParams) (
 			return nil, err
 		} else {
 			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Search != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "search", runtime.ParamLocationQuery, *params.Search); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
 		}
 
 	}
