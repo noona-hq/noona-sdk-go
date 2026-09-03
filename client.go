@@ -814,6 +814,7 @@ const (
 // Defines values for FiscalizeTransactionErrorCode.
 const (
 	CustomerOnboardingError      FiscalizeTransactionErrorCode = "customer_onboarding_error"
+	InvopopFiscalizationError    FiscalizeTransactionErrorCode = "invopop_fiscalization_error"
 	TaxExemptionCodeMissingError FiscalizeTransactionErrorCode = "tax_exemption_code_missing_error"
 )
 
@@ -1627,12 +1628,12 @@ const (
 
 // Defines values for SubscriptionCheckoutStatusState.
 const (
-	Acknowledged SubscriptionCheckoutStatusState = "acknowledged"
-	Cancelled    SubscriptionCheckoutStatusState = "cancelled"
-	Created      SubscriptionCheckoutStatusState = "created"
-	Failed       SubscriptionCheckoutStatusState = "failed"
-	Requested    SubscriptionCheckoutStatusState = "requested"
-	Succeeded    SubscriptionCheckoutStatusState = "succeeded"
+	SubscriptionCheckoutStatusStateAcknowledged SubscriptionCheckoutStatusState = "acknowledged"
+	SubscriptionCheckoutStatusStateCancelled    SubscriptionCheckoutStatusState = "cancelled"
+	SubscriptionCheckoutStatusStateCreated      SubscriptionCheckoutStatusState = "created"
+	SubscriptionCheckoutStatusStateFailed       SubscriptionCheckoutStatusState = "failed"
+	SubscriptionCheckoutStatusStateRequested    SubscriptionCheckoutStatusState = "requested"
+	SubscriptionCheckoutStatusStateSucceeded    SubscriptionCheckoutStatusState = "succeeded"
 )
 
 // Defines values for SubscriptionChurnReason.
@@ -1790,6 +1791,13 @@ const (
 const (
 	FullRefund    TransactionCreationBehaviorRefund = "full_refund"
 	PartialRefund TransactionCreationBehaviorRefund = "partial_refund"
+)
+
+// Defines values for TransactionFiscalizationStatus.
+const (
+	TransactionFiscalizationStatusFailed     TransactionFiscalizationStatus = "failed"
+	TransactionFiscalizationStatusIssued     TransactionFiscalizationStatus = "issued"
+	TransactionFiscalizationStatusProcessing TransactionFiscalizationStatus = "processing"
 )
 
 // Defines values for UnavailableResourceReason.
@@ -7430,6 +7438,15 @@ type FileWithSignedURL struct {
 // Files defines model for Files.
 type Files []File
 
+// FiscalizationFault defines model for FiscalizationFault.
+type FiscalizationFault struct {
+	Code     *string   `json:"code,omitempty"`
+	Fields   *string   `json:"fields,omitempty"`
+	Message  string    `json:"message"`
+	Paths    *[]string `json:"paths,omitempty"`
+	Provider *string   `json:"provider,omitempty"`
+}
+
 // FiscalizationOnboarding defines model for FiscalizationOnboarding.
 type FiscalizationOnboarding struct {
 	Data *FiscalizationOnboardingData `json:"data,omitempty"`
@@ -7517,8 +7534,13 @@ type FiscalizationRecord struct {
 	Company   *string                  `json:"company,omitempty"`
 	CreatedAt *time.Time               `json:"created_at,omitempty"`
 	Data      *FiscalizationRecordData `json:"data,omitempty"`
+	Faults    *[]FiscalizationFault    `json:"faults,omitempty"`
 	Id        *string                  `json:"id,omitempty"`
-	UpdatedAt *time.Time               `json:"updated_at,omitempty"`
+
+	// Current transaction fiscalization lifecycle status
+	Status    *TransactionFiscalizationStatus `json:"status,omitempty"`
+	UpdatedAt *time.Time                      `json:"updated_at,omitempty"`
+	Warning   *string                         `json:"warning,omitempty"`
 }
 
 // FiscalizationRecordData defines model for FiscalizationRecordData.
@@ -7559,6 +7581,7 @@ type FiscalizationStatusUpdateResponse struct {
 type FiscalizeTransactionError struct {
 	// The error code. Only populated for certain errors.
 	Code    FiscalizeTransactionErrorCode `json:"code"`
+	Faults  *[]FiscalizationFault         `json:"faults,omitempty"`
 	Message string                        `json:"message"`
 }
 
@@ -12171,8 +12194,14 @@ type Transaction struct {
 	Employees     *[]ExpandableEmployee `json:"employees,omitempty"`
 	Fiscalization *string               `json:"fiscalization,omitempty"`
 
+	// Structured provider faults when fiscalization failed but the transaction was completed
+	FiscalizationFaults *[]FiscalizationFault `json:"fiscalization_faults,omitempty"`
+
 	// Fiscalization provider type
 	FiscalizationProvider *FiscalizationProvider `json:"fiscalization_provider,omitempty"`
+
+	// Current transaction fiscalization lifecycle status
+	FiscalizationStatus *TransactionFiscalizationStatus `json:"fiscalization_status,omitempty"`
 
 	// Warning message if fiscalization failed but transaction was completed
 	FiscalizationWarning *string `json:"fiscalization_warning,omitempty"`
@@ -12255,6 +12284,9 @@ type TransactionCreationBehavior struct {
 //
 // If *partial_refund* is used, only the line items are copied over to the new transaction and the new transaction is left in draft state.
 type TransactionCreationBehaviorRefund string
+
+// Current transaction fiscalization lifecycle status
+type TransactionFiscalizationStatus string
 
 // Transactions defines model for Transactions.
 type Transactions []Transaction
