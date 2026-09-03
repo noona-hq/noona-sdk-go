@@ -2173,6 +2173,9 @@ type Ad struct {
 	// `_id` fields; only the response references entities, so each can expand.
 	Action *AdActionResponse `json:"action,omitempty"`
 
+	// How many of the company's campaigns use this ad: campaigns whose promotables reference it and that have not ended. Ended campaigns are terminal, so they are not counted. Always present; `0` when no campaign uses the ad.
+	CampaignCount int32 `json:"campaign_count"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company         *ExpandableCompany            `json:"company,omitempty"`
 	CreatedAt       *time.Time                    `json:"created_at,omitempty"`
@@ -2327,7 +2330,10 @@ type AdCampaignResponse struct {
 
 // AdCampaignSchedule defines model for AdCampaignSchedule.
 type AdCampaignSchedule struct {
-	EndsAt   *time.Time `json:"ends_at,omitempty"`
+	// When the campaign stops serving. Optional on create; a campaign that reaches go-live without one is given `starts_at` plus 90 days, the maximum flight, so every live campaign has an end date and none runs open-ended. Must be within 90 days of `starts_at` when set explicitly.
+	EndsAt *time.Time `json:"ends_at,omitempty"`
+
+	// When the campaign goes live. Stamped by the API the moment the campaign first becomes servable if not set explicitly.
 	StartsAt *time.Time `json:"starts_at,omitempty"`
 }
 
@@ -2912,6 +2918,9 @@ type AdminMarketplaceAdResponse struct {
 	// Mirrors `ServedAdAction` on the marketplace surface. The request form keeps its
 	// `_id` fields; only the response references entities, so each can expand.
 	Action *AdActionResponse `json:"action,omitempty"`
+
+	// How many of the company's campaigns use this ad: campaigns whose promotables reference it and that have not ended. Ended campaigns are terminal, so they are not counted. Always present; `0` when no campaign uses the ad.
+	CampaignCount int32 `json:"campaign_count"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Company         *ExpandableCompany            `json:"company,omitempty"`
@@ -13891,6 +13900,12 @@ type AdminListMarketplaceAdCampaignsParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
 // AdminFixWorkHoursTimesJSONBody defines parameters for AdminFixWorkHoursTimes.
@@ -32510,6 +32525,26 @@ func NewAdminListMarketplaceAdCampaignsRequest(server string, adId string, param
 					queryValues.Add(k, v2)
 				}
 			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
+		}
+
+	}
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
 		}
 
 	}
