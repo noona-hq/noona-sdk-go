@@ -2331,7 +2331,7 @@ type AdCampaignResponse struct {
 	Schedule    *AdCampaignSchedule `json:"schedule,omitempty"`
 	Spend       *AdCampaignSpend    `json:"spend,omitempty"`
 
-	// Stamped go-live time. Nil if campaign not yet servable.
+	// The campaign's scheduled start: the date the merchant requested, or the go-live time the API stamped when the campaign first became servable. Absent until one of the two exists.
 	StartsAt *time.Time `json:"starts_at,omitempty"`
 
 	// The campaign's state as served, derived on read. Writes take AdCampaignStatusUpdate, which carries only the states a merchant can set.
@@ -2342,10 +2342,25 @@ type AdCampaignResponse struct {
 
 // AdCampaignSchedule defines model for AdCampaignSchedule.
 type AdCampaignSchedule struct {
-	// When the campaign stops serving. Optional on create; a campaign that reaches go-live without one is given `starts_at` plus 90 days, the maximum flight, so every live campaign has an end date and none runs open-ended. Must be within 90 days of `starts_at` when set explicitly.
+	// How many days the campaign serves, anchored to its start. Mutually exclusive with `ends_at`. `ends_at` is computed from it the moment `starts_at` is known: at once when a start is requested, otherwise when go-live is stamped, so a campaign that waits in review still serves for the full duration.
+	DurationDays *int32 `json:"duration_days,omitempty"`
+
+	// When the campaign stops serving. Optional on create and mutually exclusive with `duration_days`. A campaign that reaches go-live with neither is given `starts_at` plus 90 days, the maximum flight, so every live campaign has an end date and none runs open-ended. Must be within 90 days of `starts_at` when set explicitly. When a duration was given instead, the response carries it only once the start is known.
 	EndsAt *time.Time `json:"ends_at,omitempty"`
 
 	// When the campaign goes live. Stamped by the API the moment the campaign first becomes servable if not set explicitly.
+	StartsAt *time.Time `json:"starts_at,omitempty"`
+}
+
+// AdCampaignScheduleUpdate defines model for AdCampaignScheduleUpdate.
+type AdCampaignScheduleUpdate struct {
+	// Mutually exclusive with `ends_at`. Before go-live it replaces the stored duration. After go-live `ends_at` becomes the stamped `starts_at` plus this many days, so a live campaign can be prolonged or shortened; the result must be in the future and within the 90-day cap.
+	DurationDays *int32 `json:"duration_days,omitempty"`
+
+	// Must be in the future and within 90 days of `starts_at`. Mutually exclusive with `duration_days`; setting it replaces a stored duration.
+	EndsAt *time.Time `json:"ends_at,omitempty"`
+
+	// A new scheduled start. Accepted while the campaign has not gone live, must be in the future, and the end date (given here or already set) must fall within 90 days of it. Refused once the campaign has gone live.
 	StartsAt *time.Time `json:"starts_at,omitempty"`
 }
 
@@ -2375,14 +2390,12 @@ type AdCampaignTargeting struct {
 // AdCampaignUpdate defines model for AdCampaignUpdate.
 type AdCampaignUpdate struct {
 	// Budget amounts are denominated in the company's own currency, which is why no currency is accepted here: an ad event charge is priced in the company currency, and a budget in any other currency could never be compared against the spend accumulated against it.
-	Budget      *AdCampaignBudgetInput `json:"budget,omitempty"`
-	Name        *string                `json:"name,omitempty"`
-	Promotables *[]PromotableUpdate    `json:"promotables,omitempty"`
-	Schedule    *struct {
-		EndsAt *time.Time `json:"ends_at,omitempty"`
-	} `json:"schedule,omitempty"`
-	Status    *AdCampaignStatusUpdate `json:"status,omitempty"`
-	Targeting *AdCampaignTargeting    `json:"targeting,omitempty"`
+	Budget      *AdCampaignBudgetInput    `json:"budget,omitempty"`
+	Name        *string                   `json:"name,omitempty"`
+	Promotables *[]PromotableUpdate       `json:"promotables,omitempty"`
+	Schedule    *AdCampaignScheduleUpdate `json:"schedule,omitempty"`
+	Status      *AdCampaignStatusUpdate   `json:"status,omitempty"`
+	Targeting   *AdCampaignTargeting      `json:"targeting,omitempty"`
 }
 
 // AdCampaignsFilter defines model for AdCampaignsFilter.
@@ -2394,8 +2407,8 @@ type AdCampaignsFilter struct {
 	StartsAtFrom *time.Time `json:"starts_at_from,omitempty"`
 	StartsAtTo   *time.Time `json:"starts_at_to,omitempty"`
 
-	// The campaign's state as served, derived on read. Writes take AdCampaignStatusUpdate, which carries only the states a merchant can set.
-	Status *AdCampaignStatus `json:"status,omitempty"`
+	// Campaigns whose derived status is any of these
+	Status *[]AdCampaignStatus `json:"status,omitempty"`
 }
 
 // AdCampaignsResponse defines model for AdCampaignsResponse.
@@ -3089,8 +3102,11 @@ type AdminUsers []AdminUser
 
 // AdsFilter defines model for AdsFilter.
 type AdsFilter struct {
-	// The ad's state as served, derived on read. Mirrors the review state except for an approved ad whose destination is no longer valid, which reports destination_unavailable — approved is the one state where a dead destination silently stops serving. Writes take AdStatusUpdate (merchants) or AdminAdStatusUpdate (review decisions).
-	Status *AdStatus `json:"status,omitempty"`
+	// Leaves out the ads these campaigns promote. Applied in the query, before `search`, `status` and pagination, so `X-Total-Count` reflects it. Every campaign must belong to the company; otherwise 404.
+	ExcludeCampaignIds *[]string `json:"exclude_campaign_ids,omitempty"`
+
+	// Ads whose derived status is any of these
+	Status *[]AdStatus `json:"status,omitempty"`
 }
 
 // AdsResponse defines model for AdsResponse.
@@ -13708,6 +13724,15 @@ type CreateAdCampaignParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// DeleteAdCampaignParams defines parameters for DeleteAdCampaign.
+type DeleteAdCampaignParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // GetAdCampaignParams defines parameters for GetAdCampaign.
 type GetAdCampaignParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -21116,6 +21141,9 @@ type ClientInterface interface {
 
 	CreateAdCampaign(ctx context.Context, params *CreateAdCampaignParams, body CreateAdCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteAdCampaign request
+	DeleteAdCampaign(ctx context.Context, adCampaignId string, params *DeleteAdCampaignParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetAdCampaign request
 	GetAdCampaign(ctx context.Context, adCampaignId string, params *GetAdCampaignParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -22872,6 +22900,18 @@ func (c *Client) CreateAdCampaignWithBody(ctx context.Context, params *CreateAdC
 
 func (c *Client) CreateAdCampaign(ctx context.Context, params *CreateAdCampaignParams, body CreateAdCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateAdCampaignRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAdCampaign(ctx context.Context, adCampaignId string, params *DeleteAdCampaignParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteAdCampaignRequest(c.Server, adCampaignId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -30592,6 +30632,76 @@ func NewCreateAdCampaignRequestWithBody(server string, params *CreateAdCampaignP
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteAdCampaignRequest generates requests for DeleteAdCampaign
+func NewDeleteAdCampaignRequest(server string, adCampaignId string, params *DeleteAdCampaignParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "ad_campaign_id", runtime.ParamLocationPath, adCampaignId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/ad_campaigns/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -64059,6 +64169,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateAdCampaignWithResponse(ctx context.Context, params *CreateAdCampaignParams, body CreateAdCampaignJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAdCampaignResponse, error)
 
+	// DeleteAdCampaign request
+	DeleteAdCampaignWithResponse(ctx context.Context, adCampaignId string, params *DeleteAdCampaignParams, reqEditors ...RequestEditorFn) (*DeleteAdCampaignResponse, error)
+
 	// GetAdCampaign request
 	GetAdCampaignWithResponse(ctx context.Context, adCampaignId string, params *GetAdCampaignParams, reqEditors ...RequestEditorFn) (*GetAdCampaignResponse, error)
 
@@ -65865,6 +65978,27 @@ func (r CreateAdCampaignResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateAdCampaignResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAdCampaignResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAdCampaignResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAdCampaignResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -75908,6 +76042,15 @@ func (c *ClientWithResponses) CreateAdCampaignWithResponse(ctx context.Context, 
 	return ParseCreateAdCampaignResponse(rsp)
 }
 
+// DeleteAdCampaignWithResponse request returning *DeleteAdCampaignResponse
+func (c *ClientWithResponses) DeleteAdCampaignWithResponse(ctx context.Context, adCampaignId string, params *DeleteAdCampaignParams, reqEditors ...RequestEditorFn) (*DeleteAdCampaignResponse, error) {
+	rsp, err := c.DeleteAdCampaign(ctx, adCampaignId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAdCampaignResponse(rsp)
+}
+
 // GetAdCampaignWithResponse request returning *GetAdCampaignResponse
 func (c *ClientWithResponses) GetAdCampaignWithResponse(ctx context.Context, adCampaignId string, params *GetAdCampaignParams, reqEditors ...RequestEditorFn) (*GetAdCampaignResponse, error) {
 	rsp, err := c.GetAdCampaign(ctx, adCampaignId, params, reqEditors...)
@@ -81348,6 +81491,22 @@ func ParseCreateAdCampaignResponse(rsp *http.Response) (*CreateAdCampaignRespons
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAdCampaignResponse parses an HTTP response from a DeleteAdCampaignWithResponse call
+func ParseDeleteAdCampaignResponse(rsp *http.Response) (*DeleteAdCampaignResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAdCampaignResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
