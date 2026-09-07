@@ -522,6 +522,11 @@ const (
 	CreateCampaignErrorTypeValidation         CreateCampaignErrorType = "validation"
 )
 
+// Defines values for CreateCheckoutForEventErrorCode.
+const (
+	TaxExemptionReasonRequired CreateCheckoutForEventErrorCode = "tax_exemption_reason_required"
+)
+
 // Defines values for CreatePaymentErrorCode.
 const (
 	ExpiredCard            CreatePaymentErrorCode = "expiredCard"
@@ -910,9 +915,16 @@ const (
 	IssuerVATAssignmentItemTypeProduct   IssuerVATAssignmentItemType = "product"
 )
 
-// Defines values for IssuerVATCategoryVatTreatment.
+// Defines values for IssuerVATCategoryVATTreatment.
 const (
-	NonVatPayer IssuerVATCategoryVatTreatment = "non_vat_payer"
+	NonVatPayer IssuerVATCategoryVATTreatment = "non_vat_payer"
+)
+
+// Defines values for IssuerVATDefaultScope.
+const (
+	IssuerVATDefaultScopeBoth     IssuerVATDefaultScope = "both"
+	IssuerVATDefaultScopeProducts IssuerVATDefaultScope = "products"
+	IssuerVATDefaultScopeServices IssuerVATDefaultScope = "services"
 )
 
 // Defines values for LanguageCode.
@@ -5237,6 +5249,12 @@ type CreateCampaignError struct {
 // CreateCampaignErrorType defines model for CreateCampaignErrorType.
 type CreateCampaignErrorType string
 
+// CreateCheckoutForEventError defines model for CreateCheckoutForEventError.
+type CreateCheckoutForEventError IssuerVATError
+
+// CreateCheckoutForEventErrorCode defines model for CreateCheckoutForEventErrorCode.
+type CreateCheckoutForEventErrorCode string
+
 // CreatePaymentError defines model for CreatePaymentError.
 type CreatePaymentError struct {
 	// The error code. Only populated for certain errors.
@@ -8003,11 +8021,8 @@ type IssuerVATCategory struct {
 	TaxExemptionReason *string                        `json:"tax_exemption_reason,omitempty"`
 	Title              *string                        `json:"title,omitempty"`
 	UpdatedAt          time.Time                      `json:"updated_at"`
-	VatTreatment       *IssuerVATCategoryVatTreatment `json:"vat_treatment,omitempty"`
+	VatTreatment       *IssuerVATCategoryVATTreatment `json:"vat_treatment,omitempty"`
 }
-
-// IssuerVATCategoryVatTreatment defines model for IssuerVATCategory.VatTreatment.
-type IssuerVATCategoryVatTreatment string
 
 // IssuerVATCategoryCreate defines model for IssuerVATCategoryCreate.
 type IssuerVATCategoryCreate struct {
@@ -8031,6 +8046,9 @@ type IssuerVATCategoryUpdate struct {
 	Title              *string  `json:"title,omitempty"`
 }
 
+// IssuerVATCategoryVATTreatment defines model for IssuerVATCategoryVATTreatment.
+type IssuerVATCategoryVATTreatment string
+
 // IssuerVATDefault defines model for IssuerVATDefault.
 type IssuerVATDefault struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
@@ -8039,16 +8057,49 @@ type IssuerVATDefault struct {
 	Id        string            `json:"id"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Issuer    *ExpandableIssuer `json:"issuer,omitempty"`
-	UpdatedAt time.Time         `json:"updated_at"`
+	Issuer *ExpandableIssuer `json:"issuer,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	ProductVatCategory ExpandableIssuerVATCategory `json:"product_vat_category"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	ServiceVatCategory ExpandableIssuerVATCategory `json:"service_vat_category"`
+	UpdatedAt          time.Time                   `json:"updated_at"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	VatCategory ExpandableIssuerVATCategory `json:"vat_category"`
 }
 
+// IssuerVATDefaultScope defines model for IssuerVATDefaultScope.
+type IssuerVATDefaultScope string
+
 // IssuerVATDefaultUpdate defines model for IssuerVATDefaultUpdate.
 type IssuerVATDefaultUpdate struct {
-	VatCategoryId string `json:"vat_category_id"`
+	Scope         *IssuerVATDefaultScope `json:"scope,omitempty"`
+	VatCategoryId string                 `json:"vat_category_id"`
+}
+
+// IssuerVATError defines model for IssuerVATError.
+type IssuerVATError struct {
+	Code     *CreateCheckoutForEventErrorCode `json:"code,omitempty"`
+	IssuerId *string                          `json:"issuer_id,omitempty"`
+
+	// `event_type` represents services in the HQ product model.
+	ItemType      *IssuerVATAssignmentItemType `json:"item_type,omitempty"`
+	Message       string                       `json:"message"`
+	VatCategoryId *string                      `json:"vat_category_id,omitempty"`
+}
+
+// IssuerVATSettingsMigrationResult defines model for IssuerVATSettingsMigrationResult.
+type IssuerVATSettingsMigrationResult struct {
+	// Number of individual issuer defaults moved to No VAT.
+	IndividualIssuersMovedToNoVat int32 `json:"individual_issuers_moved_to_no_vat"`
+
+	// Number of company products and services moved to No VAT.
+	ItemsMovedToNoVat int32 `json:"items_moved_to_no_vat"`
+
+	// Whether any company or individual issuer settings were migrated to No VAT.
+	UsedNoVatFallback bool `json:"used_no_vat_fallback"`
 }
 
 // Issuers defines model for Issuers.
@@ -8143,7 +8194,8 @@ type LineItem struct {
 	VariationId        *string       `json:"variation_id,omitempty"`
 
 	// The VAT ratio
-	VatAmount *float64 `json:"vat_amount,omitempty"`
+	VatAmount    *float64                       `json:"vat_amount,omitempty"`
+	VatTreatment *IssuerVATCategoryVATTreatment `json:"vat_treatment,omitempty"`
 
 	// The voucher object is only returned when the line item is a voucher template.
 	//
@@ -68105,6 +68157,7 @@ func (r MigrateStaffWorkHoursResponse) StatusCode() int {
 type MigrateCompanyVATSettingsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *IssuerVATSettingsMigrationResult
 }
 
 // Status returns HTTPResponse.Status
@@ -70803,6 +70856,7 @@ type CreateCheckoutForEventResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Sale
+	JSON400      *CreateCheckoutForEventError
 }
 
 // Status returns HTTPResponse.Status
@@ -71791,6 +71845,7 @@ type CreateLineItemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *LineItem
+	JSON400      *IssuerVATError
 }
 
 // Status returns HTTPResponse.Status
@@ -71856,6 +71911,7 @@ type UpdateLineItemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *LineItem
+	JSON400      *IssuerVATError
 }
 
 // Status returns HTTPResponse.Status
@@ -74512,6 +74568,7 @@ type UpdateTransactionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Transaction
+	JSON400      *IssuerVATError
 }
 
 // Status returns HTTPResponse.Status
@@ -83930,6 +83987,16 @@ func ParseMigrateCompanyVATSettingsResponse(rsp *http.Response) (*MigrateCompany
 		HTTPResponse: rsp,
 	}
 
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IssuerVATSettingsMigrationResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
 	return response, nil
 }
 
@@ -87019,6 +87086,13 @@ func ParseCreateCheckoutForEventResponse(rsp *http.Response) (*CreateCheckoutFor
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest CreateCheckoutForEventError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	}
 
 	return response, nil
@@ -88163,6 +88237,13 @@ func ParseCreateLineItemResponse(rsp *http.Response) (*CreateLineItemResponse, e
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest IssuerVATError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
 	}
 
 	return response, nil
@@ -88230,6 +88311,13 @@ func ParseUpdateLineItemResponse(rsp *http.Response) (*UpdateLineItemResponse, e
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest IssuerVATError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
@@ -91092,6 +91180,13 @@ func ParseUpdateTransactionResponse(rsp *http.Response) (*UpdateTransactionRespo
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest IssuerVATError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
