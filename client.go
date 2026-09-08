@@ -4754,6 +4754,9 @@ type CompanyMessaging struct {
 
 	// Whether the company wants to show the booking end time/duration in booking confirmation messages and reminders.
 	ShowBookingEndsAt *bool `json:"show_booking_ends_at,omitempty"`
+
+	// The business name included in reminder SMS bodies. Counts towards the reminder character limit. Falls back to the company name when unset.
+	SmsBusinessName *string `json:"sms_business_name,omitempty"`
 }
 
 // CompanyMigrations defines model for CompanyMigrations.
