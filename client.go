@@ -1807,9 +1807,10 @@ const (
 
 // Defines values for TransactionFiscalizationStatus.
 const (
-	TransactionFiscalizationStatusFailed     TransactionFiscalizationStatus = "failed"
-	TransactionFiscalizationStatusIssued     TransactionFiscalizationStatus = "issued"
-	TransactionFiscalizationStatusProcessing TransactionFiscalizationStatus = "processing"
+	TransactionFiscalizationStatusFailed        TransactionFiscalizationStatus = "failed"
+	TransactionFiscalizationStatusIssued        TransactionFiscalizationStatus = "issued"
+	TransactionFiscalizationStatusNotApplicable TransactionFiscalizationStatus = "not_applicable"
+	TransactionFiscalizationStatusProcessing    TransactionFiscalizationStatus = "processing"
 )
 
 // Defines values for UnavailableResourceReason.
