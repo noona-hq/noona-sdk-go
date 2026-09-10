@@ -2750,12 +2750,14 @@ type AdminCompany struct {
 
 // AdminCompanyDetails defines model for AdminCompanyDetails.
 type AdminCompanyDetails struct {
-	Country    *Country      `json:"country,omitempty"`
-	CreatedAt  time.Time     `json:"created_at"`
-	DeletedAt  *time.Time    `json:"deleted_at,omitempty"`
-	Flags      *CompanyFlags `json:"flags,omitempty"`
-	Id         string        `json:"id"`
-	LastActive *time.Time    `json:"last_active,omitempty"`
+	// Computed field. True when the company has no active or trialing subscription of any kind (plan or powerup), meaning an admin may reset the company's subscription status.
+	CanResetSubscription *bool         `json:"can_reset_subscription,omitempty"`
+	Country              *Country      `json:"country,omitempty"`
+	CreatedAt            time.Time     `json:"created_at"`
+	DeletedAt            *time.Time    `json:"deleted_at,omitempty"`
+	Flags                *CompanyFlags `json:"flags,omitempty"`
+	Id                   string        `json:"id"`
+	LastActive           *time.Time    `json:"last_active,omitempty"`
 
 	// Cleartext PIN for the locked sections feature. Contains secret material — only admin endpoints return it.
 	LockedSectionsPin *string `json:"locked_sections_pin,omitempty"`
@@ -21286,6 +21288,9 @@ type ClientInterface interface {
 
 	AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminResetCompanySubscription request
+	AdminResetCompanySubscription(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminUpdateTerminal request with any body
 	AdminUpdateTerminalWithBody(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -23374,6 +23379,18 @@ func (c *Client) AdminAssignSecretaryToCompanyWithBody(ctx context.Context, comp
 
 func (c *Client) AdminAssignSecretaryToCompany(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminAssignSecretaryToCompanyRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminResetCompanySubscription(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminResetCompanySubscriptionRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -32362,6 +32379,40 @@ func NewAdminAssignSecretaryToCompanyRequestWithBody(server string, companyId st
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminResetCompanySubscriptionRequest generates requests for AdminResetCompanySubscription
+func NewAdminResetCompanySubscriptionRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/subscription/reset", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -64383,6 +64434,9 @@ type ClientWithResponsesInterface interface {
 
 	AdminAssignSecretaryToCompanyWithResponse(ctx context.Context, companyId string, params *AdminAssignSecretaryToCompanyParams, body AdminAssignSecretaryToCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminAssignSecretaryToCompanyResponse, error)
 
+	// AdminResetCompanySubscription request
+	AdminResetCompanySubscriptionWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*AdminResetCompanySubscriptionResponse, error)
+
 	// AdminUpdateTerminal request with any body
 	AdminUpdateTerminalWithBodyWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error)
 
@@ -66664,6 +66718,27 @@ func (r AdminAssignSecretaryToCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminAssignSecretaryToCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminResetCompanySubscriptionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminResetCompanySubscriptionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminResetCompanySubscriptionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -76493,6 +76568,15 @@ func (c *ClientWithResponses) AdminAssignSecretaryToCompanyWithResponse(ctx cont
 	return ParseAdminAssignSecretaryToCompanyResponse(rsp)
 }
 
+// AdminResetCompanySubscriptionWithResponse request returning *AdminResetCompanySubscriptionResponse
+func (c *ClientWithResponses) AdminResetCompanySubscriptionWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*AdminResetCompanySubscriptionResponse, error) {
+	rsp, err := c.AdminResetCompanySubscription(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminResetCompanySubscriptionResponse(rsp)
+}
+
 // AdminUpdateTerminalWithBodyWithResponse request with arbitrary body returning *AdminUpdateTerminalResponse
 func (c *ClientWithResponses) AdminUpdateTerminalWithBodyWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error) {
 	rsp, err := c.AdminUpdateTerminalWithBody(ctx, companyId, terminalId, params, contentType, body, reqEditors...)
@@ -82237,6 +82321,22 @@ func ParseAdminAssignSecretaryToCompanyResponse(rsp *http.Response) (*AdminAssig
 	}
 
 	response := &AdminAssignSecretaryToCompanyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminResetCompanySubscriptionResponse parses an HTTP response from a AdminResetCompanySubscriptionWithResponse call
+func ParseAdminResetCompanySubscriptionResponse(rsp *http.Response) (*AdminResetCompanySubscriptionResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminResetCompanySubscriptionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
