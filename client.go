@@ -2332,7 +2332,7 @@ type AdCampaignResponse struct {
 	Schedule    *AdCampaignSchedule `json:"schedule,omitempty"`
 	Spend       *AdCampaignSpend    `json:"spend,omitempty"`
 
-	// The campaign's scheduled start: the date the merchant requested, or the go-live time the API stamped when the campaign first became servable. Absent until one of the two exists.
+	// The campaign's scheduled start: the requested date, or the go-live time the API stamped. Absent until one of the two exists.
 	StartsAt *time.Time `json:"starts_at,omitempty"`
 
 	// The campaign's state as served, derived on read. Writes take AdCampaignStatusUpdate, which carries only the states a merchant can set.
@@ -2349,7 +2349,7 @@ type AdCampaignSchedule struct {
 	// When the campaign stops serving. Optional on create and mutually exclusive with `duration_days`. A campaign that reaches go-live with neither is given `starts_at` plus 90 days, the maximum flight, so every live campaign has an end date and none runs open-ended. Must be within 90 days of `starts_at` when set explicitly. When a duration was given instead, the response carries it only once the start is known.
 	EndsAt *time.Time `json:"ends_at,omitempty"`
 
-	// When the campaign goes live. Stamped by the API the moment the campaign first becomes servable if not set explicitly.
+	// When the campaign goes live. A requested start still ahead at go-live is kept; one that has passed is replaced by the go-live moment. Stamped by the API when not set explicitly.
 	StartsAt *time.Time `json:"starts_at,omitempty"`
 }
 
@@ -2361,7 +2361,7 @@ type AdCampaignScheduleUpdate struct {
 	// Must be in the future and within 90 days of `starts_at`. Mutually exclusive with `duration_days`; setting it replaces a stored duration.
 	EndsAt *time.Time `json:"ends_at,omitempty"`
 
-	// A new scheduled start. Accepted while the campaign has not gone live, must be in the future, and the end date (given here or already set) must fall within 90 days of it. Refused once the campaign has gone live.
+	// A new scheduled start. Must be in the future, and the end date (given here or already set) must fall within 90 days of it. Refused once the campaign has gone live.
 	StartsAt *time.Time `json:"starts_at,omitempty"`
 }
 
