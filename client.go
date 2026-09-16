@@ -6837,8 +6837,23 @@ type EventTypeOverbookable string
 type EventTypeBulkCreateItem struct {
 	EventType EventType `json:"event_type"`
 
+	// IDs of existing non-default event type groups belonging to the company in the path. Cannot be combined with group_path. The default group ID must not be provided; use an empty list to join the default group.
+	GroupIds *[]string `json:"group_ids,omitempty"`
+
 	// Titles of the event type group hierarchy to place the event type in, ordered root to leaf. Each level is matched against existing groups on exact title under the same parent, and created when no group matches. Event types are placed in the leaf group. When omitted or empty the event type joins the default group.
 	GroupPath *[]string `json:"group_path,omitempty"`
+}
+
+// EventTypeBulkUpdateItem defines model for EventTypeBulkUpdateItem.
+type EventTypeBulkUpdateItem struct {
+	EventType EventType `json:"event_type"`
+
+	// IDs of existing non-default event type groups belonging to the company in the path. Replaces the event type's full membership; when omitted the membership is left untouched, when empty the event type is moved to the default group. The default group ID must not be provided.
+	GroupIds *[]string `json:"group_ids,omitempty"`
+
+	// ID of the event type to update. Must belong to the company in the path.
+	Id    string           `json:"id"`
+	Unset *EventTypeFields `json:"unset,omitempty"`
 }
 
 // EventTypeCategories defines model for EventTypeCategories.
@@ -7121,6 +7136,18 @@ type EventTypesBulkCreate struct {
 // EventTypesBulkCreated defines model for EventTypesBulkCreated.
 type EventTypesBulkCreated struct {
 	// Created event types in request order
+	EventTypes []EventType `json:"event_types"`
+}
+
+// EventTypesBulkUpdate defines model for EventTypesBulkUpdate.
+type EventTypesBulkUpdate struct {
+	// Event types to update. Max 200 items.
+	Items []EventTypeBulkUpdateItem `json:"items"`
+}
+
+// EventTypesBulkUpdated defines model for EventTypesBulkUpdated.
+type EventTypesBulkUpdated struct {
+	// Updated event types in request order
 	EventTypes []EventType `json:"event_types"`
 }
 
@@ -14718,6 +14745,9 @@ type ListEventTypesParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// BulkUpdateEventTypesJSONBody defines parameters for BulkUpdateEventTypes.
+type BulkUpdateEventTypesJSONBody EventTypesBulkUpdate
+
 // BulkCreateEventTypesJSONBody defines parameters for BulkCreateEventTypes.
 type BulkCreateEventTypesJSONBody EventTypesBulkCreate
 
@@ -18377,6 +18407,9 @@ type CloneCompanyJSONRequestBody CloneCompanyJSONBody
 // UpdateEmployeeJSONRequestBody defines body for UpdateEmployee for application/json ContentType.
 type UpdateEmployeeJSONRequestBody UpdateEmployeeJSONBody
 
+// BulkUpdateEventTypesJSONRequestBody defines body for BulkUpdateEventTypes for application/json ContentType.
+type BulkUpdateEventTypesJSONRequestBody BulkUpdateEventTypesJSONBody
+
 // BulkCreateEventTypesJSONRequestBody defines body for BulkCreateEventTypes for application/json ContentType.
 type BulkCreateEventTypesJSONRequestBody BulkCreateEventTypesJSONBody
 
@@ -21546,6 +21579,11 @@ type ClientInterface interface {
 	// ListEventTypes request
 	ListEventTypes(ctx context.Context, companyId string, params *ListEventTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// BulkUpdateEventTypes request with any body
+	BulkUpdateEventTypesWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkUpdateEventTypes(ctx context.Context, companyId string, body BulkUpdateEventTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// BulkCreateEventTypes request with any body
 	BulkCreateEventTypesWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24412,6 +24450,30 @@ func (c *Client) ListEventTypeGroups(ctx context.Context, companyId string, para
 
 func (c *Client) ListEventTypes(ctx context.Context, companyId string, params *ListEventTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListEventTypesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkUpdateEventTypesWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkUpdateEventTypesRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkUpdateEventTypes(ctx context.Context, companyId string, body BulkUpdateEventTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkUpdateEventTypesRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -37598,6 +37660,53 @@ func NewListEventTypesRequest(server string, companyId string, params *ListEvent
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewBulkUpdateEventTypesRequest calls the generic BulkUpdateEventTypes builder with application/json body
+func NewBulkUpdateEventTypesRequest(server string, companyId string, body BulkUpdateEventTypesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkUpdateEventTypesRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewBulkUpdateEventTypesRequestWithBody generates requests for BulkUpdateEventTypes with any type of body
+func NewBulkUpdateEventTypesRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/event_types/bulk", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -64692,6 +64801,11 @@ type ClientWithResponsesInterface interface {
 	// ListEventTypes request
 	ListEventTypesWithResponse(ctx context.Context, companyId string, params *ListEventTypesParams, reqEditors ...RequestEditorFn) (*ListEventTypesResponse, error)
 
+	// BulkUpdateEventTypes request with any body
+	BulkUpdateEventTypesWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkUpdateEventTypesResponse, error)
+
+	BulkUpdateEventTypesWithResponse(ctx context.Context, companyId string, body BulkUpdateEventTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkUpdateEventTypesResponse, error)
+
 	// BulkCreateEventTypes request with any body
 	BulkCreateEventTypesWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateEventTypesResponse, error)
 
@@ -68177,6 +68291,28 @@ func (r ListEventTypesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListEventTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type BulkUpdateEventTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventTypesBulkUpdated
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkUpdateEventTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkUpdateEventTypesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -77330,6 +77466,23 @@ func (c *ClientWithResponses) ListEventTypesWithResponse(ctx context.Context, co
 	return ParseListEventTypesResponse(rsp)
 }
 
+// BulkUpdateEventTypesWithBodyWithResponse request with arbitrary body returning *BulkUpdateEventTypesResponse
+func (c *ClientWithResponses) BulkUpdateEventTypesWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkUpdateEventTypesResponse, error) {
+	rsp, err := c.BulkUpdateEventTypesWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkUpdateEventTypesResponse(rsp)
+}
+
+func (c *ClientWithResponses) BulkUpdateEventTypesWithResponse(ctx context.Context, companyId string, body BulkUpdateEventTypesJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkUpdateEventTypesResponse, error) {
+	rsp, err := c.BulkUpdateEventTypes(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkUpdateEventTypesResponse(rsp)
+}
+
 // BulkCreateEventTypesWithBodyWithResponse request with arbitrary body returning *BulkCreateEventTypesResponse
 func (c *ClientWithResponses) BulkCreateEventTypesWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateEventTypesResponse, error) {
 	rsp, err := c.BulkCreateEventTypesWithBody(ctx, companyId, contentType, body, reqEditors...)
@@ -84040,6 +84193,32 @@ func ParseListEventTypesResponse(rsp *http.Response) (*ListEventTypesResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest EventTypes
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkUpdateEventTypesResponse parses an HTTP response from a BulkUpdateEventTypesWithResponse call
+func ParseBulkUpdateEventTypesResponse(rsp *http.Response) (*BulkUpdateEventTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkUpdateEventTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventTypesBulkUpdated
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
