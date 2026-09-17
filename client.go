@@ -171,6 +171,18 @@ const (
 	AdSectionFieldTypeString AdSectionFieldType = "string"
 )
 
+// Defines values for AdServingRequirement.
+const (
+	Action            AdServingRequirement = "action"
+	ActionDestination AdServingRequirement = "action_destination"
+	ActionTarget      AdServingRequirement = "action_target"
+	Creative          AdServingRequirement = "creative"
+	CreativeImage     AdServingRequirement = "creative_image"
+	Language          AdServingRequirement = "language"
+	OverlayText       AdServingRequirement = "overlay_text"
+	Placement         AdServingRequirement = "placement"
+)
+
 // Defines values for AdStateTransitionErrorCode.
 const (
 	IllegalStatusTransition AdStateTransitionErrorCode = "illegal_status_transition"
@@ -1823,6 +1835,11 @@ const (
 	UnavailableResourceReasonTimeslotReservation   UnavailableResourceReason = "timeslot_reservation"
 )
 
+// Defines values for UpdateAdErrorCode.
+const (
+	AdIncomplete UpdateAdErrorCode = "ad_incomplete"
+)
+
 // Defines values for UpdateVerificationStatus.
 const (
 	UpdateVerificationStatusApproved UpdateVerificationStatus = "approved"
@@ -2602,6 +2619,9 @@ type AdResponse Ad
 // AdSectionFieldType defines model for AdSectionFieldType.
 type AdSectionFieldType string
 
+// Something an ad needs before the marketplace can serve it.
+type AdServingRequirement string
+
 // AdStateTransitionError defines model for AdStateTransitionError.
 type AdStateTransitionError struct {
 	// The ad's state as served, derived on read. Mirrors the review state except for an approved ad whose destination is no longer valid, which reports destination_unavailable — approved is the one state where a dead destination silently stops serving. Writes take AdStatusUpdate (merchants) or AdminAdStatusUpdate (review decisions).
@@ -2624,11 +2644,12 @@ type AdStatusUpdate string
 
 // AdUpdate defines model for AdUpdate.
 type AdUpdate struct {
-	Action   *AdAction       `json:"action,omitempty"`
-	Creative *AdCreative     `json:"creative,omitempty"`
-	Language *string         `json:"language,omitempty"`
-	Name     *string         `json:"name,omitempty"`
-	Status   *AdStatusUpdate `json:"status,omitempty"`
+	Action    *AdAction             `json:"action,omitempty"`
+	Creative  *AdCreative           `json:"creative,omitempty"`
+	Language  *string               `json:"language,omitempty"`
+	Name      *string               `json:"name,omitempty"`
+	Placement *AdPlacementSelection `json:"placement,omitempty"`
+	Status    *AdStatusUpdate       `json:"status,omitempty"`
 }
 
 // Address defines model for Address.
@@ -12545,6 +12566,17 @@ type UnitPrice struct {
 	Id             *string  `json:"id,omitempty"`
 	OriginalAmount *float64 `json:"original_amount,omitempty"`
 }
+
+// UpdateAdError defines model for UpdateAdError.
+type UpdateAdError struct {
+	// Set only when the ad was refused entry to review because it cannot serve yet.
+	Code    *UpdateAdErrorCode      `json:"code,omitempty"`
+	Message string                  `json:"message"`
+	Missing *[]AdServingRequirement `json:"missing,omitempty"`
+}
+
+// Set only when the ad was refused entry to review because it cannot serve yet.
+type UpdateAdErrorCode string
 
 // UpdateGoalRequest defines model for UpdateGoalRequest.
 type UpdateGoalRequest struct {
@@ -67259,6 +67291,7 @@ type UpdateAdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *AdResponse
+	JSON400      *UpdateAdError
 }
 
 // Status returns HTTPResponse.Status
@@ -82951,6 +82984,13 @@ func ParseUpdateAdResponse(rsp *http.Response) (*UpdateAdResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest UpdateAdError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
