@@ -5753,6 +5753,68 @@ type DeletionResult struct {
 	Count *int32 `json:"count,omitempty"`
 }
 
+// Device defines model for Device.
+type Device struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company       ExpandableCompany   `json:"company"`
+	Configuration DeviceConfiguration `json:"configuration"`
+	CreatedAt     *time.Time          `json:"created_at,omitempty"`
+	CreatedBy     *string             `json:"created_by,omitempty"`
+	Id            *string             `json:"id,omitempty"`
+	LastActive    *time.Time          `json:"last_active,omitempty"`
+	MaskedToken   *string             `json:"masked_token,omitempty"`
+	Name          string              `json:"name"`
+	Pairing       *DevicePairing      `json:"pairing,omitempty"`
+	RevokedAt     *time.Time          `json:"revoked_at,omitempty"`
+	Status        *DeviceStatus       `json:"status,omitempty"`
+	Type          DeviceType          `json:"type"`
+	UpdatedAt     *time.Time          `json:"updated_at,omitempty"`
+}
+
+// DeviceConfiguration defines model for DeviceConfiguration.
+type DeviceConfiguration struct {
+	// Message shown after a successful check-in. An absent value uses the built-in default.
+	SuccessMessage *string `json:"success_message"`
+
+	// Payment terminal bound to this device.
+	Terminal *string `json:"terminal"`
+}
+
+// DeviceCreate defines model for DeviceCreate.
+type DeviceCreate struct {
+	CompanyId string     `json:"company_id"`
+	Name      string     `json:"name"`
+	Type      DeviceType `json:"type"`
+}
+
+// DeviceField defines model for DeviceField.
+type DeviceField string
+
+// DeviceFields defines model for DeviceFields.
+type DeviceFields []DeviceField
+
+// DevicePairing defines model for DevicePairing.
+type DevicePairing struct {
+	AttemptsRemaining *int32     `json:"attempts_remaining,omitempty"`
+	ConsumedAt        *time.Time `json:"consumed_at,omitempty"`
+	ExpiresAt         *time.Time `json:"expires_at,omitempty"`
+}
+
+// DeviceStatus defines model for DeviceStatus.
+type DeviceStatus string
+
+// DeviceType defines model for DeviceType.
+type DeviceType string
+
+// DeviceUpdate defines model for DeviceUpdate.
+type DeviceUpdate struct {
+	Configuration *DeviceConfiguration `json:"configuration,omitempty"`
+	Name          *string              `json:"name,omitempty"`
+}
+
+// Devices defines model for Devices.
+type Devices []Device
+
 // The subscriptions current dunning state.
 type DunningStatus string
 
@@ -12233,6 +12295,9 @@ type Terminals []Terminal
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type TerminalsFilter struct {
+	// Only get terminals directly connected to the company and available for check-in.
+	AvailableForCheckin *bool `json:"available_for_checkin,omitempty"`
+
 	// Only get terminals directly connected to the company.
 	CompanyOnly *bool `json:"company_only,omitempty"`
 }
@@ -14637,6 +14702,12 @@ type ListCustomersParams struct {
 	Search *Search `form:"search,omitempty" json:"search,omitempty"`
 }
 
+// ListDevicesParams defines parameters for ListDevices.
+type ListDevicesParams struct {
+	// [Pagination](https://api.noona.is/docs/working-with-the-apis/pagination)
+	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
+}
+
 // ListEmailsParams defines parameters for ListEmails.
 type ListEmailsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15832,6 +15903,17 @@ type SendCustomerDataParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// CreateDeviceJSONBody defines parameters for CreateDevice.
+type CreateDeviceJSONBody DeviceCreate
+
+// UpdateDeviceJSONBody defines parameters for UpdateDevice.
+type UpdateDeviceJSONBody DeviceUpdate
+
+// UpdateDeviceParams defines parameters for UpdateDevice.
+type UpdateDeviceParams struct {
+	Unset *DeviceFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
 // ListDietariesParams defines parameters for ListDietaries.
@@ -18489,6 +18571,12 @@ type UpdateCustomerJSONRequestBody UpdateCustomerJSONBody
 
 // MergeCustomersJSONRequestBody defines body for MergeCustomers for application/json ContentType.
 type MergeCustomersJSONRequestBody MergeCustomersJSONBody
+
+// CreateDeviceJSONRequestBody defines body for CreateDevice for application/json ContentType.
+type CreateDeviceJSONRequestBody CreateDeviceJSONBody
+
+// UpdateDeviceJSONRequestBody defines body for UpdateDevice for application/json ContentType.
+type UpdateDeviceJSONRequestBody UpdateDeviceJSONBody
 
 // CreateEmployeeJSONRequestBody defines body for CreateEmployee for application/json ContentType.
 type CreateEmployeeJSONRequestBody CreateEmployeeJSONBody
@@ -21576,6 +21664,9 @@ type ClientInterface interface {
 	// DetachCompanyFromEnterprise request
 	DetachCompanyFromEnterprise(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListDevices request
+	ListDevices(ctx context.Context, companyId string, params *ListDevicesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListEmails request
 	ListEmails(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -21962,6 +22053,25 @@ type ClientInterface interface {
 
 	// SendCustomerData request
 	SendCustomerData(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateDevice request with any body
+	CreateDeviceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDevice(ctx context.Context, body CreateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDevice request
+	DeleteDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetDevice request
+	GetDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateDevice request with any body
+	UpdateDeviceWithBody(ctx context.Context, deviceId string, params *UpdateDeviceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateDevice(ctx context.Context, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RevokeDevice request
+	RevokeDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListDietaries request
 	ListDietaries(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -24348,6 +24458,18 @@ func (c *Client) DetachCompanyFromEnterprise(ctx context.Context, companyId stri
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListDevices(ctx context.Context, companyId string, params *ListDevicesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDevicesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListEmails(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListEmailsRequest(c.Server, companyId, params)
 	if err != nil {
@@ -25958,6 +26080,90 @@ func (c *Client) MergeCustomers(ctx context.Context, customerId string, body Mer
 
 func (c *Client) SendCustomerData(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSendCustomerDataRequest(c.Server, customerId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDeviceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDeviceRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDevice(ctx context.Context, body CreateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDeviceRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDeviceRequest(c.Server, deviceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDeviceRequest(c.Server, deviceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDeviceWithBody(ctx context.Context, deviceId string, params *UpdateDeviceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDeviceRequestWithBody(c.Server, deviceId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDevice(ctx context.Context, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDeviceRequest(c.Server, deviceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RevokeDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRevokeDeviceRequest(c.Server, deviceId)
 	if err != nil {
 		return nil, err
 	}
@@ -36744,6 +36950,54 @@ func NewDetachCompanyFromEnterpriseRequest(server string, companyId string) (*ht
 	return req, nil
 }
 
+// NewListDevicesRequest generates requests for ListDevices
+func NewListDevicesRequest(server string, companyId string, params *ListDevicesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/devices", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Pagination != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Pagination); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("pagination", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListEmailsRequest generates requests for ListEmails
 func NewListEmailsRequest(server string, companyId string, params *ListEmailsParams) (*http.Request, error) {
 	var err error
@@ -45743,6 +45997,215 @@ func NewSendCustomerDataRequest(server string, customerId string, params *SendCu
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateDeviceRequest calls the generic CreateDevice builder with application/json body
+func NewCreateDeviceRequest(server string, body CreateDeviceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDeviceRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateDeviceRequestWithBody generates requests for CreateDevice with any type of body
+func NewCreateDeviceRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDeviceRequest generates requests for DeleteDevice
+func NewDeleteDeviceRequest(server string, deviceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "device_id", runtime.ParamLocationPath, deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetDeviceRequest generates requests for GetDevice
+func NewGetDeviceRequest(server string, deviceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "device_id", runtime.ParamLocationPath, deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateDeviceRequest calls the generic UpdateDevice builder with application/json body
+func NewUpdateDeviceRequest(server string, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateDeviceRequestWithBody(server, deviceId, params, "application/json", bodyReader)
+}
+
+// NewUpdateDeviceRequestWithBody generates requests for UpdateDevice with any type of body
+func NewUpdateDeviceRequestWithBody(server string, deviceId string, params *UpdateDeviceParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "device_id", runtime.ParamLocationPath, deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Unset != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "unset", runtime.ParamLocationQuery, *params.Unset); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRevokeDeviceRequest generates requests for RevokeDevice
+func NewRevokeDeviceRequest(server string, deviceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "device_id", runtime.ParamLocationPath, deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices/%s/revoke", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), nil)
 	if err != nil {
@@ -64798,6 +65261,9 @@ type ClientWithResponsesInterface interface {
 	// DetachCompanyFromEnterprise request
 	DetachCompanyFromEnterpriseWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*DetachCompanyFromEnterpriseResponse, error)
 
+	// ListDevices request
+	ListDevicesWithResponse(ctx context.Context, companyId string, params *ListDevicesParams, reqEditors ...RequestEditorFn) (*ListDevicesResponse, error)
+
 	// ListEmails request
 	ListEmailsWithResponse(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*ListEmailsResponse, error)
 
@@ -65184,6 +65650,25 @@ type ClientWithResponsesInterface interface {
 
 	// SendCustomerData request
 	SendCustomerDataWithResponse(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*SendCustomerDataResponse, error)
+
+	// CreateDevice request with any body
+	CreateDeviceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDeviceResponse, error)
+
+	CreateDeviceWithResponse(ctx context.Context, body CreateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDeviceResponse, error)
+
+	// DeleteDevice request
+	DeleteDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*DeleteDeviceResponse, error)
+
+	// GetDevice request
+	GetDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*GetDeviceResponse, error)
+
+	// UpdateDevice request with any body
+	UpdateDeviceWithBodyWithResponse(ctx context.Context, deviceId string, params *UpdateDeviceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDeviceResponse, error)
+
+	UpdateDeviceWithResponse(ctx context.Context, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDeviceResponse, error)
+
+	// RevokeDevice request
+	RevokeDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*RevokeDeviceResponse, error)
 
 	// ListDietaries request
 	ListDietariesWithResponse(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*ListDietariesResponse, error)
@@ -68088,6 +68573,28 @@ func (r DetachCompanyFromEnterpriseResponse) StatusCode() int {
 	return 0
 }
 
+type ListDevicesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Devices
+}
+
+// Status returns HTTPResponse.Status
+func (r ListDevicesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListDevicesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListEmailsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -70649,6 +71156,115 @@ func (r SendCustomerDataResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r SendCustomerDataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateDeviceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Device
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDeviceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDeviceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDeviceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDeviceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDeviceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetDeviceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Device
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDeviceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDeviceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateDeviceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Device
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateDeviceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateDeviceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RevokeDeviceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Device
+}
+
+// Status returns HTTPResponse.Status
+func (r RevokeDeviceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RevokeDeviceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -77392,6 +78008,15 @@ func (c *ClientWithResponses) DetachCompanyFromEnterpriseWithResponse(ctx contex
 	return ParseDetachCompanyFromEnterpriseResponse(rsp)
 }
 
+// ListDevicesWithResponse request returning *ListDevicesResponse
+func (c *ClientWithResponses) ListDevicesWithResponse(ctx context.Context, companyId string, params *ListDevicesParams, reqEditors ...RequestEditorFn) (*ListDevicesResponse, error) {
+	rsp, err := c.ListDevices(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListDevicesResponse(rsp)
+}
+
 // ListEmailsWithResponse request returning *ListEmailsResponse
 func (c *ClientWithResponses) ListEmailsWithResponse(ctx context.Context, companyId string, params *ListEmailsParams, reqEditors ...RequestEditorFn) (*ListEmailsResponse, error) {
 	rsp, err := c.ListEmails(ctx, companyId, params, reqEditors...)
@@ -78587,6 +79212,67 @@ func (c *ClientWithResponses) SendCustomerDataWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseSendCustomerDataResponse(rsp)
+}
+
+// CreateDeviceWithBodyWithResponse request with arbitrary body returning *CreateDeviceResponse
+func (c *ClientWithResponses) CreateDeviceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDeviceResponse, error) {
+	rsp, err := c.CreateDeviceWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDeviceResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDeviceWithResponse(ctx context.Context, body CreateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDeviceResponse, error) {
+	rsp, err := c.CreateDevice(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDeviceResponse(rsp)
+}
+
+// DeleteDeviceWithResponse request returning *DeleteDeviceResponse
+func (c *ClientWithResponses) DeleteDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*DeleteDeviceResponse, error) {
+	rsp, err := c.DeleteDevice(ctx, deviceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDeviceResponse(rsp)
+}
+
+// GetDeviceWithResponse request returning *GetDeviceResponse
+func (c *ClientWithResponses) GetDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*GetDeviceResponse, error) {
+	rsp, err := c.GetDevice(ctx, deviceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDeviceResponse(rsp)
+}
+
+// UpdateDeviceWithBodyWithResponse request with arbitrary body returning *UpdateDeviceResponse
+func (c *ClientWithResponses) UpdateDeviceWithBodyWithResponse(ctx context.Context, deviceId string, params *UpdateDeviceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDeviceResponse, error) {
+	rsp, err := c.UpdateDeviceWithBody(ctx, deviceId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDeviceResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateDeviceWithResponse(ctx context.Context, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDeviceResponse, error) {
+	rsp, err := c.UpdateDevice(ctx, deviceId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDeviceResponse(rsp)
+}
+
+// RevokeDeviceWithResponse request returning *RevokeDeviceResponse
+func (c *ClientWithResponses) RevokeDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*RevokeDeviceResponse, error) {
+	rsp, err := c.RevokeDevice(ctx, deviceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRevokeDeviceResponse(rsp)
 }
 
 // ListDietariesWithResponse request returning *ListDietariesResponse
@@ -83960,6 +84646,32 @@ func ParseDetachCompanyFromEnterpriseResponse(rsp *http.Response) (*DetachCompan
 	return response, nil
 }
 
+// ParseListDevicesResponse parses an HTTP response from a ListDevicesWithResponse call
+func ParseListDevicesResponse(rsp *http.Response) (*ListDevicesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListDevicesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Devices
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListEmailsResponse parses an HTTP response from a ListEmailsWithResponse call
 func ParseListEmailsResponse(rsp *http.Response) (*ListEmailsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -86903,6 +87615,126 @@ func ParseSendCustomerDataResponse(rsp *http.Response) (*SendCustomerDataRespons
 	response := &SendCustomerDataResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseCreateDeviceResponse parses an HTTP response from a CreateDeviceWithResponse call
+func ParseCreateDeviceResponse(rsp *http.Response) (*CreateDeviceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDeviceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Device
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDeviceResponse parses an HTTP response from a DeleteDeviceWithResponse call
+func ParseDeleteDeviceResponse(rsp *http.Response) (*DeleteDeviceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDeviceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetDeviceResponse parses an HTTP response from a GetDeviceWithResponse call
+func ParseGetDeviceResponse(rsp *http.Response) (*GetDeviceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDeviceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Device
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateDeviceResponse parses an HTTP response from a UpdateDeviceWithResponse call
+func ParseUpdateDeviceResponse(rsp *http.Response) (*UpdateDeviceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateDeviceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Device
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRevokeDeviceResponse parses an HTTP response from a RevokeDeviceWithResponse call
+func ParseRevokeDeviceResponse(rsp *http.Response) (*RevokeDeviceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RevokeDeviceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Device
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
