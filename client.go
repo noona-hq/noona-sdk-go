@@ -5806,11 +5806,41 @@ type DeviceField string
 // DeviceFields defines model for DeviceFields.
 type DeviceFields []DeviceField
 
+// DevicePairRequest defines model for DevicePairRequest.
+type DevicePairRequest struct {
+	Code     string  `json:"code"`
+	DeviceId *string `json:"device_id,omitempty"`
+}
+
+// DevicePairResult defines model for DevicePairResult.
+type DevicePairResult struct {
+	Device Device `json:"device"`
+
+	// Plaintext device bearer token returned exactly once.
+	Token string `json:"token"`
+}
+
 // DevicePairing defines model for DevicePairing.
 type DevicePairing struct {
 	AttemptsRemaining *int32     `json:"attempts_remaining,omitempty"`
 	ConsumedAt        *time.Time `json:"consumed_at,omitempty"`
 	ExpiresAt         *time.Time `json:"expires_at,omitempty"`
+}
+
+// DevicePairingCode defines model for DevicePairingCode.
+type DevicePairingCode struct {
+	Code      string    `json:"code"`
+	ExpiresAt time.Time `json:"expires_at"`
+
+	// Seconds remaining until the pairing code expires when the response is created.
+	ExpiresIn int32                `json:"expires_in"`
+	Qr        DevicePairingPayload `json:"qr"`
+}
+
+// DevicePairingPayload defines model for DevicePairingPayload.
+type DevicePairingPayload struct {
+	Code     string `json:"code"`
+	DeviceId string `json:"device_id"`
 }
 
 // DeviceStatus defines model for DeviceStatus.
@@ -13862,6 +13892,12 @@ type Search string
 // Select defines model for select.
 type Select []string
 
+// RateLimitError defines model for RateLimitError.
+type RateLimitError Error
+
+// ServiceUnavailableError defines model for ServiceUnavailableError.
+type ServiceUnavailableError Error
+
 // ListBlockedTimeActivitiesParams defines parameters for ListBlockedTimeActivities.
 type ListBlockedTimeActivitiesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15917,6 +15953,9 @@ type SendCustomerDataParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
+
+// CreateDevicePairingJSONBody defines parameters for CreateDevicePairing.
+type CreateDevicePairingJSONBody DevicePairRequest
 
 // CreateDeviceJSONBody defines parameters for CreateDevice.
 type CreateDeviceJSONBody DeviceCreate
@@ -18584,6 +18623,9 @@ type UpdateCustomerJSONRequestBody UpdateCustomerJSONBody
 
 // MergeCustomersJSONRequestBody defines body for MergeCustomers for application/json ContentType.
 type MergeCustomersJSONRequestBody MergeCustomersJSONBody
+
+// CreateDevicePairingJSONRequestBody defines body for CreateDevicePairing for application/json ContentType.
+type CreateDevicePairingJSONRequestBody CreateDevicePairingJSONBody
 
 // CreateDeviceJSONRequestBody defines body for CreateDevice for application/json ContentType.
 type CreateDeviceJSONRequestBody CreateDeviceJSONBody
@@ -22067,6 +22109,11 @@ type ClientInterface interface {
 	// SendCustomerData request
 	SendCustomerData(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateDevicePairing request with any body
+	CreateDevicePairingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDevicePairing(ctx context.Context, body CreateDevicePairingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateDevice request with any body
 	CreateDeviceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -22082,6 +22129,9 @@ type ClientInterface interface {
 	UpdateDeviceWithBody(ctx context.Context, deviceId string, params *UpdateDeviceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateDevice(ctx context.Context, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateDevicePairingCode request
+	CreateDevicePairingCode(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// RevokeDevice request
 	RevokeDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -26103,6 +26153,30 @@ func (c *Client) SendCustomerData(ctx context.Context, customerId string, params
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateDevicePairingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDevicePairingRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDevicePairing(ctx context.Context, body CreateDevicePairingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDevicePairingRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateDeviceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateDeviceRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -26165,6 +26239,18 @@ func (c *Client) UpdateDeviceWithBody(ctx context.Context, deviceId string, para
 
 func (c *Client) UpdateDevice(ctx context.Context, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateDeviceRequest(c.Server, deviceId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDevicePairingCode(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDevicePairingCodeRequest(c.Server, deviceId)
 	if err != nil {
 		return nil, err
 	}
@@ -46019,6 +46105,46 @@ func NewSendCustomerDataRequest(server string, customerId string, params *SendCu
 	return req, nil
 }
 
+// NewCreateDevicePairingRequest calls the generic CreateDevicePairing builder with application/json body
+func NewCreateDevicePairingRequest(server string, body CreateDevicePairingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDevicePairingRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateDevicePairingRequestWithBody generates requests for CreateDevicePairing with any type of body
+func NewCreateDevicePairingRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/device_pairings")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateDeviceRequest calls the generic CreateDevice builder with application/json body
 func NewCreateDeviceRequest(server string, body CreateDeviceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -46190,6 +46316,40 @@ func NewUpdateDeviceRequestWithBody(server string, deviceId string, params *Upda
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateDevicePairingCodeRequest generates requests for CreateDevicePairingCode
+func NewCreateDevicePairingCodeRequest(server string, deviceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "device_id", runtime.ParamLocationPath, deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices/%s/pairing_codes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -65664,6 +65824,11 @@ type ClientWithResponsesInterface interface {
 	// SendCustomerData request
 	SendCustomerDataWithResponse(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*SendCustomerDataResponse, error)
 
+	// CreateDevicePairing request with any body
+	CreateDevicePairingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDevicePairingResponse, error)
+
+	CreateDevicePairingWithResponse(ctx context.Context, body CreateDevicePairingJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDevicePairingResponse, error)
+
 	// CreateDevice request with any body
 	CreateDeviceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDeviceResponse, error)
 
@@ -65679,6 +65844,9 @@ type ClientWithResponsesInterface interface {
 	UpdateDeviceWithBodyWithResponse(ctx context.Context, deviceId string, params *UpdateDeviceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDeviceResponse, error)
 
 	UpdateDeviceWithResponse(ctx context.Context, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDeviceResponse, error)
+
+	// CreateDevicePairingCode request
+	CreateDevicePairingCodeWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*CreateDevicePairingCodeResponse, error)
 
 	// RevokeDevice request
 	RevokeDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*RevokeDeviceResponse, error)
@@ -71175,6 +71343,30 @@ func (r SendCustomerDataResponse) StatusCode() int {
 	return 0
 }
 
+type CreateDevicePairingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DevicePairResult
+	JSON429      *Error
+	JSON503      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDevicePairingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDevicePairingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateDeviceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -71256,6 +71448,28 @@ func (r UpdateDeviceResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateDeviceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateDevicePairingCodeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DevicePairingCode
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDevicePairingCodeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDevicePairingCodeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -79227,6 +79441,23 @@ func (c *ClientWithResponses) SendCustomerDataWithResponse(ctx context.Context, 
 	return ParseSendCustomerDataResponse(rsp)
 }
 
+// CreateDevicePairingWithBodyWithResponse request with arbitrary body returning *CreateDevicePairingResponse
+func (c *ClientWithResponses) CreateDevicePairingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDevicePairingResponse, error) {
+	rsp, err := c.CreateDevicePairingWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDevicePairingResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDevicePairingWithResponse(ctx context.Context, body CreateDevicePairingJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDevicePairingResponse, error) {
+	rsp, err := c.CreateDevicePairing(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDevicePairingResponse(rsp)
+}
+
 // CreateDeviceWithBodyWithResponse request with arbitrary body returning *CreateDeviceResponse
 func (c *ClientWithResponses) CreateDeviceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDeviceResponse, error) {
 	rsp, err := c.CreateDeviceWithBody(ctx, contentType, body, reqEditors...)
@@ -79277,6 +79508,15 @@ func (c *ClientWithResponses) UpdateDeviceWithResponse(ctx context.Context, devi
 		return nil, err
 	}
 	return ParseUpdateDeviceResponse(rsp)
+}
+
+// CreateDevicePairingCodeWithResponse request returning *CreateDevicePairingCodeResponse
+func (c *ClientWithResponses) CreateDevicePairingCodeWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*CreateDevicePairingCodeResponse, error) {
+	rsp, err := c.CreateDevicePairingCode(ctx, deviceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDevicePairingCodeResponse(rsp)
 }
 
 // RevokeDeviceWithResponse request returning *RevokeDeviceResponse
@@ -87633,6 +87873,46 @@ func ParseSendCustomerDataResponse(rsp *http.Response) (*SendCustomerDataRespons
 	return response, nil
 }
 
+// ParseCreateDevicePairingResponse parses an HTTP response from a CreateDevicePairingWithResponse call
+func ParseCreateDevicePairingResponse(rsp *http.Response) (*CreateDevicePairingResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDevicePairingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DevicePairResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateDeviceResponse parses an HTTP response from a CreateDeviceWithResponse call
 func ParseCreateDeviceResponse(rsp *http.Response) (*CreateDeviceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -87717,6 +87997,32 @@ func ParseUpdateDeviceResponse(rsp *http.Response) (*UpdateDeviceResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Device
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateDevicePairingCodeResponse parses an HTTP response from a CreateDevicePairingCodeWithResponse call
+func ParseCreateDevicePairingCodeResponse(rsp *http.Response) (*CreateDevicePairingCodeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDevicePairingCodeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DevicePairingCode
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
