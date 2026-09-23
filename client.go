@@ -176,6 +176,7 @@ const (
 	Action            AdServingRequirement = "action"
 	ActionDestination AdServingRequirement = "action_destination"
 	ActionTarget      AdServingRequirement = "action_target"
+	AdDescription     AdServingRequirement = "ad_description"
 	Creative          AdServingRequirement = "creative"
 	CreativeImage     AdServingRequirement = "creative_image"
 	Language          AdServingRequirement = "language"
@@ -2207,9 +2208,12 @@ type Ad struct {
 	CampaignCount int32 `json:"campaign_count"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company         *ExpandableCompany            `json:"company,omitempty"`
-	CreatedAt       *time.Time                    `json:"created_at,omitempty"`
-	Creative        *AdCreative                   `json:"creative,omitempty"`
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Creative  *AdCreative        `json:"creative,omitempty"`
+
+	// The merchant's own copy shown beneath the creative, in the ad's language.
+	Description     *string                       `json:"description,omitempty"`
 	Id              *string                       `json:"id,omitempty"`
 	Language        *string                       `json:"language,omitempty"`
 	Name            *string                       `json:"name,omitempty"`
@@ -2434,12 +2438,15 @@ type AdCampaignsResponse []AdCampaignResponse
 
 // AdCreate defines model for AdCreate.
 type AdCreate struct {
-	Action    *AdAction             `json:"action,omitempty"`
-	CompanyId string                `json:"company_id"`
-	Creative  *AdCreative           `json:"creative,omitempty"`
-	Language  *string               `json:"language,omitempty"`
-	Name      *string               `json:"name,omitempty"`
-	Placement *AdPlacementSelection `json:"placement,omitempty"`
+	Action    *AdAction   `json:"action,omitempty"`
+	CompanyId string      `json:"company_id"`
+	Creative  *AdCreative `json:"creative,omitempty"`
+
+	// The merchant's own copy shown beneath the creative, in the ad's language.
+	Description *string               `json:"description,omitempty"`
+	Language    *string               `json:"language,omitempty"`
+	Name        *string               `json:"name,omitempty"`
+	Placement   *AdPlacementSelection `json:"placement,omitempty"`
 }
 
 // AdCreative defines model for AdCreative.
@@ -2644,12 +2651,15 @@ type AdStatusUpdate string
 
 // AdUpdate defines model for AdUpdate.
 type AdUpdate struct {
-	Action    *AdAction             `json:"action,omitempty"`
-	Creative  *AdCreative           `json:"creative,omitempty"`
-	Language  *string               `json:"language,omitempty"`
-	Name      *string               `json:"name,omitempty"`
-	Placement *AdPlacementSelection `json:"placement,omitempty"`
-	Status    *AdStatusUpdate       `json:"status,omitempty"`
+	Action   *AdAction   `json:"action,omitempty"`
+	Creative *AdCreative `json:"creative,omitempty"`
+
+	// The merchant's own copy shown beneath the creative, in the ad's language.
+	Description *string               `json:"description,omitempty"`
+	Language    *string               `json:"language,omitempty"`
+	Name        *string               `json:"name,omitempty"`
+	Placement   *AdPlacementSelection `json:"placement,omitempty"`
+	Status      *AdStatusUpdate       `json:"status,omitempty"`
 }
 
 // Address defines model for Address.
@@ -3033,9 +3043,12 @@ type AdminMarketplaceAdResponse struct {
 	CampaignCount int32 `json:"campaign_count"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Company         *ExpandableCompany            `json:"company,omitempty"`
-	CreatedAt       *time.Time                    `json:"created_at,omitempty"`
-	Creative        *AdCreative                   `json:"creative,omitempty"`
+	Company   *ExpandableCompany `json:"company,omitempty"`
+	CreatedAt *time.Time         `json:"created_at,omitempty"`
+	Creative  *AdCreative        `json:"creative,omitempty"`
+
+	// The merchant's own copy shown beneath the creative, in the ad's language.
+	Description     *string                       `json:"description,omitempty"`
 	Id              *string                       `json:"id,omitempty"`
 	Language        *string                       `json:"language,omitempty"`
 	Name            *string                       `json:"name,omitempty"`
