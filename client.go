@@ -5793,11 +5793,38 @@ type DeviceConfiguration struct {
 	Terminal *string `json:"terminal"`
 }
 
+// DeviceConfigurationPreviewCreate defines model for DeviceConfigurationPreviewCreate.
+type DeviceConfigurationPreviewCreate struct {
+	Configuration *DeviceConfiguration `json:"configuration,omitempty"`
+}
+
+// DeviceConfigurationPreviewToken defines model for DeviceConfigurationPreviewToken.
+type DeviceConfigurationPreviewToken struct {
+	ExpiresAt time.Time `json:"expires_at"`
+
+	// Plaintext preview token returned exactly once.
+	Token string `json:"token"`
+}
+
 // DeviceCreate defines model for DeviceCreate.
 type DeviceCreate struct {
 	CompanyId string     `json:"company_id"`
 	Name      string     `json:"name"`
 	Type      DeviceType `json:"type"`
+}
+
+// Flat server-resolved configuration consumed by a device and configuration previews. New fields are additive.
+type DeviceEffectiveConfiguration struct {
+	Company             string  `json:"company"`
+	CompanyCoverImage   *string `json:"company_cover_image,omitempty"`
+	CompanyName         *string `json:"company_name,omitempty"`
+	CompanyProfileImage *string `json:"company_profile_image,omitempty"`
+
+	// Message shown after a successful check-in. An absent value uses the client's built-in default.
+	SuccessMessage *string `json:"success_message,omitempty"`
+
+	// Payment terminal bound to this device. An absent value means no terminal is selected.
+	Terminal *string `json:"terminal,omitempty"`
 }
 
 // DeviceField defines model for DeviceField.
@@ -15968,6 +15995,9 @@ type UpdateDeviceParams struct {
 	Unset *DeviceFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
+// CreateDevicePreviewTokenJSONBody defines parameters for CreateDevicePreviewToken.
+type CreateDevicePreviewTokenJSONBody DeviceConfigurationPreviewCreate
+
 // ListDietariesParams defines parameters for ListDietaries.
 type ListDietariesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -18632,6 +18662,9 @@ type CreateDeviceJSONRequestBody CreateDeviceJSONBody
 
 // UpdateDeviceJSONRequestBody defines body for UpdateDevice for application/json ContentType.
 type UpdateDeviceJSONRequestBody UpdateDeviceJSONBody
+
+// CreateDevicePreviewTokenJSONRequestBody defines body for CreateDevicePreviewToken for application/json ContentType.
+type CreateDevicePreviewTokenJSONRequestBody CreateDevicePreviewTokenJSONBody
 
 // CreateEmployeeJSONRequestBody defines body for CreateEmployee for application/json ContentType.
 type CreateEmployeeJSONRequestBody CreateEmployeeJSONBody
@@ -22119,6 +22152,9 @@ type ClientInterface interface {
 
 	CreateDevice(ctx context.Context, body CreateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetDevicePreview request
+	GetDevicePreview(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteDevice request
 	DeleteDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -22130,8 +22166,16 @@ type ClientInterface interface {
 
 	UpdateDevice(ctx context.Context, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetDeviceConfiguration request
+	GetDeviceConfiguration(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateDevicePairingCode request
 	CreateDevicePairingCode(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateDevicePreviewToken request with any body
+	CreateDevicePreviewTokenWithBody(ctx context.Context, deviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDevicePreviewToken(ctx context.Context, deviceId string, body CreateDevicePreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// RevokeDevice request
 	RevokeDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -26201,6 +26245,18 @@ func (c *Client) CreateDevice(ctx context.Context, body CreateDeviceJSONRequestB
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetDevicePreview(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDevicePreviewRequest(c.Server, token)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) DeleteDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteDeviceRequest(c.Server, deviceId)
 	if err != nil {
@@ -26249,8 +26305,44 @@ func (c *Client) UpdateDevice(ctx context.Context, deviceId string, params *Upda
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetDeviceConfiguration(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDeviceConfigurationRequest(c.Server, deviceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateDevicePairingCode(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateDevicePairingCodeRequest(c.Server, deviceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDevicePreviewTokenWithBody(ctx context.Context, deviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDevicePreviewTokenRequestWithBody(c.Server, deviceId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDevicePreviewToken(ctx context.Context, deviceId string, body CreateDevicePreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDevicePreviewTokenRequest(c.Server, deviceId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -46185,6 +46277,40 @@ func NewCreateDeviceRequestWithBody(server string, contentType string, body io.R
 	return req, nil
 }
 
+// NewGetDevicePreviewRequest generates requests for GetDevicePreview
+func NewGetDevicePreviewRequest(server string, token string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "token", runtime.ParamLocationPath, token)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices/preview/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewDeleteDeviceRequest generates requests for DeleteDevice
 func NewDeleteDeviceRequest(server string, deviceId string) (*http.Request, error) {
 	var err error
@@ -46320,6 +46446,40 @@ func NewUpdateDeviceRequestWithBody(server string, deviceId string, params *Upda
 	return req, nil
 }
 
+// NewGetDeviceConfigurationRequest generates requests for GetDeviceConfiguration
+func NewGetDeviceConfigurationRequest(server string, deviceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "device_id", runtime.ParamLocationPath, deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices/%s/configuration", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateDevicePairingCodeRequest generates requests for CreateDevicePairingCode
 func NewCreateDevicePairingCodeRequest(server string, deviceId string) (*http.Request, error) {
 	var err error
@@ -46350,6 +46510,53 @@ func NewCreateDevicePairingCodeRequest(server string, deviceId string) (*http.Re
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewCreateDevicePreviewTokenRequest calls the generic CreateDevicePreviewToken builder with application/json body
+func NewCreateDevicePreviewTokenRequest(server string, deviceId string, body CreateDevicePreviewTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDevicePreviewTokenRequestWithBody(server, deviceId, "application/json", bodyReader)
+}
+
+// NewCreateDevicePreviewTokenRequestWithBody generates requests for CreateDevicePreviewToken with any type of body
+func NewCreateDevicePreviewTokenRequestWithBody(server string, deviceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "device_id", runtime.ParamLocationPath, deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices/%s/preview_token", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -65834,6 +66041,9 @@ type ClientWithResponsesInterface interface {
 
 	CreateDeviceWithResponse(ctx context.Context, body CreateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDeviceResponse, error)
 
+	// GetDevicePreview request
+	GetDevicePreviewWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*GetDevicePreviewResponse, error)
+
 	// DeleteDevice request
 	DeleteDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*DeleteDeviceResponse, error)
 
@@ -65845,8 +66055,16 @@ type ClientWithResponsesInterface interface {
 
 	UpdateDeviceWithResponse(ctx context.Context, deviceId string, params *UpdateDeviceParams, body UpdateDeviceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDeviceResponse, error)
 
+	// GetDeviceConfiguration request
+	GetDeviceConfigurationWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*GetDeviceConfigurationResponse, error)
+
 	// CreateDevicePairingCode request
 	CreateDevicePairingCodeWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*CreateDevicePairingCodeResponse, error)
+
+	// CreateDevicePreviewToken request with any body
+	CreateDevicePreviewTokenWithBodyWithResponse(ctx context.Context, deviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDevicePreviewTokenResponse, error)
+
+	CreateDevicePreviewTokenWithResponse(ctx context.Context, deviceId string, body CreateDevicePreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDevicePreviewTokenResponse, error)
 
 	// RevokeDevice request
 	RevokeDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*RevokeDeviceResponse, error)
@@ -71389,6 +71607,28 @@ func (r CreateDeviceResponse) StatusCode() int {
 	return 0
 }
 
+type GetDevicePreviewResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DeviceEffectiveConfiguration
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDevicePreviewResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDevicePreviewResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteDeviceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -71454,6 +71694,28 @@ func (r UpdateDeviceResponse) StatusCode() int {
 	return 0
 }
 
+type GetDeviceConfigurationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DeviceEffectiveConfiguration
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDeviceConfigurationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDeviceConfigurationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateDevicePairingCodeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -71470,6 +71732,28 @@ func (r CreateDevicePairingCodeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateDevicePairingCodeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateDevicePreviewTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DeviceConfigurationPreviewToken
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDevicePreviewTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDevicePreviewTokenResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -79475,6 +79759,15 @@ func (c *ClientWithResponses) CreateDeviceWithResponse(ctx context.Context, body
 	return ParseCreateDeviceResponse(rsp)
 }
 
+// GetDevicePreviewWithResponse request returning *GetDevicePreviewResponse
+func (c *ClientWithResponses) GetDevicePreviewWithResponse(ctx context.Context, token string, reqEditors ...RequestEditorFn) (*GetDevicePreviewResponse, error) {
+	rsp, err := c.GetDevicePreview(ctx, token, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDevicePreviewResponse(rsp)
+}
+
 // DeleteDeviceWithResponse request returning *DeleteDeviceResponse
 func (c *ClientWithResponses) DeleteDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*DeleteDeviceResponse, error) {
 	rsp, err := c.DeleteDevice(ctx, deviceId, reqEditors...)
@@ -79510,6 +79803,15 @@ func (c *ClientWithResponses) UpdateDeviceWithResponse(ctx context.Context, devi
 	return ParseUpdateDeviceResponse(rsp)
 }
 
+// GetDeviceConfigurationWithResponse request returning *GetDeviceConfigurationResponse
+func (c *ClientWithResponses) GetDeviceConfigurationWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*GetDeviceConfigurationResponse, error) {
+	rsp, err := c.GetDeviceConfiguration(ctx, deviceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDeviceConfigurationResponse(rsp)
+}
+
 // CreateDevicePairingCodeWithResponse request returning *CreateDevicePairingCodeResponse
 func (c *ClientWithResponses) CreateDevicePairingCodeWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*CreateDevicePairingCodeResponse, error) {
 	rsp, err := c.CreateDevicePairingCode(ctx, deviceId, reqEditors...)
@@ -79517,6 +79819,23 @@ func (c *ClientWithResponses) CreateDevicePairingCodeWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParseCreateDevicePairingCodeResponse(rsp)
+}
+
+// CreateDevicePreviewTokenWithBodyWithResponse request with arbitrary body returning *CreateDevicePreviewTokenResponse
+func (c *ClientWithResponses) CreateDevicePreviewTokenWithBodyWithResponse(ctx context.Context, deviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDevicePreviewTokenResponse, error) {
+	rsp, err := c.CreateDevicePreviewTokenWithBody(ctx, deviceId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDevicePreviewTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDevicePreviewTokenWithResponse(ctx context.Context, deviceId string, body CreateDevicePreviewTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDevicePreviewTokenResponse, error) {
+	rsp, err := c.CreateDevicePreviewToken(ctx, deviceId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDevicePreviewTokenResponse(rsp)
 }
 
 // RevokeDeviceWithResponse request returning *RevokeDeviceResponse
@@ -87939,6 +88258,32 @@ func ParseCreateDeviceResponse(rsp *http.Response) (*CreateDeviceResponse, error
 	return response, nil
 }
 
+// ParseGetDevicePreviewResponse parses an HTTP response from a GetDevicePreviewWithResponse call
+func ParseGetDevicePreviewResponse(rsp *http.Response) (*GetDevicePreviewResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDevicePreviewResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeviceEffectiveConfiguration
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDeleteDeviceResponse parses an HTTP response from a DeleteDeviceWithResponse call
 func ParseDeleteDeviceResponse(rsp *http.Response) (*DeleteDeviceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -88007,6 +88352,32 @@ func ParseUpdateDeviceResponse(rsp *http.Response) (*UpdateDeviceResponse, error
 	return response, nil
 }
 
+// ParseGetDeviceConfigurationResponse parses an HTTP response from a GetDeviceConfigurationWithResponse call
+func ParseGetDeviceConfigurationResponse(rsp *http.Response) (*GetDeviceConfigurationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDeviceConfigurationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeviceEffectiveConfiguration
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateDevicePairingCodeResponse parses an HTTP response from a CreateDevicePairingCodeWithResponse call
 func ParseCreateDevicePairingCodeResponse(rsp *http.Response) (*CreateDevicePairingCodeResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -88023,6 +88394,32 @@ func ParseCreateDevicePairingCodeResponse(rsp *http.Response) (*CreateDevicePair
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest DevicePairingCode
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateDevicePreviewTokenResponse parses an HTTP response from a CreateDevicePreviewTokenWithResponse call
+func ParseCreateDevicePreviewTokenResponse(rsp *http.Response) (*CreateDevicePreviewTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDevicePreviewTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeviceConfigurationPreviewToken
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
