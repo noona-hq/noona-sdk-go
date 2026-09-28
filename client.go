@@ -2370,10 +2370,10 @@ type AdCampaignResponse struct {
 
 // AdCampaignSchedule defines model for AdCampaignSchedule.
 type AdCampaignSchedule struct {
-	// How many days the campaign serves, anchored to its start. Mutually exclusive with `ends_at`. `ends_at` is computed from it the moment `starts_at` is known: at once when a start is requested, otherwise when go-live is stamped, so a campaign that waits in review still serves for the full duration.
+	// How many days the campaign serves, anchored to its start. Mutually exclusive with `ends_at`; 90 when neither is given, set once the start is known. `ends_at` is computed from it the moment `starts_at` is known: at once when a start is requested, otherwise when go-live is stamped. When review outlasts a requested start, go-live replaces the start and `ends_at` is computed again from it, so a campaign approved after its requested start still serves for the full duration. One still unapproved when `ends_at` passes ends without going live.
 	DurationDays *int32 `json:"duration_days,omitempty"`
 
-	// When the campaign stops serving. Optional on create and mutually exclusive with `duration_days`. A campaign that reaches go-live with neither is given `starts_at` plus 90 days, the maximum flight, so every live campaign has an end date and none runs open-ended. Must be within 90 days of `starts_at` when set explicitly. When a duration was given instead, the response carries it only once the start is known.
+	// When the campaign stops serving. Optional on create and mutually exclusive with `duration_days`. An end date set explicitly must be within 90 days of `starts_at` and is kept whenever the campaign goes live, even when review outlasts the requested start. A campaign given neither gets a `duration_days` of 90, the maximum flight, so every live campaign has an end date and none runs open-ended. When a duration applies instead, the response carries this computed end only once the start is known.
 	EndsAt *time.Time `json:"ends_at,omitempty"`
 
 	// When the campaign goes live. A requested start still ahead at go-live is kept; one that has passed is replaced by the go-live moment. Stamped by the API when not set explicitly.
