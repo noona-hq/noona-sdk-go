@@ -2840,6 +2840,26 @@ type AdminAdsNotificationMetadataSeedResult struct {
 	SubcategoriesExisting int32 `json:"subcategories_existing"`
 }
 
+// AdminAdsNotificationPreferencesBackfillRequest defines model for AdminAdsNotificationPreferencesBackfillRequest.
+type AdminAdsNotificationPreferencesBackfillRequest struct {
+	// Last company ID returned by the previous page.
+	Cursor *string `json:"cursor,omitempty"`
+	DryRun *bool   `json:"dry_run,omitempty"`
+
+	// Number of companies to process. Defaults to 25.
+	Limit *int32 `json:"limit,omitempty"`
+}
+
+// AdminAdsNotificationPreferencesBackfillResult defines model for AdminAdsNotificationPreferencesBackfillResult.
+type AdminAdsNotificationPreferencesBackfillResult struct {
+	CompaniesScanned int32   `json:"companies_scanned"`
+	DryRun           bool    `json:"dry_run"`
+	MembersScanned   int32   `json:"members_scanned"`
+	MembersUnchanged int32   `json:"members_unchanged"`
+	MembersUpdated   int32   `json:"members_updated"`
+	NextCursor       *string `json:"next_cursor,omitempty"`
+}
+
 // AdminCompanies defines model for AdminCompanies.
 type AdminCompanies []AdminCompany
 
@@ -14365,6 +14385,9 @@ type AdminBulkSeedAdsCreditWalletsJSONBody AdminAdsCreditWalletSeedRequest
 // AdminSeedAdsNotificationMetadataJSONBody defines parameters for AdminSeedAdsNotificationMetadata.
 type AdminSeedAdsNotificationMetadataJSONBody AdminAdsNotificationMetadataSeedRequest
 
+// AdminBackfillAdsNotificationPreferencesJSONBody defines parameters for AdminBackfillAdsNotificationPreferences.
+type AdminBackfillAdsNotificationPreferencesJSONBody AdminAdsNotificationPreferencesBackfillRequest
+
 // AdminFixWorkHoursTimesJSONBody defines parameters for AdminFixWorkHoursTimes.
 type AdminFixWorkHoursTimesJSONBody AdminFixWorkHoursTimesRequest
 
@@ -18665,6 +18688,9 @@ type AdminBulkSeedAdsCreditWalletsJSONRequestBody AdminBulkSeedAdsCreditWalletsJ
 // AdminSeedAdsNotificationMetadataJSONRequestBody defines body for AdminSeedAdsNotificationMetadata for application/json ContentType.
 type AdminSeedAdsNotificationMetadataJSONRequestBody AdminSeedAdsNotificationMetadataJSONBody
 
+// AdminBackfillAdsNotificationPreferencesJSONRequestBody defines body for AdminBackfillAdsNotificationPreferences for application/json ContentType.
+type AdminBackfillAdsNotificationPreferencesJSONRequestBody AdminBackfillAdsNotificationPreferencesJSONBody
+
 // AdminFixWorkHoursTimesJSONRequestBody defines body for AdminFixWorkHoursTimes for application/json ContentType.
 type AdminFixWorkHoursTimesJSONRequestBody AdminFixWorkHoursTimesJSONBody
 
@@ -21708,6 +21734,11 @@ type ClientInterface interface {
 
 	AdminSeedAdsNotificationMetadata(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminBackfillAdsNotificationPreferences request with any body
+	AdminBackfillAdsNotificationPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminBackfillAdsNotificationPreferences(ctx context.Context, body AdminBackfillAdsNotificationPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -23962,6 +23993,30 @@ func (c *Client) AdminSeedAdsNotificationMetadataWithBody(ctx context.Context, c
 
 func (c *Client) AdminSeedAdsNotificationMetadata(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminSeedAdsNotificationMetadataRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBackfillAdsNotificationPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBackfillAdsNotificationPreferencesRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBackfillAdsNotificationPreferences(ctx context.Context, body AdminBackfillAdsNotificationPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBackfillAdsNotificationPreferencesRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -33603,6 +33658,46 @@ func NewAdminSeedAdsNotificationMetadataRequestWithBody(server string, contentTy
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/ads_notification_metadata")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminBackfillAdsNotificationPreferencesRequest calls the generic AdminBackfillAdsNotificationPreferences builder with application/json body
+func NewAdminBackfillAdsNotificationPreferencesRequest(server string, body AdminBackfillAdsNotificationPreferencesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminBackfillAdsNotificationPreferencesRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminBackfillAdsNotificationPreferencesRequestWithBody generates requests for AdminBackfillAdsNotificationPreferences with any type of body
+func NewAdminBackfillAdsNotificationPreferencesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/ads_notification_preferences")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -65676,6 +65771,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminSeedAdsNotificationMetadataWithResponse(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error)
 
+	// AdminBackfillAdsNotificationPreferences request with any body
+	AdminBackfillAdsNotificationPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBackfillAdsNotificationPreferencesResponse, error)
+
+	AdminBackfillAdsNotificationPreferencesWithResponse(ctx context.Context, body AdminBackfillAdsNotificationPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBackfillAdsNotificationPreferencesResponse, error)
+
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
 
@@ -68154,6 +68254,28 @@ func (r AdminSeedAdsNotificationMetadataResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminSeedAdsNotificationMetadataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminBackfillAdsNotificationPreferencesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminAdsNotificationPreferencesBackfillResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminBackfillAdsNotificationPreferencesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminBackfillAdsNotificationPreferencesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -78221,6 +78343,23 @@ func (c *ClientWithResponses) AdminSeedAdsNotificationMetadataWithResponse(ctx c
 	return ParseAdminSeedAdsNotificationMetadataResponse(rsp)
 }
 
+// AdminBackfillAdsNotificationPreferencesWithBodyWithResponse request with arbitrary body returning *AdminBackfillAdsNotificationPreferencesResponse
+func (c *ClientWithResponses) AdminBackfillAdsNotificationPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBackfillAdsNotificationPreferencesResponse, error) {
+	rsp, err := c.AdminBackfillAdsNotificationPreferencesWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBackfillAdsNotificationPreferencesResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminBackfillAdsNotificationPreferencesWithResponse(ctx context.Context, body AdminBackfillAdsNotificationPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBackfillAdsNotificationPreferencesResponse, error) {
+	rsp, err := c.AdminBackfillAdsNotificationPreferences(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBackfillAdsNotificationPreferencesResponse(rsp)
+}
+
 // AdminFixWorkHoursTimesWithBodyWithResponse request with arbitrary body returning *AdminFixWorkHoursTimesResponse
 func (c *ClientWithResponses) AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error) {
 	rsp, err := c.AdminFixWorkHoursTimesWithBody(ctx, contentType, body, reqEditors...)
@@ -84227,6 +84366,32 @@ func ParseAdminSeedAdsNotificationMetadataResponse(rsp *http.Response) (*AdminSe
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdminAdsNotificationMetadataSeedResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminBackfillAdsNotificationPreferencesResponse parses an HTTP response from a AdminBackfillAdsNotificationPreferencesWithResponse call
+func ParseAdminBackfillAdsNotificationPreferencesResponse(rsp *http.Response) (*AdminBackfillAdsNotificationPreferencesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminBackfillAdsNotificationPreferencesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminAdsNotificationPreferencesBackfillResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
