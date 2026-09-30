@@ -1015,6 +1015,20 @@ const (
 	Route    NotificationActionLinkType = "route"
 )
 
+// Defines values for NotificationAdEventType.
+const (
+	AdEvent NotificationAdEventType = "adEvent"
+)
+
+// Defines values for NotificationAdEventStatus.
+const (
+	NotificationAdEventStatusApproved        NotificationAdEventStatus = "approved"
+	NotificationAdEventStatusCreditsDepleted NotificationAdEventStatus = "credits_depleted"
+	NotificationAdEventStatusCreditsLow      NotificationAdEventStatus = "credits_low"
+	NotificationAdEventStatusRejected        NotificationAdEventStatus = "rejected"
+	NotificationAdEventStatusTakenDown       NotificationAdEventStatus = "taken_down"
+)
+
 // Defines values for NotificationAlertBannerType.
 const (
 	AlertBanner NotificationAlertBannerType = "alert_banner"
@@ -1040,6 +1054,7 @@ const (
 
 // Defines values for NotificationCategory.
 const (
+	NotificationCategoryAds                    NotificationCategory = "ads"
 	NotificationCategoryBookingOffers          NotificationCategory = "booking_offers"
 	NotificationCategoryOtherOnlineBookings    NotificationCategory = "other_online_bookings"
 	NotificationCategoryOwnOnlineBookings      NotificationCategory = "own_online_bookings"
@@ -1090,14 +1105,19 @@ const (
 
 // Defines values for NotificationSubcategory.
 const (
+	NotificationSubcategoryAdApproved        NotificationSubcategory = "ad_approved"
 	NotificationSubcategoryApproved          NotificationSubcategory = "approved"
 	NotificationSubcategoryCancellations     NotificationSubcategory = "cancellations"
+	NotificationSubcategoryCreditsDepleted   NotificationSubcategory = "credits_depleted"
+	NotificationSubcategoryCreditsLow        NotificationSubcategory = "credits_low"
 	NotificationSubcategoryDeclined          NotificationSubcategory = "declined"
 	NotificationSubcategoryFailedPayouts     NotificationSubcategory = "failed_payouts"
 	NotificationSubcategoryNewBookings       NotificationSubcategory = "new_bookings"
 	NotificationSubcategoryNewRequests       NotificationSubcategory = "new_requests"
+	NotificationSubcategoryRejected          NotificationSubcategory = "rejected"
 	NotificationSubcategoryReschedules       NotificationSubcategory = "reschedules"
 	NotificationSubcategorySuccessfulPayouts NotificationSubcategory = "successful_payouts"
+	NotificationSubcategoryTakenDown         NotificationSubcategory = "taken_down"
 )
 
 // Defines values for NotificationSurveyType.
@@ -1826,10 +1846,10 @@ const (
 
 // Defines values for TransactionFiscalizationStatus.
 const (
-	TransactionFiscalizationStatusFailed        TransactionFiscalizationStatus = "failed"
-	TransactionFiscalizationStatusIssued        TransactionFiscalizationStatus = "issued"
-	TransactionFiscalizationStatusNotApplicable TransactionFiscalizationStatus = "not_applicable"
-	TransactionFiscalizationStatusProcessing    TransactionFiscalizationStatus = "processing"
+	Failed        TransactionFiscalizationStatus = "failed"
+	Issued        TransactionFiscalizationStatus = "issued"
+	NotApplicable TransactionFiscalizationStatus = "not_applicable"
+	Processing    TransactionFiscalizationStatus = "processing"
 )
 
 // Defines values for UnavailableResourceReason.
@@ -2487,6 +2507,15 @@ type AdCreativeTextOverlayType string
 // AdCreativeType defines model for AdCreativeType.
 type AdCreativeType string
 
+// AdNotifications defines model for AdNotifications.
+type AdNotifications struct {
+	Approved        *NotificationChannelSettings `json:"approved,omitempty"`
+	CreditsDepleted *NotificationChannelSettings `json:"credits_depleted,omitempty"`
+	CreditsLow      *NotificationChannelSettings `json:"credits_low,omitempty"`
+	Rejected        *NotificationChannelSettings `json:"rejected,omitempty"`
+	TakenDown       *NotificationChannelSettings `json:"taken_down,omitempty"`
+}
+
 // AdPerformance defines model for AdPerformance.
 type AdPerformance struct {
 	Campaigns *[]AdPerformanceCampaign `json:"campaigns,omitempty"`
@@ -2791,6 +2820,24 @@ type AdminAdsCreditWalletSeedResult struct {
 
 	// Distinct companies processed, so total always equals created + skipped + failed.
 	Total *int32 `json:"total,omitempty"`
+}
+
+// AdminAdsNotificationMetadataSeedRequest defines model for AdminAdsNotificationMetadataSeedRequest.
+type AdminAdsNotificationMetadataSeedRequest struct {
+	// If true, report missing metadata without writing it.
+	DryRun *bool `json:"dry_run,omitempty"`
+}
+
+// AdminAdsNotificationMetadataSeedResult defines model for AdminAdsNotificationMetadataSeedResult.
+type AdminAdsNotificationMetadataSeedResult struct {
+	CategoriesCreated     int32 `json:"categories_created"`
+	CategoriesExisting    int32 `json:"categories_existing"`
+	CategoriesUpdated     int32 `json:"categories_updated"`
+	ChannelsCreated       int32 `json:"channels_created"`
+	ChannelsExisting      int32 `json:"channels_existing"`
+	DryRun                bool  `json:"dry_run"`
+	SubcategoriesCreated  int32 `json:"subcategories_created"`
+	SubcategoriesExisting int32 `json:"subcategories_existing"`
 }
 
 // AdminCompanies defines model for AdminCompanies.
@@ -6119,6 +6166,8 @@ type EmployeeMarketplaceSettings struct {
 
 // EmployeeNotificationSettings defines model for EmployeeNotificationSettings.
 type EmployeeNotificationSettings struct {
+	Ads *AdNotifications `json:"ads,omitempty"`
+
 	// Whether the employee should receive emails when a booking is made
 	BookingEmail *bool `json:"booking_email,omitempty"`
 
@@ -8885,6 +8934,42 @@ type Notification struct {
 
 // NotificationActionLinkType defines model for NotificationActionLinkType.
 type NotificationActionLinkType string
+
+// NotificationAdEvent defines model for NotificationAdEvent.
+type NotificationAdEvent struct {
+	// Groups related notifications for interactive actions. Format: {notificationType}:{entityId}
+	ActionGroup *string `json:"action_group,omitempty"`
+
+	// Ad ID for review outcomes
+	Ad *string `json:"ad,omitempty"`
+
+	// Ad name at review time
+	AdName    *string    `json:"ad_name,omitempty"`
+	Company   string     `json:"company"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// User who took action on interactive notification
+	HandledBy *string `json:"handled_by,omitempty"`
+	Id        *string `json:"id,omitempty"`
+
+	// Reviewer reason when rejected or taken down
+	Reason *string `json:"reason,omitempty"`
+
+	// The user who should see this notification
+	RecipientUser *string `json:"recipient_user,omitempty"`
+
+	// The employee this notification relates to
+	RelatedEmployee *string                   `json:"related_employee,omitempty"`
+	Status          NotificationAdEventStatus `json:"status"`
+	Type            NotificationAdEventType   `json:"type"`
+	UpdatedAt       *time.Time                `json:"updated_at,omitempty"`
+}
+
+// NotificationAdEventType defines model for NotificationAdEvent.Type.
+type NotificationAdEventType string
+
+// NotificationAdEventStatus defines model for NotificationAdEventStatus.
+type NotificationAdEventStatus string
 
 // NotificationAlertBanner defines model for NotificationAlertBanner.
 type NotificationAlertBanner struct {
@@ -14277,6 +14362,9 @@ type AdminListMarketplaceAdCampaignsParams struct {
 // AdminBulkSeedAdsCreditWalletsJSONBody defines parameters for AdminBulkSeedAdsCreditWallets.
 type AdminBulkSeedAdsCreditWalletsJSONBody AdminAdsCreditWalletSeedRequest
 
+// AdminSeedAdsNotificationMetadataJSONBody defines parameters for AdminSeedAdsNotificationMetadata.
+type AdminSeedAdsNotificationMetadataJSONBody AdminAdsNotificationMetadataSeedRequest
+
 // AdminFixWorkHoursTimesJSONBody defines parameters for AdminFixWorkHoursTimes.
 type AdminFixWorkHoursTimesJSONBody AdminFixWorkHoursTimesRequest
 
@@ -18574,6 +18662,9 @@ type AdminUpdateMarketplaceAdJSONRequestBody AdminUpdateMarketplaceAdJSONBody
 // AdminBulkSeedAdsCreditWalletsJSONRequestBody defines body for AdminBulkSeedAdsCreditWallets for application/json ContentType.
 type AdminBulkSeedAdsCreditWalletsJSONRequestBody AdminBulkSeedAdsCreditWalletsJSONBody
 
+// AdminSeedAdsNotificationMetadataJSONRequestBody defines body for AdminSeedAdsNotificationMetadata for application/json ContentType.
+type AdminSeedAdsNotificationMetadataJSONRequestBody AdminSeedAdsNotificationMetadataJSONBody
+
 // AdminFixWorkHoursTimesJSONRequestBody defines body for AdminFixWorkHoursTimes for application/json ContentType.
 type AdminFixWorkHoursTimesJSONRequestBody AdminFixWorkHoursTimesJSONBody
 
@@ -21032,6 +21123,18 @@ func (t *Notification) FromNotificationAlertBanner(v NotificationAlertBanner) er
 	return err
 }
 
+func (t Notification) AsNotificationAdEvent() (NotificationAdEvent, error) {
+	var body NotificationAdEvent
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Notification) FromNotificationAdEvent(v NotificationAdEvent) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
 func (t Notification) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -21599,6 +21702,11 @@ type ClientInterface interface {
 	AdminBulkSeedAdsCreditWalletsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	AdminBulkSeedAdsCreditWallets(ctx context.Context, body AdminBulkSeedAdsCreditWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// AdminSeedAdsNotificationMetadata request with any body
+	AdminSeedAdsNotificationMetadataWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminSeedAdsNotificationMetadata(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -23830,6 +23938,30 @@ func (c *Client) AdminBulkSeedAdsCreditWalletsWithBody(ctx context.Context, cont
 
 func (c *Client) AdminBulkSeedAdsCreditWallets(ctx context.Context, body AdminBulkSeedAdsCreditWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminBulkSeedAdsCreditWalletsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminSeedAdsNotificationMetadataWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminSeedAdsNotificationMetadataRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminSeedAdsNotificationMetadata(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminSeedAdsNotificationMetadataRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -33431,6 +33563,46 @@ func NewAdminBulkSeedAdsCreditWalletsRequestWithBody(server string, contentType 
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/ads_credit_wallets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminSeedAdsNotificationMetadataRequest calls the generic AdminSeedAdsNotificationMetadata builder with application/json body
+func NewAdminSeedAdsNotificationMetadataRequest(server string, body AdminSeedAdsNotificationMetadataJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminSeedAdsNotificationMetadataRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminSeedAdsNotificationMetadataRequestWithBody generates requests for AdminSeedAdsNotificationMetadata with any type of body
+func NewAdminSeedAdsNotificationMetadataRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/ads_notification_metadata")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -65499,6 +65671,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminBulkSeedAdsCreditWalletsWithResponse(ctx context.Context, body AdminBulkSeedAdsCreditWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkSeedAdsCreditWalletsResponse, error)
 
+	// AdminSeedAdsNotificationMetadata request with any body
+	AdminSeedAdsNotificationMetadataWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error)
+
+	AdminSeedAdsNotificationMetadataWithResponse(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error)
+
 	// AdminFixWorkHoursTimes request with any body
 	AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
 
@@ -67955,6 +68132,28 @@ func (r AdminBulkSeedAdsCreditWalletsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminBulkSeedAdsCreditWalletsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminSeedAdsNotificationMetadataResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminAdsNotificationMetadataSeedResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminSeedAdsNotificationMetadataResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminSeedAdsNotificationMetadataResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -78005,6 +78204,23 @@ func (c *ClientWithResponses) AdminBulkSeedAdsCreditWalletsWithResponse(ctx cont
 	return ParseAdminBulkSeedAdsCreditWalletsResponse(rsp)
 }
 
+// AdminSeedAdsNotificationMetadataWithBodyWithResponse request with arbitrary body returning *AdminSeedAdsNotificationMetadataResponse
+func (c *ClientWithResponses) AdminSeedAdsNotificationMetadataWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error) {
+	rsp, err := c.AdminSeedAdsNotificationMetadataWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminSeedAdsNotificationMetadataResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminSeedAdsNotificationMetadataWithResponse(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error) {
+	rsp, err := c.AdminSeedAdsNotificationMetadata(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminSeedAdsNotificationMetadataResponse(rsp)
+}
+
 // AdminFixWorkHoursTimesWithBodyWithResponse request with arbitrary body returning *AdminFixWorkHoursTimesResponse
 func (c *ClientWithResponses) AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error) {
 	rsp, err := c.AdminFixWorkHoursTimesWithBody(ctx, contentType, body, reqEditors...)
@@ -83985,6 +84201,32 @@ func ParseAdminBulkSeedAdsCreditWalletsResponse(rsp *http.Response) (*AdminBulkS
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdminAdsCreditWalletSeedResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminSeedAdsNotificationMetadataResponse parses an HTTP response from a AdminSeedAdsNotificationMetadataWithResponse call
+func ParseAdminSeedAdsNotificationMetadataResponse(rsp *http.Response) (*AdminSeedAdsNotificationMetadataResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminSeedAdsNotificationMetadataResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminAdsNotificationMetadataSeedResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
