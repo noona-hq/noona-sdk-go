@@ -605,11 +605,6 @@ const (
 	CustomerGroupSystemTypeBlacklist CustomerGroupSystemType = "blacklist"
 )
 
-// Defines values for DeleteAdErrorCode.
-const (
-	ReferencedByActiveCampaign DeleteAdErrorCode = "referenced_by_active_campaign"
-)
-
 // Defines values for DunningStatus.
 const (
 	DunningStatusFailure        DunningStatus = "failure"
@@ -5825,22 +5820,6 @@ type DateFilter struct {
 	From *time.Time `json:"from,omitempty"`
 	To   *time.Time `json:"to,omitempty"`
 }
-
-// DeleteAdError defines model for DeleteAdError.
-type DeleteAdError struct {
-	Campaigns []DeleteAdErrorCampaign `json:"campaigns"`
-	Code      DeleteAdErrorCode       `json:"code"`
-	Message   string                  `json:"message"`
-}
-
-// DeleteAdErrorCampaign defines model for DeleteAdErrorCampaign.
-type DeleteAdErrorCampaign struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-}
-
-// DeleteAdErrorCode defines model for DeleteAdErrorCode.
-type DeleteAdErrorCode string
 
 // DeletionResult defines model for DeletionResult.
 type DeletionResult struct {
@@ -68480,7 +68459,6 @@ func (r CreateAdResponse) StatusCode() int {
 type DeleteAdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON409      *DeleteAdError
 }
 
 // Status returns HTTPResponse.Status
@@ -84617,16 +84595,6 @@ func ParseDeleteAdResponse(rsp *http.Response) (*DeleteAdResponse, error) {
 	response := &DeleteAdResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest DeleteAdError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON409 = &dest
-
 	}
 
 	return response, nil
