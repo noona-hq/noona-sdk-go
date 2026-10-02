@@ -810,12 +810,6 @@ const (
 	EventUpdateBehaviorTypeInplace EventUpdateBehaviorType = "inplace"
 )
 
-// Defines values for FilterAssociation.
-const (
-	FilterAssociationExcludes FilterAssociation = "excludes"
-	FilterAssociationIncludes FilterAssociation = "includes"
-)
-
 // Defines values for FiscalizationOnboardingStatus.
 const (
 	FiscalizationOnboardingStatusCompleted  FiscalizationOnboardingStatus = "completed"
@@ -1553,8 +1547,8 @@ const (
 
 // Defines values for RuleEntitiesResourcesResourcesAssociation.
 const (
-	RuleEntitiesResourcesResourcesAssociationExcludes RuleEntitiesResourcesResourcesAssociation = "excludes"
-	RuleEntitiesResourcesResourcesAssociationIncludes RuleEntitiesResourcesResourcesAssociation = "includes"
+	Excludes RuleEntitiesResourcesResourcesAssociation = "excludes"
+	Includes RuleEntitiesResourcesResourcesAssociation = "includes"
 )
 
 // Defines values for RuleType.
@@ -3144,11 +3138,8 @@ type AdminMarketplaceAdUpdate struct {
 
 // AdminMarketplaceAdsFilter defines model for AdminMarketplaceAdsFilter.
 type AdminMarketplaceAdsFilter struct {
-	// Countries of the advertising company, as ISO 3166-1 alpha-2 codes. Matched against the company's location, not the ad's language. `company_countries_association` decides whether ads from these countries are the only ones listed or the ones left out; an empty or missing list with `excludes` leaves nothing out.
+	// Only ads from companies in these countries, as ISO 3166-1 alpha-2 codes. Matched against the company's location, not the ad's language. It narrows the ads within the admin's country access and never widens them. When given, it must name at least one country.
 	CompanyCountries *[]string `json:"company_countries,omitempty"`
-
-	// Whether a filter's list is the only values kept (`includes`) or the values left out (`excludes`), as with a rule's entity association. Defaults to `excludes`. For a company's country, `excludes` also keeps the ads whose company has no country recorded, that have no company, or whose company can no longer be read, so `includes` and `excludes` on the same list split the ads between them with none left out.
-	CompanyCountriesAssociation *FilterAssociation `json:"company_countries_association,omitempty"`
 }
 
 // AdminMarketplaceAdsResponse defines model for AdminMarketplaceAdsResponse.
@@ -7793,9 +7784,6 @@ type FileWithSignedURL struct {
 
 // Files defines model for Files.
 type Files []File
-
-// Whether a filter's list is the only values kept (`includes`) or the values left out (`excludes`), as with a rule's entity association. Defaults to `excludes`. For a company's country, `excludes` also keeps the ads whose company has no country recorded, that have no company, or whose company can no longer be read, so `includes` and `excludes` on the same list split the ads between them with none left out.
-type FilterAssociation string
 
 // FiscalizationFault defines model for FiscalizationFault.
 type FiscalizationFault struct {
