@@ -107,11 +107,17 @@ const (
 	AdActionTypeEventType      AdActionType = "event_type"
 	AdActionTypeScheduledEvent AdActionType = "scheduled_event"
 	AdActionTypeVoucher        AdActionType = "voucher"
+	AdActionTypeVoucherList    AdActionType = "voucher_list"
 )
 
 // Defines values for AdActionVoucherType.
 const (
 	AdActionVoucherTypeVoucher AdActionVoucherType = "voucher"
+)
+
+// Defines values for AdActionVoucherListType.
+const (
+	VoucherList AdActionVoucherListType = "voucher_list"
 )
 
 // Defines values for AdCallToActionType.
@@ -177,6 +183,7 @@ const (
 	ActionDestination AdServingRequirement = "action_destination"
 	ActionTarget      AdServingRequirement = "action_target"
 	AdDescription     AdServingRequirement = "ad_description"
+	CallToAction      AdServingRequirement = "call_to_action"
 	Creative          AdServingRequirement = "creative"
 	CreativeImage     AdServingRequirement = "creative_image"
 	Language          AdServingRequirement = "language"
@@ -2219,12 +2226,16 @@ type Actors []Actor
 // Ad defines model for Ad.
 type Ad struct {
 	// Where the ad leads when tapped, discriminated by `type`: exactly one of the
-	// destination attributes is present. `company` carries no attribute of its own —
-	// that destination is the ad's own company, on `Ad.company`.
+	// destination attributes is present. `company` and `voucher_list` carry no attribute
+	// of their own — those destinations are the ad's own company, on `Ad.company`, and
+	// that company's gift card list.
 	//
 	// Mirrors `ServedAdAction` on the marketplace surface. The request form keeps its
 	// `_id` fields; only the response references entities, so each can expand.
 	Action *AdActionResponse `json:"action,omitempty"`
+
+	// The text on the ad's button, in the ad's language.
+	CallToAction *string `json:"call_to_action,omitempty"`
 
 	// How many of the company's campaigns use this ad: campaigns whose promotables reference it and that have not ended. Ended campaigns are terminal, so they are not counted. Always present; `0` when no campaign uses the ad.
 	CampaignCount int32 `json:"campaign_count"`
@@ -2279,8 +2290,9 @@ type AdActionEventType struct {
 type AdActionEventTypeType string
 
 // Where the ad leads when tapped, discriminated by `type`: exactly one of the
-// destination attributes is present. `company` carries no attribute of its own —
-// that destination is the ad's own company, on `Ad.company`.
+// destination attributes is present. `company` and `voucher_list` carry no attribute
+// of their own — those destinations are the ad's own company, on `Ad.company`, and
+// that company's gift card list.
 //
 // Mirrors `ServedAdAction` on the marketplace surface. The request form keeps its
 // `_id` fields; only the response references entities, so each can expand.
@@ -2316,6 +2328,14 @@ type AdActionVoucher struct {
 
 // AdActionVoucherType defines model for AdActionVoucher.Type.
 type AdActionVoucherType string
+
+// AdActionVoucherList defines model for AdActionVoucherList.
+type AdActionVoucherList struct {
+	Type *AdActionVoucherListType `json:"type,omitempty"`
+}
+
+// AdActionVoucherListType defines model for AdActionVoucherList.Type.
+type AdActionVoucherListType string
 
 // AdCallToActionType defines model for AdCallToActionType.
 type AdCallToActionType string
@@ -2460,9 +2480,12 @@ type AdCampaignsResponse []AdCampaignResponse
 
 // AdCreate defines model for AdCreate.
 type AdCreate struct {
-	Action    *AdAction   `json:"action,omitempty"`
-	CompanyId string      `json:"company_id"`
-	Creative  *AdCreative `json:"creative,omitempty"`
+	Action *AdAction `json:"action,omitempty"`
+
+	// The text on the ad's button, in the ad's language.
+	CallToAction *string     `json:"call_to_action,omitempty"`
+	CompanyId    string      `json:"company_id"`
+	Creative     *AdCreative `json:"creative,omitempty"`
 
 	// The merchant's own copy shown beneath the creative, in the ad's language.
 	Description *string               `json:"description,omitempty"`
@@ -2682,8 +2705,11 @@ type AdStatusUpdate string
 
 // AdUpdate defines model for AdUpdate.
 type AdUpdate struct {
-	Action   *AdAction   `json:"action,omitempty"`
-	Creative *AdCreative `json:"creative,omitempty"`
+	Action *AdAction `json:"action,omitempty"`
+
+	// The text on the ad's button, in the ad's language.
+	CallToAction *string     `json:"call_to_action,omitempty"`
+	Creative     *AdCreative `json:"creative,omitempty"`
 
 	// The merchant's own copy shown beneath the creative, in the ad's language.
 	Description *string               `json:"description,omitempty"`
@@ -3101,12 +3127,16 @@ type AdminFixWorkHoursTimesScope string
 // AdminMarketplaceAdResponse defines model for AdminMarketplaceAdResponse.
 type AdminMarketplaceAdResponse struct {
 	// Where the ad leads when tapped, discriminated by `type`: exactly one of the
-	// destination attributes is present. `company` carries no attribute of its own —
-	// that destination is the ad's own company, on `Ad.company`.
+	// destination attributes is present. `company` and `voucher_list` carry no attribute
+	// of their own — those destinations are the ad's own company, on `Ad.company`, and
+	// that company's gift card list.
 	//
 	// Mirrors `ServedAdAction` on the marketplace surface. The request form keeps its
 	// `_id` fields; only the response references entities, so each can expand.
 	Action *AdActionResponse `json:"action,omitempty"`
+
+	// The text on the ad's button, in the ad's language.
+	CallToAction *string `json:"call_to_action,omitempty"`
 
 	// How many of the company's campaigns use this ad: campaigns whose promotables reference it and that have not ended. Ended campaigns are terminal, so they are not counted. Always present; `0` when no campaign uses the ad.
 	CampaignCount int32 `json:"campaign_count"`
@@ -19201,6 +19231,18 @@ func (t AdAction) AsAdActionScheduledEvent() (AdActionScheduledEvent, error) {
 }
 
 func (t *AdAction) FromAdActionScheduledEvent(v AdActionScheduledEvent) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t AdAction) AsAdActionVoucherList() (AdActionVoucherList, error) {
+	var body AdActionVoucherList
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *AdAction) FromAdActionVoucherList(v AdActionVoucherList) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
