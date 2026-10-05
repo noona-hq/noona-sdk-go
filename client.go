@@ -11752,8 +11752,9 @@ type ScheduledEventVariation struct {
 	// The key is the language code, and the value is the translated string.
 	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
 
-	// Price in smallest currency unit (cents).
-	Price *int64 `json:"price,omitempty"`
+	// Deprecated. Price in smallest currency unit (cents). Use unit_price instead.
+	Price     *int64                   `json:"price,omitempty"`
+	UnitPrice *EventTypeVariationPrice `json:"unit_price,omitempty"`
 }
 
 // Variation in a scheduled event response.
@@ -11772,8 +11773,9 @@ type ScheduledEventVariationResponse struct {
 	// The key is the language code, and the value is the translated string.
 	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
 
-	// Price in smallest currency unit (cents).
-	Price *int64 `json:"price,omitempty"`
+	// Deprecated. Price in smallest currency unit (cents). Use unit_price instead.
+	Price     *int64                   `json:"price,omitempty"`
+	UnitPrice *EventTypeVariationPrice `json:"unit_price,omitempty"`
 }
 
 // ScheduledEvents defines model for ScheduledEvents.
