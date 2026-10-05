@@ -971,6 +971,13 @@ const (
 	LineItemVoucherDataServiceTypeService LineItemVoucherDataServiceType = "service"
 )
 
+// Defines values for LockedSection.
+const (
+	LockedSectionDashboard    LockedSection = "dashboard"
+	LockedSectionReports      LockedSection = "reports"
+	LockedSectionTransactions LockedSection = "transactions"
+)
+
 // Defines values for MaxTotalPaxRuleType.
 const (
 	MaxTotalPax MaxTotalPaxRuleType = "max_total_pax"
@@ -8611,12 +8618,26 @@ type LocationLatLng struct {
 	Lng float64 `json:"lng"`
 }
 
+// LockedSection defines model for LockedSection.
+type LockedSection string
+
+// LockedSectionAccess defines model for LockedSectionAccess.
+type LockedSectionAccess struct {
+	ExpiresAt time.Time `json:"expires_at"`
+	Token     string    `json:"token"`
+}
+
+// LockedSectionUnlock defines model for LockedSectionUnlock.
+type LockedSectionUnlock struct {
+	Pin string `json:"pin"`
+}
+
 // LockedSections defines model for LockedSections.
 type LockedSections struct {
 	Dashboard     *bool   `json:"dashboard,omitempty"`
 	Pin           *string `json:"pin,omitempty"`
+	PinConfigured *bool   `json:"pin_configured,omitempty"`
 	PinExpiryTime *int32  `json:"pin_expiry_time,omitempty"`
-	PinHash       *string `json:"pin_hash,omitempty"`
 	Reports       *bool   `json:"reports,omitempty"`
 	Transactions  *bool   `json:"transactions,omitempty"`
 }
@@ -14005,11 +14026,20 @@ type String string
 // Expand defines model for expand.
 type Expand []string
 
+// LockedSectionAccessToken defines model for lockedSectionAccessToken.
+type LockedSectionAccessToken string
+
 // Search defines model for search.
 type Search string
 
 // Select defines model for select.
 type Select []string
+
+// LockedSectionPINIncorrect defines model for LockedSectionPINIncorrect.
+type LockedSectionPINIncorrect Error
+
+// LockedSectionPINRequired defines model for LockedSectionPINRequired.
+type LockedSectionPINRequired Error
 
 // RateLimitError defines model for RateLimitError.
 type RateLimitError Error
@@ -15145,6 +15175,9 @@ type UpdateIssuerVATDefaultParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// UnlockLockedSectionJSONBody defines parameters for UnlockLockedSection.
+type UnlockLockedSectionJSONBody LockedSectionUnlock
+
 // ListMemosParams defines parameters for ListMemos.
 type ListMemosParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -15366,71 +15399,113 @@ type ListRemindersParams struct {
 // GetClaimsReportParams defines parameters for GetClaimsReport.
 type GetClaimsReportParams struct {
 	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetCommissionsReportParams defines parameters for GetCommissionsReport.
 type GetCommissionsReportParams struct {
 	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetEmployeeSalesBreakdownReportParams defines parameters for GetEmployeeSalesBreakdownReport.
 type GetEmployeeSalesBreakdownReportParams struct {
 	Filter EmployeeSalesBreakdownFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetGiftVouchersReportParams defines parameters for GetGiftVouchersReport.
 type GetGiftVouchersReportParams struct {
 	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetPaymentsByDayReportParams defines parameters for GetPaymentsByDayReport.
 type GetPaymentsByDayReportParams struct {
 	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetPaymentsByEmployeeReportParams defines parameters for GetPaymentsByEmployeeReport.
 type GetPaymentsByEmployeeReportParams struct {
 	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetSalesByEmployeeReportParams defines parameters for GetSalesByEmployeeReport.
 type GetSalesByEmployeeReportParams struct {
 	Filter SalesReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetSalesByPaymentMethodReportParams defines parameters for GetSalesByPaymentMethodReport.
 type GetSalesByPaymentMethodReportParams struct {
 	Filter SalesReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetSalesByProductReportParams defines parameters for GetSalesByProductReport.
 type GetSalesByProductReportParams struct {
 	Filter SalesReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetSalesByServiceReportParams defines parameters for GetSalesByServiceReport.
 type GetSalesByServiceReportParams struct {
 	Filter SalesReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetSalesByVATCategoryReportParams defines parameters for GetSalesByVATCategoryReport.
 type GetSalesByVATCategoryReportParams struct {
 	Filter SalesReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetSalesReportFilterOptionsParams defines parameters for GetSalesReportFilterOptions.
 type GetSalesReportFilterOptionsParams struct {
 	Filter SalesReportDateRangeFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetStaffSalesByPaymentMethodReportParams defines parameters for GetStaffSalesByPaymentMethodReport.
 type GetStaffSalesByPaymentMethodReportParams struct {
 	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // GetTotalBookingsReportParams defines parameters for GetTotalBookingsReport.
 type GetTotalBookingsReportParams struct {
 	Filter PaymentsReportFilter `form:"filter" json:"filter"`
+
+	// Short-lived access token returned by the locked-section unlock endpoint
+	XNoonaLockedSectionToken *LockedSectionAccessToken `json:"X-Noona-Locked-Section-Token,omitempty"`
 }
 
 // ListResourceGroupsParams defines parameters for ListResourceGroups.
@@ -18717,6 +18792,9 @@ type BulkCreateEventTypesJSONRequestBody BulkCreateEventTypesJSONBody
 // UpdateIssuerVATDefaultJSONRequestBody defines body for UpdateIssuerVATDefault for application/json ContentType.
 type UpdateIssuerVATDefaultJSONRequestBody UpdateIssuerVATDefaultJSONBody
 
+// UnlockLockedSectionJSONRequestBody defines body for UnlockLockedSection for application/json ContentType.
+type UnlockLockedSectionJSONRequestBody UnlockLockedSectionJSONBody
+
 // MoveCompanyToEnterpriseJSONRequestBody defines body for MoveCompanyToEnterprise for application/json ContentType.
 type MoveCompanyToEnterpriseJSONRequestBody MoveCompanyToEnterpriseJSONBody
 
@@ -21959,6 +22037,11 @@ type ClientInterface interface {
 
 	UpdateIssuerVATDefault(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, body UpdateIssuerVATDefaultJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// UnlockLockedSection request with any body
+	UnlockLockedSectionWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UnlockLockedSection(ctx context.Context, companyId string, body UnlockLockedSectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListMemos request
 	ListMemos(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -25066,6 +25149,30 @@ func (c *Client) UpdateIssuerVATDefaultWithBody(ctx context.Context, companyId s
 
 func (c *Client) UpdateIssuerVATDefault(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, body UpdateIssuerVATDefaultJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateIssuerVATDefaultRequest(c.Server, companyId, issuerId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UnlockLockedSectionWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUnlockLockedSectionRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UnlockLockedSection(ctx context.Context, companyId string, body UnlockLockedSectionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUnlockLockedSectionRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -39425,6 +39532,53 @@ func NewUpdateIssuerVATDefaultRequestWithBody(server string, companyId string, i
 	return req, nil
 }
 
+// NewUnlockLockedSectionRequest calls the generic UnlockLockedSection builder with application/json body
+func NewUnlockLockedSectionRequest(server string, companyId string, body UnlockLockedSectionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUnlockLockedSectionRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewUnlockLockedSectionRequestWithBody generates requests for UnlockLockedSection with any type of body
+func NewUnlockLockedSectionRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/locked-sections/unlock", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListMemosRequest generates requests for ListMemos
 func NewListMemosRequest(server string, companyId string, params *ListMemosParams) (*http.Request, error) {
 	var err error
@@ -41155,6 +41309,17 @@ func NewGetClaimsReportRequest(server string, companyId string, params *GetClaim
 		return nil, err
 	}
 
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
+	}
+
 	return req, nil
 }
 
@@ -41197,6 +41362,17 @@ func NewGetCommissionsReportRequest(server string, companyId string, params *Get
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
 	}
 
 	return req, nil
@@ -41243,6 +41419,17 @@ func NewGetEmployeeSalesBreakdownReportRequest(server string, companyId string, 
 		return nil, err
 	}
 
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
+	}
+
 	return req, nil
 }
 
@@ -41285,6 +41472,17 @@ func NewGetGiftVouchersReportRequest(server string, companyId string, params *Ge
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
 	}
 
 	return req, nil
@@ -41331,6 +41529,17 @@ func NewGetPaymentsByDayReportRequest(server string, companyId string, params *G
 		return nil, err
 	}
 
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
+	}
+
 	return req, nil
 }
 
@@ -41373,6 +41582,17 @@ func NewGetPaymentsByEmployeeReportRequest(server string, companyId string, para
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
 	}
 
 	return req, nil
@@ -41419,6 +41639,17 @@ func NewGetSalesByEmployeeReportRequest(server string, companyId string, params 
 		return nil, err
 	}
 
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
+	}
+
 	return req, nil
 }
 
@@ -41461,6 +41692,17 @@ func NewGetSalesByPaymentMethodReportRequest(server string, companyId string, pa
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
 	}
 
 	return req, nil
@@ -41507,6 +41749,17 @@ func NewGetSalesByProductReportRequest(server string, companyId string, params *
 		return nil, err
 	}
 
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
+	}
+
 	return req, nil
 }
 
@@ -41549,6 +41802,17 @@ func NewGetSalesByServiceReportRequest(server string, companyId string, params *
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
 	}
 
 	return req, nil
@@ -41595,6 +41859,17 @@ func NewGetSalesByVATCategoryReportRequest(server string, companyId string, para
 		return nil, err
 	}
 
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
+	}
+
 	return req, nil
 }
 
@@ -41637,6 +41912,17 @@ func NewGetSalesReportFilterOptionsRequest(server string, companyId string, para
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
 	}
 
 	return req, nil
@@ -41683,6 +41969,17 @@ func NewGetStaffSalesByPaymentMethodReportRequest(server string, companyId strin
 		return nil, err
 	}
 
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
+	}
+
 	return req, nil
 }
 
@@ -41725,6 +42022,17 @@ func NewGetTotalBookingsReportRequest(server string, companyId string, params *G
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if params.XNoonaLockedSectionToken != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "X-Noona-Locked-Section-Token", runtime.ParamLocationHeader, *params.XNoonaLockedSectionToken)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("X-Noona-Locked-Section-Token", headerParam0)
 	}
 
 	return req, nil
@@ -65996,6 +66304,11 @@ type ClientWithResponsesInterface interface {
 
 	UpdateIssuerVATDefaultWithResponse(ctx context.Context, companyId string, issuerId string, params *UpdateIssuerVATDefaultParams, body UpdateIssuerVATDefaultJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIssuerVATDefaultResponse, error)
 
+	// UnlockLockedSection request with any body
+	UnlockLockedSectionWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UnlockLockedSectionResponse, error)
+
+	UnlockLockedSectionWithResponse(ctx context.Context, companyId string, body UnlockLockedSectionJSONRequestBody, reqEditors ...RequestEditorFn) (*UnlockLockedSectionResponse, error)
+
 	// ListMemos request
 	ListMemosWithResponse(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*ListMemosResponse, error)
 
@@ -69818,6 +70131,30 @@ func (r UpdateIssuerVATDefaultResponse) StatusCode() int {
 	return 0
 }
 
+type UnlockLockedSectionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *LockedSectionAccess
+	JSON403      *Error
+	JSON429      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UnlockLockedSectionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UnlockLockedSectionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListMemosResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -70327,6 +70664,7 @@ type GetClaimsReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ClaimsReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70349,6 +70687,7 @@ type GetCommissionsReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *CommissionsReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70371,6 +70710,7 @@ type GetEmployeeSalesBreakdownReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *EmployeeSalesBreakdownReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70393,6 +70733,7 @@ type GetGiftVouchersReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *GiftVouchersReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70415,6 +70756,7 @@ type GetPaymentsByDayReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PaymentsByDayReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70437,6 +70779,7 @@ type GetPaymentsByEmployeeReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *PaymentsByEmployeeReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70459,6 +70802,7 @@ type GetSalesByEmployeeReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SalesByEmployeeReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70481,6 +70825,7 @@ type GetSalesByPaymentMethodReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SalesByPaymentMethodReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70503,6 +70848,7 @@ type GetSalesByProductReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SalesByProductReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70525,6 +70871,7 @@ type GetSalesByServiceReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SalesByServiceReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70547,6 +70894,7 @@ type GetSalesByVATCategoryReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SalesByVATCategoryReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70569,6 +70917,7 @@ type GetSalesReportFilterOptionsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SalesReportFilterOptions
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70591,6 +70940,7 @@ type GetStaffSalesByPaymentMethodReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *StaffSalesByPaymentMethodReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -70613,6 +70963,7 @@ type GetTotalBookingsReportResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *TotalBookingsReport
+	JSON423      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -79119,6 +79470,23 @@ func (c *ClientWithResponses) UpdateIssuerVATDefaultWithResponse(ctx context.Con
 	return ParseUpdateIssuerVATDefaultResponse(rsp)
 }
 
+// UnlockLockedSectionWithBodyWithResponse request with arbitrary body returning *UnlockLockedSectionResponse
+func (c *ClientWithResponses) UnlockLockedSectionWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UnlockLockedSectionResponse, error) {
+	rsp, err := c.UnlockLockedSectionWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUnlockLockedSectionResponse(rsp)
+}
+
+func (c *ClientWithResponses) UnlockLockedSectionWithResponse(ctx context.Context, companyId string, body UnlockLockedSectionJSONRequestBody, reqEditors ...RequestEditorFn) (*UnlockLockedSectionResponse, error) {
+	rsp, err := c.UnlockLockedSection(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUnlockLockedSectionResponse(rsp)
+}
+
 // ListMemosWithResponse request returning *ListMemosResponse
 func (c *ClientWithResponses) ListMemosWithResponse(ctx context.Context, companyId string, params *ListMemosParams, reqEditors ...RequestEditorFn) (*ListMemosResponse, error) {
 	rsp, err := c.ListMemos(ctx, companyId, params, reqEditors...)
@@ -86233,6 +86601,46 @@ func ParseUpdateIssuerVATDefaultResponse(rsp *http.Response) (*UpdateIssuerVATDe
 	return response, nil
 }
 
+// ParseUnlockLockedSectionResponse parses an HTTP response from a UnlockLockedSectionWithResponse call
+func ParseUnlockLockedSectionResponse(rsp *http.Response) (*UnlockLockedSectionResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UnlockLockedSectionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest LockedSectionAccess
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListMemosResponse parses an HTTP response from a ListMemosWithResponse call
 func ParseListMemosResponse(rsp *http.Response) (*ListMemosResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -86824,6 +87232,13 @@ func ParseGetClaimsReportResponse(rsp *http.Response) (*GetClaimsReportResponse,
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
+
 	}
 
 	return response, nil
@@ -86849,6 +87264,13 @@ func ParseGetCommissionsReportResponse(rsp *http.Response) (*GetCommissionsRepor
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	}
 
@@ -86876,6 +87298,13 @@ func ParseGetEmployeeSalesBreakdownReportResponse(rsp *http.Response) (*GetEmplo
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
+
 	}
 
 	return response, nil
@@ -86901,6 +87330,13 @@ func ParseGetGiftVouchersReportResponse(rsp *http.Response) (*GetGiftVouchersRep
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	}
 
@@ -86928,6 +87364,13 @@ func ParseGetPaymentsByDayReportResponse(rsp *http.Response) (*GetPaymentsByDayR
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
+
 	}
 
 	return response, nil
@@ -86953,6 +87396,13 @@ func ParseGetPaymentsByEmployeeReportResponse(rsp *http.Response) (*GetPaymentsB
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	}
 
@@ -86980,6 +87430,13 @@ func ParseGetSalesByEmployeeReportResponse(rsp *http.Response) (*GetSalesByEmplo
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
+
 	}
 
 	return response, nil
@@ -87005,6 +87462,13 @@ func ParseGetSalesByPaymentMethodReportResponse(rsp *http.Response) (*GetSalesBy
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	}
 
@@ -87032,6 +87496,13 @@ func ParseGetSalesByProductReportResponse(rsp *http.Response) (*GetSalesByProduc
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
+
 	}
 
 	return response, nil
@@ -87057,6 +87528,13 @@ func ParseGetSalesByServiceReportResponse(rsp *http.Response) (*GetSalesByServic
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	}
 
@@ -87084,6 +87562,13 @@ func ParseGetSalesByVATCategoryReportResponse(rsp *http.Response) (*GetSalesByVA
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
+
 	}
 
 	return response, nil
@@ -87109,6 +87594,13 @@ func ParseGetSalesReportFilterOptionsResponse(rsp *http.Response) (*GetSalesRepo
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	}
 
@@ -87136,6 +87628,13 @@ func ParseGetStaffSalesByPaymentMethodReportResponse(rsp *http.Response) (*GetSt
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
+
 	}
 
 	return response, nil
@@ -87161,6 +87660,13 @@ func ParseGetTotalBookingsReportResponse(rsp *http.Response) (*GetTotalBookingsR
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 423:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON423 = &dest
 
 	}
 

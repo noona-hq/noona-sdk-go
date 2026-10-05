@@ -8,6 +8,10 @@ const (
 
 	// Deprecated: use CustomerGroupSystemTypeBlacklist.
 	Blacklist CustomerGroupSystemType = CustomerGroupSystemTypeBlacklist
+
+	// Keep the established names when generated enum naming changes as schemas evolve.
+	VoucherTemplateUpdateTypeAmount  VoucherTemplateUpdateType = Amount
+	VoucherTemplateUpdateTypeService VoucherTemplateUpdateType = Service
 )
 
 func (p CompanyPOSSettingsCheckoutFirstTab) Ptr() *CompanyPOSSettingsCheckoutFirstTab {
