@@ -2559,7 +2559,7 @@ type AdPerformanceAmountMetric struct {
 
 // Figures for one time bucket. Spend is omitted when the bucket's charges mix currencies.
 type AdPerformanceBucket struct {
-	// Truncated start of the bucket (UTC for M1).
+	// Start of the bucket, truncated in the company's time zone.
 	BucketAt    *time.Time `json:"bucket_at,omitempty"`
 	Clicks      *int64     `json:"clicks,omitempty"`
 	Impressions *int64     `json:"impressions,omitempty"`
@@ -2590,14 +2590,17 @@ type AdPerformanceCountMetric struct {
 
 // AdPerformanceFilter defines model for AdPerformanceFilter.
 type AdPerformanceFilter struct {
+	// Optional — narrow results to a single ad
+	AdId *string `json:"ad_id,omitempty"`
+
 	// Optional — narrow results to a single campaign
 	CampaignId *string `json:"campaign_id,omitempty"`
 
-	// Start of the window (inclusive)
+	// Start of the window, rounded down to the hour.
 	From        time.Time    `json:"from"`
 	Granularity *Granularity `json:"granularity,omitempty"`
 
-	// End of the window (inclusive)
+	// End of the window. Hours that start before `to` are included.
 	To time.Time `json:"to"`
 }
 
