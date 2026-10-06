@@ -12023,13 +12023,22 @@ type StaffSalesByPaymentMethodInvalidTransaction struct {
 
 // StaffSalesByPaymentMethodPaymentMethodRow defines model for StaffSalesByPaymentMethodPaymentMethodRow.
 type StaffSalesByPaymentMethodPaymentMethodRow struct {
+	// Total rounded to the company currency precision, including whole units for ISK.
 	Amount                  float64 `json:"amount"`
 	PaymentMethodId         string  `json:"payment_method_id"`
 	PaymentMethodInstanceId string  `json:"payment_method_instance_id"`
 	PaymentMethodName       string  `json:"payment_method_name"`
 }
 
-// StaffSalesByPaymentMethodReport defines model for StaffSalesByPaymentMethodReport.
+// Single-employee sales use successful payments within the requested period.
+// Multi-employee sales require exactly one visible non-failed payment across
+// the transaction; its payment method receives each employee's line-item total
+// only when that payment falls within the requested period. Multi-employee
+// transactions with a visible payment in the period and zero or multiple visible
+// non-failed payments are listed as invalid.
+// Refund transactions and returning line items contribute negative amounts,
+// with the return sign applied once when both indicators are present.
+// Period bounds are inclusive from and exclusive to.
 type StaffSalesByPaymentMethodReport struct {
 	Employees           []StaffSalesByPaymentMethodEmployeeRow        `json:"employees"`
 	InvalidTransactions []StaffSalesByPaymentMethodInvalidTransaction `json:"invalid_transactions"`
