@@ -2811,42 +2811,6 @@ type AdminAdUpdate struct {
 // AdminAds defines model for AdminAds.
 type AdminAds []AdminAd
 
-// AdminAdsCreditWalletSeedFailure defines model for AdminAdsCreditWalletSeedFailure.
-type AdminAdsCreditWalletSeedFailure struct {
-	CompanyId *string `json:"company_id,omitempty"`
-	Error     *string `json:"error,omitempty"`
-}
-
-// AdminAdsCreditWalletSeedRequest defines model for AdminAdsCreditWalletSeedRequest.
-type AdminAdsCreditWalletSeedRequest struct {
-	// The companies to give an ads credit wallet. Required, max 1000.
-	// Repeated ids are processed once.
-	CompanyIds []string `json:"company_ids"`
-
-	// If true, no wallet is created and the response reports what a real run would do.
-	DryRun *bool `json:"dry_run,omitempty"`
-}
-
-// AdminAdsCreditWalletSeedResult defines model for AdminAdsCreditWalletSeedResult.
-type AdminAdsCreditWalletSeedResult struct {
-	Created *int32 `json:"created,omitempty"`
-
-	// Companies given an ads wallet, or that would be given one on a dry run.
-	CreatedCompanyIds *[]string `json:"created_company_ids,omitempty"`
-
-	// True when nothing was written and the companies listed below are what a real run would do.
-	DryRun   *bool                              `json:"dry_run,omitempty"`
-	Failed   *int32                             `json:"failed,omitempty"`
-	Failures *[]AdminAdsCreditWalletSeedFailure `json:"failures,omitempty"`
-	Skipped  *int32                             `json:"skipped,omitempty"`
-
-	// Companies that already had an ads wallet.
-	SkippedCompanyIds *[]string `json:"skipped_company_ids,omitempty"`
-
-	// Distinct companies processed, so total always equals created + skipped + failed.
-	Total *int32 `json:"total,omitempty"`
-}
-
 // AdminAdsNotificationMetadataSeedRequest defines model for AdminAdsNotificationMetadataSeedRequest.
 type AdminAdsNotificationMetadataSeedRequest struct {
 	// If true, report missing metadata without writing it.
@@ -14420,9 +14384,6 @@ type AdminListMarketplaceAdCampaignsParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
-// AdminBulkSeedAdsCreditWalletsJSONBody defines parameters for AdminBulkSeedAdsCreditWallets.
-type AdminBulkSeedAdsCreditWalletsJSONBody AdminAdsCreditWalletSeedRequest
-
 // AdminSeedAdsNotificationMetadataJSONBody defines parameters for AdminSeedAdsNotificationMetadata.
 type AdminSeedAdsNotificationMetadataJSONBody AdminAdsNotificationMetadataSeedRequest
 
@@ -18768,9 +18729,6 @@ type AdminUpdateTerminalJSONRequestBody AdminUpdateTerminalJSONBody
 // AdminUpdateMarketplaceAdJSONRequestBody defines body for AdminUpdateMarketplaceAd for application/json ContentType.
 type AdminUpdateMarketplaceAdJSONRequestBody AdminUpdateMarketplaceAdJSONBody
 
-// AdminBulkSeedAdsCreditWalletsJSONRequestBody defines body for AdminBulkSeedAdsCreditWallets for application/json ContentType.
-type AdminBulkSeedAdsCreditWalletsJSONRequestBody AdminBulkSeedAdsCreditWalletsJSONBody
-
 // AdminSeedAdsNotificationMetadataJSONRequestBody defines body for AdminSeedAdsNotificationMetadata for application/json ContentType.
 type AdminSeedAdsNotificationMetadataJSONRequestBody AdminSeedAdsNotificationMetadataJSONBody
 
@@ -21825,11 +21783,6 @@ type ClientInterface interface {
 	// AdminListMarketplaceAdCampaigns request
 	AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AdminBulkSeedAdsCreditWallets request with any body
-	AdminBulkSeedAdsCreditWalletsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AdminBulkSeedAdsCreditWallets(ctx context.Context, body AdminBulkSeedAdsCreditWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// AdminSeedAdsNotificationMetadata request with any body
 	AdminSeedAdsNotificationMetadataWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24051,30 +24004,6 @@ func (c *Client) AdminUpdateMarketplaceAd(ctx context.Context, adId string, para
 
 func (c *Client) AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminListMarketplaceAdCampaignsRequest(c.Server, adId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminBulkSeedAdsCreditWalletsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBulkSeedAdsCreditWalletsRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminBulkSeedAdsCreditWallets(ctx context.Context, body AdminBulkSeedAdsCreditWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBulkSeedAdsCreditWalletsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -33723,46 +33652,6 @@ func NewAdminListMarketplaceAdCampaignsRequest(server string, adId string, param
 	if err != nil {
 		return nil, err
 	}
-
-	return req, nil
-}
-
-// NewAdminBulkSeedAdsCreditWalletsRequest calls the generic AdminBulkSeedAdsCreditWallets builder with application/json body
-func NewAdminBulkSeedAdsCreditWalletsRequest(server string, body AdminBulkSeedAdsCreditWalletsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAdminBulkSeedAdsCreditWalletsRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewAdminBulkSeedAdsCreditWalletsRequestWithBody generates requests for AdminBulkSeedAdsCreditWallets with any type of body
-func NewAdminBulkSeedAdsCreditWalletsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/ads_credit_wallets")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -66092,11 +65981,6 @@ type ClientWithResponsesInterface interface {
 	// AdminListMarketplaceAdCampaigns request
 	AdminListMarketplaceAdCampaignsWithResponse(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdCampaignsResponse, error)
 
-	// AdminBulkSeedAdsCreditWallets request with any body
-	AdminBulkSeedAdsCreditWalletsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkSeedAdsCreditWalletsResponse, error)
-
-	AdminBulkSeedAdsCreditWalletsWithResponse(ctx context.Context, body AdminBulkSeedAdsCreditWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkSeedAdsCreditWalletsResponse, error)
-
 	// AdminSeedAdsNotificationMetadata request with any body
 	AdminSeedAdsNotificationMetadataWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error)
 
@@ -68546,28 +68430,6 @@ func (r AdminListMarketplaceAdCampaignsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminListMarketplaceAdCampaignsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type AdminBulkSeedAdsCreditWalletsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *AdminAdsCreditWalletSeedResult
-}
-
-// Status returns HTTPResponse.Status
-func (r AdminBulkSeedAdsCreditWalletsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AdminBulkSeedAdsCreditWalletsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -78682,23 +78544,6 @@ func (c *ClientWithResponses) AdminListMarketplaceAdCampaignsWithResponse(ctx co
 	return ParseAdminListMarketplaceAdCampaignsResponse(rsp)
 }
 
-// AdminBulkSeedAdsCreditWalletsWithBodyWithResponse request with arbitrary body returning *AdminBulkSeedAdsCreditWalletsResponse
-func (c *ClientWithResponses) AdminBulkSeedAdsCreditWalletsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkSeedAdsCreditWalletsResponse, error) {
-	rsp, err := c.AdminBulkSeedAdsCreditWalletsWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBulkSeedAdsCreditWalletsResponse(rsp)
-}
-
-func (c *ClientWithResponses) AdminBulkSeedAdsCreditWalletsWithResponse(ctx context.Context, body AdminBulkSeedAdsCreditWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkSeedAdsCreditWalletsResponse, error) {
-	rsp, err := c.AdminBulkSeedAdsCreditWallets(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBulkSeedAdsCreditWalletsResponse(rsp)
-}
-
 // AdminSeedAdsNotificationMetadataWithBodyWithResponse request with arbitrary body returning *AdminSeedAdsNotificationMetadataResponse
 func (c *ClientWithResponses) AdminSeedAdsNotificationMetadataWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error) {
 	rsp, err := c.AdminSeedAdsNotificationMetadataWithBody(ctx, contentType, body, reqEditors...)
@@ -84704,32 +84549,6 @@ func ParseAdminListMarketplaceAdCampaignsResponse(rsp *http.Response) (*AdminLis
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdCampaignsResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseAdminBulkSeedAdsCreditWalletsResponse parses an HTTP response from a AdminBulkSeedAdsCreditWalletsWithResponse call
-func ParseAdminBulkSeedAdsCreditWalletsResponse(rsp *http.Response) (*AdminBulkSeedAdsCreditWalletsResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AdminBulkSeedAdsCreditWalletsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdminAdsCreditWalletSeedResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
