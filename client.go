@@ -1518,6 +1518,11 @@ const (
 	Validation                  ReminderErrorType = "validation"
 )
 
+// Defines values for ReserveWithGoogleAttributionType.
+const (
+	ReserveWithGoogle ReserveWithGoogleAttributionType = "reserve_with_google"
+)
+
 // Defines values for ResourceField.
 const (
 	ResourceFieldDescription ResourceField = "description"
@@ -1582,8 +1587,14 @@ const (
 
 // Defines values for RwgConversionTrackingMerchantChanged.
 const (
-	N1 RwgConversionTrackingMerchantChanged = "1"
-	N2 RwgConversionTrackingMerchantChanged = "2"
+	RwgConversionTrackingMerchantChangedN1 RwgConversionTrackingMerchantChanged = "1"
+	RwgConversionTrackingMerchantChangedN2 RwgConversionTrackingMerchantChanged = "2"
+)
+
+// Defines values for RwgMerchantChanged.
+const (
+	RwgMerchantChangedN1 RwgMerchantChanged = "1"
+	RwgMerchantChangedN2 RwgMerchantChanged = "2"
 )
 
 // Defines values for SMSMessageStatus.
@@ -10537,6 +10548,19 @@ type RequiredFields struct {
 	LicensePlate *bool `json:"license_plate,omitempty"`
 }
 
+// ReserveWithGoogleAttribution defines model for ReserveWithGoogleAttribution.
+type ReserveWithGoogleAttribution struct {
+	// `2` when the booking was made with the merchant Google sent the consumer to, `1` when with another.
+	MerchantChanged RwgMerchantChanged `json:"merchant_changed"`
+
+	// The Reserve with Google conversion token the booking arrived with.
+	RwgToken string                           `json:"rwg_token"`
+	Type     ReserveWithGoogleAttributionType `json:"type"`
+}
+
+// ReserveWithGoogleAttributionType defines model for ReserveWithGoogleAttribution.Type.
+type ReserveWithGoogleAttributionType string
+
 // Resource defines model for Resource.
 type Resource struct {
 	// If true, multiple bookings per timeslot is allowed for this resource.
@@ -11211,6 +11235,9 @@ type RwgConversionTracking struct {
 
 // Merchant changed indicator for Google conversion tracking
 type RwgConversionTrackingMerchantChanged string
+
+// `2` when the booking was made with the merchant Google sent the consumer to, `1` when with another.
+type RwgMerchantChanged string
 
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type SMSFilter struct {
@@ -19386,6 +19413,19 @@ func (t *Attribution) FromAdAttribution(v AdAttribution) error {
 	return err
 }
 
+func (t Attribution) AsReserveWithGoogleAttribution() (ReserveWithGoogleAttribution, error) {
+	var body ReserveWithGoogleAttribution
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Attribution) FromReserveWithGoogleAttribution(v ReserveWithGoogleAttribution) error {
+	v.Type = "reserve_with_google"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
 func (t Attribution) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"type"`
@@ -19402,6 +19442,8 @@ func (t Attribution) ValueByDiscriminator() (interface{}, error) {
 	switch discriminator {
 	case "ad":
 		return t.AsAdAttribution()
+	case "reserve_with_google":
+		return t.AsReserveWithGoogleAttribution()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}
