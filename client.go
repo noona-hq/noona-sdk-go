@@ -2713,6 +2713,18 @@ type AdPreviewTokenCreate struct {
 	AdId string `json:"ad_id"`
 }
 
+// AdPricing defines model for AdPricing.
+type AdPricing struct {
+	// The currency code both prices are in.
+	Currency string `json:"currency"`
+
+	// The price of a single click in the smallest currency unit (minor units). ISK is also multiplied by 100: 5000 in ISK means 50 ISK per click.
+	PricePerClick int64 `json:"price_per_click"`
+
+	// The price of a thousand impressions (CPM), not of one, in the smallest currency unit (minor units). ISK is also multiplied by 100: 30000 in ISK means 300 ISK per thousand impressions.
+	PricePerThousandImpressions int64 `json:"price_per_thousand_impressions"`
+}
+
 // AdResponse defines model for AdResponse.
 type AdResponse Ad
 
@@ -22064,6 +22076,9 @@ type ClientInterface interface {
 	// ListAdCampaigns request
 	ListAdCampaigns(ctx context.Context, companyId string, params *ListAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetAdPricing request
+	GetAdPricing(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListAds request
 	ListAds(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24729,6 +24744,18 @@ func (c *Client) ListAllCompanyActivities(ctx context.Context, companyId string,
 
 func (c *Client) ListAdCampaigns(ctx context.Context, companyId string, params *ListAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAdCampaignsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAdPricing(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetAdPricingRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -36099,6 +36126,40 @@ func NewListAdCampaignsRequest(server string, companyId string, params *ListAdCa
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAdPricingRequest generates requests for GetAdPricing
+func NewGetAdPricingRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/ad_pricing", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -66331,6 +66392,9 @@ type ClientWithResponsesInterface interface {
 	// ListAdCampaigns request
 	ListAdCampaignsWithResponse(ctx context.Context, companyId string, params *ListAdCampaignsParams, reqEditors ...RequestEditorFn) (*ListAdCampaignsResponse, error)
 
+	// GetAdPricing request
+	GetAdPricingWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*GetAdPricingResponse, error)
+
 	// ListAds request
 	ListAdsWithResponse(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*ListAdsResponse, error)
 
@@ -69346,6 +69410,28 @@ func (r ListAdCampaignsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListAdCampaignsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAdPricingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdPricing
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAdPricingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAdPricingResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -79203,6 +79289,15 @@ func (c *ClientWithResponses) ListAdCampaignsWithResponse(ctx context.Context, c
 	return ParseListAdCampaignsResponse(rsp)
 }
 
+// GetAdPricingWithResponse request returning *GetAdPricingResponse
+func (c *ClientWithResponses) GetAdPricingWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*GetAdPricingResponse, error) {
+	rsp, err := c.GetAdPricing(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAdPricingResponse(rsp)
+}
+
 // ListAdsWithResponse request returning *ListAdsResponse
 func (c *ClientWithResponses) ListAdsWithResponse(ctx context.Context, companyId string, params *ListAdsParams, reqEditors ...RequestEditorFn) (*ListAdsResponse, error) {
 	rsp, err := c.ListAds(ctx, companyId, params, reqEditors...)
@@ -85640,6 +85735,32 @@ func ParseListAdCampaignsResponse(rsp *http.Response) (*ListAdCampaignsResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdCampaignsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAdPricingResponse parses an HTTP response from a GetAdPricingWithResponse call
+func ParseGetAdPricingResponse(rsp *http.Response) (*GetAdPricingResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAdPricingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdPricing
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
