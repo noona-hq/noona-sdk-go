@@ -836,6 +836,12 @@ const (
 	SpaceInvoices FiscalizationProvider = "SpaceInvoices"
 )
 
+// Defines values for FiscalizationTransferDirection.
+const (
+	CompanyToUser FiscalizationTransferDirection = "company_to_user"
+	UserToCompany FiscalizationTransferDirection = "user_to_company"
+)
+
 // Defines values for FiscalizeTransactionErrorCode.
 const (
 	CustomerOnboardingError      FiscalizeTransactionErrorCode = "customer_onboarding_error"
@@ -3088,6 +3094,28 @@ type AdminCompanyUpdateFields struct {
 type AdminEmployeeUpdate struct {
 	// Custom SMS sender ID for the employee within this company. Only alphanumeric characters (a-z, A-Z, 0-9), max 10 characters. Unicode characters are transliterated to GSM-7 compatible ASCII.
 	PhoneFriendly *string `json:"phone_friendly,omitempty"`
+}
+
+// AdminFiscalizationTransfer defines model for AdminFiscalizationTransfer.
+type AdminFiscalizationTransfer struct {
+	CompanyId string                         `json:"company_id"`
+	Direction FiscalizationTransferDirection `json:"direction"`
+
+	// Preview all checks without changing the setup.
+	DryRun *bool `json:"dry_run,omitempty"`
+
+	// Supplier from the preview, required when dry_run is false.
+	ExpectedSupplierId *string `json:"expected_supplier_id,omitempty"`
+	UserId             string  `json:"user_id"`
+}
+
+// AdminFiscalizationTransferResult defines model for AdminFiscalizationTransferResult.
+type AdminFiscalizationTransferResult struct {
+	Conflicts         []string `json:"conflicts"`
+	DryRun            bool     `json:"dry_run"`
+	InvoiceSeries     *string  `json:"invoice_series,omitempty"`
+	SupplierId        *string  `json:"supplier_id,omitempty"`
+	TransferredFields []string `json:"transferred_fields"`
 }
 
 // AdminFixWorkHoursTimesFailure defines model for AdminFixWorkHoursTimesFailure.
@@ -7968,6 +7996,9 @@ type FiscalizationStatusUpdateResponse struct {
 	// The new fiscalization enabled status
 	FiscalizationEnabled *bool `json:"fiscalization_enabled,omitempty"`
 }
+
+// FiscalizationTransferDirection defines model for FiscalizationTransferDirection.
+type FiscalizationTransferDirection string
 
 // FiscalizeTransactionError defines model for FiscalizeTransactionError.
 type FiscalizeTransactionError struct {
@@ -14388,6 +14419,9 @@ type AdminUpdateTerminalParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminTransferFiscalizationJSONBody defines parameters for AdminTransferFiscalization.
+type AdminTransferFiscalizationJSONBody AdminFiscalizationTransfer
+
 // AdminListMarketplaceAdsParams defines parameters for AdminListMarketplaceAds.
 type AdminListMarketplaceAdsParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -18786,6 +18820,9 @@ type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJ
 // AdminUpdateTerminalJSONRequestBody defines body for AdminUpdateTerminal for application/json ContentType.
 type AdminUpdateTerminalJSONRequestBody AdminUpdateTerminalJSONBody
 
+// AdminTransferFiscalizationJSONRequestBody defines body for AdminTransferFiscalization for application/json ContentType.
+type AdminTransferFiscalizationJSONRequestBody AdminTransferFiscalizationJSONBody
+
 // AdminUpdateMarketplaceAdJSONRequestBody defines body for AdminUpdateMarketplaceAd for application/json ContentType.
 type AdminUpdateMarketplaceAdJSONRequestBody AdminUpdateMarketplaceAdJSONBody
 
@@ -21888,6 +21925,11 @@ type ClientInterface interface {
 
 	AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminTransferFiscalization request with any body
+	AdminTransferFiscalizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminTransferFiscalization(ctx context.Context, body AdminTransferFiscalizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminListMarketplaceAds request
 	AdminListMarketplaceAds(ctx context.Context, params *AdminListMarketplaceAdsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24063,6 +24105,30 @@ func (c *Client) AdminUpdateTerminalWithBody(ctx context.Context, companyId stri
 
 func (c *Client) AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateTerminalRequest(c.Server, companyId, terminalId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminTransferFiscalizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminTransferFiscalizationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminTransferFiscalization(ctx context.Context, body AdminTransferFiscalizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminTransferFiscalizationRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -33396,6 +33462,46 @@ func NewAdminUpdateTerminalRequestWithBody(server string, companyId string, term
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminTransferFiscalizationRequest calls the generic AdminTransferFiscalization builder with application/json body
+func NewAdminTransferFiscalizationRequest(server string, body AdminTransferFiscalizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminTransferFiscalizationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminTransferFiscalizationRequestWithBody generates requests for AdminTransferFiscalization with any type of body
+func NewAdminTransferFiscalizationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/fiscalizations/transfer")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
@@ -66086,6 +66192,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateTerminalWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error)
 
+	// AdminTransferFiscalization request with any body
+	AdminTransferFiscalizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminTransferFiscalizationResponse, error)
+
+	AdminTransferFiscalizationWithResponse(ctx context.Context, body AdminTransferFiscalizationJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminTransferFiscalizationResponse, error)
+
 	// AdminListMarketplaceAds request
 	AdminListMarketplaceAdsWithResponse(ctx context.Context, params *AdminListMarketplaceAdsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdsResponse, error)
 
@@ -68460,6 +68571,28 @@ func (r AdminUpdateTerminalResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateTerminalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminTransferFiscalizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminFiscalizationTransferResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminTransferFiscalizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminTransferFiscalizationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -78619,6 +78752,23 @@ func (c *ClientWithResponses) AdminUpdateTerminalWithResponse(ctx context.Contex
 	return ParseAdminUpdateTerminalResponse(rsp)
 }
 
+// AdminTransferFiscalizationWithBodyWithResponse request with arbitrary body returning *AdminTransferFiscalizationResponse
+func (c *ClientWithResponses) AdminTransferFiscalizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminTransferFiscalizationResponse, error) {
+	rsp, err := c.AdminTransferFiscalizationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminTransferFiscalizationResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminTransferFiscalizationWithResponse(ctx context.Context, body AdminTransferFiscalizationJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminTransferFiscalizationResponse, error) {
+	rsp, err := c.AdminTransferFiscalization(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminTransferFiscalizationResponse(rsp)
+}
+
 // AdminListMarketplaceAdsWithResponse request returning *AdminListMarketplaceAdsResponse
 func (c *ClientWithResponses) AdminListMarketplaceAdsWithResponse(ctx context.Context, params *AdminListMarketplaceAdsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdsResponse, error) {
 	rsp, err := c.AdminListMarketplaceAds(ctx, params, reqEditors...)
@@ -84562,6 +84712,32 @@ func ParseAdminUpdateTerminalResponse(rsp *http.Response) (*AdminUpdateTerminalR
 	response := &AdminUpdateTerminalResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminTransferFiscalizationResponse parses an HTTP response from a AdminTransferFiscalizationWithResponse call
+func ParseAdminTransferFiscalizationResponse(rsp *http.Response) (*AdminTransferFiscalizationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminTransferFiscalizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminFiscalizationTransferResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
