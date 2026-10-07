@@ -120,6 +120,11 @@ const (
 	VoucherList AdActionVoucherListType = "voucher_list"
 )
 
+// Defines values for AdAttributionType.
+const (
+	AdAttributionTypeAd AdAttributionType = "ad"
+)
+
 // Defines values for AdCallToActionType.
 const (
 	CategoryId AdCallToActionType = "category_id"
@@ -2337,6 +2342,20 @@ type AdActionVoucherList struct {
 // AdActionVoucherListType defines model for AdActionVoucherList.Type.
 type AdActionVoucherListType string
 
+// AdAttribution defines model for AdAttribution.
+type AdAttribution struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Ad *ExpandableAd `json:"ad,omitempty"`
+
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	AdCampaign *ExpandableAdCampaign `json:"ad_campaign,omitempty"`
+	Placement  *AdPlacementType      `json:"placement,omitempty"`
+	Type       AdAttributionType     `json:"type"`
+}
+
+// AdAttributionType defines model for AdAttribution.Type.
+type AdAttributionType string
+
 // AdCallToActionType defines model for AdCallToActionType.
 type AdCallToActionType string
 
@@ -3686,6 +3705,11 @@ type Attachment struct {
 
 // Attachments defines model for Attachments.
 type Attachments []Attachment
+
+// Where the booking or purchase came from, when it can be traced.
+type Attribution struct {
+	union json.RawMessage
+}
 
 // AvailabilityRule defines model for AvailabilityRule.
 type AvailabilityRule struct {
@@ -6375,6 +6399,9 @@ type Event struct {
 	AcceptedAt  *time.Time   `json:"accepted_at,omitempty"`
 	Attachments *Attachments `json:"attachments,omitempty"`
 
+	// Where the booking or purchase came from, when it can be traced.
+	Attribution *Attribution `json:"attribution,omitempty"`
+
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	BookingOffer           *ExpandableBookingOffer `json:"booking_offer,omitempty"`
 	BookingQuestionAnswers *BookingQuestionAnswers `json:"booking_question_answers,omitempty"`
@@ -6546,6 +6573,9 @@ type EventCheckinResult struct {
 	// It is only possible to 'accept' and event once.
 	AcceptedAt  *time.Time   `json:"accepted_at,omitempty"`
 	Attachments *Attachments `json:"attachments,omitempty"`
+
+	// Where the booking or purchase came from, when it can be traced.
+	Attribution *Attribution `json:"attribution,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	BookingOffer           *ExpandableBookingOffer `json:"booking_offer,omitempty"`
@@ -13267,6 +13297,9 @@ type VerifoneTerminals []VerifoneTerminalOption
 type Voucher struct {
 	Amount *float64 `json:"amount,omitempty"`
 
+	// Where the booking or purchase came from, when it can be traced.
+	Attribution *Attribution `json:"attribution,omitempty"`
+
 	// 6 uppercase letters / numbers
 	Code  *string `json:"code,omitempty"`
 	Color *string `json:"color,omitempty"`
@@ -19336,6 +19369,50 @@ func (t AgentClientScope) MarshalJSON() ([]byte, error) {
 }
 
 func (t *AgentClientScope) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t Attribution) AsAdAttribution() (AdAttribution, error) {
+	var body AdAttribution
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *Attribution) FromAdAttribution(v AdAttribution) error {
+	v.Type = "ad"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t Attribution) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t Attribution) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "ad":
+		return t.AsAdAttribution()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t Attribution) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Attribution) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
