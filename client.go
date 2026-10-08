@@ -574,6 +574,7 @@ const (
 // Defines values for CreditLedgerEntrySource.
 const (
 	CreditLedgerEntrySourceAdEvent       CreditLedgerEntrySource = "ad_event"
+	CreditLedgerEntrySourceAdminGrant    CreditLedgerEntrySource = "admin_grant"
 	CreditLedgerEntrySourceAutoTopUp     CreditLedgerEntrySource = "auto_top_up"
 	CreditLedgerEntrySourceCustom        CreditLedgerEntrySource = "custom"
 	CreditLedgerEntrySourceRefund        CreditLedgerEntrySource = "refund"
@@ -5661,6 +5662,15 @@ type CreditWalletFreeAllowance struct {
 
 	// Allowance consumed in the current cycle.
 	Used *int32 `json:"used,omitempty"`
+}
+
+// CreditWalletGrant defines model for CreditWalletGrant.
+type CreditWalletGrant struct {
+	// Credits to add, in the minor unit of the wallet currency. Must be greater than 0.
+	Amount int64 `json:"amount"`
+
+	// Shown on the ledger entry. A default is used when omitted.
+	Description *string `json:"description,omitempty"`
 }
 
 // CreditWalletPurchase defines model for CreditWalletPurchase.
@@ -14396,6 +14406,9 @@ type AdminUpdateCompanyParams struct {
 	Unset  *CompanyFields `form:"unset,omitempty" json:"unset,omitempty"`
 }
 
+// AdminGrantAdsCreditsJSONBody defines parameters for AdminGrantAdsCredits.
+type AdminGrantAdsCreditsJSONBody CreditWalletGrant
+
 // AdminUpdateEmployeeJSONBody defines parameters for AdminUpdateEmployee.
 type AdminUpdateEmployeeJSONBody AdminEmployeeUpdate
 
@@ -18837,6 +18850,9 @@ type AdminUpdateAgentClientJSONRequestBody AdminUpdateAgentClientJSONBody
 // AdminUpdateCompanyJSONRequestBody defines body for AdminUpdateCompany for application/json ContentType.
 type AdminUpdateCompanyJSONRequestBody AdminUpdateCompanyJSONBody
 
+// AdminGrantAdsCreditsJSONRequestBody defines body for AdminGrantAdsCredits for application/json ContentType.
+type AdminGrantAdsCreditsJSONRequestBody AdminGrantAdsCreditsJSONBody
+
 // AdminUpdateEmployeeJSONRequestBody defines body for AdminUpdateEmployee for application/json ContentType.
 type AdminUpdateEmployeeJSONRequestBody AdminUpdateEmployeeJSONBody
 
@@ -21921,6 +21937,11 @@ type ClientInterface interface {
 
 	AdminUpdateCompany(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminGrantAdsCredits request with any body
+	AdminGrantAdsCreditsWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminGrantAdsCredits(ctx context.Context, companyId string, body AdminGrantAdsCreditsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminUpdateEmployee request with any body
 	AdminUpdateEmployeeWithBody(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24002,6 +24023,30 @@ func (c *Client) AdminUpdateCompanyWithBody(ctx context.Context, companyId strin
 
 func (c *Client) AdminUpdateCompany(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateCompanyRequest(c.Server, companyId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminGrantAdsCreditsWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminGrantAdsCreditsRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminGrantAdsCredits(ctx context.Context, companyId string, body AdminGrantAdsCreditsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminGrantAdsCreditsRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -33011,6 +33056,53 @@ func NewAdminUpdateCompanyRequestWithBody(server string, companyId string, param
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminGrantAdsCreditsRequest calls the generic AdminGrantAdsCredits builder with application/json body
+func NewAdminGrantAdsCreditsRequest(server string, companyId string, body AdminGrantAdsCreditsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminGrantAdsCreditsRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewAdminGrantAdsCreditsRequestWithBody generates requests for AdminGrantAdsCredits with any type of body
+func NewAdminGrantAdsCreditsRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/companies/%s/credit_wallets/ads/grants", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
@@ -66237,6 +66329,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateCompanyWithResponse(ctx context.Context, companyId string, params *AdminUpdateCompanyParams, body AdminUpdateCompanyJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateCompanyResponse, error)
 
+	// AdminGrantAdsCredits request with any body
+	AdminGrantAdsCreditsWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminGrantAdsCreditsResponse, error)
+
+	AdminGrantAdsCreditsWithResponse(ctx context.Context, companyId string, body AdminGrantAdsCreditsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminGrantAdsCreditsResponse, error)
+
 	// AdminUpdateEmployee request with any body
 	AdminUpdateEmployeeWithBodyWithResponse(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateEmployeeResponse, error)
 
@@ -68480,6 +68577,28 @@ func (r AdminUpdateCompanyResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateCompanyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminGrantAdsCreditsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *CreditWallet
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminGrantAdsCreditsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminGrantAdsCreditsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -78756,6 +78875,23 @@ func (c *ClientWithResponses) AdminUpdateCompanyWithResponse(ctx context.Context
 	return ParseAdminUpdateCompanyResponse(rsp)
 }
 
+// AdminGrantAdsCreditsWithBodyWithResponse request with arbitrary body returning *AdminGrantAdsCreditsResponse
+func (c *ClientWithResponses) AdminGrantAdsCreditsWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminGrantAdsCreditsResponse, error) {
+	rsp, err := c.AdminGrantAdsCreditsWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminGrantAdsCreditsResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminGrantAdsCreditsWithResponse(ctx context.Context, companyId string, body AdminGrantAdsCreditsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminGrantAdsCreditsResponse, error) {
+	rsp, err := c.AdminGrantAdsCredits(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminGrantAdsCreditsResponse(rsp)
+}
+
 // AdminUpdateEmployeeWithBodyWithResponse request with arbitrary body returning *AdminUpdateEmployeeResponse
 func (c *ClientWithResponses) AdminUpdateEmployeeWithBodyWithResponse(ctx context.Context, companyId string, employeeId string, params *AdminUpdateEmployeeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminUpdateEmployeeResponse, error) {
 	rsp, err := c.AdminUpdateEmployeeWithBody(ctx, companyId, employeeId, params, contentType, body, reqEditors...)
@@ -84678,6 +84814,32 @@ func ParseAdminUpdateCompanyResponse(rsp *http.Response) (*AdminUpdateCompanyRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CompanyResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminGrantAdsCreditsResponse parses an HTTP response from a AdminGrantAdsCreditsWithResponse call
+func ParseAdminGrantAdsCreditsResponse(rsp *http.Response) (*AdminGrantAdsCreditsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminGrantAdsCreditsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreditWallet
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
