@@ -2580,7 +2580,7 @@ type AdPerformance struct {
 	Series *[]AdPerformanceBucket `json:"series,omitempty"`
 	To     *time.Time             `json:"to,omitempty"`
 
-	// Company-wide (or campaign-scoped) totals for the requested window, each compared with the preceding window of equal length. Further metrics (bookings, revenue, return on spend) are added here as new keys once attribution data exists.
+	// Company-wide (or campaign-scoped) totals for the requested window, each compared with the preceding window of equal length.
 	Totals *AdPerformanceTotals `json:"totals,omitempty"`
 }
 
@@ -2595,21 +2595,33 @@ type AdPerformanceAmountMetric struct {
 
 // Figures for one time bucket. Spend is omitted when the bucket's charges mix currencies.
 type AdPerformanceBucket struct {
+	// Bookings made from an ad, counted in the hour the booking was made.
+	Bookings *int64 `json:"bookings,omitempty"`
+
 	// Start of the bucket, truncated in the company's time zone.
 	BucketAt    *time.Time `json:"bucket_at,omitempty"`
 	Clicks      *int64     `json:"clicks,omitempty"`
 	Impressions *int64     `json:"impressions,omitempty"`
 	Spend       *Money     `json:"spend,omitempty"`
+
+	// Gift cards bought and paid for from an ad, counted in the hour the purchase started.
+	VouchersSold *int64 `json:"vouchers_sold,omitempty"`
 }
 
 // Current-window figures for one campaign. Spend is omitted when the campaign's charges mix currencies.
 type AdPerformanceCampaign struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	AdCampaign  *ExpandableAdCampaign `json:"ad_campaign,omitempty"`
-	Clicks      *int64                `json:"clicks,omitempty"`
-	Impressions *int64                `json:"impressions,omitempty"`
-	Name        *string               `json:"name,omitempty"`
-	Spend       *Money                `json:"spend,omitempty"`
+	AdCampaign *ExpandableAdCampaign `json:"ad_campaign,omitempty"`
+
+	// Bookings made from an ad, counted in the hour the booking was made.
+	Bookings    *int64  `json:"bookings,omitempty"`
+	Clicks      *int64  `json:"clicks,omitempty"`
+	Impressions *int64  `json:"impressions,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	Spend       *Money  `json:"spend,omitempty"`
+
+	// Gift cards bought and paid for from an ad, counted in the hour the purchase started.
+	VouchersSold *int64 `json:"vouchers_sold,omitempty"`
 }
 
 // AdPerformanceCountMetric defines model for AdPerformanceCountMetric.
@@ -2640,13 +2652,15 @@ type AdPerformanceFilter struct {
 	To time.Time `json:"to"`
 }
 
-// Company-wide (or campaign-scoped) totals for the requested window, each compared with the preceding window of equal length. Further metrics (bookings, revenue, return on spend) are added here as new keys once attribution data exists.
+// Company-wide (or campaign-scoped) totals for the requested window, each compared with the preceding window of equal length.
 type AdPerformanceTotals struct {
+	Bookings    *AdPerformanceCountMetric `json:"bookings,omitempty"`
 	Clicks      *AdPerformanceCountMetric `json:"clicks,omitempty"`
 	Impressions *AdPerformanceCountMetric `json:"impressions,omitempty"`
 
 	// Spend in the requested window compared with the preceding window of equal length. Omitted when no charge fell in either window, when either window mixes currencies, or when the two windows are in different currencies, since a single total would then be misleading.
-	Spend *AdPerformanceAmountMetric `json:"spend,omitempty"`
+	Spend        *AdPerformanceAmountMetric `json:"spend,omitempty"`
+	VouchersSold *AdPerformanceCountMetric  `json:"vouchers_sold,omitempty"`
 }
 
 // AdPlacement defines model for AdPlacement.
