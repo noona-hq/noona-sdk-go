@@ -2931,14 +2931,18 @@ type AdminCompany struct {
 
 // AdminCompanyDetails defines model for AdminCompanyDetails.
 type AdminCompanyDetails struct {
+	// The currency the company is billed in. New credit wallets for the company use this currency.
+	BillingCurrency *string `json:"billing_currency,omitempty"`
+
 	// Computed field. True when the company has no active or trialing subscription of any kind (plan or powerup), meaning an admin may reset the company's subscription status.
-	CanResetSubscription *bool         `json:"can_reset_subscription,omitempty"`
-	Country              *Country      `json:"country,omitempty"`
-	CreatedAt            time.Time     `json:"created_at"`
-	DeletedAt            *time.Time    `json:"deleted_at,omitempty"`
-	Flags                *CompanyFlags `json:"flags,omitempty"`
-	Id                   string        `json:"id"`
-	LastActive           *time.Time    `json:"last_active,omitempty"`
+	CanResetSubscription *bool          `json:"can_reset_subscription,omitempty"`
+	Country              *Country       `json:"country,omitempty"`
+	CreatedAt            time.Time      `json:"created_at"`
+	CreditWallets        *CreditWallets `json:"credit_wallets,omitempty"`
+	DeletedAt            *time.Time     `json:"deleted_at,omitempty"`
+	Flags                *CompanyFlags  `json:"flags,omitempty"`
+	Id                   string         `json:"id"`
+	LastActive           *time.Time     `json:"last_active,omitempty"`
 
 	// Cleartext PIN for the locked sections feature. Contains secret material — only admin endpoints return it.
 	LockedSectionsPin *string `json:"locked_sections_pin,omitempty"`
