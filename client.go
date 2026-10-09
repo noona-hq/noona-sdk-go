@@ -363,6 +363,11 @@ const (
 	BlockedTimeUpdateBehaviorTypeFuture BlockedTimeUpdateBehaviorType = "future"
 )
 
+// Defines values for BookingCallToActionType.
+const (
+	BookingCallToActionTypeBooking BookingCallToActionType = "booking"
+)
+
 // Defines values for BookingInterval.
 const (
 	N10  BookingInterval = 10
@@ -431,10 +436,47 @@ const (
 	BookingSourceGroupPartners    BookingSourceGroup = "partners"
 )
 
+// Defines values for CallToActionIcon.
+const (
+	CallToActionIconCalendar     CallToActionIcon = "calendar"
+	CallToActionIconCancel       CallToActionIcon = "cancel"
+	CallToActionIconEmail        CallToActionIcon = "email"
+	CallToActionIconExternalLink CallToActionIcon = "external_link"
+	CallToActionIconGiftCard     CallToActionIcon = "gift_card"
+	CallToActionIconGlobe        CallToActionIcon = "globe"
+	CallToActionIconMenuBook     CallToActionIcon = "menu_book"
+	CallToActionIconPhone        CallToActionIcon = "phone"
+	CallToActionIconShoppingBag  CallToActionIcon = "shopping_bag"
+	CallToActionIconUtensils     CallToActionIcon = "utensils"
+)
+
+// Defines values for CallToActionPlacement.
+const (
+	Menu      CallToActionPlacement = "menu"
+	Primary   CallToActionPlacement = "primary"
+	Secondary CallToActionPlacement = "secondary"
+)
+
+// Defines values for CallToActionType.
+const (
+	CallToActionTypeBooking      CallToActionType = "booking"
+	CallToActionTypeCancel       CallToActionType = "cancel"
+	CallToActionTypeEmail        CallToActionType = "email"
+	CallToActionTypeExternal     CallToActionType = "external"
+	CallToActionTypeFoodOrdering CallToActionType = "food_ordering"
+	CallToActionTypePhone        CallToActionType = "phone"
+	CallToActionTypeVouchers     CallToActionType = "vouchers"
+)
+
 // Defines values for CampaignType.
 const (
 	CampaignTypeEmail CampaignType = "email"
 	CampaignTypeSms   CampaignType = "sms"
+)
+
+// Defines values for CancelCallToActionType.
+const (
+	Cancel CancelCallToActionType = "cancel"
 )
 
 // Defines values for CardCardType.
@@ -638,6 +680,11 @@ const (
 	EventMovedCustomer        EmailType = "event_moved_customer"
 )
 
+// Defines values for EmailCallToActionType.
+const (
+	EmailCallToActionTypeEmail EmailCallToActionType = "email"
+)
+
 // Defines values for EmailEventStatus.
 const (
 	EmailEventStatusClicked   EmailEventStatus = "clicked"
@@ -823,6 +870,11 @@ const (
 	EventUpdateBehaviorTypeInplace EventUpdateBehaviorType = "inplace"
 )
 
+// Defines values for ExternalCallToActionType.
+const (
+	ExternalCallToActionTypeExternal ExternalCallToActionType = "external"
+)
+
 // Defines values for FiscalizationOnboardingStatus.
 const (
 	FiscalizationOnboardingStatusCompleted  FiscalizationOnboardingStatus = "completed"
@@ -848,6 +900,11 @@ const (
 	CustomerOnboardingError      FiscalizeTransactionErrorCode = "customer_onboarding_error"
 	InvopopFiscalizationError    FiscalizeTransactionErrorCode = "invopop_fiscalization_error"
 	TaxExemptionCodeMissingError FiscalizeTransactionErrorCode = "tax_exemption_code_missing_error"
+)
+
+// Defines values for FoodOrderingCallToActionType.
+const (
+	FoodOrdering FoodOrderingCallToActionType = "food_ordering"
 )
 
 // Defines values for GiftVoucherGroupType.
@@ -1025,9 +1082,9 @@ const (
 
 // Defines values for NotificationActionLinkType.
 const (
-	External NotificationActionLinkType = "external"
-	Hash     NotificationActionLinkType = "hash"
-	Route    NotificationActionLinkType = "route"
+	NotificationActionLinkTypeExternal NotificationActionLinkType = "external"
+	NotificationActionLinkTypeHash     NotificationActionLinkType = "hash"
+	NotificationActionLinkTypeRoute    NotificationActionLinkType = "route"
 )
 
 // Defines values for NotificationAdEventType.
@@ -1361,6 +1418,11 @@ const (
 	ViewLocations                        Permission = "viewLocations"
 	ViewOwnInvoices                      Permission = "viewOwnInvoices"
 	ViewOwnReports                       Permission = "viewOwnReports"
+)
+
+// Defines values for PhoneCallToActionType.
+const (
+	Phone PhoneCallToActionType = "phone"
 )
 
 // Defines values for Powerup.
@@ -2018,6 +2080,11 @@ const (
 	Hq          VoucherTransactionOrigin = "hq"
 	Marketplace VoucherTransactionOrigin = "marketplace"
 	Pos         VoucherTransactionOrigin = "pos"
+)
+
+// Defines values for VouchersCallToActionType.
+const (
+	VouchersCallToActionTypeVouchers VouchersCallToActionType = "vouchers"
 )
 
 // Defines values for WaitlistEntryField.
@@ -4271,6 +4338,27 @@ type BookableEntitiesOpeningHoursResponse struct {
 	Resources *map[string]OpeningHoursResponse `json:"resources,omitempty"`
 }
 
+// BookingCallToAction defines model for BookingCallToAction.
+type BookingCallToAction struct {
+	// One of the icons the apps ship with. The type's default icon is used when an action has none.
+	Icon *CallToActionIcon `json:"icon,omitempty"`
+
+	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
+
+	// Where the action is shown. `menu` is the "More" menu.
+	Placement CallToActionPlacement   `json:"placement"`
+	Type      BookingCallToActionType `json:"type"`
+}
+
+// BookingCallToActionType defines model for BookingCallToAction.Type.
+type BookingCallToActionType string
+
 // Booking interval in minutes.
 //
 // Dictates how often customers can book events with employee or resource.
@@ -4433,6 +4521,27 @@ type BookingSourceFunnel string
 // BookingSourceGroup defines model for BookingSourceGroup.
 type BookingSourceGroup string
 
+// BusinessProfile defines model for BusinessProfile.
+type BusinessProfile struct {
+	// The actions shown on the business profile, in display order. The defaults are returned until the list has been saved.
+	CallToActions BusinessProfileCallToActions `json:"call_to_actions"`
+	Id            string                       `json:"id"`
+}
+
+// BusinessProfileCallToAction defines model for BusinessProfileCallToAction.
+type BusinessProfileCallToAction struct {
+	union json.RawMessage
+}
+
+// The actions shown on the business profile, in display order. The defaults are returned until the list has been saved.
+type BusinessProfileCallToActions []BusinessProfileCallToAction
+
+// BusinessProfileUpdate defines model for BusinessProfileUpdate.
+type BusinessProfileUpdate struct {
+	// The actions shown on the business profile, in display order. The defaults are returned until the list has been saved.
+	CallToActions *BusinessProfileCallToActions `json:"call_to_actions,omitempty"`
+}
+
 // The calculated price of an event type or event for a customer.
 //
 // This is calculated from the event type's price ranges, variations and possible discounts related to customer groups.
@@ -4455,6 +4564,15 @@ type CalendarSlotFilter struct {
 	// Filter by space IDs
 	Spaces *[]string `json:"spaces,omitempty"`
 }
+
+// One of the icons the apps ship with. The type's default icon is used when an action has none.
+type CallToActionIcon string
+
+// Where the action is shown. `menu` is the "More" menu.
+type CallToActionPlacement string
+
+// CallToActionType defines model for CallToActionType.
+type CallToActionType string
 
 // CallbackData defines model for CallbackData.
 type CallbackData struct {
@@ -4590,6 +4708,27 @@ type CampaignType string
 
 // Campaigns defines model for Campaigns.
 type Campaigns []Campaign
+
+// CancelCallToAction defines model for CancelCallToAction.
+type CancelCallToAction struct {
+	// One of the icons the apps ship with. The type's default icon is used when an action has none.
+	Icon *CallToActionIcon `json:"icon,omitempty"`
+
+	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
+
+	// Where the action is shown. `menu` is the "More" menu.
+	Placement CallToActionPlacement  `json:"placement"`
+	Type      CancelCallToActionType `json:"type"`
+}
+
+// CancelCallToActionType defines model for CancelCallToAction.Type.
+type CancelCallToActionType string
 
 // Card defines model for Card.
 type Card struct {
@@ -6071,6 +6210,27 @@ type Email struct {
 
 // EmailType defines model for Email.Type.
 type EmailType string
+
+// EmailCallToAction defines model for EmailCallToAction.
+type EmailCallToAction struct {
+	// One of the icons the apps ship with. The type's default icon is used when an action has none.
+	Icon *CallToActionIcon `json:"icon,omitempty"`
+
+	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
+
+	// Where the action is shown. `menu` is the "More" menu.
+	Placement CallToActionPlacement `json:"placement"`
+	Type      EmailCallToActionType `json:"type"`
+}
+
+// EmailCallToActionType defines model for EmailCallToAction.Type.
+type EmailCallToActionType string
 
 // EmailEvent defines model for EmailEvent.
 type EmailEvent struct {
@@ -7859,6 +8019,30 @@ type ExpandableWebhook struct {
 	union json.RawMessage
 }
 
+// ExternalCallToAction defines model for ExternalCallToAction.
+type ExternalCallToAction struct {
+	// One of the icons the apps ship with. The type's default icon is used when an action has none.
+	Icon *CallToActionIcon `json:"icon,omitempty"`
+
+	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations TranslationMap `json:"label_translations"`
+
+	// Where the action is shown. `menu` is the "More" menu.
+	Placement CallToActionPlacement    `json:"placement"`
+	Type      ExternalCallToActionType `json:"type"`
+
+	// An absolute https URL.
+	Url string `json:"url"`
+}
+
+// ExternalCallToActionType defines model for ExternalCallToAction.Type.
+type ExternalCallToActionType string
+
 // File defines model for File.
 type File struct {
 	Bytes int64 `json:"bytes"`
@@ -8050,6 +8234,30 @@ type FiscalizeTransactionError struct {
 
 // The error code. Only populated for certain errors.
 type FiscalizeTransactionErrorCode string
+
+// FoodOrderingCallToAction defines model for FoodOrderingCallToAction.
+type FoodOrderingCallToAction struct {
+	// One of the icons the apps ship with. The type's default icon is used when an action has none.
+	Icon *CallToActionIcon `json:"icon,omitempty"`
+
+	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
+
+	// Where the action is shown. `menu` is the "More" menu.
+	Placement CallToActionPlacement `json:"placement"`
+
+	// The SalesCloud store widget UUID.
+	StoreWidgetId string                       `json:"store_widget_id"`
+	Type          FoodOrderingCallToActionType `json:"type"`
+}
+
+// FoodOrderingCallToActionType defines model for FoodOrderingCallToAction.Type.
+type FoodOrderingCallToActionType string
 
 // Filter for the generic entity stream endpoint.
 //
@@ -9957,6 +10165,27 @@ type PermissionMetadata struct {
 	Requirements *[]Permission `json:"requirements,omitempty"`
 	Title        *string       `json:"title,omitempty"`
 }
+
+// PhoneCallToAction defines model for PhoneCallToAction.
+type PhoneCallToAction struct {
+	// One of the icons the apps ship with. The type's default icon is used when an action has none.
+	Icon *CallToActionIcon `json:"icon,omitempty"`
+
+	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
+
+	// Where the action is shown. `menu` is the "More" menu.
+	Placement CallToActionPlacement `json:"placement"`
+	Type      PhoneCallToActionType `json:"type"`
+}
+
+// PhoneCallToActionType defines model for PhoneCallToAction.Type.
+type PhoneCallToActionType string
 
 // Powerup defines model for Powerup.
 type Powerup string
@@ -13800,6 +14029,27 @@ type VoucherTransactionOrigin string
 // Vouchers defines model for Vouchers.
 type Vouchers []Voucher
 
+// VouchersCallToAction defines model for VouchersCallToAction.
+type VouchersCallToAction struct {
+	// One of the icons the apps ship with. The type's default icon is used when an action has none.
+	Icon *CallToActionIcon `json:"icon,omitempty"`
+
+	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
+
+	// Where the action is shown. `menu` is the "More" menu.
+	Placement CallToActionPlacement    `json:"placement"`
+	Type      VouchersCallToActionType `json:"type"`
+}
+
+// VouchersCallToActionType defines model for VouchersCallToAction.Type.
+type VouchersCallToActionType string
+
 // WaitlistEntries defines model for WaitlistEntries.
 type WaitlistEntries []WaitlistEntry
 
@@ -14719,6 +14969,27 @@ type UpdateBlockedTimeParams struct {
 	Expand   *Expand                    `form:"expand,omitempty" json:"expand,omitempty"`
 	Behavior *BlockedTimeUpdateBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
 	Date     string                     `form:"date" json:"date"`
+}
+
+// GetBusinessProfileParams defines parameters for GetBusinessProfile.
+type GetBusinessProfileParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateBusinessProfileJSONBody defines parameters for UpdateBusinessProfile.
+type UpdateBusinessProfileJSONBody BusinessProfileUpdate
+
+// UpdateBusinessProfileParams defines parameters for UpdateBusinessProfile.
+type UpdateBusinessProfileParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
 // CreateCampaignJSONBody defines parameters for CreateCampaign.
@@ -18905,6 +19176,9 @@ type CreateBlockedTimeJSONRequestBody CreateBlockedTimeJSONBody
 // UpdateBlockedTimeJSONRequestBody defines body for UpdateBlockedTime for application/json ContentType.
 type UpdateBlockedTimeJSONRequestBody UpdateBlockedTimeJSONBody
 
+// UpdateBusinessProfileJSONRequestBody defines body for UpdateBusinessProfile for application/json ContentType.
+type UpdateBusinessProfileJSONRequestBody UpdateBusinessProfileJSONBody
+
 // CreateCampaignJSONRequestBody defines body for CreateCampaign for application/json ContentType.
 type CreateCampaignJSONRequestBody CreateCampaignJSONBody
 
@@ -19606,6 +19880,140 @@ func (t BookingQuestionAnswerValue_Answer) MarshalJSON() ([]byte, error) {
 }
 
 func (t *BookingQuestionAnswerValue_Answer) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+func (t BusinessProfileCallToAction) AsBookingCallToAction() (BookingCallToAction, error) {
+	var body BookingCallToAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BusinessProfileCallToAction) FromBookingCallToAction(v BookingCallToAction) error {
+	v.Type = "booking"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BusinessProfileCallToAction) AsVouchersCallToAction() (VouchersCallToAction, error) {
+	var body VouchersCallToAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BusinessProfileCallToAction) FromVouchersCallToAction(v VouchersCallToAction) error {
+	v.Type = "vouchers"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BusinessProfileCallToAction) AsFoodOrderingCallToAction() (FoodOrderingCallToAction, error) {
+	var body FoodOrderingCallToAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BusinessProfileCallToAction) FromFoodOrderingCallToAction(v FoodOrderingCallToAction) error {
+	v.Type = "food_ordering"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BusinessProfileCallToAction) AsPhoneCallToAction() (PhoneCallToAction, error) {
+	var body PhoneCallToAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BusinessProfileCallToAction) FromPhoneCallToAction(v PhoneCallToAction) error {
+	v.Type = "phone"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BusinessProfileCallToAction) AsEmailCallToAction() (EmailCallToAction, error) {
+	var body EmailCallToAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BusinessProfileCallToAction) FromEmailCallToAction(v EmailCallToAction) error {
+	v.Type = "email"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BusinessProfileCallToAction) AsCancelCallToAction() (CancelCallToAction, error) {
+	var body CancelCallToAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BusinessProfileCallToAction) FromCancelCallToAction(v CancelCallToAction) error {
+	v.Type = "cancel"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BusinessProfileCallToAction) AsExternalCallToAction() (ExternalCallToAction, error) {
+	var body ExternalCallToAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BusinessProfileCallToAction) FromExternalCallToAction(v ExternalCallToAction) error {
+	v.Type = "external"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+func (t BusinessProfileCallToAction) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t BusinessProfileCallToAction) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "booking":
+		return t.AsBookingCallToAction()
+	case "cancel":
+		return t.AsCancelCallToAction()
+	case "email":
+		return t.AsEmailCallToAction()
+	case "external":
+		return t.AsExternalCallToAction()
+	case "food_ordering":
+		return t.AsFoodOrderingCallToAction()
+	case "phone":
+		return t.AsPhoneCallToAction()
+	case "vouchers":
+		return t.AsVouchersCallToAction()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t BusinessProfileCallToAction) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *BusinessProfileCallToAction) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -22079,6 +22487,14 @@ type ClientInterface interface {
 	UpdateBlockedTimeWithBody(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateBlockedTime(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetBusinessProfile request
+	GetBusinessProfile(ctx context.Context, businessProfileId string, params *GetBusinessProfileParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateBusinessProfile request with any body
+	UpdateBusinessProfileWithBody(ctx context.Context, businessProfileId string, params *UpdateBusinessProfileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateBusinessProfile(ctx context.Context, businessProfileId string, params *UpdateBusinessProfileParams, body UpdateBusinessProfileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateCampaign request with any body
 	CreateCampaignWithBody(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -24651,6 +25067,42 @@ func (c *Client) UpdateBlockedTimeWithBody(ctx context.Context, blockedTimeId st
 
 func (c *Client) UpdateBlockedTime(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateBlockedTimeRequest(c.Server, blockedTimeId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetBusinessProfile(ctx context.Context, businessProfileId string, params *GetBusinessProfileParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetBusinessProfileRequest(c.Server, businessProfileId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBusinessProfileWithBody(ctx context.Context, businessProfileId string, params *UpdateBusinessProfileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBusinessProfileRequestWithBody(c.Server, businessProfileId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateBusinessProfile(ctx context.Context, businessProfileId string, params *UpdateBusinessProfileParams, body UpdateBusinessProfileJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateBusinessProfileRequest(c.Server, businessProfileId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -35498,6 +35950,159 @@ func NewUpdateBlockedTimeRequestWithBody(server string, blockedTimeId string, pa
 				queryValues.Add(k, v2)
 			}
 		}
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetBusinessProfileRequest generates requests for GetBusinessProfile
+func NewGetBusinessProfileRequest(server string, businessProfileId string, params *GetBusinessProfileParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "business_profile_id", runtime.ParamLocationPath, businessProfileId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/business_profiles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateBusinessProfileRequest calls the generic UpdateBusinessProfile builder with application/json body
+func NewUpdateBusinessProfileRequest(server string, businessProfileId string, params *UpdateBusinessProfileParams, body UpdateBusinessProfileJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateBusinessProfileRequestWithBody(server, businessProfileId, params, "application/json", bodyReader)
+}
+
+// NewUpdateBusinessProfileRequestWithBody generates requests for UpdateBusinessProfile with any type of body
+func NewUpdateBusinessProfileRequestWithBody(server string, businessProfileId string, params *UpdateBusinessProfileParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "business_profile_id", runtime.ParamLocationPath, businessProfileId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/business_profiles/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
@@ -66472,6 +67077,14 @@ type ClientWithResponsesInterface interface {
 
 	UpdateBlockedTimeWithResponse(ctx context.Context, blockedTimeId string, params *UpdateBlockedTimeParams, body UpdateBlockedTimeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBlockedTimeResponse, error)
 
+	// GetBusinessProfile request
+	GetBusinessProfileWithResponse(ctx context.Context, businessProfileId string, params *GetBusinessProfileParams, reqEditors ...RequestEditorFn) (*GetBusinessProfileResponse, error)
+
+	// UpdateBusinessProfile request with any body
+	UpdateBusinessProfileWithBodyWithResponse(ctx context.Context, businessProfileId string, params *UpdateBusinessProfileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBusinessProfileResponse, error)
+
+	UpdateBusinessProfileWithResponse(ctx context.Context, businessProfileId string, params *UpdateBusinessProfileParams, body UpdateBusinessProfileJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBusinessProfileResponse, error)
+
 	// CreateCampaign request with any body
 	CreateCampaignWithBodyWithResponse(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error)
 
@@ -69345,6 +69958,50 @@ func (r UpdateBlockedTimeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateBlockedTimeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetBusinessProfileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BusinessProfile
+}
+
+// Status returns HTTPResponse.Status
+func (r GetBusinessProfileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetBusinessProfileResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateBusinessProfileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *BusinessProfile
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateBusinessProfileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateBusinessProfileResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -79330,6 +79987,32 @@ func (c *ClientWithResponses) UpdateBlockedTimeWithResponse(ctx context.Context,
 	return ParseUpdateBlockedTimeResponse(rsp)
 }
 
+// GetBusinessProfileWithResponse request returning *GetBusinessProfileResponse
+func (c *ClientWithResponses) GetBusinessProfileWithResponse(ctx context.Context, businessProfileId string, params *GetBusinessProfileParams, reqEditors ...RequestEditorFn) (*GetBusinessProfileResponse, error) {
+	rsp, err := c.GetBusinessProfile(ctx, businessProfileId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetBusinessProfileResponse(rsp)
+}
+
+// UpdateBusinessProfileWithBodyWithResponse request with arbitrary body returning *UpdateBusinessProfileResponse
+func (c *ClientWithResponses) UpdateBusinessProfileWithBodyWithResponse(ctx context.Context, businessProfileId string, params *UpdateBusinessProfileParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateBusinessProfileResponse, error) {
+	rsp, err := c.UpdateBusinessProfileWithBody(ctx, businessProfileId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBusinessProfileResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateBusinessProfileWithResponse(ctx context.Context, businessProfileId string, params *UpdateBusinessProfileParams, body UpdateBusinessProfileJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateBusinessProfileResponse, error) {
+	rsp, err := c.UpdateBusinessProfile(ctx, businessProfileId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateBusinessProfileResponse(rsp)
+}
+
 // CreateCampaignWithBodyWithResponse request with arbitrary body returning *CreateCampaignResponse
 func (c *ClientWithResponses) CreateCampaignWithBodyWithResponse(ctx context.Context, params *CreateCampaignParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCampaignResponse, error) {
 	rsp, err := c.CreateCampaignWithBody(ctx, params, contentType, body, reqEditors...)
@@ -85657,6 +86340,58 @@ func ParseUpdateBlockedTimeResponse(rsp *http.Response) (*UpdateBlockedTimeRespo
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetBusinessProfileResponse parses an HTTP response from a GetBusinessProfileWithResponse call
+func ParseGetBusinessProfileResponse(rsp *http.Response) (*GetBusinessProfileResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetBusinessProfileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BusinessProfile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateBusinessProfileResponse parses an HTTP response from a UpdateBusinessProfileWithResponse call
+func ParseUpdateBusinessProfileResponse(rsp *http.Response) (*UpdateBusinessProfileResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateBusinessProfileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest BusinessProfile
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 
