@@ -3217,6 +3217,35 @@ type AdminEmployeeUpdate struct {
 	PhoneFriendly *string `json:"phone_friendly,omitempty"`
 }
 
+// AdminFiscalizationRelink defines model for AdminFiscalizationRelink.
+type AdminFiscalizationRelink struct {
+	CompanyId           string `json:"company_id"`
+	DryRun              *bool  `json:"dry_run,omitempty"`
+	ExpectedSiloEntryId string `json:"expected_silo_entry_id"`
+	ExpectedSupplierId  string `json:"expected_supplier_id"`
+	Reason              string `json:"reason"`
+
+	// Existing registration job belonging to the new silo entry.
+	RegistrationJobId string `json:"registration_job_id"`
+	SiloEntryId       string `json:"silo_entry_id"`
+
+	// UUID of the party document in Invopop.
+	SupplierId string `json:"supplier_id"`
+}
+
+// AdminFiscalizationRelinkResult defines model for AdminFiscalizationRelinkResult.
+type AdminFiscalizationRelinkResult struct {
+	Conflicts            []string  `json:"conflicts"`
+	DryRun               bool      `json:"dry_run"`
+	FiscalizationEnabled bool      `json:"fiscalization_enabled"`
+	OnboardingErrors     *[]string `json:"onboarding_errors,omitempty"`
+	OnboardingStatus     string    `json:"onboarding_status"`
+
+	// Connection was saved but its registration state could not be refreshed.
+	RefreshError    *string `json:"refresh_error,omitempty"`
+	RegistrationUrl *string `json:"registration_url,omitempty"`
+}
+
 // AdminFiscalizationTransfer defines model for AdminFiscalizationTransfer.
 type AdminFiscalizationTransfer struct {
 	CompanyId string                         `json:"company_id"`
@@ -14756,6 +14785,9 @@ type AdminUpdateTerminalParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminRelinkFiscalizationJSONBody defines parameters for AdminRelinkFiscalization.
+type AdminRelinkFiscalizationJSONBody AdminFiscalizationRelink
+
 // AdminTransferFiscalizationJSONBody defines parameters for AdminTransferFiscalization.
 type AdminTransferFiscalizationJSONBody AdminFiscalizationTransfer
 
@@ -19181,6 +19213,9 @@ type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJ
 // AdminUpdateTerminalJSONRequestBody defines body for AdminUpdateTerminal for application/json ContentType.
 type AdminUpdateTerminalJSONRequestBody AdminUpdateTerminalJSONBody
 
+// AdminRelinkFiscalizationJSONRequestBody defines body for AdminRelinkFiscalization for application/json ContentType.
+type AdminRelinkFiscalizationJSONRequestBody AdminRelinkFiscalizationJSONBody
+
 // AdminTransferFiscalizationJSONRequestBody defines body for AdminTransferFiscalization for application/json ContentType.
 type AdminTransferFiscalizationJSONRequestBody AdminTransferFiscalizationJSONBody
 
@@ -22443,6 +22478,11 @@ type ClientInterface interface {
 
 	AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminRelinkFiscalization request with any body
+	AdminRelinkFiscalizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminRelinkFiscalization(ctx context.Context, body AdminRelinkFiscalizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminTransferFiscalization request with any body
 	AdminTransferFiscalizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24658,6 +24698,30 @@ func (c *Client) AdminUpdateTerminalWithBody(ctx context.Context, companyId stri
 
 func (c *Client) AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateTerminalRequest(c.Server, companyId, terminalId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminRelinkFiscalizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminRelinkFiscalizationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminRelinkFiscalization(ctx context.Context, body AdminRelinkFiscalizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminRelinkFiscalizationRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -34110,6 +34174,46 @@ func NewAdminUpdateTerminalRequestWithBody(server string, companyId string, term
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminRelinkFiscalizationRequest calls the generic AdminRelinkFiscalization builder with application/json body
+func NewAdminRelinkFiscalizationRequest(server string, body AdminRelinkFiscalizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminRelinkFiscalizationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminRelinkFiscalizationRequestWithBody generates requests for AdminRelinkFiscalization with any type of body
+func NewAdminRelinkFiscalizationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/fiscalizations/relink")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
@@ -67032,6 +67136,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateTerminalWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error)
 
+	// AdminRelinkFiscalization request with any body
+	AdminRelinkFiscalizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminRelinkFiscalizationResponse, error)
+
+	AdminRelinkFiscalizationWithResponse(ctx context.Context, body AdminRelinkFiscalizationJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminRelinkFiscalizationResponse, error)
+
 	// AdminTransferFiscalization request with any body
 	AdminTransferFiscalizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminTransferFiscalizationResponse, error)
 
@@ -69444,6 +69553,28 @@ func (r AdminUpdateTerminalResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateTerminalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminRelinkFiscalizationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminFiscalizationRelinkResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminRelinkFiscalizationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminRelinkFiscalizationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -79708,6 +79839,23 @@ func (c *ClientWithResponses) AdminUpdateTerminalWithResponse(ctx context.Contex
 	return ParseAdminUpdateTerminalResponse(rsp)
 }
 
+// AdminRelinkFiscalizationWithBodyWithResponse request with arbitrary body returning *AdminRelinkFiscalizationResponse
+func (c *ClientWithResponses) AdminRelinkFiscalizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminRelinkFiscalizationResponse, error) {
+	rsp, err := c.AdminRelinkFiscalizationWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminRelinkFiscalizationResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminRelinkFiscalizationWithResponse(ctx context.Context, body AdminRelinkFiscalizationJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminRelinkFiscalizationResponse, error) {
+	rsp, err := c.AdminRelinkFiscalization(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminRelinkFiscalizationResponse(rsp)
+}
+
 // AdminTransferFiscalizationWithBodyWithResponse request with arbitrary body returning *AdminTransferFiscalizationResponse
 func (c *ClientWithResponses) AdminTransferFiscalizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminTransferFiscalizationResponse, error) {
 	rsp, err := c.AdminTransferFiscalizationWithBody(ctx, contentType, body, reqEditors...)
@@ -85729,6 +85877,32 @@ func ParseAdminUpdateTerminalResponse(rsp *http.Response) (*AdminUpdateTerminalR
 	response := &AdminUpdateTerminalResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminRelinkFiscalizationResponse parses an HTTP response from a AdminRelinkFiscalizationWithResponse call
+func ParseAdminRelinkFiscalizationResponse(rsp *http.Response) (*AdminRelinkFiscalizationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminRelinkFiscalizationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminFiscalizationRelinkResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
