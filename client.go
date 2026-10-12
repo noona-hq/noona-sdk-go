@@ -438,17 +438,33 @@ const (
 
 // Defines values for CallToActionIcon.
 const (
+	CallToActionIconApp          CallToActionIcon = "app"
 	CallToActionIconCalendar     CallToActionIcon = "calendar"
 	CallToActionIconCancel       CallToActionIcon = "cancel"
+	CallToActionIconChat         CallToActionIcon = "chat"
+	CallToActionIconClock        CallToActionIcon = "clock"
+	CallToActionIconDelivery     CallToActionIcon = "delivery"
+	CallToActionIconDocument     CallToActionIcon = "document"
+	CallToActionIconDrinks       CallToActionIcon = "drinks"
 	CallToActionIconEmail        CallToActionIcon = "email"
 	CallToActionIconExternalLink CallToActionIcon = "external_link"
+	CallToActionIconFood         CallToActionIcon = "food"
 	CallToActionIconGiftCard     CallToActionIcon = "gift_card"
-	CallToActionIconGlobe        CallToActionIcon = "globe"
+	CallToActionIconGroup        CallToActionIcon = "group"
+	CallToActionIconInfo         CallToActionIcon = "info"
+	CallToActionIconLocation     CallToActionIcon = "location"
+	CallToActionIconMembership   CallToActionIcon = "membership"
 	CallToActionIconMenuBook     CallToActionIcon = "menu_book"
+	CallToActionIconPayment      CallToActionIcon = "payment"
 	CallToActionIconPhone        CallToActionIcon = "phone"
-	CallToActionIconShoppingBag  CallToActionIcon = "shopping_bag"
+	CallToActionIconPhotos       CallToActionIcon = "photos"
+	CallToActionIconPriceTag     CallToActionIcon = "price_tag"
+	CallToActionIconStar         CallToActionIcon = "star"
+	CallToActionIconStore        CallToActionIcon = "store"
+	CallToActionIconTakeaway     CallToActionIcon = "takeaway"
 	CallToActionIconTicket       CallToActionIcon = "ticket"
-	CallToActionIconUtensils     CallToActionIcon = "utensils"
+	CallToActionIconVideo        CallToActionIcon = "video"
+	CallToActionIconWebsite      CallToActionIcon = "website"
 )
 
 // Defines values for CallToActionPlacement.
