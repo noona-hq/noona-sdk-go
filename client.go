@@ -447,6 +447,7 @@ const (
 	CallToActionIconMenuBook     CallToActionIcon = "menu_book"
 	CallToActionIconPhone        CallToActionIcon = "phone"
 	CallToActionIconShoppingBag  CallToActionIcon = "shopping_bag"
+	CallToActionIconTicket       CallToActionIcon = "ticket"
 	CallToActionIconUtensils     CallToActionIcon = "utensils"
 )
 
@@ -459,13 +460,14 @@ const (
 
 // Defines values for CallToActionType.
 const (
-	CallToActionTypeBooking      CallToActionType = "booking"
-	CallToActionTypeCancel       CallToActionType = "cancel"
-	CallToActionTypeEmail        CallToActionType = "email"
-	CallToActionTypeExternal     CallToActionType = "external"
-	CallToActionTypeFoodOrdering CallToActionType = "food_ordering"
-	CallToActionTypePhone        CallToActionType = "phone"
-	CallToActionTypeVouchers     CallToActionType = "vouchers"
+	CallToActionTypeBooking         CallToActionType = "booking"
+	CallToActionTypeCancel          CallToActionType = "cancel"
+	CallToActionTypeEmail           CallToActionType = "email"
+	CallToActionTypeExternal        CallToActionType = "external"
+	CallToActionTypeFoodOrdering    CallToActionType = "food_ordering"
+	CallToActionTypePhone           CallToActionType = "phone"
+	CallToActionTypeScheduledEvents CallToActionType = "scheduled_events"
+	CallToActionTypeVouchers        CallToActionType = "vouchers"
 )
 
 // Defines values for CampaignType.
@@ -1698,6 +1700,11 @@ const (
 const (
 	ScheduledEventBookingQuestionAnswerTypeBoolean ScheduledEventBookingQuestionAnswerType = "boolean"
 	ScheduledEventBookingQuestionAnswerTypeString  ScheduledEventBookingQuestionAnswerType = "string"
+)
+
+// Defines values for ScheduledEventsCallToActionType.
+const (
+	ScheduledEventsCallToActionTypeScheduledEvents ScheduledEventsCallToActionType = "scheduled_events"
 )
 
 // Defines values for ScheduledSubscriptionChangeBillingPeriodUnit.
@@ -12156,6 +12163,27 @@ type ScheduledEventVariationResponse struct {
 // ScheduledEvents defines model for ScheduledEvents.
 type ScheduledEvents []ScheduledEvent
 
+// Links to the business's upcoming scheduled events.
+type ScheduledEventsCallToAction struct {
+	// One of the icons the apps ship with. The type's default icon is used when an action has none.
+	Icon *CallToActionIcon `json:"icon,omitempty"`
+
+	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
+
+	// Where the action is shown. `menu` is the "More" menu.
+	Placement CallToActionPlacement           `json:"placement"`
+	Type      ScheduledEventsCallToActionType `json:"type"`
+}
+
+// ScheduledEventsCallToActionType defines model for ScheduledEventsCallToAction.Type.
+type ScheduledEventsCallToActionType string
+
 // [Filtering](https://api.noona.is/docs/working-with-the-apis/filtering)
 type ScheduledEventsFilter struct {
 	// Filter by marketplace visibility.
@@ -19897,6 +19925,19 @@ func (t *BusinessProfileCallToAction) FromBookingCallToAction(v BookingCallToAct
 	return err
 }
 
+func (t BusinessProfileCallToAction) AsScheduledEventsCallToAction() (ScheduledEventsCallToAction, error) {
+	var body ScheduledEventsCallToAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BusinessProfileCallToAction) FromScheduledEventsCallToAction(v ScheduledEventsCallToAction) error {
+	v.Type = "scheduled_events"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
 func (t BusinessProfileCallToAction) AsVouchersCallToAction() (VouchersCallToAction, error) {
 	var body VouchersCallToAction
 	err := json.Unmarshal(t.union, &body)
@@ -20001,6 +20042,8 @@ func (t BusinessProfileCallToAction) ValueByDiscriminator() (interface{}, error)
 		return t.AsFoodOrderingCallToAction()
 	case "phone":
 		return t.AsPhoneCallToAction()
+	case "scheduled_events":
+		return t.AsScheduledEventsCallToAction()
 	case "vouchers":
 		return t.AsVouchersCallToAction()
 	default:
