@@ -440,6 +440,7 @@ const (
 	CallToActionIconFood         CallToActionIcon = "food"
 	CallToActionIconGiftCard     CallToActionIcon = "gift_card"
 	CallToActionIconGroup        CallToActionIcon = "group"
+	CallToActionIconHeart        CallToActionIcon = "heart"
 	CallToActionIconInfo         CallToActionIcon = "info"
 	CallToActionIconLocation     CallToActionIcon = "location"
 	CallToActionIconMembership   CallToActionIcon = "membership"
@@ -469,6 +470,7 @@ const (
 	CallToActionTypeCancel          CallToActionType = "cancel"
 	CallToActionTypeEmail           CallToActionType = "email"
 	CallToActionTypeExternal        CallToActionType = "external"
+	CallToActionTypeFavorite        CallToActionType = "favorite"
 	CallToActionTypeFoodOrdering    CallToActionType = "food_ordering"
 	CallToActionTypePhone           CallToActionType = "phone"
 	CallToActionTypeScheduledEvents CallToActionType = "scheduled_events"
@@ -880,6 +882,11 @@ const (
 // Defines values for ExternalCallToActionType.
 const (
 	ExternalCallToActionTypeExternal ExternalCallToActionType = "external"
+)
+
+// Defines values for FavoriteCallToActionType.
+const (
+	Favorite FavoriteCallToActionType = "favorite"
 )
 
 // Defines values for FiscalizationOnboardingStatus.
@@ -8001,6 +8008,27 @@ type ExternalCallToAction struct {
 
 // ExternalCallToActionType defines model for ExternalCallToAction.Type.
 type ExternalCallToActionType string
+
+// Lets the viewer add the business to their favorites. It has no link.
+type FavoriteCallToAction struct {
+	// One of the icons the apps ship with. The type's default icon is used when an action has none.
+	Icon *CallToActionIcon `json:"icon,omitempty"`
+
+	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
+	Id *string `json:"id,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	LabelTranslations *TranslationMap `json:"label_translations,omitempty"`
+
+	// Where the action is shown. `menu` is the "More" menu.
+	Placement CallToActionPlacement    `json:"placement"`
+	Type      FavoriteCallToActionType `json:"type"`
+}
+
+// FavoriteCallToActionType defines model for FavoriteCallToAction.Type.
+type FavoriteCallToActionType string
 
 // File defines model for File.
 type File struct {
@@ -19903,6 +19931,19 @@ func (t *BusinessProfileCallToAction) FromExternalCallToAction(v ExternalCallToA
 	return err
 }
 
+func (t BusinessProfileCallToAction) AsFavoriteCallToAction() (FavoriteCallToAction, error) {
+	var body FavoriteCallToAction
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *BusinessProfileCallToAction) FromFavoriteCallToAction(v FavoriteCallToAction) error {
+	v.Type = "favorite"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
 func (t BusinessProfileCallToAction) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"type"`
@@ -19925,6 +19966,8 @@ func (t BusinessProfileCallToAction) ValueByDiscriminator() (interface{}, error)
 		return t.AsEmailCallToAction()
 	case "external":
 		return t.AsExternalCallToAction()
+	case "favorite":
+		return t.AsFavoriteCallToAction()
 	case "food_ordering":
 		return t.AsFoodOrderingCallToAction()
 	case "phone":
