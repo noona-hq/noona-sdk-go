@@ -24,6 +24,7 @@ import (
 const (
 	AgentTokenAuthScopes  = "AgentTokenAuth.Scopes"
 	BearerTokenAuthScopes = "BearerTokenAuth.Scopes"
+	DeviceTokenAuthScopes = "DeviceTokenAuth.Scopes"
 	Email_PasswordScopes  = "Email_Password.Scopes"
 	OAuth_2_0Scopes       = "oAuth_2_0.Scopes"
 )
