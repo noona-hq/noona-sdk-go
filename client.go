@@ -4313,6 +4313,9 @@ type BookingCallToAction struct {
 	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
 	Id *string `json:"id,omitempty"`
 
+	// The label shown to clients, which is the action's own label in the request language or otherwise the type's default label.
+	Label *string `json:"label,omitempty"`
+
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
@@ -4493,6 +4496,9 @@ type BusinessProfile struct {
 	// The actions shown on the business profile, in display order. The defaults are returned until the list has been saved.
 	CallToActions BusinessProfileCallToActions `json:"call_to_actions"`
 	Id            string                       `json:"id"`
+
+	// Action types that are currently unavailable on this profile, for example phone when the business has no phone number.
+	UnavailableTypes []CallToActionType `json:"unavailable_types"`
 }
 
 // BusinessProfileCallToAction defines model for BusinessProfileCallToAction.
@@ -4683,6 +4689,9 @@ type CancelCallToAction struct {
 
 	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
 	Id *string `json:"id,omitempty"`
+
+	// The label shown to clients, which is the action's own label in the request language or otherwise the type's default label.
+	Label *string `json:"label,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -6188,6 +6197,9 @@ type EmailCallToAction struct {
 
 	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
 	Id *string `json:"id,omitempty"`
+
+	// The label shown to clients, which is the action's own label in the request language or otherwise the type's default label.
+	Label *string `json:"label,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -7997,6 +8009,9 @@ type ExternalCallToAction struct {
 	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
 	Id *string `json:"id,omitempty"`
 
+	// The label shown to clients, which is the label in the request language or otherwise the first available label.
+	Label *string `json:"label,omitempty"`
+
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
@@ -8020,6 +8035,9 @@ type FavoriteCallToAction struct {
 
 	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
 	Id *string `json:"id,omitempty"`
+
+	// The label shown to clients, which is the action's own label in the request language or otherwise the type's default label.
+	Label *string `json:"label,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -8233,6 +8251,9 @@ type FoodOrderingCallToAction struct {
 
 	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
 	Id *string `json:"id,omitempty"`
+
+	// The label shown to clients, which is the action's own label in the request language or otherwise the type's default label.
+	Label *string `json:"label,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -10164,6 +10185,9 @@ type PhoneCallToAction struct {
 
 	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
 	Id *string `json:"id,omitempty"`
+
+	// The label shown to clients, which is the action's own label in the request language or otherwise the type's default label.
+	Label *string `json:"label,omitempty"`
 
 	// A map of translations for a given attribute.
 	//
@@ -12153,6 +12177,9 @@ type ScheduledEventsCallToAction struct {
 	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
 	Id *string `json:"id,omitempty"`
 
+	// The label shown to clients, which is the action's own label in the request language or otherwise the type's default label.
+	Label *string `json:"label,omitempty"`
+
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
@@ -14036,6 +14063,9 @@ type VouchersCallToAction struct {
 	// Always set in responses. On update, keeps the ID of an action already in the list; a new ID is assigned when omitted or unknown.
 	Id *string `json:"id,omitempty"`
 
+	// The label shown to clients, which is the action's own label in the request language or otherwise the type's default label.
+	Label *string `json:"label,omitempty"`
+
 	// A map of translations for a given attribute.
 	//
 	// The key is the language code, and the value is the translated string.
@@ -14917,6 +14947,9 @@ type GetBusinessProfileParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// Language of the call to action labels. Defaults to English.
+	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 }
 
 // UpdateBusinessProfileJSONBody defines parameters for UpdateBusinessProfile.
@@ -14929,6 +14962,9 @@ type UpdateBusinessProfileParams struct {
 
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// Language of the call to action labels. Defaults to English.
+	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 }
 
 // CreateCampaignJSONBody defines parameters for CreateCampaign.
@@ -35412,6 +35448,17 @@ func NewGetBusinessProfileRequest(server string, businessProfileId string, param
 		return nil, err
 	}
 
+	if params.AcceptLanguage != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Accept-Language", runtime.ParamLocationHeader, *params.AcceptLanguage)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Accept-Language", headerParam0)
+	}
+
 	return req, nil
 }
 
@@ -35494,6 +35541,17 @@ func NewUpdateBusinessProfileRequestWithBody(server string, businessProfileId st
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params.AcceptLanguage != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Accept-Language", runtime.ParamLocationHeader, *params.AcceptLanguage)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Accept-Language", headerParam0)
+	}
 
 	return req, nil
 }
