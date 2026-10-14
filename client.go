@@ -22935,6 +22935,9 @@ type ClientInterface interface {
 	// RevokeDevice request
 	RevokeDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// StreamDevice request
+	StreamDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListDietaries request
 	ListDietaries(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -27168,6 +27171,18 @@ func (c *Client) CreateDevicePreviewToken(ctx context.Context, deviceId string, 
 
 func (c *Client) RevokeDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRevokeDeviceRequest(c.Server, deviceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) StreamDevice(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStreamDeviceRequest(c.Server, deviceId)
 	if err != nil {
 		return nil, err
 	}
@@ -47478,6 +47493,40 @@ func NewRevokeDeviceRequest(server string, deviceId string) (*http.Request, erro
 	return req, nil
 }
 
+// NewStreamDeviceRequest generates requests for StreamDevice
+func NewStreamDeviceRequest(server string, deviceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "device_id", runtime.ParamLocationPath, deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/devices/%s/stream", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListDietariesRequest generates requests for ListDietaries
 func NewListDietariesRequest(server string, params *ListDietariesParams) (*http.Request, error) {
 	var err error
@@ -66687,6 +66736,9 @@ type ClientWithResponsesInterface interface {
 	// RevokeDevice request
 	RevokeDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*RevokeDeviceResponse, error)
 
+	// StreamDevice request
+	StreamDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*StreamDeviceResponse, error)
+
 	// ListDietaries request
 	ListDietariesWithResponse(ctx context.Context, params *ListDietariesParams, reqEditors ...RequestEditorFn) (*ListDietariesResponse, error)
 
@@ -72440,6 +72492,27 @@ func (r RevokeDeviceResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r RevokeDeviceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type StreamDeviceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r StreamDeviceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StreamDeviceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -80472,6 +80545,15 @@ func (c *ClientWithResponses) RevokeDeviceWithResponse(ctx context.Context, devi
 		return nil, err
 	}
 	return ParseRevokeDeviceResponse(rsp)
+}
+
+// StreamDeviceWithResponse request returning *StreamDeviceResponse
+func (c *ClientWithResponses) StreamDeviceWithResponse(ctx context.Context, deviceId string, reqEditors ...RequestEditorFn) (*StreamDeviceResponse, error) {
+	rsp, err := c.StreamDevice(ctx, deviceId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStreamDeviceResponse(rsp)
 }
 
 // ListDietariesWithResponse request returning *ListDietariesResponse
@@ -89198,6 +89280,22 @@ func ParseRevokeDeviceResponse(rsp *http.Response) (*RevokeDeviceResponse, error
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseStreamDeviceResponse parses an HTTP response from a StreamDeviceWithResponse call
+func ParseStreamDeviceResponse(rsp *http.Response) (*StreamDeviceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StreamDeviceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
