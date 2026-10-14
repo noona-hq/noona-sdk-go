@@ -3006,6 +3006,19 @@ type AdminCompanyDetailsUser struct {
 // AdminCompanyDetailsUsers defines model for AdminCompanyDetailsUsers.
 type AdminCompanyDetailsUsers []AdminCompanyDetailsUser
 
+// AdminCompanyMapLocationsBackfillRequest defines model for AdminCompanyMapLocationsBackfillRequest.
+type AdminCompanyMapLocationsBackfillRequest struct {
+	DryRun *bool `json:"dry_run,omitempty"`
+}
+
+// AdminCompanyMapLocationsBackfillResult defines model for AdminCompanyMapLocationsBackfillResult.
+type AdminCompanyMapLocationsBackfillResult struct {
+	DryRun    bool  `json:"dry_run"`
+	Processed int32 `json:"processed"`
+	Skipped   int32 `json:"skipped"`
+	Updated   int32 `json:"updated"`
+}
+
 // AdminCompanyQuotas defines model for AdminCompanyQuotas.
 type AdminCompanyQuotas struct {
 	// Override limit for direct SMS messages
@@ -14678,6 +14691,9 @@ type AdminUpdateTerminalParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// AdminBackfillCompanyMapLocationsJSONBody defines parameters for AdminBackfillCompanyMapLocations.
+type AdminBackfillCompanyMapLocationsJSONBody AdminCompanyMapLocationsBackfillRequest
+
 // AdminRelinkFiscalizationJSONBody defines parameters for AdminRelinkFiscalization.
 type AdminRelinkFiscalizationJSONBody AdminFiscalizationRelink
 
@@ -19067,6 +19083,9 @@ type AdminAssignSecretaryToCompanyJSONRequestBody AdminAssignSecretaryToCompanyJ
 // AdminUpdateTerminalJSONRequestBody defines body for AdminUpdateTerminal for application/json ContentType.
 type AdminUpdateTerminalJSONRequestBody AdminUpdateTerminalJSONBody
 
+// AdminBackfillCompanyMapLocationsJSONRequestBody defines body for AdminBackfillCompanyMapLocations for application/json ContentType.
+type AdminBackfillCompanyMapLocationsJSONRequestBody AdminBackfillCompanyMapLocationsJSONBody
+
 // AdminRelinkFiscalizationJSONRequestBody defines body for AdminRelinkFiscalization for application/json ContentType.
 type AdminRelinkFiscalizationJSONRequestBody AdminRelinkFiscalizationJSONBody
 
@@ -22322,6 +22341,11 @@ type ClientInterface interface {
 
 	AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminBackfillCompanyMapLocations request with any body
+	AdminBackfillCompanyMapLocationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminBackfillCompanyMapLocations(ctx context.Context, body AdminBackfillCompanyMapLocationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminRelinkFiscalization request with any body
 	AdminRelinkFiscalizationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24435,6 +24459,30 @@ func (c *Client) AdminUpdateTerminalWithBody(ctx context.Context, companyId stri
 
 func (c *Client) AdminUpdateTerminal(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminUpdateTerminalRequest(c.Server, companyId, terminalId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBackfillCompanyMapLocationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBackfillCompanyMapLocationsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminBackfillCompanyMapLocations(ctx context.Context, body AdminBackfillCompanyMapLocationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminBackfillCompanyMapLocationsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -33428,6 +33476,46 @@ func NewAdminUpdateTerminalRequestWithBody(server string, companyId string, term
 	}
 
 	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewAdminBackfillCompanyMapLocationsRequest calls the generic AdminBackfillCompanyMapLocations builder with application/json body
+func NewAdminBackfillCompanyMapLocationsRequest(server string, body AdminBackfillCompanyMapLocationsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminBackfillCompanyMapLocationsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewAdminBackfillCompanyMapLocationsRequestWithBody generates requests for AdminBackfillCompanyMapLocations with any type of body
+func NewAdminBackfillCompanyMapLocationsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/company_maps/backfill_locations")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
@@ -66145,6 +66233,11 @@ type ClientWithResponsesInterface interface {
 
 	AdminUpdateTerminalWithResponse(ctx context.Context, companyId string, terminalId string, params *AdminUpdateTerminalParams, body AdminUpdateTerminalJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminUpdateTerminalResponse, error)
 
+	// AdminBackfillCompanyMapLocations request with any body
+	AdminBackfillCompanyMapLocationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBackfillCompanyMapLocationsResponse, error)
+
+	AdminBackfillCompanyMapLocationsWithResponse(ctx context.Context, body AdminBackfillCompanyMapLocationsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBackfillCompanyMapLocationsResponse, error)
+
 	// AdminRelinkFiscalization request with any body
 	AdminRelinkFiscalizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminRelinkFiscalizationResponse, error)
 
@@ -68420,6 +68513,28 @@ func (r AdminUpdateTerminalResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminUpdateTerminalResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminBackfillCompanyMapLocationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminCompanyMapLocationsBackfillResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminBackfillCompanyMapLocationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminBackfillCompanyMapLocationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -78570,6 +78685,23 @@ func (c *ClientWithResponses) AdminUpdateTerminalWithResponse(ctx context.Contex
 	return ParseAdminUpdateTerminalResponse(rsp)
 }
 
+// AdminBackfillCompanyMapLocationsWithBodyWithResponse request with arbitrary body returning *AdminBackfillCompanyMapLocationsResponse
+func (c *ClientWithResponses) AdminBackfillCompanyMapLocationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBackfillCompanyMapLocationsResponse, error) {
+	rsp, err := c.AdminBackfillCompanyMapLocationsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBackfillCompanyMapLocationsResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminBackfillCompanyMapLocationsWithResponse(ctx context.Context, body AdminBackfillCompanyMapLocationsJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBackfillCompanyMapLocationsResponse, error) {
+	rsp, err := c.AdminBackfillCompanyMapLocations(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminBackfillCompanyMapLocationsResponse(rsp)
+}
+
 // AdminRelinkFiscalizationWithBodyWithResponse request with arbitrary body returning *AdminRelinkFiscalizationResponse
 func (c *ClientWithResponses) AdminRelinkFiscalizationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminRelinkFiscalizationResponse, error) {
 	rsp, err := c.AdminRelinkFiscalizationWithBody(ctx, contentType, body, reqEditors...)
@@ -84427,6 +84559,32 @@ func ParseAdminUpdateTerminalResponse(rsp *http.Response) (*AdminUpdateTerminalR
 	response := &AdminUpdateTerminalResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseAdminBackfillCompanyMapLocationsResponse parses an HTTP response from a AdminBackfillCompanyMapLocationsWithResponse call
+func ParseAdminBackfillCompanyMapLocationsResponse(rsp *http.Response) (*AdminBackfillCompanyMapLocationsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminBackfillCompanyMapLocationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminCompanyMapLocationsBackfillResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
