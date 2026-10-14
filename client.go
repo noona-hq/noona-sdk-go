@@ -5945,6 +5945,9 @@ type CustomerFilter struct {
 	// If `possible` the duplication has to be manually resolved.
 	DuplicateStatus *DuplicateStatus `json:"duplicate_status,omitempty"`
 
+	// Filter customers by employee IDs
+	EmployeeIds *[]string `json:"employee_ids,omitempty"`
+
 	// Filter by phone country code of customer
 	PhoneCountryCode *string `json:"phone_country_code,omitempty"`
 
