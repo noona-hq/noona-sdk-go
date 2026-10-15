@@ -72453,6 +72453,7 @@ type CreateDeviceLegacyExchangeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *DevicePairResult
+	JSON403      *Error
 	JSON429      *Error
 	JSON503      *Error
 }
@@ -89254,6 +89255,13 @@ func ParseCreateDeviceLegacyExchangeResponse(rsp *http.Response) (*CreateDeviceL
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
 		var dest Error
