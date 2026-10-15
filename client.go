@@ -6063,8 +6063,18 @@ type Device struct {
 
 // DeviceConfiguration defines model for DeviceConfiguration.
 type DeviceConfiguration struct {
+	DefaultLanguage *LanguageCode `json:"default_language,omitempty"`
+
+	// Languages a client can choose on the device. An absent value uses the company languages.
+	Languages *[]LanguageCode `json:"languages,omitempty"`
+
 	// Message shown after a successful check-in. An absent value uses the built-in default.
 	SuccessMessage *string `json:"success_message"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	SuccessMessageTranslations *TranslationMap `json:"success_message_translations,omitempty"`
 
 	// Payment terminal bound to this device.
 	Terminal *string `json:"terminal"`
@@ -6092,13 +6102,22 @@ type DeviceCreate struct {
 
 // Flat server-resolved configuration consumed by a device and configuration previews. New fields are additive.
 type DeviceEffectiveConfiguration struct {
-	Company             string  `json:"company"`
-	CompanyCoverImage   *string `json:"company_cover_image,omitempty"`
-	CompanyName         *string `json:"company_name,omitempty"`
-	CompanyProfileImage *string `json:"company_profile_image,omitempty"`
+	Company             string        `json:"company"`
+	CompanyCoverImage   *string       `json:"company_cover_image,omitempty"`
+	CompanyName         *string       `json:"company_name,omitempty"`
+	CompanyProfileImage *string       `json:"company_profile_image,omitempty"`
+	DefaultLanguage     *LanguageCode `json:"default_language,omitempty"`
+
+	// Languages a client can choose on the device. An absent value uses the company languages.
+	Languages *[]LanguageCode `json:"languages,omitempty"`
 
 	// Message shown after a successful check-in. An absent value uses the client's built-in default.
 	SuccessMessage *string `json:"success_message,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	SuccessMessageTranslations *TranslationMap `json:"success_message_translations,omitempty"`
 
 	// Payment terminal bound to this device. An absent value means no terminal is selected.
 	Terminal *string `json:"terminal,omitempty"`
@@ -6109,6 +6128,21 @@ type DeviceField string
 
 // DeviceFields defines model for DeviceFields.
 type DeviceFields []DeviceField
+
+// DeviceLegacyExchangeRequest defines model for DeviceLegacyExchangeRequest.
+type DeviceLegacyExchangeRequest struct {
+	CompanyId string `json:"company_id"`
+
+	// Stable identifier generated once per app installation. Repeating an exchange with the same value returns a new token for the same device.
+	InstallationId string `json:"installation_id"`
+
+	// Legacy Checkin credential stored on the device.
+	LegacyToken string  `json:"legacy_token"`
+	Name        *string `json:"name,omitempty"`
+
+	// Terminal selected on the device. Ignored when it is not available for check-in.
+	TerminalId *string `json:"terminal_id,omitempty"`
+}
 
 // DevicePairRequest defines model for DevicePairRequest.
 type DevicePairRequest struct {
@@ -16541,6 +16575,9 @@ type SendCustomerDataParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateDeviceLegacyExchangeJSONBody defines parameters for CreateDeviceLegacyExchange.
+type CreateDeviceLegacyExchangeJSONBody DeviceLegacyExchangeRequest
+
 // CreateDevicePairingJSONBody defines parameters for CreateDevicePairing.
 type CreateDevicePairingJSONBody DevicePairRequest
 
@@ -19186,6 +19223,9 @@ type UpdateCustomerJSONRequestBody UpdateCustomerJSONBody
 
 // MergeCustomersJSONRequestBody defines body for MergeCustomers for application/json ContentType.
 type MergeCustomersJSONRequestBody MergeCustomersJSONBody
+
+// CreateDeviceLegacyExchangeJSONRequestBody defines body for CreateDeviceLegacyExchange for application/json ContentType.
+type CreateDeviceLegacyExchangeJSONRequestBody CreateDeviceLegacyExchangeJSONBody
 
 // CreateDevicePairingJSONRequestBody defines body for CreateDevicePairing for application/json ContentType.
 type CreateDevicePairingJSONRequestBody CreateDevicePairingJSONBody
@@ -22932,6 +22972,11 @@ type ClientInterface interface {
 
 	// SendCustomerData request
 	SendCustomerData(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateDeviceLegacyExchange request with any body
+	CreateDeviceLegacyExchangeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDeviceLegacyExchange(ctx context.Context, body CreateDeviceLegacyExchangeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateDevicePairing request with any body
 	CreateDevicePairingWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -27039,6 +27084,30 @@ func (c *Client) MergeCustomers(ctx context.Context, customerId string, body Mer
 
 func (c *Client) SendCustomerData(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSendCustomerDataRequest(c.Server, customerId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDeviceLegacyExchangeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDeviceLegacyExchangeRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDeviceLegacyExchange(ctx context.Context, body CreateDeviceLegacyExchangeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDeviceLegacyExchangeRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -47153,6 +47222,46 @@ func NewSendCustomerDataRequest(server string, customerId string, params *SendCu
 	return req, nil
 }
 
+// NewCreateDeviceLegacyExchangeRequest calls the generic CreateDeviceLegacyExchange builder with application/json body
+func NewCreateDeviceLegacyExchangeRequest(server string, body CreateDeviceLegacyExchangeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDeviceLegacyExchangeRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateDeviceLegacyExchangeRequestWithBody generates requests for CreateDeviceLegacyExchange with any type of body
+func NewCreateDeviceLegacyExchangeRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/device_legacy_exchanges")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateDevicePairingRequest calls the generic CreateDevicePairing builder with application/json body
 func NewCreateDevicePairingRequest(server string, body CreateDevicePairingJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -66756,6 +66865,11 @@ type ClientWithResponsesInterface interface {
 	// SendCustomerData request
 	SendCustomerDataWithResponse(ctx context.Context, customerId string, params *SendCustomerDataParams, reqEditors ...RequestEditorFn) (*SendCustomerDataResponse, error)
 
+	// CreateDeviceLegacyExchange request with any body
+	CreateDeviceLegacyExchangeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDeviceLegacyExchangeResponse, error)
+
+	CreateDeviceLegacyExchangeWithResponse(ctx context.Context, body CreateDeviceLegacyExchangeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDeviceLegacyExchangeResponse, error)
+
 	// CreateDevicePairing request with any body
 	CreateDevicePairingWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDevicePairingResponse, error)
 
@@ -72329,6 +72443,30 @@ func (r SendCustomerDataResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r SendCustomerDataResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateDeviceLegacyExchangeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DevicePairResult
+	JSON429      *Error
+	JSON503      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDeviceLegacyExchangeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDeviceLegacyExchangeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -80481,6 +80619,23 @@ func (c *ClientWithResponses) SendCustomerDataWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseSendCustomerDataResponse(rsp)
+}
+
+// CreateDeviceLegacyExchangeWithBodyWithResponse request with arbitrary body returning *CreateDeviceLegacyExchangeResponse
+func (c *ClientWithResponses) CreateDeviceLegacyExchangeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDeviceLegacyExchangeResponse, error) {
+	rsp, err := c.CreateDeviceLegacyExchangeWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDeviceLegacyExchangeResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDeviceLegacyExchangeWithResponse(ctx context.Context, body CreateDeviceLegacyExchangeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDeviceLegacyExchangeResponse, error) {
+	rsp, err := c.CreateDeviceLegacyExchange(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDeviceLegacyExchangeResponse(rsp)
 }
 
 // CreateDevicePairingWithBodyWithResponse request with arbitrary body returning *CreateDevicePairingResponse
@@ -89074,6 +89229,46 @@ func ParseSendCustomerDataResponse(rsp *http.Response) (*SendCustomerDataRespons
 	response := &SendCustomerDataResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseCreateDeviceLegacyExchangeResponse parses an HTTP response from a CreateDeviceLegacyExchangeWithResponse call
+func ParseCreateDeviceLegacyExchangeResponse(rsp *http.Response) (*CreateDeviceLegacyExchangeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDeviceLegacyExchangeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DevicePairResult
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil

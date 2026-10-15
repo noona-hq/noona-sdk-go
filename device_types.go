@@ -8,7 +8,10 @@ const (
 	DeviceStatusPaired   DeviceStatus = "paired"
 	DeviceStatusRevoked  DeviceStatus = "revoked"
 
-	DeviceFieldName                        DeviceField = "name"
-	DeviceFieldConfigurationTerminal       DeviceField = "configuration.terminal"
-	DeviceFieldConfigurationSuccessMessage DeviceField = "configuration.success_message"
+	DeviceFieldName                                    DeviceField = "name"
+	DeviceFieldConfigurationTerminal                   DeviceField = "configuration.terminal"
+	DeviceFieldConfigurationSuccessMessage             DeviceField = "configuration.success_message"
+	DeviceFieldConfigurationSuccessMessageTranslations DeviceField = "configuration.success_message_translations"
+	DeviceFieldConfigurationLanguages                  DeviceField = "configuration.languages"
+	DeviceFieldConfigurationDefaultLanguage            DeviceField = "configuration.default_language"
 )
