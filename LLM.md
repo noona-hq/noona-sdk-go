@@ -7,7 +7,7 @@
 ## Responsibilities
 - Provide typed Go methods for all Noona API endpoints
 - Handle OAuth token auth for Noona App integrations
-  - Client credentials passed in `GetOAuthTokenParams` are sent as HTTP Basic in the `Authorization` header, never in the URL (done by a request editor in `wrapper.go`)
+  - `NewWithClientCredentials(OAuthClientCredentials{ClientID, ClientSecret})` builds a client that sends client credentials as HTTP Basic; use it for the OAuth token exchange (`GetOAuthTokenWithResponse`). Credentials are only accepted in the `Authorization` header. The README example matches the SDK generated after HQ-10548.
 - Generated from Noona OpenAPI spec via oapi-codegen — do not manually edit generated files
 
 ## Tech Stack
