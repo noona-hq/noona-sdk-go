@@ -8538,18 +8538,10 @@ type ImportJobStatus string
 // Type of data being imported
 type ImportJobType string
 
-// Per-platform Intercom Messenger JWTs for the authenticated user. Each token is
-// signed (HS256) over the user's id with that platform's Intercom Messenger API
-// Secret and must be passed to the Intercom Messenger on boot for identity
-// verification. A platform's token is omitted when its secret is not configured.
+// Per-platform Intercom Messenger JWTs for the signed-in user. A platform's token is omitted when it is not available.
 type IntercomMessengerTokens struct {
 	// JWT to pass to `Intercom.setUserJwt` on the Android Messenger.
 	Android *string `json:"android,omitempty"`
-
-	// Short-lived JWT identifying the user to the Fin billing proxy. Signed with a
-	// dedicated secret Intercom never holds (unlike the Messenger JWTs above). Set it
-	// as an Intercom user attribute on Messenger boot/update; never send it elsewhere.
-	FinBillingProxy *string `json:"fin_billing_proxy,omitempty"`
 
 	// JWT to pass to `Intercom.setUserJwt` on the iOS Messenger.
 	Ios *string `json:"ios,omitempty"`
@@ -13302,10 +13294,7 @@ type User struct {
 	Id           *string `json:"id,omitempty"`
 	Image        *Image  `json:"image,omitempty"`
 
-	// Per-platform Intercom Messenger JWTs for the authenticated user. Each token is
-	// signed (HS256) over the user's id with that platform's Intercom Messenger API
-	// Secret and must be passed to the Intercom Messenger on boot for identity
-	// verification. A platform's token is omitted when its secret is not configured.
+	// Per-platform Intercom Messenger JWTs for the signed-in user. A platform's token is omitted when it is not available.
 	Intercom    *IntercomMessengerTokens `json:"intercom,omitempty"`
 	IsAdmin     *bool                    `json:"is_admin,omitempty"`
 	IsSecretary *bool                    `json:"is_secretary,omitempty"`
@@ -23256,6 +23245,9 @@ type ClientInterface interface {
 
 	AdyenUserOnboarding(ctx context.Context, userId string, params *AdyenUserOnboardingParams, body AdyenUserOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetIntercomMessengerTokens request
+	GetIntercomMessengerTokens(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListMozrestBookingChannels request
 	ListMozrestBookingChannels(ctx context.Context, companyId string, params *ListMozrestBookingChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -28332,6 +28324,18 @@ func (c *Client) AdyenUserOnboardingWithBody(ctx context.Context, userId string,
 
 func (c *Client) AdyenUserOnboarding(ctx context.Context, userId string, params *AdyenUserOnboardingParams, body AdyenUserOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdyenUserOnboardingRequest(c.Server, userId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetIntercomMessengerTokens(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetIntercomMessengerTokensRequest(c.Server, companyId)
 	if err != nil {
 		return nil, err
 	}
@@ -52084,6 +52088,40 @@ func NewAdyenUserOnboardingRequestWithBody(server string, userId string, params 
 	return req, nil
 }
 
+// NewGetIntercomMessengerTokensRequest generates requests for GetIntercomMessengerTokens
+func NewGetIntercomMessengerTokensRequest(server string, companyId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/integrations/intercom/companies/%s/messenger_tokens", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListMozrestBookingChannelsRequest generates requests for ListMozrestBookingChannels
 func NewListMozrestBookingChannelsRequest(server string, companyId string, params *ListMozrestBookingChannelsParams) (*http.Request, error) {
 	var err error
@@ -67148,6 +67186,9 @@ type ClientWithResponsesInterface interface {
 
 	AdyenUserOnboardingWithResponse(ctx context.Context, userId string, params *AdyenUserOnboardingParams, body AdyenUserOnboardingJSONRequestBody, reqEditors ...RequestEditorFn) (*AdyenUserOnboardingResponse, error)
 
+	// GetIntercomMessengerTokens request
+	GetIntercomMessengerTokensWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*GetIntercomMessengerTokensResponse, error)
+
 	// ListMozrestBookingChannels request
 	ListMozrestBookingChannelsWithResponse(ctx context.Context, companyId string, params *ListMozrestBookingChannelsParams, reqEditors ...RequestEditorFn) (*ListMozrestBookingChannelsResponse, error)
 
@@ -74092,6 +74133,28 @@ func (r AdyenUserOnboardingResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdyenUserOnboardingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetIntercomMessengerTokensResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IntercomMessengerTokens
+}
+
+// Status returns HTTPResponse.Status
+func (r GetIntercomMessengerTokensResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetIntercomMessengerTokensResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -81527,6 +81590,15 @@ func (c *ClientWithResponses) AdyenUserOnboardingWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParseAdyenUserOnboardingResponse(rsp)
+}
+
+// GetIntercomMessengerTokensWithResponse request returning *GetIntercomMessengerTokensResponse
+func (c *ClientWithResponses) GetIntercomMessengerTokensWithResponse(ctx context.Context, companyId string, reqEditors ...RequestEditorFn) (*GetIntercomMessengerTokensResponse, error) {
+	rsp, err := c.GetIntercomMessengerTokens(ctx, companyId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetIntercomMessengerTokensResponse(rsp)
 }
 
 // ListMozrestBookingChannelsWithResponse request returning *ListMozrestBookingChannelsResponse
@@ -91135,6 +91207,32 @@ func ParseAdyenUserOnboardingResponse(rsp *http.Response) (*AdyenUserOnboardingR
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdyenOnboardingInfo
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetIntercomMessengerTokensResponse parses an HTTP response from a GetIntercomMessengerTokensWithResponse call
+func ParseGetIntercomMessengerTokensResponse(rsp *http.Response) (*GetIntercomMessengerTokensResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetIntercomMessengerTokensResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IntercomMessengerTokens
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
