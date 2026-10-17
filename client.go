@@ -13290,16 +13290,13 @@ type User struct {
 	Employees     *Employees           `json:"employees,omitempty"`
 
 	// Indicates whether the user has ever been associated with any company
-	HasOnboarded *bool   `json:"has_onboarded,omitempty"`
-	Id           *string `json:"id,omitempty"`
-	Image        *Image  `json:"image,omitempty"`
-
-	// Per-platform Intercom Messenger JWTs for the signed-in user. A platform's token is omitted when it is not available.
-	Intercom    *IntercomMessengerTokens `json:"intercom,omitempty"`
-	IsAdmin     *bool                    `json:"is_admin,omitempty"`
-	IsSecretary *bool                    `json:"is_secretary,omitempty"`
-	Locale      *string                  `json:"locale,omitempty"`
-	Pos         *UserPOSSettings         `json:"pos,omitempty"`
+	HasOnboarded *bool            `json:"has_onboarded,omitempty"`
+	Id           *string          `json:"id,omitempty"`
+	Image        *Image           `json:"image,omitempty"`
+	IsAdmin      *bool            `json:"is_admin,omitempty"`
+	IsSecretary  *bool            `json:"is_secretary,omitempty"`
+	Locale       *string          `json:"locale,omitempty"`
+	Pos          *UserPOSSettings `json:"pos,omitempty"`
 
 	// Identity token for the authenticated user. Pass it to the Salesforce chat widget
 	// to verify the user's identity. Omitted when not configured.
