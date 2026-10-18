@@ -18723,6 +18723,15 @@ type GetUserTerminalParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CancelVerificationRequestParams defines parameters for CancelVerificationRequest.
+type CancelVerificationRequestParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // CreateVerificationRequestJSONBody defines parameters for CreateVerificationRequest.
 type CreateVerificationRequestJSONBody struct {
 	// The certification level
@@ -23842,6 +23851,9 @@ type ClientInterface interface {
 
 	// GetUserTerminal request
 	GetUserTerminal(ctx context.Context, terminalId string, params *GetUserTerminalParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CancelVerificationRequest request
+	CancelVerificationRequest(ctx context.Context, params *CancelVerificationRequestParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateVerificationRequest request with any body
 	CreateVerificationRequestWithBody(ctx context.Context, params *CreateVerificationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -30961,6 +30973,18 @@ func (c *Client) DeleteUserTerminal(ctx context.Context, terminalId string, para
 
 func (c *Client) GetUserTerminal(ctx context.Context, terminalId string, params *GetUserTerminalParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetUserTerminalRequest(c.Server, terminalId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CancelVerificationRequest(ctx context.Context, params *CancelVerificationRequestParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelVerificationRequestRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -63705,6 +63729,69 @@ func NewGetUserTerminalRequest(server string, terminalId string, params *GetUser
 	return req, nil
 }
 
+// NewCancelVerificationRequestRequest generates requests for CancelVerificationRequest
+func NewCancelVerificationRequestRequest(server string, params *CancelVerificationRequestParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/user/verification")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateVerificationRequestRequest calls the generic CreateVerificationRequest builder with application/json body
 func NewCreateVerificationRequestRequest(server string, params *CreateVerificationRequestParams, body CreateVerificationRequestJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -67783,6 +67870,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetUserTerminal request
 	GetUserTerminalWithResponse(ctx context.Context, terminalId string, params *GetUserTerminalParams, reqEditors ...RequestEditorFn) (*GetUserTerminalResponse, error)
+
+	// CancelVerificationRequest request
+	CancelVerificationRequestWithResponse(ctx context.Context, params *CancelVerificationRequestParams, reqEditors ...RequestEditorFn) (*CancelVerificationRequestResponse, error)
 
 	// CreateVerificationRequest request with any body
 	CreateVerificationRequestWithBodyWithResponse(ctx context.Context, params *CreateVerificationRequestParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateVerificationRequestResponse, error)
@@ -77646,6 +77736,27 @@ func (r GetUserTerminalResponse) StatusCode() int {
 	return 0
 }
 
+type CancelVerificationRequestResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r CancelVerificationRequestResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CancelVerificationRequestResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateVerificationRequestResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -83508,6 +83619,15 @@ func (c *ClientWithResponses) GetUserTerminalWithResponse(ctx context.Context, t
 		return nil, err
 	}
 	return ParseGetUserTerminalResponse(rsp)
+}
+
+// CancelVerificationRequestWithResponse request returning *CancelVerificationRequestResponse
+func (c *ClientWithResponses) CancelVerificationRequestWithResponse(ctx context.Context, params *CancelVerificationRequestParams, reqEditors ...RequestEditorFn) (*CancelVerificationRequestResponse, error) {
+	rsp, err := c.CancelVerificationRequest(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelVerificationRequestResponse(rsp)
 }
 
 // CreateVerificationRequestWithBodyWithResponse request with arbitrary body returning *CreateVerificationRequestResponse
@@ -95036,6 +95156,22 @@ func ParseGetUserTerminalResponse(rsp *http.Response) (*GetUserTerminalResponse,
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseCancelVerificationRequestResponse parses an HTTP response from a CancelVerificationRequestWithResponse call
+func ParseCancelVerificationRequestResponse(rsp *http.Response) (*CancelVerificationRequestResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CancelVerificationRequestResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
