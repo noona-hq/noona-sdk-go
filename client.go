@@ -6095,9 +6095,10 @@ type DeviceConfigurationPreviewToken struct {
 
 // DeviceCreate defines model for DeviceCreate.
 type DeviceCreate struct {
-	CompanyId string     `json:"company_id"`
-	Name      string     `json:"name"`
-	Type      DeviceType `json:"type"`
+	CompanyId     string               `json:"company_id"`
+	Configuration *DeviceConfiguration `json:"configuration,omitempty"`
+	Name          string               `json:"name"`
+	Type          DeviceType           `json:"type"`
 }
 
 // Flat server-resolved configuration consumed by a device and configuration previews. New fields are additive.
