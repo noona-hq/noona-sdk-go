@@ -69290,6 +69290,9 @@ type UpdateBusinessProfileResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *BusinessProfile
+	JSON403      *struct {
+		union json.RawMessage
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -85521,6 +85524,15 @@ func ParseUpdateBusinessProfileResponse(rsp *http.Response) (*UpdateBusinessProf
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	}
 
