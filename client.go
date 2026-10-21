@@ -6113,6 +6113,8 @@ type Device struct {
 
 // DeviceConfiguration defines model for DeviceConfiguration.
 type DeviceConfiguration struct {
+	// Hex brand color the device uses for its accents, such as `#E99123`. An absent value means the device picks a color from the company logo.
+	BrandColor      *string       `json:"brand_color"`
 	DefaultLanguage *LanguageCode `json:"default_language,omitempty"`
 
 	// Languages a client can choose on the device. An absent value uses the company languages.
@@ -6153,6 +6155,8 @@ type DeviceCreate struct {
 
 // Flat server-resolved configuration consumed by a device and configuration previews. New fields are additive.
 type DeviceEffectiveConfiguration struct {
+	// Hex brand color the device uses for its accents. An absent value means the device picks a color from the company logo.
+	BrandColor          *string       `json:"brand_color,omitempty"`
 	Company             string        `json:"company"`
 	CompanyCoverImage   *string       `json:"company_cover_image,omitempty"`
 	CompanyName         *string       `json:"company_name,omitempty"`

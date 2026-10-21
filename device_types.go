@@ -14,4 +14,5 @@ const (
 	DeviceFieldConfigurationSuccessMessageTranslations DeviceField = "configuration.success_message_translations"
 	DeviceFieldConfigurationLanguages                  DeviceField = "configuration.languages"
 	DeviceFieldConfigurationDefaultLanguage            DeviceField = "configuration.default_language"
+	DeviceFieldConfigurationBrandColor                 DeviceField = "configuration.brand_color"
 )
