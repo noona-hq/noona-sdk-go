@@ -1440,6 +1440,56 @@ const (
 	Phone PhoneCallToActionType = "phone"
 )
 
+// Defines values for PlanCancellationReasonCode.
+const (
+	PlanCancellationReasonCodeClosingBusiness  PlanCancellationReasonCode = "closing_business"
+	PlanCancellationReasonCodeHarderToUse      PlanCancellationReasonCode = "harder_to_use"
+	PlanCancellationReasonCodeMissingSomething PlanCancellationReasonCode = "missing_something"
+	PlanCancellationReasonCodeSomethingElse    PlanCancellationReasonCode = "something_else"
+	PlanCancellationReasonCodeSwitchingTool    PlanCancellationReasonCode = "switching_tool"
+	PlanCancellationReasonCodeTakingBreak      PlanCancellationReasonCode = "taking_break"
+	PlanCancellationReasonCodeTooExpensive     PlanCancellationReasonCode = "too_expensive"
+)
+
+// Defines values for PlanCancellationSecondaryReasonCode.
+const (
+	PlanCancellationSecondaryReasonCodeAnotherTool             PlanCancellationSecondaryReasonCode = "another_tool"
+	PlanCancellationSecondaryReasonCodeBetterOffer             PlanCancellationSecondaryReasonCode = "better_offer"
+	PlanCancellationSecondaryReasonCodeCalendar                PlanCancellationSecondaryReasonCode = "calendar"
+	PlanCancellationSecondaryReasonCodeCantJustify             PlanCancellationSecondaryReasonCode = "cant_justify"
+	PlanCancellationSecondaryReasonCodeClientsRequested        PlanCancellationSecondaryReasonCode = "clients_requested"
+	PlanCancellationSecondaryReasonCodeCompetingTool           PlanCancellationSecondaryReasonCode = "competing_tool"
+	PlanCancellationSecondaryReasonCodeCompetitorBookio        PlanCancellationSecondaryReasonCode = "competitor_bookio"
+	PlanCancellationSecondaryReasonCodeCompetitorBooksy        PlanCancellationSecondaryReasonCode = "competitor_booksy"
+	PlanCancellationSecondaryReasonCodeCompetitorFresha        PlanCancellationSecondaryReasonCode = "competitor_fresha"
+	PlanCancellationSecondaryReasonCodeCompetitorPhorest       PlanCancellationSecondaryReasonCode = "competitor_phorest"
+	PlanCancellationSecondaryReasonCodeCompetitorPlanity       PlanCancellationSecondaryReasonCode = "competitor_planity"
+	PlanCancellationSecondaryReasonCodeCompetitorReservio      PlanCancellationSecondaryReasonCode = "competitor_reservio"
+	PlanCancellationSecondaryReasonCodeCompetitorSalona        PlanCancellationSecondaryReasonCode = "competitor_salona"
+	PlanCancellationSecondaryReasonCodeCompetitorSalonkee      PlanCancellationSecondaryReasonCode = "competitor_salonkee"
+	PlanCancellationSecondaryReasonCodeCompetitorShore         PlanCancellationSecondaryReasonCode = "competitor_shore"
+	PlanCancellationSecondaryReasonCodeCompetitorSquare        PlanCancellationSecondaryReasonCode = "competitor_square"
+	PlanCancellationSecondaryReasonCodeCompetitorTreatwell     PlanCancellationSecondaryReasonCode = "competitor_treatwell"
+	PlanCancellationSecondaryReasonCodeCompetitorVagaro        PlanCancellationSecondaryReasonCode = "competitor_vagaro"
+	PlanCancellationSecondaryReasonCodeDontKnow                PlanCancellationSecondaryReasonCode = "dont_know"
+	PlanCancellationSecondaryReasonCodeExpectingMoreNewClients PlanCancellationSecondaryReasonCode = "expecting_more_new_clients"
+	PlanCancellationSecondaryReasonCodeInitialSetup            PlanCancellationSecondaryReasonCode = "initial_setup"
+	PlanCancellationSecondaryReasonCodeMissingFeature          PlanCancellationSecondaryReasonCode = "missing_feature"
+	PlanCancellationSecondaryReasonCodeNotEnoughNewCustomers   PlanCancellationSecondaryReasonCode = "not_enough_new_customers"
+	PlanCancellationSecondaryReasonCodeNotUsedToNoona          PlanCancellationSecondaryReasonCode = "not_used_to_noona"
+	PlanCancellationSecondaryReasonCodeNotUsingEnough          PlanCancellationSecondaryReasonCode = "not_using_enough"
+	PlanCancellationSecondaryReasonCodeNotWorthThePrice        PlanCancellationSecondaryReasonCode = "not_worth_the_price"
+	PlanCancellationSecondaryReasonCodeOnlineBooking           PlanCancellationSecondaryReasonCode = "online_booking"
+	PlanCancellationSecondaryReasonCodeOther                   PlanCancellationSecondaryReasonCode = "other"
+	PlanCancellationSecondaryReasonCodePaymentsAndPos          PlanCancellationSecondaryReasonCode = "payments_and_pos"
+	PlanCancellationSecondaryReasonCodePenAndPaper             PlanCancellationSecondaryReasonCode = "pen_and_paper"
+	PlanCancellationSecondaryReasonCodeRevenueDropped          PlanCancellationSecondaryReasonCode = "revenue_dropped"
+	PlanCancellationSecondaryReasonCodeTeamOnboarding          PlanCancellationSecondaryReasonCode = "team_onboarding"
+	PlanCancellationSecondaryReasonCodeWithinAYear             PlanCancellationSecondaryReasonCode = "within_a_year"
+	PlanCancellationSecondaryReasonCodeWithinFourToSixMonths   PlanCancellationSecondaryReasonCode = "within_four_to_six_months"
+	PlanCancellationSecondaryReasonCodeWithinOneToThreeMonths  PlanCancellationSecondaryReasonCode = "within_one_to_three_months"
+)
+
 // Defines values for Powerup.
 const (
 	PowerupAppointmentsPro Powerup = "appointments_pro"
@@ -1797,10 +1847,10 @@ const (
 
 // Defines values for SubscriptionChurnReason.
 const (
-	ClosingBusiness SubscriptionChurnReason = "closing_business"
-	Other           SubscriptionChurnReason = "other"
-	TakingABreak    SubscriptionChurnReason = "taking_a_break"
-	TooExpensive    SubscriptionChurnReason = "too_expensive"
+	SubscriptionChurnReasonClosingBusiness SubscriptionChurnReason = "closing_business"
+	SubscriptionChurnReasonOther           SubscriptionChurnReason = "other"
+	SubscriptionChurnReasonTakingABreak    SubscriptionChurnReason = "taking_a_break"
+	SubscriptionChurnReasonTooExpensive    SubscriptionChurnReason = "too_expensive"
 )
 
 // Defines values for SubscriptionDiscountApplyOn.
@@ -10229,6 +10279,42 @@ type PhoneCallToAction struct {
 // PhoneCallToActionType defines model for PhoneCallToAction.Type.
 type PhoneCallToActionType string
 
+// PlanCancellation defines model for PlanCancellation.
+type PlanCancellation struct {
+	CancellationReason PlanCancellationReason `json:"cancellation_reason"`
+
+	// Follow-up answers to the cancellation reason. Empty when the follow-up was skipped. Codes must not repeat. Only harder_to_use accepts several, and switching_tool accepts one tool answer plus one why answer. Allowed codes per reason:
+	// - too_expensive: cant_justify, competing_tool, not_using_enough, not_worth_the_price, revenue_dropped, other
+	// - switching_tool: one of competitor_*, another_tool, pen_and_paper, plus one of better_offer, clients_requested, not_used_to_noona, expecting_more_new_clients, missing_feature, other
+	// - missing_something: exactly one other, with text (required)
+	// - harder_to_use: initial_setup, calendar, team_onboarding, payments_and_pos, online_booking, not_enough_new_customers, other
+	// - taking_break: within_one_to_three_months, within_four_to_six_months, within_a_year, dont_know, other
+	// - closing_business, something_else: none
+	CancellationSecondaryReasons []PlanCancellationSecondaryReason `json:"cancellation_secondary_reasons"`
+}
+
+// PlanCancellationReason defines model for PlanCancellationReason.
+type PlanCancellationReason struct {
+	Code PlanCancellationReasonCode `json:"code"`
+
+	// Required and non-blank for something_else. Must be null for every other reason.
+	Text *string `json:"text"`
+}
+
+// PlanCancellationReasonCode defines model for PlanCancellationReasonCode.
+type PlanCancellationReasonCode string
+
+// PlanCancellationSecondaryReason defines model for PlanCancellationSecondaryReason.
+type PlanCancellationSecondaryReason struct {
+	Code PlanCancellationSecondaryReasonCode `json:"code"`
+
+	// Allowed only for competing_tool, competitor_*, another_tool, missing_feature and other, and must be non-blank when set. Must be null for every other code. Required for the other answer of missing_something.
+	Text *string `json:"text"`
+}
+
+// PlanCancellationSecondaryReasonCode defines model for PlanCancellationSecondaryReasonCode.
+type PlanCancellationSecondaryReasonCode string
+
 // Powerup defines model for Powerup.
 type Powerup string
 
@@ -18456,6 +18542,9 @@ type CancelSubscriptionParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CancelPlanSubscriptionJSONBody defines parameters for CancelPlanSubscription.
+type CancelPlanSubscriptionJSONBody PlanCancellation
+
 // ReactivatePlanSubscriptionParams defines parameters for ReactivatePlanSubscription.
 type ReactivatePlanSubscriptionParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -19456,6 +19545,9 @@ type UpdateSpaceJSONRequestBody UpdateSpaceJSONBody
 
 // CancelSubscriptionJSONRequestBody defines body for CancelSubscription for application/json ContentType.
 type CancelSubscriptionJSONRequestBody CancelSubscriptionJSONBody
+
+// CancelPlanSubscriptionJSONRequestBody defines body for CancelPlanSubscription for application/json ContentType.
+type CancelPlanSubscriptionJSONRequestBody CancelPlanSubscriptionJSONBody
 
 // CreateSubtransactionJSONRequestBody defines body for CreateSubtransaction for application/json ContentType.
 type CreateSubtransactionJSONRequestBody CreateSubtransactionJSONBody
@@ -23735,6 +23827,11 @@ type ClientInterface interface {
 	CancelSubscriptionWithBody(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CancelSubscription(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CancelPlanSubscription request with any body
+	CancelPlanSubscriptionWithBody(ctx context.Context, subscriptionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CancelPlanSubscription(ctx context.Context, subscriptionId string, body CancelPlanSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ReactivatePlanSubscription request
 	ReactivatePlanSubscription(ctx context.Context, subscriptionId string, params *ReactivatePlanSubscriptionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -30470,6 +30567,30 @@ func (c *Client) CancelSubscriptionWithBody(ctx context.Context, subscriptionId 
 
 func (c *Client) CancelSubscription(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCancelSubscriptionRequest(c.Server, subscriptionId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CancelPlanSubscriptionWithBody(ctx context.Context, subscriptionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelPlanSubscriptionRequestWithBody(c.Server, subscriptionId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CancelPlanSubscription(ctx context.Context, subscriptionId string, body CancelPlanSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelPlanSubscriptionRequest(c.Server, subscriptionId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -61639,6 +61760,53 @@ func NewCancelSubscriptionRequestWithBody(server string, subscriptionId string, 
 	return req, nil
 }
 
+// NewCancelPlanSubscriptionRequest calls the generic CancelPlanSubscription builder with application/json body
+func NewCancelPlanSubscriptionRequest(server string, subscriptionId string, body CancelPlanSubscriptionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCancelPlanSubscriptionRequestWithBody(server, subscriptionId, "application/json", bodyReader)
+}
+
+// NewCancelPlanSubscriptionRequestWithBody generates requests for CancelPlanSubscription with any type of body
+func NewCancelPlanSubscriptionRequestWithBody(server string, subscriptionId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "subscription_id", runtime.ParamLocationPath, subscriptionId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/subscriptions/%s/cancel-plan", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewReactivatePlanSubscriptionRequest generates requests for ReactivatePlanSubscription
 func NewReactivatePlanSubscriptionRequest(server string, subscriptionId string, params *ReactivatePlanSubscriptionParams) (*http.Request, error) {
 	var err error
@@ -67754,6 +67922,11 @@ type ClientWithResponsesInterface interface {
 	CancelSubscriptionWithBodyWithResponse(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelSubscriptionResponse, error)
 
 	CancelSubscriptionWithResponse(ctx context.Context, subscriptionId string, params *CancelSubscriptionParams, body CancelSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelSubscriptionResponse, error)
+
+	// CancelPlanSubscription request with any body
+	CancelPlanSubscriptionWithBodyWithResponse(ctx context.Context, subscriptionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelPlanSubscriptionResponse, error)
+
+	CancelPlanSubscriptionWithResponse(ctx context.Context, subscriptionId string, body CancelPlanSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelPlanSubscriptionResponse, error)
 
 	// ReactivatePlanSubscription request
 	ReactivatePlanSubscriptionWithResponse(ctx context.Context, subscriptionId string, params *ReactivatePlanSubscriptionParams, reqEditors ...RequestEditorFn) (*ReactivatePlanSubscriptionResponse, error)
@@ -77024,6 +77197,27 @@ func (r CancelSubscriptionResponse) StatusCode() int {
 	return 0
 }
 
+type CancelPlanSubscriptionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r CancelPlanSubscriptionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CancelPlanSubscriptionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ReactivatePlanSubscriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -83254,6 +83448,23 @@ func (c *ClientWithResponses) CancelSubscriptionWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParseCancelSubscriptionResponse(rsp)
+}
+
+// CancelPlanSubscriptionWithBodyWithResponse request with arbitrary body returning *CancelPlanSubscriptionResponse
+func (c *ClientWithResponses) CancelPlanSubscriptionWithBodyWithResponse(ctx context.Context, subscriptionId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CancelPlanSubscriptionResponse, error) {
+	rsp, err := c.CancelPlanSubscriptionWithBody(ctx, subscriptionId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelPlanSubscriptionResponse(rsp)
+}
+
+func (c *ClientWithResponses) CancelPlanSubscriptionWithResponse(ctx context.Context, subscriptionId string, body CancelPlanSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*CancelPlanSubscriptionResponse, error) {
+	rsp, err := c.CancelPlanSubscription(ctx, subscriptionId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelPlanSubscriptionResponse(rsp)
 }
 
 // ReactivatePlanSubscriptionWithResponse request returning *ReactivatePlanSubscriptionResponse
@@ -94412,6 +94623,22 @@ func ParseCancelSubscriptionResponse(rsp *http.Response) (*CancelSubscriptionRes
 	}
 
 	response := &CancelSubscriptionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseCancelPlanSubscriptionResponse parses an HTTP response from a CancelPlanSubscriptionWithResponse call
+func ParseCancelPlanSubscriptionResponse(rsp *http.Response) (*CancelPlanSubscriptionResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CancelPlanSubscriptionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
