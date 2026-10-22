@@ -18353,48 +18353,6 @@ type CreateSMSMessageParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// CreateSpaceJSONBody defines parameters for CreateSpace.
-type CreateSpaceJSONBody Space
-
-// CreateSpaceParams defines parameters for CreateSpace.
-type CreateSpaceParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
-// DeleteSpaceParams defines parameters for DeleteSpace.
-type DeleteSpaceParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
-// GetSpaceParams defines parameters for GetSpace.
-type GetSpaceParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
-// UpdateSpaceJSONBody defines parameters for UpdateSpace.
-type UpdateSpaceJSONBody Space
-
-// UpdateSpaceParams defines parameters for UpdateSpace.
-type UpdateSpaceParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
 // StreamUpdatesParams defines parameters for StreamUpdates.
 type StreamUpdatesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -18490,15 +18448,6 @@ type StreamProductsParams struct {
 
 // StreamResourcesParams defines parameters for StreamResources.
 type StreamResourcesParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
-// StreamSpacesParams defines parameters for StreamSpaces.
-type StreamSpacesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
 	Select *Select `form:"select,omitempty" json:"select,omitempty"`
 
@@ -19540,12 +19489,6 @@ type UpdateScheduledEventJSONRequestBody UpdateScheduledEventJSONBody
 
 // CreateSMSMessageJSONRequestBody defines body for CreateSMSMessage for application/json ContentType.
 type CreateSMSMessageJSONRequestBody CreateSMSMessageJSONBody
-
-// CreateSpaceJSONRequestBody defines body for CreateSpace for application/json ContentType.
-type CreateSpaceJSONRequestBody CreateSpaceJSONBody
-
-// UpdateSpaceJSONRequestBody defines body for UpdateSpace for application/json ContentType.
-type UpdateSpaceJSONRequestBody UpdateSpaceJSONBody
 
 // CancelSubscriptionJSONRequestBody defines body for CancelSubscription for application/json ContentType.
 type CancelSubscriptionJSONRequestBody CancelSubscriptionJSONBody
@@ -23763,22 +23706,6 @@ type ClientInterface interface {
 
 	CreateSMSMessage(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateSpace request with any body
-	CreateSpaceWithBody(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateSpace(ctx context.Context, params *CreateSpaceParams, body CreateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// DeleteSpace request
-	DeleteSpace(ctx context.Context, spaceId string, params *DeleteSpaceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetSpace request
-	GetSpace(ctx context.Context, spaceId string, params *GetSpaceParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// UpdateSpace request with any body
-	UpdateSpaceWithBody(ctx context.Context, spaceId string, params *UpdateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	UpdateSpace(ctx context.Context, spaceId string, params *UpdateSpaceParams, body UpdateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// StreamUpdates request
 	StreamUpdates(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -23811,9 +23738,6 @@ type ClientInterface interface {
 
 	// StreamResources request
 	StreamResources(ctx context.Context, companyId string, params *StreamResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// StreamSpaces request
-	StreamSpaces(ctx context.Context, companyId string, params *StreamSpacesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// StreamTimeSlotReservations request
 	StreamTimeSlotReservations(ctx context.Context, companyId string, params *StreamTimeSlotReservationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -30293,78 +30217,6 @@ func (c *Client) CreateSMSMessage(ctx context.Context, params *CreateSMSMessageP
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateSpaceWithBody(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateSpaceRequestWithBody(c.Server, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateSpace(ctx context.Context, params *CreateSpaceParams, body CreateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateSpaceRequest(c.Server, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteSpace(ctx context.Context, spaceId string, params *DeleteSpaceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteSpaceRequest(c.Server, spaceId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetSpace(ctx context.Context, spaceId string, params *GetSpaceParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetSpaceRequest(c.Server, spaceId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) UpdateSpaceWithBody(ctx context.Context, spaceId string, params *UpdateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateSpaceRequestWithBody(c.Server, spaceId, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) UpdateSpace(ctx context.Context, spaceId string, params *UpdateSpaceParams, body UpdateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateSpaceRequest(c.Server, spaceId, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) StreamUpdates(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewStreamUpdatesRequest(c.Server, companyId, params)
 	if err != nil {
@@ -30487,18 +30339,6 @@ func (c *Client) StreamProducts(ctx context.Context, companyId string, params *S
 
 func (c *Client) StreamResources(ctx context.Context, companyId string, params *StreamResourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewStreamResourcesRequest(c.Server, companyId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) StreamSpaces(ctx context.Context, companyId string, params *StreamSpacesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewStreamSpacesRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -60262,305 +60102,6 @@ func NewCreateSMSMessageRequestWithBody(server string, params *CreateSMSMessageP
 	return req, nil
 }
 
-// NewCreateSpaceRequest calls the generic CreateSpace builder with application/json body
-func NewCreateSpaceRequest(server string, params *CreateSpaceParams, body CreateSpaceJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateSpaceRequestWithBody(server, params, "application/json", bodyReader)
-}
-
-// NewCreateSpaceRequestWithBody generates requests for CreateSpace with any type of body
-func NewCreateSpaceRequestWithBody(server string, params *CreateSpaceParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/spaces")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewDeleteSpaceRequest generates requests for DeleteSpace
-func NewDeleteSpaceRequest(server string, spaceId string, params *DeleteSpaceParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "space_id", runtime.ParamLocationPath, spaceId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/spaces/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetSpaceRequest generates requests for GetSpace
-func NewGetSpaceRequest(server string, spaceId string, params *GetSpaceParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "space_id", runtime.ParamLocationPath, spaceId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/spaces/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewUpdateSpaceRequest calls the generic UpdateSpace builder with application/json body
-func NewUpdateSpaceRequest(server string, spaceId string, params *UpdateSpaceParams, body UpdateSpaceJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewUpdateSpaceRequestWithBody(server, spaceId, params, "application/json", bodyReader)
-}
-
-// NewUpdateSpaceRequestWithBody generates requests for UpdateSpace with any type of body
-func NewUpdateSpaceRequestWithBody(server string, spaceId string, params *UpdateSpaceParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "space_id", runtime.ParamLocationPath, spaceId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/spaces/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewStreamUpdatesRequest generates requests for StreamUpdates
 func NewStreamUpdatesRequest(server string, companyId string, params *StreamUpdatesParams) (*http.Request, error) {
 	var err error
@@ -61304,76 +60845,6 @@ func NewStreamResourcesRequest(server string, companyId string, params *StreamRe
 	}
 
 	operationPath := fmt.Sprintf("/v1/hq/stream/companies/%s/resource", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewStreamSpacesRequest generates requests for StreamSpaces
-func NewStreamSpacesRequest(server string, companyId string, params *StreamSpacesParams) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/stream/companies/%s/spaces", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -67858,22 +67329,6 @@ type ClientWithResponsesInterface interface {
 
 	CreateSMSMessageWithResponse(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error)
 
-	// CreateSpace request with any body
-	CreateSpaceWithBodyWithResponse(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSpaceResponse, error)
-
-	CreateSpaceWithResponse(ctx context.Context, params *CreateSpaceParams, body CreateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSpaceResponse, error)
-
-	// DeleteSpace request
-	DeleteSpaceWithResponse(ctx context.Context, spaceId string, params *DeleteSpaceParams, reqEditors ...RequestEditorFn) (*DeleteSpaceResponse, error)
-
-	// GetSpace request
-	GetSpaceWithResponse(ctx context.Context, spaceId string, params *GetSpaceParams, reqEditors ...RequestEditorFn) (*GetSpaceResponse, error)
-
-	// UpdateSpace request with any body
-	UpdateSpaceWithBodyWithResponse(ctx context.Context, spaceId string, params *UpdateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateSpaceResponse, error)
-
-	UpdateSpaceWithResponse(ctx context.Context, spaceId string, params *UpdateSpaceParams, body UpdateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSpaceResponse, error)
-
 	// StreamUpdates request
 	StreamUpdatesWithResponse(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*StreamUpdatesResponse, error)
 
@@ -67906,9 +67361,6 @@ type ClientWithResponsesInterface interface {
 
 	// StreamResources request
 	StreamResourcesWithResponse(ctx context.Context, companyId string, params *StreamResourcesParams, reqEditors ...RequestEditorFn) (*StreamResourcesResponse, error)
-
-	// StreamSpaces request
-	StreamSpacesWithResponse(ctx context.Context, companyId string, params *StreamSpacesParams, reqEditors ...RequestEditorFn) (*StreamSpacesResponse, error)
 
 	// StreamTimeSlotReservations request
 	StreamTimeSlotReservationsWithResponse(ctx context.Context, companyId string, params *StreamTimeSlotReservationsParams, reqEditors ...RequestEditorFn) (*StreamTimeSlotReservationsResponse, error)
@@ -76755,93 +76207,6 @@ func (r CreateSMSMessageResponse) StatusCode() int {
 	return 0
 }
 
-type CreateSpaceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Space
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateSpaceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateSpaceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type DeleteSpaceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteSpaceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteSpaceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetSpaceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Space
-}
-
-// Status returns HTTPResponse.Status
-func (r GetSpaceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetSpaceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type UpdateSpaceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Space
-}
-
-// Status returns HTTPResponse.Status
-func (r UpdateSpaceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r UpdateSpaceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type StreamUpdatesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -77067,27 +76432,6 @@ func (r StreamResourcesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r StreamResourcesResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type StreamSpacesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r StreamSpacesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r StreamSpacesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -83241,58 +82585,6 @@ func (c *ClientWithResponses) CreateSMSMessageWithResponse(ctx context.Context, 
 	return ParseCreateSMSMessageResponse(rsp)
 }
 
-// CreateSpaceWithBodyWithResponse request with arbitrary body returning *CreateSpaceResponse
-func (c *ClientWithResponses) CreateSpaceWithBodyWithResponse(ctx context.Context, params *CreateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSpaceResponse, error) {
-	rsp, err := c.CreateSpaceWithBody(ctx, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateSpaceResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateSpaceWithResponse(ctx context.Context, params *CreateSpaceParams, body CreateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSpaceResponse, error) {
-	rsp, err := c.CreateSpace(ctx, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateSpaceResponse(rsp)
-}
-
-// DeleteSpaceWithResponse request returning *DeleteSpaceResponse
-func (c *ClientWithResponses) DeleteSpaceWithResponse(ctx context.Context, spaceId string, params *DeleteSpaceParams, reqEditors ...RequestEditorFn) (*DeleteSpaceResponse, error) {
-	rsp, err := c.DeleteSpace(ctx, spaceId, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteSpaceResponse(rsp)
-}
-
-// GetSpaceWithResponse request returning *GetSpaceResponse
-func (c *ClientWithResponses) GetSpaceWithResponse(ctx context.Context, spaceId string, params *GetSpaceParams, reqEditors ...RequestEditorFn) (*GetSpaceResponse, error) {
-	rsp, err := c.GetSpace(ctx, spaceId, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetSpaceResponse(rsp)
-}
-
-// UpdateSpaceWithBodyWithResponse request with arbitrary body returning *UpdateSpaceResponse
-func (c *ClientWithResponses) UpdateSpaceWithBodyWithResponse(ctx context.Context, spaceId string, params *UpdateSpaceParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateSpaceResponse, error) {
-	rsp, err := c.UpdateSpaceWithBody(ctx, spaceId, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateSpaceResponse(rsp)
-}
-
-func (c *ClientWithResponses) UpdateSpaceWithResponse(ctx context.Context, spaceId string, params *UpdateSpaceParams, body UpdateSpaceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateSpaceResponse, error) {
-	rsp, err := c.UpdateSpace(ctx, spaceId, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateSpaceResponse(rsp)
-}
-
 // StreamUpdatesWithResponse request returning *StreamUpdatesResponse
 func (c *ClientWithResponses) StreamUpdatesWithResponse(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*StreamUpdatesResponse, error) {
 	rsp, err := c.StreamUpdates(ctx, companyId, params, reqEditors...)
@@ -83390,15 +82682,6 @@ func (c *ClientWithResponses) StreamResourcesWithResponse(ctx context.Context, c
 		return nil, err
 	}
 	return ParseStreamResourcesResponse(rsp)
-}
-
-// StreamSpacesWithResponse request returning *StreamSpacesResponse
-func (c *ClientWithResponses) StreamSpacesWithResponse(ctx context.Context, companyId string, params *StreamSpacesParams, reqEditors ...RequestEditorFn) (*StreamSpacesResponse, error) {
-	rsp, err := c.StreamSpaces(ctx, companyId, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseStreamSpacesResponse(rsp)
 }
 
 // StreamTimeSlotReservationsWithResponse request returning *StreamTimeSlotReservationsResponse
@@ -94248,100 +93531,6 @@ func ParseCreateSMSMessageResponse(rsp *http.Response) (*CreateSMSMessageRespons
 	return response, nil
 }
 
-// ParseCreateSpaceResponse parses an HTTP response from a CreateSpaceWithResponse call
-func ParseCreateSpaceResponse(rsp *http.Response) (*CreateSpaceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateSpaceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Space
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseDeleteSpaceResponse parses an HTTP response from a DeleteSpaceWithResponse call
-func ParseDeleteSpaceResponse(rsp *http.Response) (*DeleteSpaceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteSpaceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetSpaceResponse parses an HTTP response from a GetSpaceWithResponse call
-func ParseGetSpaceResponse(rsp *http.Response) (*GetSpaceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetSpaceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Space
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseUpdateSpaceResponse parses an HTTP response from a UpdateSpaceWithResponse call
-func ParseUpdateSpaceResponse(rsp *http.Response) (*UpdateSpaceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &UpdateSpaceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Space
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseStreamUpdatesResponse parses an HTTP response from a StreamUpdatesWithResponse call
 func ParseStreamUpdatesResponse(rsp *http.Response) (*StreamUpdatesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -94511,22 +93700,6 @@ func ParseStreamResourcesResponse(rsp *http.Response) (*StreamResourcesResponse,
 	}
 
 	response := &StreamResourcesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseStreamSpacesResponse parses an HTTP response from a StreamSpacesWithResponse call
-func ParseStreamSpacesResponse(rsp *http.Response) (*StreamSpacesResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &StreamSpacesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
