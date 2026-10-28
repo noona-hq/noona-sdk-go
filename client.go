@@ -215,14 +215,6 @@ const (
 	AdminAdStatusUpdateTakenDown AdminAdStatusUpdate = "taken_down"
 )
 
-// Defines values for AdminStaffWorkHoursBulkMigrationScope.
-const (
-	AdminStaffWorkHoursBulkMigrationScopeAll         AdminStaffWorkHoursBulkMigrationScope = "all"
-	AdminStaffWorkHoursBulkMigrationScopeLegacyTier  AdminStaffWorkHoursBulkMigrationScope = "legacy_tier"
-	AdminStaffWorkHoursBulkMigrationScopeRulesetTier AdminStaffWorkHoursBulkMigrationScope = "ruleset_tier"
-	AdminStaffWorkHoursBulkMigrationScopeSingle      AdminStaffWorkHoursBulkMigrationScope = "single"
-)
-
 // Defines values for AdyenBankAccountType.
 const (
 	BankAccount AdyenBankAccountType = "bank_account"
@@ -1878,10 +1870,10 @@ const (
 
 // Defines values for SubtransactionFailureState.
 const (
-	Busy      SubtransactionFailureState = "busy"
-	Cancelled SubtransactionFailureState = "cancelled"
-	Declined  SubtransactionFailureState = "declined"
-	Unknown   SubtransactionFailureState = "unknown"
+	SubtransactionFailureStateBusy      SubtransactionFailureState = "busy"
+	SubtransactionFailureStateCancelled SubtransactionFailureState = "cancelled"
+	SubtransactionFailureStateDeclined  SubtransactionFailureState = "declined"
+	SubtransactionFailureStateUnknown   SubtransactionFailureState = "unknown"
 )
 
 // Defines values for SubtransactionOrigin.
@@ -3268,40 +3260,6 @@ type AdminMoveUserRequest struct {
 	// ID of the company to move the user from
 	SourceCompanyId string `json:"source_company_id"`
 }
-
-// AdminStaffWorkHoursBulkMigrationFailure defines model for AdminStaffWorkHoursBulkMigrationFailure.
-type AdminStaffWorkHoursBulkMigrationFailure struct {
-	CompanyId *string `json:"company_id,omitempty"`
-	Error     *string `json:"error,omitempty"`
-}
-
-// AdminStaffWorkHoursBulkMigrationRequest defines model for AdminStaffWorkHoursBulkMigrationRequest.
-type AdminStaffWorkHoursBulkMigrationRequest struct {
-	// Required when scope is "single"
-	CompanyId *string `json:"company_id,omitempty"`
-
-	// If true, return count without migrating
-	DryRun *bool `json:"dry_run,omitempty"`
-
-	// Max companies to process. Default 100, max 1000. Ignored for "single" scope.
-	Limit *int32                                `json:"limit,omitempty"`
-	Scope AdminStaffWorkHoursBulkMigrationScope `json:"scope"`
-
-	// Number of companies to skip before processing. Use with limit to paginate. Ignored for "single" scope.
-	Skip *int32 `json:"skip,omitempty"`
-}
-
-// AdminStaffWorkHoursBulkMigrationResult defines model for AdminStaffWorkHoursBulkMigrationResult.
-type AdminStaffWorkHoursBulkMigrationResult struct {
-	Failed   *int32                                     `json:"failed,omitempty"`
-	Failures *[]AdminStaffWorkHoursBulkMigrationFailure `json:"failures,omitempty"`
-	Migrated *int32                                     `json:"migrated,omitempty"`
-	Skipped  *int32                                     `json:"skipped,omitempty"`
-	Total    *int32                                     `json:"total,omitempty"`
-}
-
-// AdminStaffWorkHoursBulkMigrationScope defines model for AdminStaffWorkHoursBulkMigrationScope.
-type AdminStaffWorkHoursBulkMigrationScope string
 
 // AdminTerminalUpdate defines model for AdminTerminalUpdate.
 type AdminTerminalUpdate struct {
@@ -14750,9 +14708,6 @@ type AdminListMarketplaceAdCampaignsParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
-// AdminBulkMigrateStaffWorkHoursJSONBody defines parameters for AdminBulkMigrateStaffWorkHours.
-type AdminBulkMigrateStaffWorkHoursJSONBody AdminStaffWorkHoursBulkMigrationRequest
-
 // AdminListSecretariesParams defines parameters for AdminListSecretaries.
 type AdminListSecretariesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -19038,9 +18993,6 @@ type AdminTransferFiscalizationJSONRequestBody AdminTransferFiscalizationJSONBod
 // AdminUpdateMarketplaceAdJSONRequestBody defines body for AdminUpdateMarketplaceAd for application/json ContentType.
 type AdminUpdateMarketplaceAdJSONRequestBody AdminUpdateMarketplaceAdJSONBody
 
-// AdminBulkMigrateStaffWorkHoursJSONRequestBody defines body for AdminBulkMigrateStaffWorkHours for application/json ContentType.
-type AdminBulkMigrateStaffWorkHoursJSONRequestBody AdminBulkMigrateStaffWorkHoursJSONBody
-
 // AdminUpdateUserJSONRequestBody defines body for AdminUpdateUser for application/json ContentType.
 type AdminUpdateUserJSONRequestBody AdminUpdateUserJSONBody
 
@@ -22296,11 +22248,6 @@ type ClientInterface interface {
 	// AdminListMarketplaceAdCampaigns request
 	AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AdminBulkMigrateStaffWorkHours request with any body
-	AdminBulkMigrateStaffWorkHoursWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AdminBulkMigrateStaffWorkHours(ctx context.Context, body AdminBulkMigrateStaffWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// AdminListSecretaries request
 	AdminListSecretaries(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24470,30 +24417,6 @@ func (c *Client) AdminUpdateMarketplaceAd(ctx context.Context, adId string, para
 
 func (c *Client) AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminListMarketplaceAdCampaignsRequest(c.Server, adId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminBulkMigrateStaffWorkHoursWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBulkMigrateStaffWorkHoursRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminBulkMigrateStaffWorkHours(ctx context.Context, body AdminBulkMigrateStaffWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBulkMigrateStaffWorkHoursRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -33702,46 +33625,6 @@ func NewAdminListMarketplaceAdCampaignsRequest(server string, adId string, param
 	if err != nil {
 		return nil, err
 	}
-
-	return req, nil
-}
-
-// NewAdminBulkMigrateStaffWorkHoursRequest calls the generic AdminBulkMigrateStaffWorkHours builder with application/json body
-func NewAdminBulkMigrateStaffWorkHoursRequest(server string, body AdminBulkMigrateStaffWorkHoursJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAdminBulkMigrateStaffWorkHoursRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewAdminBulkMigrateStaffWorkHoursRequestWithBody generates requests for AdminBulkMigrateStaffWorkHours with any type of body
-func NewAdminBulkMigrateStaffWorkHoursRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/staff-work-hours")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -65643,11 +65526,6 @@ type ClientWithResponsesInterface interface {
 	// AdminListMarketplaceAdCampaigns request
 	AdminListMarketplaceAdCampaignsWithResponse(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdCampaignsResponse, error)
 
-	// AdminBulkMigrateStaffWorkHours request with any body
-	AdminBulkMigrateStaffWorkHoursWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateStaffWorkHoursResponse, error)
-
-	AdminBulkMigrateStaffWorkHoursWithResponse(ctx context.Context, body AdminBulkMigrateStaffWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateStaffWorkHoursResponse, error)
-
 	// AdminListSecretaries request
 	AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error)
 
@@ -68004,28 +67882,6 @@ func (r AdminListMarketplaceAdCampaignsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminListMarketplaceAdCampaignsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type AdminBulkMigrateStaffWorkHoursResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *AdminStaffWorkHoursBulkMigrationResult
-}
-
-// Status returns HTTPResponse.Status
-func (r AdminBulkMigrateStaffWorkHoursResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AdminBulkMigrateStaffWorkHoursResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -77995,23 +77851,6 @@ func (c *ClientWithResponses) AdminListMarketplaceAdCampaignsWithResponse(ctx co
 	return ParseAdminListMarketplaceAdCampaignsResponse(rsp)
 }
 
-// AdminBulkMigrateStaffWorkHoursWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateStaffWorkHoursResponse
-func (c *ClientWithResponses) AdminBulkMigrateStaffWorkHoursWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateStaffWorkHoursResponse, error) {
-	rsp, err := c.AdminBulkMigrateStaffWorkHoursWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBulkMigrateStaffWorkHoursResponse(rsp)
-}
-
-func (c *ClientWithResponses) AdminBulkMigrateStaffWorkHoursWithResponse(ctx context.Context, body AdminBulkMigrateStaffWorkHoursJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateStaffWorkHoursResponse, error) {
-	rsp, err := c.AdminBulkMigrateStaffWorkHours(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBulkMigrateStaffWorkHoursResponse(rsp)
-}
-
 // AdminListSecretariesWithResponse request returning *AdminListSecretariesResponse
 func (c *ClientWithResponses) AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error) {
 	rsp, err := c.AdminListSecretaries(ctx, params, reqEditors...)
@@ -83855,32 +83694,6 @@ func ParseAdminListMarketplaceAdCampaignsResponse(rsp *http.Response) (*AdminLis
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdCampaignsResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseAdminBulkMigrateStaffWorkHoursResponse parses an HTTP response from a AdminBulkMigrateStaffWorkHoursWithResponse call
-func ParseAdminBulkMigrateStaffWorkHoursResponse(rsp *http.Response) (*AdminBulkMigrateStaffWorkHoursResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AdminBulkMigrateStaffWorkHoursResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdminStaffWorkHoursBulkMigrationResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
