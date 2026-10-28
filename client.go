@@ -215,12 +215,6 @@ const (
 	AdminAdStatusUpdateTakenDown AdminAdStatusUpdate = "taken_down"
 )
 
-// Defines values for AdminFixWorkHoursTimesScope.
-const (
-	AdminFixWorkHoursTimesScopeAll    AdminFixWorkHoursTimesScope = "all"
-	AdminFixWorkHoursTimesScopeSingle AdminFixWorkHoursTimesScope = "single"
-)
-
 // Defines values for AdminStaffWorkHoursBulkMigrationScope.
 const (
 	AdminStaffWorkHoursBulkMigrationScopeAll         AdminStaffWorkHoursBulkMigrationScope = "all"
@@ -1884,10 +1878,10 @@ const (
 
 // Defines values for SubtransactionFailureState.
 const (
-	SubtransactionFailureStateBusy      SubtransactionFailureState = "busy"
-	SubtransactionFailureStateCancelled SubtransactionFailureState = "cancelled"
-	SubtransactionFailureStateDeclined  SubtransactionFailureState = "declined"
-	SubtransactionFailureStateUnknown   SubtransactionFailureState = "unknown"
+	Busy      SubtransactionFailureState = "busy"
+	Cancelled SubtransactionFailureState = "cancelled"
+	Declined  SubtransactionFailureState = "declined"
+	Unknown   SubtransactionFailureState = "unknown"
 )
 
 // Defines values for SubtransactionOrigin.
@@ -2930,44 +2924,6 @@ type Address struct {
 // AdminAdStatusUpdate defines model for AdminAdStatusUpdate.
 type AdminAdStatusUpdate string
 
-// AdminAdsNotificationMetadataSeedRequest defines model for AdminAdsNotificationMetadataSeedRequest.
-type AdminAdsNotificationMetadataSeedRequest struct {
-	// If true, report missing metadata without writing it.
-	DryRun *bool `json:"dry_run,omitempty"`
-}
-
-// AdminAdsNotificationMetadataSeedResult defines model for AdminAdsNotificationMetadataSeedResult.
-type AdminAdsNotificationMetadataSeedResult struct {
-	CategoriesCreated     int32 `json:"categories_created"`
-	CategoriesExisting    int32 `json:"categories_existing"`
-	CategoriesUpdated     int32 `json:"categories_updated"`
-	ChannelsCreated       int32 `json:"channels_created"`
-	ChannelsExisting      int32 `json:"channels_existing"`
-	DryRun                bool  `json:"dry_run"`
-	SubcategoriesCreated  int32 `json:"subcategories_created"`
-	SubcategoriesExisting int32 `json:"subcategories_existing"`
-}
-
-// AdminAdsNotificationPreferencesBackfillRequest defines model for AdminAdsNotificationPreferencesBackfillRequest.
-type AdminAdsNotificationPreferencesBackfillRequest struct {
-	// Last company ID returned by the previous page.
-	Cursor *string `json:"cursor,omitempty"`
-	DryRun *bool   `json:"dry_run,omitempty"`
-
-	// Number of companies to process. Defaults to 25.
-	Limit *int32 `json:"limit,omitempty"`
-}
-
-// AdminAdsNotificationPreferencesBackfillResult defines model for AdminAdsNotificationPreferencesBackfillResult.
-type AdminAdsNotificationPreferencesBackfillResult struct {
-	CompaniesScanned int32   `json:"companies_scanned"`
-	DryRun           bool    `json:"dry_run"`
-	MembersScanned   int32   `json:"members_scanned"`
-	MembersUnchanged int32   `json:"members_unchanged"`
-	MembersUpdated   int32   `json:"members_updated"`
-	NextCursor       *string `json:"next_cursor,omitempty"`
-}
-
 // AdminCompanies defines model for AdminCompanies.
 type AdminCompanies []AdminCompany
 
@@ -3234,37 +3190,6 @@ type AdminFiscalizationTransferResult struct {
 	TransferredFields []string `json:"transferred_fields"`
 }
 
-// AdminFixWorkHoursTimesFailure defines model for AdminFixWorkHoursTimesFailure.
-type AdminFixWorkHoursTimesFailure struct {
-	CompanyId *string `json:"company_id,omitempty"`
-	Error     *string `json:"error,omitempty"`
-}
-
-// AdminFixWorkHoursTimesRequest defines model for AdminFixWorkHoursTimesRequest.
-type AdminFixWorkHoursTimesRequest struct {
-	// Required when scope is "single"
-	CompanyId *string `json:"company_id,omitempty"`
-
-	// If true, return count without fixing
-	DryRun *bool `json:"dry_run,omitempty"`
-
-	// Max companies to process. Default 100, max 1000. Ignored for "single" scope.
-	Limit *int32                      `json:"limit,omitempty"`
-	Scope AdminFixWorkHoursTimesScope `json:"scope"`
-}
-
-// AdminFixWorkHoursTimesResult defines model for AdminFixWorkHoursTimesResult.
-type AdminFixWorkHoursTimesResult struct {
-	Failed   *int32                           `json:"failed,omitempty"`
-	Failures *[]AdminFixWorkHoursTimesFailure `json:"failures,omitempty"`
-	Fixed    *int32                           `json:"fixed,omitempty"`
-	Skipped  *int32                           `json:"skipped,omitempty"`
-	Total    *int32                           `json:"total,omitempty"`
-}
-
-// AdminFixWorkHoursTimesScope defines model for AdminFixWorkHoursTimesScope.
-type AdminFixWorkHoursTimesScope string
-
 // AdminMarketplaceAdResponse defines model for AdminMarketplaceAdResponse.
 type AdminMarketplaceAdResponse struct {
 	// Where the ad leads when tapped, discriminated by `type`: exactly one of the
@@ -3342,33 +3267,6 @@ type AdminMoveUserRequest struct {
 
 	// ID of the company to move the user from
 	SourceCompanyId string `json:"source_company_id"`
-}
-
-// AdminSmsRemindersBulkMigrationFailure defines model for AdminSmsRemindersBulkMigrationFailure.
-type AdminSmsRemindersBulkMigrationFailure struct {
-	CompanyId *string `json:"company_id,omitempty"`
-	Error     *string `json:"error,omitempty"`
-}
-
-// AdminSmsRemindersBulkMigrationRequest defines model for AdminSmsRemindersBulkMigrationRequest.
-type AdminSmsRemindersBulkMigrationRequest struct {
-	// If provided, only these companies are migrated. Otherwise all unmigrated companies are processed.
-	CompanyIds *[]string `json:"company_ids,omitempty"`
-
-	// If true, return count without migrating
-	DryRun *bool `json:"dry_run,omitempty"`
-
-	// Max companies to process when company_ids is not provided. Default 100, max 1000.
-	Limit *int32 `json:"limit,omitempty"`
-}
-
-// AdminSmsRemindersBulkMigrationResult defines model for AdminSmsRemindersBulkMigrationResult.
-type AdminSmsRemindersBulkMigrationResult struct {
-	Failed   *int32                                   `json:"failed,omitempty"`
-	Failures *[]AdminSmsRemindersBulkMigrationFailure `json:"failures,omitempty"`
-	Migrated *int32                                   `json:"migrated,omitempty"`
-	Skipped  *int32                                   `json:"skipped,omitempty"`
-	Total    *int32                                   `json:"total,omitempty"`
 }
 
 // AdminStaffWorkHoursBulkMigrationFailure defines model for AdminStaffWorkHoursBulkMigrationFailure.
@@ -14852,18 +14750,6 @@ type AdminListMarketplaceAdCampaignsParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
-// AdminSeedAdsNotificationMetadataJSONBody defines parameters for AdminSeedAdsNotificationMetadata.
-type AdminSeedAdsNotificationMetadataJSONBody AdminAdsNotificationMetadataSeedRequest
-
-// AdminBackfillAdsNotificationPreferencesJSONBody defines parameters for AdminBackfillAdsNotificationPreferences.
-type AdminBackfillAdsNotificationPreferencesJSONBody AdminAdsNotificationPreferencesBackfillRequest
-
-// AdminFixWorkHoursTimesJSONBody defines parameters for AdminFixWorkHoursTimes.
-type AdminFixWorkHoursTimesJSONBody AdminFixWorkHoursTimesRequest
-
-// AdminBulkMigrateSmsRemindersJSONBody defines parameters for AdminBulkMigrateSmsReminders.
-type AdminBulkMigrateSmsRemindersJSONBody AdminSmsRemindersBulkMigrationRequest
-
 // AdminBulkMigrateStaffWorkHoursJSONBody defines parameters for AdminBulkMigrateStaffWorkHours.
 type AdminBulkMigrateStaffWorkHoursJSONBody AdminStaffWorkHoursBulkMigrationRequest
 
@@ -19152,18 +19038,6 @@ type AdminTransferFiscalizationJSONRequestBody AdminTransferFiscalizationJSONBod
 // AdminUpdateMarketplaceAdJSONRequestBody defines body for AdminUpdateMarketplaceAd for application/json ContentType.
 type AdminUpdateMarketplaceAdJSONRequestBody AdminUpdateMarketplaceAdJSONBody
 
-// AdminSeedAdsNotificationMetadataJSONRequestBody defines body for AdminSeedAdsNotificationMetadata for application/json ContentType.
-type AdminSeedAdsNotificationMetadataJSONRequestBody AdminSeedAdsNotificationMetadataJSONBody
-
-// AdminBackfillAdsNotificationPreferencesJSONRequestBody defines body for AdminBackfillAdsNotificationPreferences for application/json ContentType.
-type AdminBackfillAdsNotificationPreferencesJSONRequestBody AdminBackfillAdsNotificationPreferencesJSONBody
-
-// AdminFixWorkHoursTimesJSONRequestBody defines body for AdminFixWorkHoursTimes for application/json ContentType.
-type AdminFixWorkHoursTimesJSONRequestBody AdminFixWorkHoursTimesJSONBody
-
-// AdminBulkMigrateSmsRemindersJSONRequestBody defines body for AdminBulkMigrateSmsReminders for application/json ContentType.
-type AdminBulkMigrateSmsRemindersJSONRequestBody AdminBulkMigrateSmsRemindersJSONBody
-
 // AdminBulkMigrateStaffWorkHoursJSONRequestBody defines body for AdminBulkMigrateStaffWorkHours for application/json ContentType.
 type AdminBulkMigrateStaffWorkHoursJSONRequestBody AdminBulkMigrateStaffWorkHoursJSONBody
 
@@ -22422,26 +22296,6 @@ type ClientInterface interface {
 	// AdminListMarketplaceAdCampaigns request
 	AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// AdminSeedAdsNotificationMetadata request with any body
-	AdminSeedAdsNotificationMetadataWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AdminSeedAdsNotificationMetadata(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// AdminBackfillAdsNotificationPreferences request with any body
-	AdminBackfillAdsNotificationPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AdminBackfillAdsNotificationPreferences(ctx context.Context, body AdminBackfillAdsNotificationPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// AdminFixWorkHoursTimes request with any body
-	AdminFixWorkHoursTimesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AdminFixWorkHoursTimes(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// AdminBulkMigrateSmsReminders request with any body
-	AdminBulkMigrateSmsRemindersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	AdminBulkMigrateSmsReminders(ctx context.Context, body AdminBulkMigrateSmsRemindersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// AdminBulkMigrateStaffWorkHours request with any body
 	AdminBulkMigrateStaffWorkHoursWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24616,102 +24470,6 @@ func (c *Client) AdminUpdateMarketplaceAd(ctx context.Context, adId string, para
 
 func (c *Client) AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminListMarketplaceAdCampaignsRequest(c.Server, adId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminSeedAdsNotificationMetadataWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminSeedAdsNotificationMetadataRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminSeedAdsNotificationMetadata(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminSeedAdsNotificationMetadataRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminBackfillAdsNotificationPreferencesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBackfillAdsNotificationPreferencesRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminBackfillAdsNotificationPreferences(ctx context.Context, body AdminBackfillAdsNotificationPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBackfillAdsNotificationPreferencesRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminFixWorkHoursTimesWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminFixWorkHoursTimesRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminFixWorkHoursTimes(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminFixWorkHoursTimesRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminBulkMigrateSmsRemindersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBulkMigrateSmsRemindersRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) AdminBulkMigrateSmsReminders(ctx context.Context, body AdminBulkMigrateSmsRemindersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAdminBulkMigrateSmsRemindersRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -33944,166 +33702,6 @@ func NewAdminListMarketplaceAdCampaignsRequest(server string, adId string, param
 	if err != nil {
 		return nil, err
 	}
-
-	return req, nil
-}
-
-// NewAdminSeedAdsNotificationMetadataRequest calls the generic AdminSeedAdsNotificationMetadata builder with application/json body
-func NewAdminSeedAdsNotificationMetadataRequest(server string, body AdminSeedAdsNotificationMetadataJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAdminSeedAdsNotificationMetadataRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewAdminSeedAdsNotificationMetadataRequestWithBody generates requests for AdminSeedAdsNotificationMetadata with any type of body
-func NewAdminSeedAdsNotificationMetadataRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/ads_notification_metadata")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewAdminBackfillAdsNotificationPreferencesRequest calls the generic AdminBackfillAdsNotificationPreferences builder with application/json body
-func NewAdminBackfillAdsNotificationPreferencesRequest(server string, body AdminBackfillAdsNotificationPreferencesJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAdminBackfillAdsNotificationPreferencesRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewAdminBackfillAdsNotificationPreferencesRequestWithBody generates requests for AdminBackfillAdsNotificationPreferences with any type of body
-func NewAdminBackfillAdsNotificationPreferencesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/ads_notification_preferences")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewAdminFixWorkHoursTimesRequest calls the generic AdminFixWorkHoursTimes builder with application/json body
-func NewAdminFixWorkHoursTimesRequest(server string, body AdminFixWorkHoursTimesJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAdminFixWorkHoursTimesRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewAdminFixWorkHoursTimesRequestWithBody generates requests for AdminFixWorkHoursTimes with any type of body
-func NewAdminFixWorkHoursTimesRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/fix-work-hours-times")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewAdminBulkMigrateSmsRemindersRequest calls the generic AdminBulkMigrateSmsReminders builder with application/json body
-func NewAdminBulkMigrateSmsRemindersRequest(server string, body AdminBulkMigrateSmsRemindersJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewAdminBulkMigrateSmsRemindersRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewAdminBulkMigrateSmsRemindersRequestWithBody generates requests for AdminBulkMigrateSmsReminders with any type of body
-func NewAdminBulkMigrateSmsRemindersRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/admin/migrations/sms_reminders")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -66045,26 +65643,6 @@ type ClientWithResponsesInterface interface {
 	// AdminListMarketplaceAdCampaigns request
 	AdminListMarketplaceAdCampaignsWithResponse(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdCampaignsResponse, error)
 
-	// AdminSeedAdsNotificationMetadata request with any body
-	AdminSeedAdsNotificationMetadataWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error)
-
-	AdminSeedAdsNotificationMetadataWithResponse(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error)
-
-	// AdminBackfillAdsNotificationPreferences request with any body
-	AdminBackfillAdsNotificationPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBackfillAdsNotificationPreferencesResponse, error)
-
-	AdminBackfillAdsNotificationPreferencesWithResponse(ctx context.Context, body AdminBackfillAdsNotificationPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBackfillAdsNotificationPreferencesResponse, error)
-
-	// AdminFixWorkHoursTimes request with any body
-	AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
-
-	AdminFixWorkHoursTimesWithResponse(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error)
-
-	// AdminBulkMigrateSmsReminders request with any body
-	AdminBulkMigrateSmsRemindersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error)
-
-	AdminBulkMigrateSmsRemindersWithResponse(ctx context.Context, body AdminBulkMigrateSmsRemindersJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error)
-
 	// AdminBulkMigrateStaffWorkHours request with any body
 	AdminBulkMigrateStaffWorkHoursWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateStaffWorkHoursResponse, error)
 
@@ -68426,94 +68004,6 @@ func (r AdminListMarketplaceAdCampaignsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminListMarketplaceAdCampaignsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type AdminSeedAdsNotificationMetadataResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *AdminAdsNotificationMetadataSeedResult
-}
-
-// Status returns HTTPResponse.Status
-func (r AdminSeedAdsNotificationMetadataResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AdminSeedAdsNotificationMetadataResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type AdminBackfillAdsNotificationPreferencesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *AdminAdsNotificationPreferencesBackfillResult
-}
-
-// Status returns HTTPResponse.Status
-func (r AdminBackfillAdsNotificationPreferencesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AdminBackfillAdsNotificationPreferencesResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type AdminFixWorkHoursTimesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *AdminFixWorkHoursTimesResult
-}
-
-// Status returns HTTPResponse.Status
-func (r AdminFixWorkHoursTimesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AdminFixWorkHoursTimesResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type AdminBulkMigrateSmsRemindersResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *AdminSmsRemindersBulkMigrationResult
-}
-
-// Status returns HTTPResponse.Status
-func (r AdminBulkMigrateSmsRemindersResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r AdminBulkMigrateSmsRemindersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -78505,74 +77995,6 @@ func (c *ClientWithResponses) AdminListMarketplaceAdCampaignsWithResponse(ctx co
 	return ParseAdminListMarketplaceAdCampaignsResponse(rsp)
 }
 
-// AdminSeedAdsNotificationMetadataWithBodyWithResponse request with arbitrary body returning *AdminSeedAdsNotificationMetadataResponse
-func (c *ClientWithResponses) AdminSeedAdsNotificationMetadataWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error) {
-	rsp, err := c.AdminSeedAdsNotificationMetadataWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminSeedAdsNotificationMetadataResponse(rsp)
-}
-
-func (c *ClientWithResponses) AdminSeedAdsNotificationMetadataWithResponse(ctx context.Context, body AdminSeedAdsNotificationMetadataJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminSeedAdsNotificationMetadataResponse, error) {
-	rsp, err := c.AdminSeedAdsNotificationMetadata(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminSeedAdsNotificationMetadataResponse(rsp)
-}
-
-// AdminBackfillAdsNotificationPreferencesWithBodyWithResponse request with arbitrary body returning *AdminBackfillAdsNotificationPreferencesResponse
-func (c *ClientWithResponses) AdminBackfillAdsNotificationPreferencesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBackfillAdsNotificationPreferencesResponse, error) {
-	rsp, err := c.AdminBackfillAdsNotificationPreferencesWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBackfillAdsNotificationPreferencesResponse(rsp)
-}
-
-func (c *ClientWithResponses) AdminBackfillAdsNotificationPreferencesWithResponse(ctx context.Context, body AdminBackfillAdsNotificationPreferencesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBackfillAdsNotificationPreferencesResponse, error) {
-	rsp, err := c.AdminBackfillAdsNotificationPreferences(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBackfillAdsNotificationPreferencesResponse(rsp)
-}
-
-// AdminFixWorkHoursTimesWithBodyWithResponse request with arbitrary body returning *AdminFixWorkHoursTimesResponse
-func (c *ClientWithResponses) AdminFixWorkHoursTimesWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error) {
-	rsp, err := c.AdminFixWorkHoursTimesWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminFixWorkHoursTimesResponse(rsp)
-}
-
-func (c *ClientWithResponses) AdminFixWorkHoursTimesWithResponse(ctx context.Context, body AdminFixWorkHoursTimesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminFixWorkHoursTimesResponse, error) {
-	rsp, err := c.AdminFixWorkHoursTimes(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminFixWorkHoursTimesResponse(rsp)
-}
-
-// AdminBulkMigrateSmsRemindersWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateSmsRemindersResponse
-func (c *ClientWithResponses) AdminBulkMigrateSmsRemindersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error) {
-	rsp, err := c.AdminBulkMigrateSmsRemindersWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBulkMigrateSmsRemindersResponse(rsp)
-}
-
-func (c *ClientWithResponses) AdminBulkMigrateSmsRemindersWithResponse(ctx context.Context, body AdminBulkMigrateSmsRemindersJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminBulkMigrateSmsRemindersResponse, error) {
-	rsp, err := c.AdminBulkMigrateSmsReminders(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseAdminBulkMigrateSmsRemindersResponse(rsp)
-}
-
 // AdminBulkMigrateStaffWorkHoursWithBodyWithResponse request with arbitrary body returning *AdminBulkMigrateStaffWorkHoursResponse
 func (c *ClientWithResponses) AdminBulkMigrateStaffWorkHoursWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminBulkMigrateStaffWorkHoursResponse, error) {
 	rsp, err := c.AdminBulkMigrateStaffWorkHoursWithBody(ctx, contentType, body, reqEditors...)
@@ -84433,110 +83855,6 @@ func ParseAdminListMarketplaceAdCampaignsResponse(rsp *http.Response) (*AdminLis
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdCampaignsResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseAdminSeedAdsNotificationMetadataResponse parses an HTTP response from a AdminSeedAdsNotificationMetadataWithResponse call
-func ParseAdminSeedAdsNotificationMetadataResponse(rsp *http.Response) (*AdminSeedAdsNotificationMetadataResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AdminSeedAdsNotificationMetadataResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdminAdsNotificationMetadataSeedResult
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseAdminBackfillAdsNotificationPreferencesResponse parses an HTTP response from a AdminBackfillAdsNotificationPreferencesWithResponse call
-func ParseAdminBackfillAdsNotificationPreferencesResponse(rsp *http.Response) (*AdminBackfillAdsNotificationPreferencesResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AdminBackfillAdsNotificationPreferencesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdminAdsNotificationPreferencesBackfillResult
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseAdminFixWorkHoursTimesResponse parses an HTTP response from a AdminFixWorkHoursTimesWithResponse call
-func ParseAdminFixWorkHoursTimesResponse(rsp *http.Response) (*AdminFixWorkHoursTimesResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AdminFixWorkHoursTimesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdminFixWorkHoursTimesResult
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseAdminBulkMigrateSmsRemindersResponse parses an HTTP response from a AdminBulkMigrateSmsRemindersWithResponse call
-func ParseAdminBulkMigrateSmsRemindersResponse(rsp *http.Response) (*AdminBulkMigrateSmsRemindersResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &AdminBulkMigrateSmsRemindersResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AdminSmsRemindersBulkMigrationResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
