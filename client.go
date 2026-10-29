@@ -38,29 +38,31 @@ const (
 
 // Defines values for ActivityField.
 const (
-	ActivityFieldAfterPause         ActivityField = "after_pause"
-	ActivityFieldBeforePause        ActivityField = "before_pause"
-	ActivityFieldBufferAfterService ActivityField = "buffer_after_service"
-	ActivityFieldDuration           ActivityField = "duration"
-	ActivityFieldEmail              ActivityField = "email"
-	ActivityFieldEmployee           ActivityField = "employee"
-	ActivityFieldEndsAt             ActivityField = "ends_at"
-	ActivityFieldEventTypes         ActivityField = "event_types"
-	ActivityFieldImage              ActivityField = "image"
-	ActivityFieldKennitala          ActivityField = "kennitala"
-	ActivityFieldLicensePlate       ActivityField = "license_plate"
-	ActivityFieldName               ActivityField = "name"
-	ActivityFieldNotes              ActivityField = "notes"
-	ActivityFieldPause              ActivityField = "pause"
-	ActivityFieldPhoneCountryCode   ActivityField = "phone_country_code"
-	ActivityFieldPhoneNumber        ActivityField = "phone_number"
-	ActivityFieldReminderEmail      ActivityField = "reminder_email"
-	ActivityFieldSpace              ActivityField = "space"
-	ActivityFieldStartsAt           ActivityField = "starts_at"
-	ActivityFieldStatus             ActivityField = "status"
-	ActivityFieldTitle              ActivityField = "title"
-	ActivityFieldUnconfirmed        ActivityField = "unconfirmed"
-	ActivityFieldWantsSms           ActivityField = "wants_sms"
+	ActivityFieldAfterPause          ActivityField = "after_pause"
+	ActivityFieldBeforePause         ActivityField = "before_pause"
+	ActivityFieldBufferAfterService  ActivityField = "buffer_after_service"
+	ActivityFieldConfirmationEmail   ActivityField = "confirmation_email"
+	ActivityFieldDuration            ActivityField = "duration"
+	ActivityFieldEmail               ActivityField = "email"
+	ActivityFieldEmployee            ActivityField = "employee"
+	ActivityFieldEndsAt              ActivityField = "ends_at"
+	ActivityFieldEventTypes          ActivityField = "event_types"
+	ActivityFieldImage               ActivityField = "image"
+	ActivityFieldKennitala           ActivityField = "kennitala"
+	ActivityFieldLicensePlate        ActivityField = "license_plate"
+	ActivityFieldName                ActivityField = "name"
+	ActivityFieldNotes               ActivityField = "notes"
+	ActivityFieldPause               ActivityField = "pause"
+	ActivityFieldPhoneCountryCode    ActivityField = "phone_country_code"
+	ActivityFieldPhoneNumber         ActivityField = "phone_number"
+	ActivityFieldReminderEmail       ActivityField = "reminder_email"
+	ActivityFieldSpace               ActivityField = "space"
+	ActivityFieldStartsAt            ActivityField = "starts_at"
+	ActivityFieldStatus              ActivityField = "status"
+	ActivityFieldTitle               ActivityField = "title"
+	ActivityFieldUnconfirmed         ActivityField = "unconfirmed"
+	ActivityFieldWantsEmailReminders ActivityField = "wants_email_reminders"
+	ActivityFieldWantsSms            ActivityField = "wants_sms"
 )
 
 // Defines values for ActivityAction.
@@ -672,9 +674,10 @@ const (
 
 // Defines values for EmailType.
 const (
-	EventCancellationCustomer EmailType = "event_cancellation_customer"
-	EventConfirmationCustomer EmailType = "event_confirmation_customer"
-	EventMovedCustomer        EmailType = "event_moved_customer"
+	EmailTypeBookingReminder           EmailType = "booking_reminder"
+	EmailTypeEventCancellationCustomer EmailType = "event_cancellation_customer"
+	EmailTypeEventConfirmationCustomer EmailType = "event_confirmation_customer"
+	EmailTypeEventMovedCustomer        EmailType = "event_moved_customer"
 )
 
 // Defines values for EmailCallToActionType.
@@ -1633,6 +1636,7 @@ const (
 	DefaultReminderNotGlobal    ReminderErrorType = "default_reminder_not_global"
 	DuplicateDefaultReminder    ReminderErrorType = "duplicate_default_reminder"
 	DuplicateGlobalReminder     ReminderErrorType = "duplicate_global_reminder"
+	EmailContentLocked          ReminderErrorType = "email_content_locked"
 	NonWhitelistedUrls          ReminderErrorType = "non_whitelisted_urls"
 	RemindersLockedDuringTrial  ReminderErrorType = "reminders_locked_during_trial"
 	SmsContentLockedDuringTrial ReminderErrorType = "sms_content_locked_during_trial"
@@ -2320,17 +2324,19 @@ type Activity struct {
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	EventType *ExpandableEventType `json:"event_type,omitempty"`
-	Field     *ActivityField       `json:"field,omitempty"`
-	Id        *string              `json:"id,omitempty"`
-	NewValue  *MultiValue          `json:"new_value,omitempty"`
-	OldValue  *MultiValue          `json:"old_value,omitempty"`
+
+	// `reminder_email` is deprecated and refers to the booking confirmation email preference; use `confirmation_email`. `wants_email_reminders` refers to email reminders.
+	Field    *ActivityField `json:"field,omitempty"`
+	Id       *string        `json:"id,omitempty"`
+	NewValue *MultiValue    `json:"new_value,omitempty"`
+	OldValue *MultiValue    `json:"old_value,omitempty"`
 
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Payment *ExpandablePayment `json:"payment,omitempty"`
 	Type    *ActivityType      `json:"type,omitempty"`
 }
 
-// ActivityField defines model for Activity.Field.
+// `reminder_email` is deprecated and refers to the booking confirmation email preference; use `confirmation_email`. `wants_email_reminders` refers to email reminders.
 type ActivityField string
 
 // ActivityAction defines model for ActivityAction.
@@ -9532,9 +9538,21 @@ type NotificationOrigin string
 
 // NotificationPreferences defines model for NotificationPreferences.
 type NotificationPreferences struct {
+	// Whether booking confirmation emails are sent.
+	ConfirmationEmail *bool `json:"confirmation_email,omitempty"`
+
+	// Use `confirmation_email`.
 	Email *bool `json:"email,omitempty"`
 	Push  *bool `json:"push,omitempty"`
-	Sms   *bool `json:"sms,omitempty"`
+
+	// Whether reminders are sent by email.
+	ReminderEmail *bool `json:"reminder_email,omitempty"`
+
+	// Whether reminders are sent by SMS.
+	ReminderSms *bool `json:"reminder_sms,omitempty"`
+
+	// Use `reminder_sms`.
+	Sms *bool `json:"sms,omitempty"`
 }
 
 // NotificationSubcategory defines model for NotificationSubcategory.
@@ -10711,6 +10729,11 @@ type Reminder struct {
 	// Whether or not this is a default reminder
 	Default *bool `json:"default,omitempty"`
 
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	EmailContentTranslations *TranslationMap `json:"email_content_translations,omitempty"`
+
 	// Employee IDs for employee-specific reminders. If empty or null, reminder applies to all employees.
 	Employees *[]string `json:"employees,omitempty"`
 
@@ -10747,6 +10770,11 @@ type ReminderCreate struct {
 	// reminder with translations matching the base template; failed
 	// constraints fall back to non-default. Limited to one per company.
 	Default *bool `json:"default,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	EmailContentTranslations *TranslationMap `json:"email_content_translations,omitempty"`
 
 	// Employee IDs for employee-specific reminders
 	Employees *[]string `json:"employees,omitempty"`
@@ -10802,6 +10830,11 @@ type ReminderUpdate struct {
 	// active changes retain default, translation or scoping changes
 	// revert to custom.
 	Default *bool `json:"default,omitempty"`
+
+	// A map of translations for a given attribute.
+	//
+	// The key is the language code, and the value is the translated string.
+	EmailContentTranslations *TranslationMap `json:"email_content_translations,omitempty"`
 
 	// Employee IDs for employee-specific reminders
 	Employees *[]string `json:"employees,omitempty"`
