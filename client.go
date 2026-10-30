@@ -6690,6 +6690,18 @@ type Event struct {
 	// A property that users can use to mark events as special. Has no affect on system behavior.
 	Special *bool `json:"special,omitempty"`
 
+	// Whether the customer explicitly picked a specific employee rather than "Any employee".
+	// Meaningful for bookings with `origin` `online` or `app`. A value of false means "Any" was chosen.
+	// Events created in HQ with an employee are also marked true, so combine with `origin` to identify customer choice.
+	// The value records the original choice and is preserved when the event is later updated or moved to another employee.
+	SpecificEmployeeRequested *bool `json:"specific_employee_requested,omitempty"`
+
+	// Whether the customer explicitly picked a specific space or resource rather than "Any".
+	// Meaningful for bookings with `origin` `online` or `app`. A value of false means "Any" was chosen.
+	// Events created in HQ with a space or resource are also marked true, so combine with `origin` to identify customer choice.
+	// The value records the original choice and is preserved when the event is later updated or moved to another employee.
+	SpecificResourceRequested *bool `json:"specific_resource_requested,omitempty"`
+
 	// Deprecated, use starts_at instead
 	StartTime *string `json:"start_time,omitempty"`
 
@@ -6866,6 +6878,18 @@ type EventCheckinResult struct {
 
 	// A property that users can use to mark events as special. Has no affect on system behavior.
 	Special *bool `json:"special,omitempty"`
+
+	// Whether the customer explicitly picked a specific employee rather than "Any employee".
+	// Meaningful for bookings with `origin` `online` or `app`. A value of false means "Any" was chosen.
+	// Events created in HQ with an employee are also marked true, so combine with `origin` to identify customer choice.
+	// The value records the original choice and is preserved when the event is later updated or moved to another employee.
+	SpecificEmployeeRequested *bool `json:"specific_employee_requested,omitempty"`
+
+	// Whether the customer explicitly picked a specific space or resource rather than "Any".
+	// Meaningful for bookings with `origin` `online` or `app`. A value of false means "Any" was chosen.
+	// Events created in HQ with a space or resource are also marked true, so combine with `origin` to identify customer choice.
+	// The value records the original choice and is preserved when the event is later updated or moved to another employee.
+	SpecificResourceRequested *bool `json:"specific_resource_requested,omitempty"`
 
 	// Deprecated, use starts_at instead
 	StartTime *string `json:"start_time,omitempty"`
