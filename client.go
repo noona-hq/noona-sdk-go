@@ -1889,6 +1889,7 @@ const (
 
 // Defines values for SubtransactionState.
 const (
+	SubtransactionStateDeleted     SubtransactionState = "deleted"
 	SubtransactionStateFailed      SubtransactionState = "failed"
 	SubtransactionStatePending     SubtransactionState = "pending"
 	SubtransactionStateSuccessful  SubtransactionState = "successful"
@@ -18426,6 +18427,9 @@ type CreateSubtransactionParams struct {
 	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
 	Expand   *Expand                         `form:"expand,omitempty" json:"expand,omitempty"`
 	Behavior *SubtransactionCreationBehavior `form:"behavior,omitempty" json:"behavior,omitempty"`
+
+	// Reuse a key for retries of the same request; changing the request with that key returns 400. Keys are scoped to the caller and transaction.
+	IdempotencyKey *string `json:"Idempotency-Key,omitempty"`
 }
 
 // DeleteSubtransactionParams defines parameters for DeleteSubtransaction.
@@ -61043,6 +61047,17 @@ func NewCreateSubtransactionRequestWithBody(server string, params *CreateSubtran
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params.IdempotencyKey != nil {
+		var headerParam0 string
+
+		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "Idempotency-Key", runtime.ParamLocationHeader, *params.IdempotencyKey)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Idempotency-Key", headerParam0)
+	}
 
 	return req, nil
 }
