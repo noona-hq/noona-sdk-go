@@ -10442,6 +10442,19 @@ type Product struct {
 	VatId *string `json:"vat_id,omitempty"`
 }
 
+// ProductBulkCreateItem defines model for ProductBulkCreateItem.
+type ProductBulkCreateItem struct {
+	Product ProductCreate `json:"product"`
+}
+
+// ProductBulkUpdateItem defines model for ProductBulkUpdateItem.
+type ProductBulkUpdateItem struct {
+	// ID of the product to update. Must belong to the company in the path.
+	Id      string         `json:"id"`
+	Product ProductUpdate  `json:"product"`
+	Unset   *ProductFields `json:"unset,omitempty"`
+}
+
 // ProductCreate defines model for ProductCreate.
 type ProductCreate struct {
 	Amount    *float64 `json:"amount,omitempty"`
@@ -10581,6 +10594,30 @@ type ProductUpdate struct {
 
 // Products defines model for Products.
 type Products []Product
+
+// ProductsBulkCreate defines model for ProductsBulkCreate.
+type ProductsBulkCreate struct {
+	// Products to create. Max 200 items.
+	Products []ProductBulkCreateItem `json:"products"`
+}
+
+// ProductsBulkCreated defines model for ProductsBulkCreated.
+type ProductsBulkCreated struct {
+	// Created products in request order
+	Products []Product `json:"products"`
+}
+
+// ProductsBulkUpdate defines model for ProductsBulkUpdate.
+type ProductsBulkUpdate struct {
+	// Products to update. Max 200 items.
+	Items []ProductBulkUpdateItem `json:"items"`
+}
+
+// ProductsBulkUpdated defines model for ProductsBulkUpdated.
+type ProductsBulkUpdated struct {
+	// Updated products in request order
+	Products []Product `json:"products"`
+}
 
 // PromoCodeDiscountType defines model for PromoCodeDiscountType.
 type PromoCodeDiscountType string
@@ -15840,6 +15877,12 @@ type ListProductsParams struct {
 	Barcode *string `form:"barcode,omitempty" json:"barcode,omitempty"`
 }
 
+// BulkUpdateProductsJSONBody defines parameters for BulkUpdateProducts.
+type BulkUpdateProductsJSONBody ProductsBulkUpdate
+
+// BulkCreateProductsJSONBody defines parameters for BulkCreateProducts.
+type BulkCreateProductsJSONBody ProductsBulkCreate
+
 // ListCustomPropertiesParams defines parameters for ListCustomProperties.
 type ListCustomPropertiesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -19241,6 +19284,12 @@ type UnlockLockedSectionJSONRequestBody UnlockLockedSectionJSONBody
 
 // MoveCompanyToEnterpriseJSONRequestBody defines body for MoveCompanyToEnterprise for application/json ContentType.
 type MoveCompanyToEnterpriseJSONRequestBody MoveCompanyToEnterpriseJSONBody
+
+// BulkUpdateProductsJSONRequestBody defines body for BulkUpdateProducts for application/json ContentType.
+type BulkUpdateProductsJSONRequestBody BulkUpdateProductsJSONBody
+
+// BulkCreateProductsJSONRequestBody defines body for BulkCreateProducts for application/json ContentType.
+type BulkCreateProductsJSONRequestBody BulkCreateProductsJSONBody
 
 // CreateSubscriptionJSONRequestBody defines body for CreateSubscription for application/json ContentType.
 type CreateSubscriptionJSONRequestBody CreateSubscriptionJSONBody
@@ -22760,6 +22809,16 @@ type ClientInterface interface {
 	// ListProducts request
 	ListProducts(ctx context.Context, companyId string, params *ListProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// BulkUpdateProducts request with any body
+	BulkUpdateProductsWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkUpdateProducts(ctx context.Context, companyId string, body BulkUpdateProductsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// BulkCreateProducts request with any body
+	BulkCreateProductsWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	BulkCreateProducts(ctx context.Context, companyId string, body BulkCreateProductsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListCustomProperties request
 	ListCustomProperties(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -25966,6 +26025,54 @@ func (c *Client) ListGroupsAndProducts(ctx context.Context, companyId string, pa
 
 func (c *Client) ListProducts(ctx context.Context, companyId string, params *ListProductsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListProductsRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkUpdateProductsWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkUpdateProductsRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkUpdateProducts(ctx context.Context, companyId string, body BulkUpdateProductsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkUpdateProductsRequest(c.Server, companyId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkCreateProductsWithBody(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkCreateProductsRequestWithBody(c.Server, companyId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) BulkCreateProducts(ctx context.Context, companyId string, body BulkCreateProductsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewBulkCreateProductsRequest(c.Server, companyId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -41272,6 +41379,100 @@ func NewListProductsRequest(server string, companyId string, params *ListProduct
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewBulkUpdateProductsRequest calls the generic BulkUpdateProducts builder with application/json body
+func NewBulkUpdateProductsRequest(server string, companyId string, body BulkUpdateProductsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkUpdateProductsRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewBulkUpdateProductsRequestWithBody generates requests for BulkUpdateProducts with any type of body
+func NewBulkUpdateProductsRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/products/bulk", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewBulkCreateProductsRequest calls the generic BulkCreateProducts builder with application/json body
+func NewBulkCreateProductsRequest(server string, companyId string, body BulkCreateProductsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewBulkCreateProductsRequestWithBody(server, companyId, "application/json", bodyReader)
+}
+
+// NewBulkCreateProductsRequestWithBody generates requests for BulkCreateProducts with any type of body
+func NewBulkCreateProductsRequestWithBody(server string, companyId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/products/bulk", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -66531,6 +66732,16 @@ type ClientWithResponsesInterface interface {
 	// ListProducts request
 	ListProductsWithResponse(ctx context.Context, companyId string, params *ListProductsParams, reqEditors ...RequestEditorFn) (*ListProductsResponse, error)
 
+	// BulkUpdateProducts request with any body
+	BulkUpdateProductsWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkUpdateProductsResponse, error)
+
+	BulkUpdateProductsWithResponse(ctx context.Context, companyId string, body BulkUpdateProductsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkUpdateProductsResponse, error)
+
+	// BulkCreateProducts request with any body
+	BulkCreateProductsWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateProductsResponse, error)
+
+	BulkCreateProductsWithResponse(ctx context.Context, companyId string, body BulkCreateProductsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkCreateProductsResponse, error)
+
 	// ListCustomProperties request
 	ListCustomPropertiesWithResponse(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*ListCustomPropertiesResponse, error)
 
@@ -70625,6 +70836,50 @@ func (r ListProductsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListProductsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type BulkUpdateProductsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProductsBulkUpdated
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkUpdateProductsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkUpdateProductsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type BulkCreateProductsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ProductsBulkCreated
+}
+
+// Status returns HTTPResponse.Status
+func (r BulkCreateProductsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r BulkCreateProductsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -79655,6 +79910,40 @@ func (c *ClientWithResponses) ListProductsWithResponse(ctx context.Context, comp
 	return ParseListProductsResponse(rsp)
 }
 
+// BulkUpdateProductsWithBodyWithResponse request with arbitrary body returning *BulkUpdateProductsResponse
+func (c *ClientWithResponses) BulkUpdateProductsWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkUpdateProductsResponse, error) {
+	rsp, err := c.BulkUpdateProductsWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkUpdateProductsResponse(rsp)
+}
+
+func (c *ClientWithResponses) BulkUpdateProductsWithResponse(ctx context.Context, companyId string, body BulkUpdateProductsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkUpdateProductsResponse, error) {
+	rsp, err := c.BulkUpdateProducts(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkUpdateProductsResponse(rsp)
+}
+
+// BulkCreateProductsWithBodyWithResponse request with arbitrary body returning *BulkCreateProductsResponse
+func (c *ClientWithResponses) BulkCreateProductsWithBodyWithResponse(ctx context.Context, companyId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BulkCreateProductsResponse, error) {
+	rsp, err := c.BulkCreateProductsWithBody(ctx, companyId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkCreateProductsResponse(rsp)
+}
+
+func (c *ClientWithResponses) BulkCreateProductsWithResponse(ctx context.Context, companyId string, body BulkCreateProductsJSONRequestBody, reqEditors ...RequestEditorFn) (*BulkCreateProductsResponse, error) {
+	rsp, err := c.BulkCreateProducts(ctx, companyId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseBulkCreateProductsResponse(rsp)
+}
+
 // ListCustomPropertiesWithResponse request returning *ListCustomPropertiesResponse
 func (c *ClientWithResponses) ListCustomPropertiesWithResponse(ctx context.Context, companyId string, params *ListCustomPropertiesParams, reqEditors ...RequestEditorFn) (*ListCustomPropertiesResponse, error) {
 	rsp, err := c.ListCustomProperties(ctx, companyId, params, reqEditors...)
@@ -86983,6 +87272,58 @@ func ParseListProductsResponse(rsp *http.Response) (*ListProductsResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Products
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkUpdateProductsResponse parses an HTTP response from a BulkUpdateProductsWithResponse call
+func ParseBulkUpdateProductsResponse(rsp *http.Response) (*BulkUpdateProductsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkUpdateProductsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProductsBulkUpdated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseBulkCreateProductsResponse parses an HTTP response from a BulkCreateProductsWithResponse call
+func ParseBulkCreateProductsResponse(rsp *http.Response) (*BulkCreateProductsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &BulkCreateProductsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ProductsBulkCreated
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
