@@ -12400,6 +12400,83 @@ type SpacesFilter struct {
 	Types *[]SpaceType `json:"types,omitempty"`
 }
 
+// StaffGroup defines model for StaffGroup.
+type StaffGroup struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   *ExpandableCompany   `json:"company,omitempty"`
+	CreatedAt *time.Time           `json:"created_at,omitempty"`
+	Employees *ExpandableEmployees `json:"employees,omitempty"`
+	Id        *string              `json:"id,omitempty"`
+	Order     *int32               `json:"order,omitempty"`
+	Title     *string              `json:"title,omitempty"`
+	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
+}
+
+// StaffGroupCreate defines model for StaffGroupCreate.
+type StaffGroupCreate struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany    `json:"company"`
+	CreatedAt *time.Time           `json:"created_at,omitempty"`
+	Employees *ExpandableEmployees `json:"employees,omitempty"`
+	Id        *string              `json:"id,omitempty"`
+	Order     *int32               `json:"order,omitempty"`
+	Title     string               `json:"title"`
+	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
+}
+
+// StaffGroupCreateOverrides defines model for StaffGroupCreateOverrides.
+type StaffGroupCreateOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company ExpandableCompany `json:"company"`
+	Title   string            `json:"title"`
+}
+
+// StaffGroupResponse defines model for StaffGroupResponse.
+type StaffGroupResponse struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany   `json:"company"`
+	CreatedAt *time.Time          `json:"created_at,omitempty"`
+	Employees ExpandableEmployees `json:"employees"`
+	Id        *string             `json:"id,omitempty"`
+	Order     int32               `json:"order"`
+	Title     string              `json:"title"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
+}
+
+// StaffGroupResponseOverrides defines model for StaffGroupResponseOverrides.
+type StaffGroupResponseOverrides struct {
+	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Company   ExpandableCompany   `json:"company"`
+	CreatedAt *time.Time          `json:"created_at,omitempty"`
+	Employees ExpandableEmployees `json:"employees"`
+	Id        *string             `json:"id,omitempty"`
+	Order     int32               `json:"order"`
+	Title     string              `json:"title"`
+	UpdatedAt *time.Time          `json:"updated_at,omitempty"`
+}
+
+// StaffGroupUpdate defines model for StaffGroupUpdate.
+type StaffGroupUpdate struct {
+	Company   *interface{}         `json:"company,omitempty"`
+	CreatedAt *time.Time           `json:"created_at,omitempty"`
+	Employees *ExpandableEmployees `json:"employees,omitempty"`
+	Id        *string              `json:"id,omitempty"`
+	Order     *int32               `json:"order,omitempty"`
+	Title     *string              `json:"title,omitempty"`
+	UpdatedAt *time.Time           `json:"updated_at,omitempty"`
+}
+
+// StaffGroupUpdateOverrides defines model for StaffGroupUpdateOverrides.
+type StaffGroupUpdateOverrides struct {
+	Company *interface{} `json:"company,omitempty"`
+}
+
+// StaffGroups defines model for StaffGroups.
+type StaffGroups []StaffGroup
+
+// StaffGroupsResponse defines model for StaffGroupsResponse.
+type StaffGroupsResponse []StaffGroupResponse
+
 // StaffSalesByPaymentMethodEmployeeRow defines model for StaffSalesByPaymentMethodEmployeeRow.
 type StaffSalesByPaymentMethodEmployeeRow struct {
 	EmployeeId     string                                      `json:"employee_id"`
@@ -16064,6 +16141,18 @@ type ListSpacesParams struct {
 	Filter     *SpacesFilter `form:"filter,omitempty" json:"filter,omitempty"`
 }
 
+// ListStaffGroupsParams defines parameters for ListStaffGroups.
+type ListStaffGroupsParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+
+	// [Sorting](https://api.noona.is/docs/working-with-the-apis/sorting)
+	Sort *Sort `form:"sort,omitempty" json:"sort,omitempty"`
+}
+
 // CreateSubscriptionJSONBody defines parameters for CreateSubscription.
 type CreateSubscriptionJSONBody PowerupPostBody
 
@@ -18253,6 +18342,48 @@ type CreateSMSMessageParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateStaffGroupJSONBody defines parameters for CreateStaffGroup.
+type CreateStaffGroupJSONBody StaffGroupCreate
+
+// CreateStaffGroupParams defines parameters for CreateStaffGroup.
+type CreateStaffGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// DeleteStaffGroupParams defines parameters for DeleteStaffGroup.
+type DeleteStaffGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// GetStaffGroupParams defines parameters for GetStaffGroup.
+type GetStaffGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
+// UpdateStaffGroupJSONBody defines parameters for UpdateStaffGroup.
+type UpdateStaffGroupJSONBody StaffGroupUpdate
+
+// UpdateStaffGroupParams defines parameters for UpdateStaffGroup.
+type UpdateStaffGroupParams struct {
+	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
+	Select *Select `form:"select,omitempty" json:"select,omitempty"`
+
+	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
+	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
+}
+
 // StreamUpdatesParams defines parameters for StreamUpdates.
 type StreamUpdatesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -19377,6 +19508,12 @@ type UpdateScheduledEventJSONRequestBody UpdateScheduledEventJSONBody
 
 // CreateSMSMessageJSONRequestBody defines body for CreateSMSMessage for application/json ContentType.
 type CreateSMSMessageJSONRequestBody CreateSMSMessageJSONBody
+
+// CreateStaffGroupJSONRequestBody defines body for CreateStaffGroup for application/json ContentType.
+type CreateStaffGroupJSONRequestBody CreateStaffGroupJSONBody
+
+// UpdateStaffGroupJSONRequestBody defines body for UpdateStaffGroup for application/json ContentType.
+type UpdateStaffGroupJSONRequestBody UpdateStaffGroupJSONBody
 
 // CancelSubscriptionJSONRequestBody defines body for CancelSubscription for application/json ContentType.
 type CancelSubscriptionJSONRequestBody CancelSubscriptionJSONBody
@@ -22710,6 +22847,9 @@ type ClientInterface interface {
 	// ListSpaces request
 	ListSpaces(ctx context.Context, companyId string, params *ListSpacesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListStaffGroups request
+	ListStaffGroups(ctx context.Context, companyId string, params *ListStaffGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateSubscription request with any body
 	CreateSubscriptionWithBody(ctx context.Context, companyId string, params *CreateSubscriptionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -23568,6 +23708,22 @@ type ClientInterface interface {
 	CreateSMSMessageWithBody(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateSMSMessage(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateStaffGroup request with any body
+	CreateStaffGroupWithBody(ctx context.Context, params *CreateStaffGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateStaffGroup(ctx context.Context, params *CreateStaffGroupParams, body CreateStaffGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteStaffGroup request
+	DeleteStaffGroup(ctx context.Context, staffGroupId string, params *DeleteStaffGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStaffGroup request
+	GetStaffGroup(ctx context.Context, staffGroupId string, params *GetStaffGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateStaffGroup request with any body
+	UpdateStaffGroupWithBody(ctx context.Context, staffGroupId string, params *UpdateStaffGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateStaffGroup(ctx context.Context, staffGroupId string, params *UpdateStaffGroupParams, body UpdateStaffGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// StreamUpdates request
 	StreamUpdates(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -26158,6 +26314,18 @@ func (c *Client) GetSMSPricing(ctx context.Context, companyId string, reqEditors
 
 func (c *Client) ListSpaces(ctx context.Context, companyId string, params *ListSpacesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListSpacesRequest(c.Server, companyId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListStaffGroups(ctx context.Context, companyId string, params *ListStaffGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListStaffGroupsRequest(c.Server, companyId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -29950,6 +30118,78 @@ func (c *Client) CreateSMSMessageWithBody(ctx context.Context, params *CreateSMS
 
 func (c *Client) CreateSMSMessage(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSMSMessageRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateStaffGroupWithBody(ctx context.Context, params *CreateStaffGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStaffGroupRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateStaffGroup(ctx context.Context, params *CreateStaffGroupParams, body CreateStaffGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateStaffGroupRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteStaffGroup(ctx context.Context, staffGroupId string, params *DeleteStaffGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteStaffGroupRequest(c.Server, staffGroupId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStaffGroup(ctx context.Context, staffGroupId string, params *GetStaffGroupParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStaffGroupRequest(c.Server, staffGroupId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateStaffGroupWithBody(ctx context.Context, staffGroupId string, params *UpdateStaffGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateStaffGroupRequestWithBody(c.Server, staffGroupId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateStaffGroup(ctx context.Context, staffGroupId string, params *UpdateStaffGroupParams, body UpdateStaffGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateStaffGroupRequest(c.Server, staffGroupId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -43066,6 +43306,86 @@ func NewListSpacesRequest(server string, companyId string, params *ListSpacesPar
 			return nil, err
 		} else {
 			queryValues.Add("filter", string(queryParamBuf))
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListStaffGroupsRequest generates requests for ListStaffGroups
+func NewListStaffGroupsRequest(server string, companyId string, params *ListStaffGroupsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "company_id", runtime.ParamLocationPath, companyId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/companies/%s/staff_groups", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Sort != nil {
+
+		if queryParamBuf, err := json.Marshal(*params.Sort); err != nil {
+			return nil, err
+		} else {
+			queryValues.Add("sort", string(queryParamBuf))
 		}
 
 	}
@@ -59645,6 +59965,305 @@ func NewCreateSMSMessageRequestWithBody(server string, params *CreateSMSMessageP
 	return req, nil
 }
 
+// NewCreateStaffGroupRequest calls the generic CreateStaffGroup builder with application/json body
+func NewCreateStaffGroupRequest(server string, params *CreateStaffGroupParams, body CreateStaffGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateStaffGroupRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateStaffGroupRequestWithBody generates requests for CreateStaffGroup with any type of body
+func NewCreateStaffGroupRequestWithBody(server string, params *CreateStaffGroupParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/staff_groups")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteStaffGroupRequest generates requests for DeleteStaffGroup
+func NewDeleteStaffGroupRequest(server string, staffGroupId string, params *DeleteStaffGroupParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "staff_group_id", runtime.ParamLocationPath, staffGroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/staff_groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStaffGroupRequest generates requests for GetStaffGroup
+func NewGetStaffGroupRequest(server string, staffGroupId string, params *GetStaffGroupParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "staff_group_id", runtime.ParamLocationPath, staffGroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/staff_groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateStaffGroupRequest calls the generic UpdateStaffGroup builder with application/json body
+func NewUpdateStaffGroupRequest(server string, staffGroupId string, params *UpdateStaffGroupParams, body UpdateStaffGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateStaffGroupRequestWithBody(server, staffGroupId, params, "application/json", bodyReader)
+}
+
+// NewUpdateStaffGroupRequestWithBody generates requests for UpdateStaffGroup with any type of body
+func NewUpdateStaffGroupRequestWithBody(server string, staffGroupId string, params *UpdateStaffGroupParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "staff_group_id", runtime.ParamLocationPath, staffGroupId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/staff_groups/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.Select != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Expand != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewStreamUpdatesRequest generates requests for StreamUpdates
 func NewStreamUpdatesRequest(server string, companyId string, params *StreamUpdatesParams) (*http.Request, error) {
 	var err error
@@ -65999,6 +66618,9 @@ type ClientWithResponsesInterface interface {
 	// ListSpaces request
 	ListSpacesWithResponse(ctx context.Context, companyId string, params *ListSpacesParams, reqEditors ...RequestEditorFn) (*ListSpacesResponse, error)
 
+	// ListStaffGroups request
+	ListStaffGroupsWithResponse(ctx context.Context, companyId string, params *ListStaffGroupsParams, reqEditors ...RequestEditorFn) (*ListStaffGroupsResponse, error)
+
 	// CreateSubscription request with any body
 	CreateSubscriptionWithBodyWithResponse(ctx context.Context, companyId string, params *CreateSubscriptionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSubscriptionResponse, error)
 
@@ -66857,6 +67479,22 @@ type ClientWithResponsesInterface interface {
 	CreateSMSMessageWithBodyWithResponse(ctx context.Context, params *CreateSMSMessageParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error)
 
 	CreateSMSMessageWithResponse(ctx context.Context, params *CreateSMSMessageParams, body CreateSMSMessageJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSMSMessageResponse, error)
+
+	// CreateStaffGroup request with any body
+	CreateStaffGroupWithBodyWithResponse(ctx context.Context, params *CreateStaffGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStaffGroupResponse, error)
+
+	CreateStaffGroupWithResponse(ctx context.Context, params *CreateStaffGroupParams, body CreateStaffGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStaffGroupResponse, error)
+
+	// DeleteStaffGroup request
+	DeleteStaffGroupWithResponse(ctx context.Context, staffGroupId string, params *DeleteStaffGroupParams, reqEditors ...RequestEditorFn) (*DeleteStaffGroupResponse, error)
+
+	// GetStaffGroup request
+	GetStaffGroupWithResponse(ctx context.Context, staffGroupId string, params *GetStaffGroupParams, reqEditors ...RequestEditorFn) (*GetStaffGroupResponse, error)
+
+	// UpdateStaffGroup request with any body
+	UpdateStaffGroupWithBodyWithResponse(ctx context.Context, staffGroupId string, params *UpdateStaffGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateStaffGroupResponse, error)
+
+	UpdateStaffGroupWithResponse(ctx context.Context, staffGroupId string, params *UpdateStaffGroupParams, body UpdateStaffGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateStaffGroupResponse, error)
 
 	// StreamUpdates request
 	StreamUpdatesWithResponse(ctx context.Context, companyId string, params *StreamUpdatesParams, reqEditors ...RequestEditorFn) (*StreamUpdatesResponse, error)
@@ -70639,6 +71277,29 @@ func (r ListSpacesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListSpacesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListStaffGroupsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StaffGroupsResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r ListStaffGroupsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListStaffGroupsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -75626,6 +76287,97 @@ func (r CreateSMSMessageResponse) StatusCode() int {
 	return 0
 }
 
+type CreateStaffGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StaffGroupResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateStaffGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateStaffGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteStaffGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteStaffGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteStaffGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStaffGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StaffGroupResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStaffGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStaffGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateStaffGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StaffGroupResponse
+	JSON400      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateStaffGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateStaffGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type StreamUpdatesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -79164,6 +79916,15 @@ func (c *ClientWithResponses) ListSpacesWithResponse(ctx context.Context, compan
 	return ParseListSpacesResponse(rsp)
 }
 
+// ListStaffGroupsWithResponse request returning *ListStaffGroupsResponse
+func (c *ClientWithResponses) ListStaffGroupsWithResponse(ctx context.Context, companyId string, params *ListStaffGroupsParams, reqEditors ...RequestEditorFn) (*ListStaffGroupsResponse, error) {
+	rsp, err := c.ListStaffGroups(ctx, companyId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListStaffGroupsResponse(rsp)
+}
+
 // CreateSubscriptionWithBodyWithResponse request with arbitrary body returning *CreateSubscriptionResponse
 func (c *ClientWithResponses) CreateSubscriptionWithBodyWithResponse(ctx context.Context, companyId string, params *CreateSubscriptionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSubscriptionResponse, error) {
 	rsp, err := c.CreateSubscriptionWithBody(ctx, companyId, params, contentType, body, reqEditors...)
@@ -81917,6 +82678,58 @@ func (c *ClientWithResponses) CreateSMSMessageWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseCreateSMSMessageResponse(rsp)
+}
+
+// CreateStaffGroupWithBodyWithResponse request with arbitrary body returning *CreateStaffGroupResponse
+func (c *ClientWithResponses) CreateStaffGroupWithBodyWithResponse(ctx context.Context, params *CreateStaffGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateStaffGroupResponse, error) {
+	rsp, err := c.CreateStaffGroupWithBody(ctx, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateStaffGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateStaffGroupWithResponse(ctx context.Context, params *CreateStaffGroupParams, body CreateStaffGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStaffGroupResponse, error) {
+	rsp, err := c.CreateStaffGroup(ctx, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateStaffGroupResponse(rsp)
+}
+
+// DeleteStaffGroupWithResponse request returning *DeleteStaffGroupResponse
+func (c *ClientWithResponses) DeleteStaffGroupWithResponse(ctx context.Context, staffGroupId string, params *DeleteStaffGroupParams, reqEditors ...RequestEditorFn) (*DeleteStaffGroupResponse, error) {
+	rsp, err := c.DeleteStaffGroup(ctx, staffGroupId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteStaffGroupResponse(rsp)
+}
+
+// GetStaffGroupWithResponse request returning *GetStaffGroupResponse
+func (c *ClientWithResponses) GetStaffGroupWithResponse(ctx context.Context, staffGroupId string, params *GetStaffGroupParams, reqEditors ...RequestEditorFn) (*GetStaffGroupResponse, error) {
+	rsp, err := c.GetStaffGroup(ctx, staffGroupId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStaffGroupResponse(rsp)
+}
+
+// UpdateStaffGroupWithBodyWithResponse request with arbitrary body returning *UpdateStaffGroupResponse
+func (c *ClientWithResponses) UpdateStaffGroupWithBodyWithResponse(ctx context.Context, staffGroupId string, params *UpdateStaffGroupParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateStaffGroupResponse, error) {
+	rsp, err := c.UpdateStaffGroupWithBody(ctx, staffGroupId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateStaffGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateStaffGroupWithResponse(ctx context.Context, staffGroupId string, params *UpdateStaffGroupParams, body UpdateStaffGroupJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateStaffGroupResponse, error) {
+	rsp, err := c.UpdateStaffGroup(ctx, staffGroupId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateStaffGroupResponse(rsp)
 }
 
 // StreamUpdatesWithResponse request returning *StreamUpdatesResponse
@@ -87023,6 +87836,39 @@ func ParseListSpacesResponse(rsp *http.Response) (*ListSpacesResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListStaffGroupsResponse parses an HTTP response from a ListStaffGroupsWithResponse call
+func ParseListStaffGroupsResponse(rsp *http.Response) (*ListStaffGroupsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListStaffGroupsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StaffGroupsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
@@ -92729,6 +93575,131 @@ func ParseCreateSMSMessageResponse(rsp *http.Response) (*CreateSMSMessageRespons
 			return nil, err
 		}
 		response.JSON429 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateStaffGroupResponse parses an HTTP response from a CreateStaffGroupWithResponse call
+func ParseCreateStaffGroupResponse(rsp *http.Response) (*CreateStaffGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateStaffGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StaffGroupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteStaffGroupResponse parses an HTTP response from a DeleteStaffGroupWithResponse call
+func ParseDeleteStaffGroupResponse(rsp *http.Response) (*DeleteStaffGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteStaffGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetStaffGroupResponse parses an HTTP response from a GetStaffGroupWithResponse call
+func ParseGetStaffGroupResponse(rsp *http.Response) (*GetStaffGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStaffGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StaffGroupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateStaffGroupResponse parses an HTTP response from a UpdateStaffGroupWithResponse call
+func ParseUpdateStaffGroupResponse(rsp *http.Response) (*UpdateStaffGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateStaffGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StaffGroupResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	}
 
