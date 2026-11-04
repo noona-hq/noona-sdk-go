@@ -3268,6 +3268,20 @@ type AdminMoveUserRequest struct {
 	SourceCompanyId string `json:"source_company_id"`
 }
 
+// AdminOAuthApplicationScopeSync defines model for AdminOAuthApplicationScopeSync.
+type AdminOAuthApplicationScopeSync struct {
+	DryRun *bool `json:"dry_run,omitempty"`
+}
+
+// AdminOAuthApplicationScopeSyncResult defines model for AdminOAuthApplicationScopeSyncResult.
+type AdminOAuthApplicationScopeSyncResult struct {
+	DryRun bool        `json:"dry_run"`
+	Scopes OAuthScopes `json:"scopes"`
+
+	// Number of user authorizations changed, or that would change in a preview.
+	UpdatedTokens int64 `json:"updated_tokens"`
+}
+
 // AdminTerminalUpdate defines model for AdminTerminalUpdate.
 type AdminTerminalUpdate struct {
 	// Whether this terminal is the default terminal for POS sales. Terminals with default=false are available for checkin.
@@ -14880,6 +14894,9 @@ type AdminListMarketplaceAdCampaignsParams struct {
 	Pagination *Pagination `form:"pagination,omitempty" json:"pagination,omitempty"`
 }
 
+// AdminSyncOAuthApplicationScopesJSONBody defines parameters for AdminSyncOAuthApplicationScopes.
+type AdminSyncOAuthApplicationScopesJSONBody AdminOAuthApplicationScopeSync
+
 // AdminListSecretariesParams defines parameters for AdminListSecretaries.
 type AdminListSecretariesParams struct {
 	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
@@ -19228,6 +19245,9 @@ type AdminTransferFiscalizationJSONRequestBody AdminTransferFiscalizationJSONBod
 // AdminUpdateMarketplaceAdJSONRequestBody defines body for AdminUpdateMarketplaceAd for application/json ContentType.
 type AdminUpdateMarketplaceAdJSONRequestBody AdminUpdateMarketplaceAdJSONBody
 
+// AdminSyncOAuthApplicationScopesJSONRequestBody defines body for AdminSyncOAuthApplicationScopes for application/json ContentType.
+type AdminSyncOAuthApplicationScopesJSONRequestBody AdminSyncOAuthApplicationScopesJSONBody
+
 // AdminUpdateUserJSONRequestBody defines body for AdminUpdateUser for application/json ContentType.
 type AdminUpdateUserJSONRequestBody AdminUpdateUserJSONBody
 
@@ -22495,6 +22515,11 @@ type ClientInterface interface {
 	// AdminListMarketplaceAdCampaigns request
 	AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// AdminSyncOAuthApplicationScopes request with any body
+	AdminSyncOAuthApplicationScopesWithBody(ctx context.Context, applicationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	AdminSyncOAuthApplicationScopes(ctx context.Context, applicationId string, body AdminSyncOAuthApplicationScopesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AdminListSecretaries request
 	AdminListSecretaries(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -24693,6 +24718,30 @@ func (c *Client) AdminUpdateMarketplaceAd(ctx context.Context, adId string, para
 
 func (c *Client) AdminListMarketplaceAdCampaigns(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminListMarketplaceAdCampaignsRequest(c.Server, adId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminSyncOAuthApplicationScopesWithBody(ctx context.Context, applicationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminSyncOAuthApplicationScopesRequestWithBody(c.Server, applicationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AdminSyncOAuthApplicationScopes(ctx context.Context, applicationId string, body AdminSyncOAuthApplicationScopesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAdminSyncOAuthApplicationScopesRequest(c.Server, applicationId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -34033,6 +34082,53 @@ func NewAdminListMarketplaceAdCampaignsRequest(server string, adId string, param
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewAdminSyncOAuthApplicationScopesRequest calls the generic AdminSyncOAuthApplicationScopes builder with application/json body
+func NewAdminSyncOAuthApplicationScopesRequest(server string, applicationId string, body AdminSyncOAuthApplicationScopesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAdminSyncOAuthApplicationScopesRequestWithBody(server, applicationId, "application/json", bodyReader)
+}
+
+// NewAdminSyncOAuthApplicationScopesRequestWithBody generates requests for AdminSyncOAuthApplicationScopes with any type of body
+func NewAdminSyncOAuthApplicationScopesRequestWithBody(server string, applicationId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "application_id", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/admin/oauth/applications/%s/sync-scopes", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -66418,6 +66514,11 @@ type ClientWithResponsesInterface interface {
 	// AdminListMarketplaceAdCampaigns request
 	AdminListMarketplaceAdCampaignsWithResponse(ctx context.Context, adId string, params *AdminListMarketplaceAdCampaignsParams, reqEditors ...RequestEditorFn) (*AdminListMarketplaceAdCampaignsResponse, error)
 
+	// AdminSyncOAuthApplicationScopes request with any body
+	AdminSyncOAuthApplicationScopesWithBodyWithResponse(ctx context.Context, applicationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminSyncOAuthApplicationScopesResponse, error)
+
+	AdminSyncOAuthApplicationScopesWithResponse(ctx context.Context, applicationId string, body AdminSyncOAuthApplicationScopesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminSyncOAuthApplicationScopesResponse, error)
+
 	// AdminListSecretaries request
 	AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error)
 
@@ -68803,6 +68904,28 @@ func (r AdminListMarketplaceAdCampaignsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AdminListMarketplaceAdCampaignsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AdminSyncOAuthApplicationScopesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AdminOAuthApplicationScopeSyncResult
+}
+
+// Status returns HTTPResponse.Status
+func (r AdminSyncOAuthApplicationScopesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AdminSyncOAuthApplicationScopesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -78930,6 +79053,23 @@ func (c *ClientWithResponses) AdminListMarketplaceAdCampaignsWithResponse(ctx co
 	return ParseAdminListMarketplaceAdCampaignsResponse(rsp)
 }
 
+// AdminSyncOAuthApplicationScopesWithBodyWithResponse request with arbitrary body returning *AdminSyncOAuthApplicationScopesResponse
+func (c *ClientWithResponses) AdminSyncOAuthApplicationScopesWithBodyWithResponse(ctx context.Context, applicationId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AdminSyncOAuthApplicationScopesResponse, error) {
+	rsp, err := c.AdminSyncOAuthApplicationScopesWithBody(ctx, applicationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminSyncOAuthApplicationScopesResponse(rsp)
+}
+
+func (c *ClientWithResponses) AdminSyncOAuthApplicationScopesWithResponse(ctx context.Context, applicationId string, body AdminSyncOAuthApplicationScopesJSONRequestBody, reqEditors ...RequestEditorFn) (*AdminSyncOAuthApplicationScopesResponse, error) {
+	rsp, err := c.AdminSyncOAuthApplicationScopes(ctx, applicationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAdminSyncOAuthApplicationScopesResponse(rsp)
+}
+
 // AdminListSecretariesWithResponse request returning *AdminListSecretariesResponse
 func (c *ClientWithResponses) AdminListSecretariesWithResponse(ctx context.Context, params *AdminListSecretariesParams, reqEditors ...RequestEditorFn) (*AdminListSecretariesResponse, error) {
 	rsp, err := c.AdminListSecretaries(ctx, params, reqEditors...)
@@ -84868,6 +85008,32 @@ func ParseAdminListMarketplaceAdCampaignsResponse(rsp *http.Response) (*AdminLis
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AdCampaignsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAdminSyncOAuthApplicationScopesResponse parses an HTTP response from a AdminSyncOAuthApplicationScopesWithResponse call
+func ParseAdminSyncOAuthApplicationScopesResponse(rsp *http.Response) (*AdminSyncOAuthApplicationScopesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AdminSyncOAuthApplicationScopesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AdminOAuthApplicationScopeSyncResult
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
