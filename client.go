@@ -3573,7 +3573,8 @@ type Application struct {
 	// The verticals the application is available in.
 	//
 	// If omitted or empty, the application is available for all verticals.
-	Verticals *[]CompanyVertical `json:"verticals,omitempty"`
+	Verticals            *[]CompanyVertical `json:"verticals,omitempty"`
+	WhitelistedCompanies *[]string          `json:"whitelisted_companies,omitempty"`
 }
 
 // ApplicationPaymentType defines model for Application.PaymentType.
@@ -3648,7 +3649,8 @@ type ApplicationCreated struct {
 	// The verticals the application is available in.
 	//
 	// If omitted or empty, the application is available for all verticals.
-	Verticals *[]CompanyVertical `json:"verticals,omitempty"`
+	Verticals            *[]CompanyVertical `json:"verticals,omitempty"`
+	WhitelistedCompanies *[]string          `json:"whitelisted_companies,omitempty"`
 }
 
 // ApplicationCreatedPaymentType defines model for ApplicationCreated.PaymentType.
@@ -13417,11 +13419,12 @@ type UpdateVerificationStatus string
 // User defines model for User.
 type User struct {
 	// [Expandable](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	ActiveCompany *ExpandableCompany   `json:"active_company,omitempty"`
-	Companies     *ExpandableCompanies `json:"companies,omitempty"`
-	Connections   *UserConnections     `json:"connections,omitempty"`
-	Email         *string              `json:"email,omitempty"`
-	Employees     *Employees           `json:"employees,omitempty"`
+	ActiveCompany  *ExpandableCompany   `json:"active_company,omitempty"`
+	Companies      *ExpandableCompanies `json:"companies,omitempty"`
+	Connections    *UserConnections     `json:"connections,omitempty"`
+	DeveloperAdmin *bool                `json:"developer_admin,omitempty"`
+	Email          *string              `json:"email,omitempty"`
+	Employees      *Employees           `json:"employees,omitempty"`
 
 	// Indicates whether the user has ever been associated with any company
 	HasOnboarded *bool            `json:"has_onboarded,omitempty"`
