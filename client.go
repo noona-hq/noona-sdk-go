@@ -1212,6 +1212,17 @@ const (
 	NotificationWaitlistEntryTypeWaitlistEntry NotificationWaitlistEntryType = "waitlistEntry"
 )
 
+// Defines values for OAuthClientType.
+const (
+	Confidential OAuthClientType = "confidential"
+	Public       OAuthClientType = "public"
+)
+
+// Defines values for OAuthCodeChallengeMethod.
+const (
+	S256 OAuthCodeChallengeMethod = "S256"
+)
+
 // Defines values for OAuthConsentResponseType.
 const (
 	Code OAuthConsentResponseType = "code"
@@ -3468,10 +3479,13 @@ type AmountMetricsByDay struct {
 // App defines model for App.
 type App struct {
 	// Whether the app is visible in the app store (without being installed).
-	AppStore      *bool   `json:"app_store,omitempty"`
-	ClientId      *string `json:"client_id,omitempty"`
-	Description   *string `json:"description,omitempty"`
-	DeveloperName *string `json:"developer_name,omitempty"`
+	AppStore *bool   `json:"app_store,omitempty"`
+	ClientId *string `json:"client_id,omitempty"`
+
+	// Public clients use PKCE instead of a client secret and receive a new refresh token on every refresh.
+	ClientType    *OAuthClientType `json:"client_type,omitempty"`
+	Description   *string          `json:"description,omitempty"`
+	DeveloperName *string          `json:"developer_name,omitempty"`
 
 	// Home page or documentation for your application.
 	DeveloperUrl *string `json:"developer_url,omitempty"`
@@ -3516,6 +3530,9 @@ type Application struct {
 	AppStore *bool   `json:"app_store,omitempty"`
 	Approved *bool   `json:"approved,omitempty"`
 	ClientId *string `json:"client_id,omitempty"`
+
+	// Public clients use PKCE instead of a client secret and receive a new refresh token on every refresh.
+	ClientType *OAuthClientType `json:"client_type,omitempty"`
 
 	// The countries the application is available in.
 	//
@@ -3592,6 +3609,9 @@ type ApplicationCreated struct {
 
 	// The raw client secret. Only returned when the application is created and cannot be retrieved again.
 	ClientSecret string `json:"client_secret"`
+
+	// Public clients use PKCE instead of a client secret and receive a new refresh token on every refresh.
+	ClientType *OAuthClientType `json:"client_type,omitempty"`
 
 	// The countries the application is available in.
 	//
@@ -9674,14 +9694,24 @@ type NotificationWaitlistEntryType string
 // Notifications defines model for Notifications.
 type Notifications []Notification
 
+// Public clients use PKCE instead of a client secret and receive a new refresh token on every refresh.
+type OAuthClientType string
+
+// OAuthCodeChallengeMethod defines model for OAuthCodeChallengeMethod.
+type OAuthCodeChallengeMethod string
+
 // OAuthConsent defines model for OAuthConsent.
 type OAuthConsent struct {
-	ClientId     string                   `json:"client_id"`
-	CompanyId    string                   `json:"company_id"`
-	RedirectUri  string                   `json:"redirect_uri"`
-	ResponseType OAuthConsentResponseType `json:"response_type"`
-	Scopes       OAuthScopes              `json:"scopes"`
-	State        *string                  `json:"state,omitempty"`
+	ClientId string `json:"client_id"`
+
+	// PKCE code challenge from the authorization request.
+	CodeChallenge       *string                   `json:"code_challenge,omitempty"`
+	CodeChallengeMethod *OAuthCodeChallengeMethod `json:"code_challenge_method,omitempty"`
+	CompanyId           string                    `json:"company_id"`
+	RedirectUri         string                    `json:"redirect_uri"`
+	ResponseType        OAuthConsentResponseType  `json:"response_type"`
+	Scopes              OAuthScopes               `json:"scopes"`
+	State               *string                   `json:"state,omitempty"`
 }
 
 // OAuthConsentResponseType defines model for OAuthConsent.ResponseType.
@@ -9690,6 +9720,11 @@ type OAuthConsentResponseType string
 // OAuthConsentResponse defines model for OAuthConsentResponse.
 type OAuthConsentResponse struct {
 	RedirectUri *string `json:"redirect_uri,omitempty"`
+}
+
+// OAuthError defines model for OAuthError.
+type OAuthError struct {
+	Error string `json:"error"`
 }
 
 // Public key in the JWK format to validate the JWT signature of ID tokens.
@@ -9725,11 +9760,17 @@ type OAuthToken struct {
 
 // OAuthTokenRequest defines model for OAuthTokenRequest.
 type OAuthTokenRequest struct {
-	ClientId     *string                    `json:"client_id,omitempty"`
-	ClientSecret *string                    `json:"client_secret,omitempty"`
-	Code         *string                    `json:"code,omitempty"`
+	ClientId     *string `json:"client_id,omitempty"`
+	ClientSecret *string `json:"client_secret,omitempty"`
+	Code         *string `json:"code,omitempty"`
+
+	// PKCE code verifier. Required for the authorization_code grant when the authorization request had a code challenge.
+	CodeVerifier *string                    `json:"code_verifier,omitempty"`
 	GrantType    OAuthTokenRequestGrantType `json:"grant_type"`
-	RefreshToken *string                    `json:"refresh_token,omitempty"`
+
+	// Required and must equal the authorization request redirect URI for public clients and PKCE flows.
+	RedirectUri  *string `json:"redirect_uri,omitempty"`
+	RefreshToken *string `json:"refresh_token,omitempty"`
 
 	// Space-delimited list of scopes to request. For client_credentials grant only. If omitted, all scopes allowed by the client are granted.
 	Scope *string `json:"scope,omitempty"`
@@ -17669,6 +17710,10 @@ type StartOAuthFlowParams struct {
 	ResponseType string      `form:"response_type" json:"response_type"`
 	Scope        OAuthScopes `form:"scope" json:"scope"`
 	State        *string     `form:"state,omitempty" json:"state,omitempty"`
+
+	// PKCE code challenge (RFC 7636). Required for public clients.
+	CodeChallenge       *string                   `form:"code_challenge,omitempty" json:"code_challenge,omitempty"`
+	CodeChallengeMethod *OAuthCodeChallengeMethod `form:"code_challenge_method,omitempty" json:"code_challenge_method,omitempty"`
 }
 
 // CreateOAuthConsentJSONBody defines parameters for CreateOAuthConsent.
@@ -55047,6 +55092,38 @@ func NewStartOAuthFlowRequest(server string, params *StartOAuthFlowParams) (*htt
 
 	}
 
+	if params.CodeChallenge != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "code_challenge", runtime.ParamLocationQuery, *params.CodeChallenge); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.CodeChallengeMethod != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "code_challenge_method", runtime.ParamLocationQuery, *params.CodeChallengeMethod); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
 	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -75223,6 +75300,11 @@ type GetOAuthTokenResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *OAuthToken
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON401 *OAuthError
+	JSON429 *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -92455,6 +92537,29 @@ func ParseGetOAuthTokenResponse(rsp *http.Response) (*GetOAuthTokenResponse, err
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OAuthError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	}
 
