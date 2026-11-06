@@ -1228,6 +1228,19 @@ const (
 	Code OAuthConsentResponseType = "code"
 )
 
+// Defines values for OAuthErrorCode.
+const (
+	AccessDenied         OAuthErrorCode = "access_denied"
+	AuthorizationPending OAuthErrorCode = "authorization_pending"
+	ExpiredToken         OAuthErrorCode = "expired_token"
+	InvalidClient        OAuthErrorCode = "invalid_client"
+	InvalidGrant         OAuthErrorCode = "invalid_grant"
+	InvalidRequest       OAuthErrorCode = "invalid_request"
+	InvalidScope         OAuthErrorCode = "invalid_scope"
+	SlowDown             OAuthErrorCode = "slow_down"
+	UnauthorizedClient   OAuthErrorCode = "unauthorized_client"
+)
+
 // Defines values for OAuthScope.
 const (
 	ActivitiesRead        OAuthScope = "activities:read"
@@ -1305,9 +1318,10 @@ const (
 
 // Defines values for OAuthTokenRequestGrantType.
 const (
-	AuthorizationCode OAuthTokenRequestGrantType = "authorization_code"
-	ClientCredentials OAuthTokenRequestGrantType = "client_credentials"
-	RefreshToken      OAuthTokenRequestGrantType = "refresh_token"
+	AuthorizationCode                     OAuthTokenRequestGrantType = "authorization_code"
+	ClientCredentials                     OAuthTokenRequestGrantType = "client_credentials"
+	RefreshToken                          OAuthTokenRequestGrantType = "refresh_token"
+	UrnIetfParamsOauthGrantTypeDeviceCode OAuthTokenRequestGrantType = "urn:ietf:params:oauth:grant-type:device_code"
 )
 
 // Defines values for OnlineBookingsRuleEmployeesAssociation.
@@ -9724,8 +9738,11 @@ type OAuthConsentResponse struct {
 
 // OAuthError defines model for OAuthError.
 type OAuthError struct {
-	Error string `json:"error"`
+	Error OAuthErrorCode `json:"error"`
 }
+
+// OAuthErrorCode defines model for OAuthErrorCode.
+type OAuthErrorCode string
 
 // Public key in the JWK format to validate the JWT signature of ID tokens.
 type OAuthPublicKey struct {
@@ -9747,11 +9764,66 @@ type OAuthScope string
 // OAuthScopes defines model for OAuthScopes.
 type OAuthScopes []OAuthScope
 
+// OAuthSignInCode defines model for OAuthSignInCode.
+type OAuthSignInCode struct {
+	// The app that asks for the login, as the person approving it sees it.
+	App       OAuthSignInCodeApp `json:"app"`
+	ClientId  string             `json:"client_id"`
+	ExpiresAt time.Time          `json:"expires_at"`
+	Scopes    OAuthScopes        `json:"scopes"`
+	UserCode  string             `json:"user_code"`
+}
+
+// The app that asks for the login, as the person approving it sees it.
+type OAuthSignInCodeApp struct {
+	Logo *string `json:"logo,omitempty"`
+	Name string  `json:"name"`
+}
+
+// OAuthSignInCodeApproval defines model for OAuthSignInCodeApproval.
+type OAuthSignInCodeApproval struct {
+	// The company the login works with.
+	CompanyId string      `json:"company_id"`
+	Scopes    OAuthScopes `json:"scopes"`
+}
+
+// OAuthSignInCodeCreate defines model for OAuthSignInCodeCreate.
+type OAuthSignInCodeCreate struct {
+	ClientId string `json:"client_id"`
+
+	// Space-delimited list of scopes to request. If omitted, all scopes of the application are requested.
+	Scope *string `json:"scope,omitempty"`
+}
+
+// OAuthSignInCodeCreated defines model for OAuthSignInCodeCreated.
+type OAuthSignInCodeCreated struct {
+	// Secret the app polls the token endpoint with. Never shown to the user.
+	DeviceCode string `json:"device_code"`
+
+	// Seconds until the device_code and user_code expire.
+	ExpiresIn int `json:"expires_in"`
+
+	// Minimum number of seconds to wait between token requests.
+	Interval int `json:"interval"`
+
+	// Short code the user enters on the verification page.
+	UserCode string `json:"user_code"`
+
+	// Page where the user enters the user_code.
+	VerificationUri string `json:"verification_uri"`
+
+	// The verification page with the user_code filled in.
+	VerificationUriComplete string `json:"verification_uri_complete"`
+}
+
 // OAuthToken defines model for OAuthToken.
 type OAuthToken struct {
-	AccessToken  *string    `json:"access_token,omitempty"`
-	ExpiresAt    *time.Time `json:"expires_at,omitempty"`
-	RefreshToken *string    `json:"refresh_token,omitempty"`
+	AccessToken *string    `json:"access_token,omitempty"`
+	ExpiresAt   *time.Time `json:"expires_at,omitempty"`
+
+	// Seconds until the access token expires (RFC 6749 §5.1).
+	ExpiresIn    *int    `json:"expires_in,omitempty"`
+	RefreshToken *string `json:"refresh_token,omitempty"`
 
 	// Space-delimited list of scopes granted by this token (RFC 6749 §5.1).
 	Scope     *string `json:"scope,omitempty"`
@@ -9765,8 +9837,11 @@ type OAuthTokenRequest struct {
 	Code         *string `json:"code,omitempty"`
 
 	// PKCE code verifier. Required for the authorization_code grant when the authorization request had a code challenge.
-	CodeVerifier *string                    `json:"code_verifier,omitempty"`
-	GrantType    OAuthTokenRequestGrantType `json:"grant_type"`
+	CodeVerifier *string `json:"code_verifier,omitempty"`
+
+	// The device_code returned when creating a sign-in code. Required for the device_code grant.
+	DeviceCode *string                    `json:"device_code,omitempty"`
+	GrantType  OAuthTokenRequestGrantType `json:"grant_type"`
 
 	// Required and must equal the authorization request redirect URI for public clients and PKCE flows.
 	RedirectUri  *string `json:"redirect_uri,omitempty"`
@@ -14655,6 +14730,12 @@ type LockedSectionPINIncorrect Error
 // LockedSectionPINRequired defines model for LockedSectionPINRequired.
 type LockedSectionPINRequired Error
 
+// OAuthBadRequestError defines model for OAuthBadRequestError.
+type OAuthBadRequestError OAuthError
+
+// OAuthUnauthorizedError defines model for OAuthUnauthorizedError.
+type OAuthUnauthorizedError OAuthError
+
 // RateLimitError defines model for RateLimitError.
 type RateLimitError Error
 
@@ -17728,6 +17809,12 @@ type GetOAuthPublicKeyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// CreateOAuthSignInCodeJSONBody defines parameters for CreateOAuthSignInCode.
+type CreateOAuthSignInCodeJSONBody OAuthSignInCodeCreate
+
+// ApproveOAuthSignInCodeJSONBody defines parameters for ApproveOAuthSignInCode.
+type ApproveOAuthSignInCodeJSONBody OAuthSignInCodeApproval
+
 // GetOAuthTokenJSONBody defines parameters for GetOAuthToken.
 type GetOAuthTokenJSONBody OAuthTokenRequest
 
@@ -19529,6 +19616,12 @@ type UpdateOAuthApplicationJSONRequestBody UpdateOAuthApplicationJSONBody
 
 // CreateOAuthConsentJSONRequestBody defines body for CreateOAuthConsent for application/json ContentType.
 type CreateOAuthConsentJSONRequestBody CreateOAuthConsentJSONBody
+
+// CreateOAuthSignInCodeJSONRequestBody defines body for CreateOAuthSignInCode for application/json ContentType.
+type CreateOAuthSignInCodeJSONRequestBody CreateOAuthSignInCodeJSONBody
+
+// ApproveOAuthSignInCodeJSONRequestBody defines body for ApproveOAuthSignInCode for application/json ContentType.
+type ApproveOAuthSignInCodeJSONRequestBody ApproveOAuthSignInCodeJSONBody
 
 // GetOAuthTokenJSONRequestBody defines body for GetOAuthToken for application/json ContentType.
 type GetOAuthTokenJSONRequestBody GetOAuthTokenJSONBody
@@ -23581,6 +23674,22 @@ type ClientInterface interface {
 
 	// ListOAuthScopes request
 	ListOAuthScopes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOAuthSignInCode request with any body
+	CreateOAuthSignInCodeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateOAuthSignInCode(ctx context.Context, body CreateOAuthSignInCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetOAuthSignInCode request
+	GetOAuthSignInCode(ctx context.Context, userCode string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ApproveOAuthSignInCode request with any body
+	ApproveOAuthSignInCodeWithBody(ctx context.Context, userCode string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ApproveOAuthSignInCode(ctx context.Context, userCode string, body ApproveOAuthSignInCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DenyOAuthSignInCode request
+	DenyOAuthSignInCode(ctx context.Context, userCode string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetOAuthToken request with any body
 	GetOAuthTokenWithBody(ctx context.Context, params *GetOAuthTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -29161,6 +29270,78 @@ func (c *Client) GetOAuthPublicKey(ctx context.Context, params *GetOAuthPublicKe
 
 func (c *Client) ListOAuthScopes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListOAuthScopesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOAuthSignInCodeWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOAuthSignInCodeRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateOAuthSignInCode(ctx context.Context, body CreateOAuthSignInCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOAuthSignInCodeRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetOAuthSignInCode(ctx context.Context, userCode string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOAuthSignInCodeRequest(c.Server, userCode)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ApproveOAuthSignInCodeWithBody(ctx context.Context, userCode string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewApproveOAuthSignInCodeRequestWithBody(c.Server, userCode, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ApproveOAuthSignInCode(ctx context.Context, userCode string, body ApproveOAuthSignInCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewApproveOAuthSignInCodeRequest(c.Server, userCode, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DenyOAuthSignInCode(ctx context.Context, userCode string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDenyOAuthSignInCodeRequest(c.Server, userCode)
 	if err != nil {
 		return nil, err
 	}
@@ -55313,6 +55494,161 @@ func NewListOAuthScopesRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewCreateOAuthSignInCodeRequest calls the generic CreateOAuthSignInCode builder with application/json body
+func NewCreateOAuthSignInCodeRequest(server string, body CreateOAuthSignInCodeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOAuthSignInCodeRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateOAuthSignInCodeRequestWithBody generates requests for CreateOAuthSignInCode with any type of body
+func NewCreateOAuthSignInCodeRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/sign_in_codes")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetOAuthSignInCodeRequest generates requests for GetOAuthSignInCode
+func NewGetOAuthSignInCodeRequest(server string, userCode string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_code", runtime.ParamLocationPath, userCode)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/sign_in_codes/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewApproveOAuthSignInCodeRequest calls the generic ApproveOAuthSignInCode builder with application/json body
+func NewApproveOAuthSignInCodeRequest(server string, userCode string, body ApproveOAuthSignInCodeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewApproveOAuthSignInCodeRequestWithBody(server, userCode, "application/json", bodyReader)
+}
+
+// NewApproveOAuthSignInCodeRequestWithBody generates requests for ApproveOAuthSignInCode with any type of body
+func NewApproveOAuthSignInCodeRequestWithBody(server string, userCode string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_code", runtime.ParamLocationPath, userCode)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/sign_in_codes/%s/approve", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDenyOAuthSignInCodeRequest generates requests for DenyOAuthSignInCode
+func NewDenyOAuthSignInCodeRequest(server string, userCode string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "user_code", runtime.ParamLocationPath, userCode)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/sign_in_codes/%s/deny", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetOAuthTokenRequest calls the generic GetOAuthToken builder with application/json body
 func NewGetOAuthTokenRequest(server string, params *GetOAuthTokenParams, body GetOAuthTokenJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -67662,6 +67998,22 @@ type ClientWithResponsesInterface interface {
 	// ListOAuthScopes request
 	ListOAuthScopesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListOAuthScopesResponse, error)
 
+	// CreateOAuthSignInCode request with any body
+	CreateOAuthSignInCodeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOAuthSignInCodeResponse, error)
+
+	CreateOAuthSignInCodeWithResponse(ctx context.Context, body CreateOAuthSignInCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOAuthSignInCodeResponse, error)
+
+	// GetOAuthSignInCode request
+	GetOAuthSignInCodeWithResponse(ctx context.Context, userCode string, reqEditors ...RequestEditorFn) (*GetOAuthSignInCodeResponse, error)
+
+	// ApproveOAuthSignInCode request with any body
+	ApproveOAuthSignInCodeWithBodyWithResponse(ctx context.Context, userCode string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ApproveOAuthSignInCodeResponse, error)
+
+	ApproveOAuthSignInCodeWithResponse(ctx context.Context, userCode string, body ApproveOAuthSignInCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*ApproveOAuthSignInCodeResponse, error)
+
+	// DenyOAuthSignInCode request
+	DenyOAuthSignInCodeWithResponse(ctx context.Context, userCode string, reqEditors ...RequestEditorFn) (*DenyOAuthSignInCodeResponse, error)
+
 	// GetOAuthToken request with any body
 	GetOAuthTokenWithBodyWithResponse(ctx context.Context, params *GetOAuthTokenParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetOAuthTokenResponse, error)
 
@@ -75370,6 +75722,96 @@ func (r ListOAuthScopesResponse) StatusCode() int {
 	return 0
 }
 
+type CreateOAuthSignInCodeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OAuthSignInCodeCreated
+	JSON400      *OAuthError
+	JSON401      *OAuthError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOAuthSignInCodeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOAuthSignInCodeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetOAuthSignInCodeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OAuthSignInCode
+}
+
+// Status returns HTTPResponse.Status
+func (r GetOAuthSignInCodeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetOAuthSignInCodeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ApproveOAuthSignInCodeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OAuthSignInCode
+}
+
+// Status returns HTTPResponse.Status
+func (r ApproveOAuthSignInCodeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ApproveOAuthSignInCodeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DenyOAuthSignInCodeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OAuthSignInCode
+}
+
+// Status returns HTTPResponse.Status
+func (r DenyOAuthSignInCodeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DenyOAuthSignInCodeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetOAuthTokenResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -82425,6 +82867,58 @@ func (c *ClientWithResponses) ListOAuthScopesWithResponse(ctx context.Context, r
 		return nil, err
 	}
 	return ParseListOAuthScopesResponse(rsp)
+}
+
+// CreateOAuthSignInCodeWithBodyWithResponse request with arbitrary body returning *CreateOAuthSignInCodeResponse
+func (c *ClientWithResponses) CreateOAuthSignInCodeWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOAuthSignInCodeResponse, error) {
+	rsp, err := c.CreateOAuthSignInCodeWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOAuthSignInCodeResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateOAuthSignInCodeWithResponse(ctx context.Context, body CreateOAuthSignInCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOAuthSignInCodeResponse, error) {
+	rsp, err := c.CreateOAuthSignInCode(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOAuthSignInCodeResponse(rsp)
+}
+
+// GetOAuthSignInCodeWithResponse request returning *GetOAuthSignInCodeResponse
+func (c *ClientWithResponses) GetOAuthSignInCodeWithResponse(ctx context.Context, userCode string, reqEditors ...RequestEditorFn) (*GetOAuthSignInCodeResponse, error) {
+	rsp, err := c.GetOAuthSignInCode(ctx, userCode, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetOAuthSignInCodeResponse(rsp)
+}
+
+// ApproveOAuthSignInCodeWithBodyWithResponse request with arbitrary body returning *ApproveOAuthSignInCodeResponse
+func (c *ClientWithResponses) ApproveOAuthSignInCodeWithBodyWithResponse(ctx context.Context, userCode string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ApproveOAuthSignInCodeResponse, error) {
+	rsp, err := c.ApproveOAuthSignInCodeWithBody(ctx, userCode, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseApproveOAuthSignInCodeResponse(rsp)
+}
+
+func (c *ClientWithResponses) ApproveOAuthSignInCodeWithResponse(ctx context.Context, userCode string, body ApproveOAuthSignInCodeJSONRequestBody, reqEditors ...RequestEditorFn) (*ApproveOAuthSignInCodeResponse, error) {
+	rsp, err := c.ApproveOAuthSignInCode(ctx, userCode, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseApproveOAuthSignInCodeResponse(rsp)
+}
+
+// DenyOAuthSignInCodeWithResponse request returning *DenyOAuthSignInCodeResponse
+func (c *ClientWithResponses) DenyOAuthSignInCodeWithResponse(ctx context.Context, userCode string, reqEditors ...RequestEditorFn) (*DenyOAuthSignInCodeResponse, error) {
+	rsp, err := c.DenyOAuthSignInCode(ctx, userCode, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDenyOAuthSignInCodeResponse(rsp)
 }
 
 // GetOAuthTokenWithBodyWithResponse request with arbitrary body returning *GetOAuthTokenResponse
@@ -92616,6 +93110,124 @@ func ParseListOAuthScopesResponse(rsp *http.Response) (*ListOAuthScopesResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest OAuthScopes
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateOAuthSignInCodeResponse parses an HTTP response from a CreateOAuthSignInCodeWithResponse call
+func ParseCreateOAuthSignInCodeResponse(rsp *http.Response) (*CreateOAuthSignInCodeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOAuthSignInCodeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OAuthSignInCodeCreated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OAuthError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OAuthError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetOAuthSignInCodeResponse parses an HTTP response from a GetOAuthSignInCodeWithResponse call
+func ParseGetOAuthSignInCodeResponse(rsp *http.Response) (*GetOAuthSignInCodeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetOAuthSignInCodeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OAuthSignInCode
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseApproveOAuthSignInCodeResponse parses an HTTP response from a ApproveOAuthSignInCodeWithResponse call
+func ParseApproveOAuthSignInCodeResponse(rsp *http.Response) (*ApproveOAuthSignInCodeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ApproveOAuthSignInCodeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OAuthSignInCode
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDenyOAuthSignInCodeResponse parses an HTTP response from a DenyOAuthSignInCodeWithResponse call
+func ParseDenyOAuthSignInCodeResponse(rsp *http.Response) (*DenyOAuthSignInCodeResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DenyOAuthSignInCodeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OAuthSignInCode
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
