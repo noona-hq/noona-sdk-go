@@ -23562,6 +23562,9 @@ type ClientInterface interface {
 	// ListOAuthApplicationPayouts request
 	ListOAuthApplicationPayouts(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// RotateOAuthApplicationSecret request
+	RotateOAuthApplicationSecret(ctx context.Context, applicationId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListOAuthApplicationUsers request
 	ListOAuthApplicationUsers(ctx context.Context, applicationId string, params *ListOAuthApplicationUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -29074,6 +29077,18 @@ func (c *Client) GetOAuthApplicationMetrics(ctx context.Context, applicationId s
 
 func (c *Client) ListOAuthApplicationPayouts(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListOAuthApplicationPayoutsRequest(c.Server, applicationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RotateOAuthApplicationSecret(ctx context.Context, applicationId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRotateOAuthApplicationSecretRequest(c.Server, applicationId)
 	if err != nil {
 		return nil, err
 	}
@@ -54917,6 +54932,40 @@ func NewListOAuthApplicationPayoutsRequest(server string, applicationId string, 
 	return req, nil
 }
 
+// NewRotateOAuthApplicationSecretRequest generates requests for RotateOAuthApplicationSecret
+func NewRotateOAuthApplicationSecretRequest(server string, applicationId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "application_id", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/applications/%s/rotate-secret", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListOAuthApplicationUsersRequest generates requests for ListOAuthApplicationUsers
 func NewListOAuthApplicationUsersRequest(server string, applicationId string, params *ListOAuthApplicationUsersParams) (*http.Request, error) {
 	var err error
@@ -67593,6 +67642,9 @@ type ClientWithResponsesInterface interface {
 	// ListOAuthApplicationPayouts request
 	ListOAuthApplicationPayoutsWithResponse(ctx context.Context, applicationId string, params *ListOAuthApplicationPayoutsParams, reqEditors ...RequestEditorFn) (*ListOAuthApplicationPayoutsResponse, error)
 
+	// RotateOAuthApplicationSecret request
+	RotateOAuthApplicationSecretWithResponse(ctx context.Context, applicationId string, reqEditors ...RequestEditorFn) (*RotateOAuthApplicationSecretResponse, error)
+
 	// ListOAuthApplicationUsers request
 	ListOAuthApplicationUsersWithResponse(ctx context.Context, applicationId string, params *ListOAuthApplicationUsersParams, reqEditors ...RequestEditorFn) (*ListOAuthApplicationUsersResponse, error)
 
@@ -75187,6 +75239,28 @@ func (r ListOAuthApplicationPayoutsResponse) StatusCode() int {
 	return 0
 }
 
+type RotateOAuthApplicationSecretResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApplicationCreated
+}
+
+// Status returns HTTPResponse.Status
+func (r RotateOAuthApplicationSecretResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RotateOAuthApplicationSecretResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListOAuthApplicationUsersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -82289,6 +82363,15 @@ func (c *ClientWithResponses) ListOAuthApplicationPayoutsWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseListOAuthApplicationPayoutsResponse(rsp)
+}
+
+// RotateOAuthApplicationSecretWithResponse request returning *RotateOAuthApplicationSecretResponse
+func (c *ClientWithResponses) RotateOAuthApplicationSecretWithResponse(ctx context.Context, applicationId string, reqEditors ...RequestEditorFn) (*RotateOAuthApplicationSecretResponse, error) {
+	rsp, err := c.RotateOAuthApplicationSecret(ctx, applicationId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRotateOAuthApplicationSecretResponse(rsp)
 }
 
 // ListOAuthApplicationUsersWithResponse request returning *ListOAuthApplicationUsersResponse
@@ -92387,6 +92470,32 @@ func ParseListOAuthApplicationPayoutsResponse(rsp *http.Response) (*ListOAuthApp
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ApplicationPayouts
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRotateOAuthApplicationSecretResponse parses an HTTP response from a RotateOAuthApplicationSecretWithResponse call
+func ParseRotateOAuthApplicationSecretResponse(rsp *http.Response) (*RotateOAuthApplicationSecretResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RotateOAuthApplicationSecretResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApplicationCreated
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
