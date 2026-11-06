@@ -9851,8 +9851,17 @@ type OAuthTokenRequest struct {
 	Scope *string `json:"scope,omitempty"`
 }
 
-// OAuthTokenRequestGrantType defines model for OAuthTokenRequest.GrantType.
+// OAuthTokenRequestGrantType defines model for OAuthTokenRequestGrantType.
 type OAuthTokenRequestGrantType string
+
+// OAuthTokenRevocation defines model for OAuthTokenRevocation.
+type OAuthTokenRevocation struct {
+	ClientId     *string `json:"client_id,omitempty"`
+	ClientSecret *string `json:"client_secret,omitempty"`
+
+	// The access token or refresh token to revoke.
+	Token string `json:"token"`
+}
 
 // OnlineBookingsRule defines model for OnlineBookingsRule.
 type OnlineBookingsRule struct {
@@ -17809,6 +17818,9 @@ type GetOAuthPublicKeyParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// RevokeOAuthTokenJSONBody defines parameters for RevokeOAuthToken.
+type RevokeOAuthTokenJSONBody OAuthTokenRevocation
+
 // CreateOAuthSignInCodeJSONBody defines parameters for CreateOAuthSignInCode.
 type CreateOAuthSignInCodeJSONBody OAuthSignInCodeCreate
 
@@ -19616,6 +19628,9 @@ type UpdateOAuthApplicationJSONRequestBody UpdateOAuthApplicationJSONBody
 
 // CreateOAuthConsentJSONRequestBody defines body for CreateOAuthConsent for application/json ContentType.
 type CreateOAuthConsentJSONRequestBody CreateOAuthConsentJSONBody
+
+// RevokeOAuthTokenJSONRequestBody defines body for RevokeOAuthToken for application/json ContentType.
+type RevokeOAuthTokenJSONRequestBody RevokeOAuthTokenJSONBody
 
 // CreateOAuthSignInCodeJSONRequestBody defines body for CreateOAuthSignInCode for application/json ContentType.
 type CreateOAuthSignInCodeJSONRequestBody CreateOAuthSignInCodeJSONBody
@@ -23671,6 +23686,11 @@ type ClientInterface interface {
 
 	// GetOAuthPublicKey request
 	GetOAuthPublicKey(ctx context.Context, params *GetOAuthPublicKeyParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RevokeOAuthToken request with any body
+	RevokeOAuthTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RevokeOAuthToken(ctx context.Context, body RevokeOAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListOAuthScopes request
 	ListOAuthScopes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -29258,6 +29278,30 @@ func (c *Client) CreateOAuthConsent(ctx context.Context, body CreateOAuthConsent
 
 func (c *Client) GetOAuthPublicKey(ctx context.Context, params *GetOAuthPublicKeyParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetOAuthPublicKeyRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RevokeOAuthTokenWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRevokeOAuthTokenRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RevokeOAuthToken(ctx context.Context, body RevokeOAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRevokeOAuthTokenRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -55467,6 +55511,46 @@ func NewGetOAuthPublicKeyRequest(server string, params *GetOAuthPublicKeyParams)
 	return req, nil
 }
 
+// NewRevokeOAuthTokenRequest calls the generic RevokeOAuthToken builder with application/json body
+func NewRevokeOAuthTokenRequest(server string, body RevokeOAuthTokenJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRevokeOAuthTokenRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRevokeOAuthTokenRequestWithBody generates requests for RevokeOAuthToken with any type of body
+func NewRevokeOAuthTokenRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/v1/hq/oauth/revoke")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListOAuthScopesRequest generates requests for ListOAuthScopes
 func NewListOAuthScopesRequest(server string) (*http.Request, error) {
 	var err error
@@ -67995,6 +68079,11 @@ type ClientWithResponsesInterface interface {
 	// GetOAuthPublicKey request
 	GetOAuthPublicKeyWithResponse(ctx context.Context, params *GetOAuthPublicKeyParams, reqEditors ...RequestEditorFn) (*GetOAuthPublicKeyResponse, error)
 
+	// RevokeOAuthToken request with any body
+	RevokeOAuthTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RevokeOAuthTokenResponse, error)
+
+	RevokeOAuthTokenWithResponse(ctx context.Context, body RevokeOAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*RevokeOAuthTokenResponse, error)
+
 	// ListOAuthScopes request
 	ListOAuthScopesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListOAuthScopesResponse, error)
 
@@ -75700,6 +75789,32 @@ func (r GetOAuthPublicKeyResponse) StatusCode() int {
 	return 0
 }
 
+type RevokeOAuthTokenResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *struct {
+		union json.RawMessage
+	}
+	JSON401 *OAuthError
+	JSON429 *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r RevokeOAuthTokenResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RevokeOAuthTokenResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListOAuthScopesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -82858,6 +82973,23 @@ func (c *ClientWithResponses) GetOAuthPublicKeyWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseGetOAuthPublicKeyResponse(rsp)
+}
+
+// RevokeOAuthTokenWithBodyWithResponse request with arbitrary body returning *RevokeOAuthTokenResponse
+func (c *ClientWithResponses) RevokeOAuthTokenWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RevokeOAuthTokenResponse, error) {
+	rsp, err := c.RevokeOAuthTokenWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRevokeOAuthTokenResponse(rsp)
+}
+
+func (c *ClientWithResponses) RevokeOAuthTokenWithResponse(ctx context.Context, body RevokeOAuthTokenJSONRequestBody, reqEditors ...RequestEditorFn) (*RevokeOAuthTokenResponse, error) {
+	rsp, err := c.RevokeOAuthToken(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRevokeOAuthTokenResponse(rsp)
 }
 
 // ListOAuthScopesWithResponse request returning *ListOAuthScopesResponse
@@ -93088,6 +93220,48 @@ func ParseGetOAuthPublicKeyResponse(rsp *http.Response) (*GetOAuthPublicKeyRespo
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRevokeOAuthTokenResponse parses an HTTP response from a RevokeOAuthTokenWithResponse call
+func ParseRevokeOAuthTokenResponse(rsp *http.Response) (*RevokeOAuthTokenResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RevokeOAuthTokenResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			union json.RawMessage
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OAuthError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
 
 	}
 
