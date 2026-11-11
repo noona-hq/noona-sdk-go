@@ -263,6 +263,11 @@ const (
 	ApplicationPayoutStatusPending ApplicationPayoutStatus = "pending"
 )
 
+// Defines values for AuthenticationErrorCode.
+const (
+	NoAccount AuthenticationErrorCode = "no_account"
+)
+
 // Defines values for AvailabilityRuleEmployeesAssociation.
 const (
 	AvailabilityRuleEmployeesAssociationExcludes AvailabilityRuleEmployeesAssociation = "excludes"
@@ -3778,6 +3783,16 @@ type Attachments []Attachment
 type Attribution struct {
 	union json.RawMessage
 }
+
+// AuthenticationError defines model for AuthenticationError.
+type AuthenticationError struct {
+	// Why a valid sign-in token was not accepted
+	Code    AuthenticationErrorCode `json:"code"`
+	Message string                  `json:"message"`
+}
+
+// Why a valid sign-in token was not accepted
+type AuthenticationErrorCode string
 
 // AvailabilityRule defines model for AvailabilityRule.
 type AvailabilityRule struct {
@@ -78205,6 +78220,7 @@ type GetUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *User
+	JSON403      *AuthenticationError
 }
 
 // Status returns HTTPResponse.Status
@@ -95927,6 +95943,13 @@ func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest AuthenticationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	}
 
