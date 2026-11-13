@@ -8803,7 +8803,7 @@ type IssuersFilter struct {
 
 // KindeUserMigration defines model for KindeUserMigration.
 type KindeUserMigration struct {
-	EmailVerified *bool   `json:"email_verified,omitempty"`
+	EmailVerified bool    `json:"email_verified"`
 	Name          *string `json:"name,omitempty"`
 }
 
