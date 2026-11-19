@@ -25,7 +25,6 @@ const (
 	AgentTokenAuthScopes   = "AgentTokenAuth.Scopes"
 	BearerTokenAuthScopes  = "BearerTokenAuth.Scopes"
 	DeviceTokenAuthScopes  = "DeviceTokenAuth.Scopes"
-	Email_PasswordScopes   = "Email_Password.Scopes"
 	ReceiptTokenAuthScopes = "ReceiptTokenAuth.Scopes"
 	OAuth_2_0Scopes        = "oAuth_2_0.Scopes"
 )
@@ -4752,11 +4751,6 @@ type ChargedBillingItem struct {
 
 // ChargedBillingItems defines model for ChargedBillingItems.
 type ChargedBillingItems []ChargedBillingItem
-
-// CheckinToken defines model for CheckinToken.
-type CheckinToken struct {
-	Token *string `json:"token,omitempty"`
-}
 
 // [Behavior](https://api.noona.is/docs/working-with-the-apis/behavior)
 type CheckoutBehavior struct {
@@ -18845,15 +18839,6 @@ type GetTimeSlotReservationParams struct {
 	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
 }
 
-// CreateTokenParams defines parameters for CreateToken.
-type CreateTokenParams struct {
-	// [Field Selector](https://api.noona.is/docs/working-with-the-apis/select)
-	Select *Select `form:"select,omitempty" json:"select,omitempty"`
-
-	// [Expandable attributes](https://api.noona.is/docs/working-with-the-apis/expandable_attributes)
-	Expand *Expand `form:"expand,omitempty" json:"expand,omitempty"`
-}
-
 // CreateTransactionJSONBody defines parameters for CreateTransaction.
 type CreateTransactionJSONBody Transaction
 
@@ -24094,9 +24079,6 @@ type ClientInterface interface {
 
 	// GetTimeSlotReservation request
 	GetTimeSlotReservation(ctx context.Context, timeSlotReservationId string, params *GetTimeSlotReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreateToken request
-	CreateToken(ctx context.Context, params *CreateTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateTransaction request with any body
 	CreateTransactionWithBody(ctx context.Context, params *CreateTransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -31033,18 +31015,6 @@ func (c *Client) UpdateTerminal(ctx context.Context, terminalId string, params *
 
 func (c *Client) GetTimeSlotReservation(ctx context.Context, timeSlotReservationId string, params *GetTimeSlotReservationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetTimeSlotReservationRequest(c.Server, timeSlotReservationId, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateToken(ctx context.Context, params *CreateTokenParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateTokenRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -63022,69 +62992,6 @@ func NewGetTimeSlotReservationRequest(server string, timeSlotReservationId strin
 	return req, nil
 }
 
-// NewCreateTokenRequest generates requests for CreateToken
-func NewCreateTokenRequest(server string, params *CreateTokenParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/v1/hq/tokens")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	queryValues := queryURL.Query()
-
-	if params.Select != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "select", runtime.ParamLocationQuery, *params.Select); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	if params.Expand != nil {
-
-		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "expand", runtime.ParamLocationQuery, *params.Expand); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
-	queryURL.RawQuery = queryValues.Encode()
-
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewCreateTransactionRequest calls the generic CreateTransaction builder with application/json body
 func NewCreateTransactionRequest(server string, params *CreateTransactionParams, body CreateTransactionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -68486,9 +68393,6 @@ type ClientWithResponsesInterface interface {
 
 	// GetTimeSlotReservation request
 	GetTimeSlotReservationWithResponse(ctx context.Context, timeSlotReservationId string, params *GetTimeSlotReservationParams, reqEditors ...RequestEditorFn) (*GetTimeSlotReservationResponse, error)
-
-	// CreateToken request
-	CreateTokenWithResponse(ctx context.Context, params *CreateTokenParams, reqEditors ...RequestEditorFn) (*CreateTokenResponse, error)
 
 	// CreateTransaction request with any body
 	CreateTransactionWithBodyWithResponse(ctx context.Context, params *CreateTransactionParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTransactionResponse, error)
@@ -78062,28 +77966,6 @@ func (r GetTimeSlotReservationResponse) StatusCode() int {
 	return 0
 }
 
-type CreateTokenResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *CheckinToken
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateTokenResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateTokenResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type CreateTransactionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -84252,15 +84134,6 @@ func (c *ClientWithResponses) GetTimeSlotReservationWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseGetTimeSlotReservationResponse(rsp)
-}
-
-// CreateTokenWithResponse request returning *CreateTokenResponse
-func (c *ClientWithResponses) CreateTokenWithResponse(ctx context.Context, params *CreateTokenParams, reqEditors ...RequestEditorFn) (*CreateTokenResponse, error) {
-	rsp, err := c.CreateToken(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateTokenResponse(rsp)
 }
 
 // CreateTransactionWithBodyWithResponse request with arbitrary body returning *CreateTransactionResponse
@@ -95734,32 +95607,6 @@ func ParseGetTimeSlotReservationResponse(rsp *http.Response) (*GetTimeSlotReserv
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest TimeSlotReservation
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseCreateTokenResponse parses an HTTP response from a CreateTokenWithResponse call
-func ParseCreateTokenResponse(rsp *http.Response) (*CreateTokenResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateTokenResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CheckinToken
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
