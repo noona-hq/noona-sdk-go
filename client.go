@@ -893,6 +893,7 @@ const (
 
 // Defines values for FiscalizationProvider.
 const (
+	CzechEET      FiscalizationProvider = "CzechEET"
 	Invopop       FiscalizationProvider = "Invopop"
 	SaltPay       FiscalizationProvider = "SaltPay"
 	SpaceInvoices FiscalizationProvider = "SpaceInvoices"
@@ -907,6 +908,7 @@ const (
 // Defines values for FiscalizeTransactionErrorCode.
 const (
 	CustomerOnboardingError      FiscalizeTransactionErrorCode = "customer_onboarding_error"
+	CzechEetFiscalizationError   FiscalizeTransactionErrorCode = "czech_eet_fiscalization_error"
 	InvopopFiscalizationError    FiscalizeTransactionErrorCode = "invopop_fiscalization_error"
 	TaxExemptionCodeMissingError FiscalizeTransactionErrorCode = "tax_exemption_code_missing_error"
 )
@@ -6004,6 +6006,25 @@ type CustomersAggregateFilter struct {
 	To *time.Time `json:"to,omitempty"`
 }
 
+// Confirmation of a sale registered in the Czech electronic registration of sales (CzechEET)
+type CzechEETHeader struct {
+	MessageUuid *string `json:"message_uuid,omitempty"`
+
+	// Confirmation code (POK) to print on the receipt
+	Pok        *string    `json:"pok,omitempty"`
+	ReceivedAt *time.Time `json:"received_at,omitempty"`
+
+	// True when the sale was registered in the non-production environment and the POK is not valid
+	Test     *bool              `json:"test,omitempty"`
+	Warnings *[]CzechEETWarning `json:"warnings,omitempty"`
+}
+
+// CzechEETWarning defines model for CzechEETWarning.
+type CzechEETWarning struct {
+	Code    int32  `json:"code"`
+	Message string `json:"message"`
+}
+
 // DateFilter defines model for DateFilter.
 type DateFilter struct {
 	From *time.Time `json:"from,omitempty"`
@@ -8146,6 +8167,36 @@ type FiscalizationOnboardingData struct {
 	union json.RawMessage
 }
 
+// FiscalizationOnboardingDataCzechEET defines model for FiscalizationOnboardingDataCzechEET.
+type FiscalizationOnboardingDataCzechEET struct {
+	// Cash register certificate as a base64 encoded PKCS#12 (.p12) file
+	Certificate         *[]byte    `json:"certificate,omitempty"`
+	CertificateNotAfter *time.Time `json:"certificate_not_after,omitempty"`
+	CertificatePassword *string    `json:"certificate_password,omitempty"`
+	CertificateSerial   *string    `json:"certificate_serial,omitempty"`
+
+	// EIČ of the taxpayer who authorised this company to register their sales
+	DelegatingEic *string `json:"delegating_eic,omitempty"`
+
+	// Taxpayer registration identification number (EIČ); must match the certificate
+	Eic string `json:"eic"`
+
+	// CzechEET environment the company is connected to
+	Environment *string `json:"environment,omitempty"`
+
+	// The sales belong to several taxpayers who authorised this company to register them
+	MultipleTaxpayers *bool `json:"multiple_taxpayers,omitempty"`
+
+	// Fiscalization provider type
+	Provider FiscalizationProvider `json:"provider"`
+
+	// Identifier of the cash register, 1 to 20 characters
+	RegisterId string `json:"register_id"`
+
+	// Registration unit (premises) identifier assigned in the tax portal
+	UnitId int32 `json:"unit_id"`
+}
+
 // FiscalizationOnboardingDataInvopop defines model for FiscalizationOnboardingDataInvopop.
 type FiscalizationOnboardingDataInvopop struct {
 	// City
@@ -8235,6 +8286,15 @@ type FiscalizationRecord struct {
 // FiscalizationRecordData defines model for FiscalizationRecordData.
 type FiscalizationRecordData struct {
 	union json.RawMessage
+}
+
+// FiscalizationRecordDataCzechEET defines model for FiscalizationRecordDataCzechEET.
+type FiscalizationRecordDataCzechEET struct {
+	// Confirmation of a sale registered in the Czech electronic registration of sales (CzechEET)
+	Header *CzechEETHeader `json:"header,omitempty"`
+
+	// Fiscalization provider type
+	Provider FiscalizationProvider `json:"provider"`
 }
 
 // FiscalizationRecordDataInvopop defines model for FiscalizationRecordDataInvopop.
@@ -13315,7 +13375,10 @@ type Transaction struct {
 	CompletedAt *time.Time         `json:"completed_at,omitempty"`
 	CreatedAt   *time.Time         `json:"created_at,omitempty"`
 	Currency    *string            `json:"currency,omitempty"`
-	DraftedAt   *time.Time         `json:"drafted_at,omitempty"`
+
+	// Confirmation of a sale registered in the Czech electronic registration of sales (CzechEET)
+	CzechEetHeader *CzechEETHeader `json:"czech_eet_header,omitempty"`
+	DraftedAt      *time.Time      `json:"drafted_at,omitempty"`
 
 	// Total amount due
 	DueAmount     *float64              `json:"due_amount,omitempty"`
@@ -21905,6 +21968,19 @@ func (t *FiscalizationOnboardingData) FromFiscalizationOnboardingDataInvopop(v F
 	return err
 }
 
+func (t FiscalizationOnboardingData) AsFiscalizationOnboardingDataCzechEET() (FiscalizationOnboardingDataCzechEET, error) {
+	var body FiscalizationOnboardingDataCzechEET
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *FiscalizationOnboardingData) FromFiscalizationOnboardingDataCzechEET(v FiscalizationOnboardingDataCzechEET) error {
+	v.Provider = "CzechEET"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
 func (t FiscalizationOnboardingData) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"provider"`
@@ -21919,6 +21995,8 @@ func (t FiscalizationOnboardingData) ValueByDiscriminator() (interface{}, error)
 		return nil, err
 	}
 	switch discriminator {
+	case "CzechEET":
+		return t.AsFiscalizationOnboardingDataCzechEET()
 	case "Invopop":
 		return t.AsFiscalizationOnboardingDataInvopop()
 	case "SaltPay":
@@ -21964,6 +22042,19 @@ func (t *FiscalizationRecordData) FromFiscalizationRecordDataInvopop(v Fiscaliza
 	return err
 }
 
+func (t FiscalizationRecordData) AsFiscalizationRecordDataCzechEET() (FiscalizationRecordDataCzechEET, error) {
+	var body FiscalizationRecordDataCzechEET
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t *FiscalizationRecordData) FromFiscalizationRecordDataCzechEET(v FiscalizationRecordDataCzechEET) error {
+	v.Provider = "CzechEET"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
 func (t FiscalizationRecordData) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"provider"`
@@ -21978,6 +22069,8 @@ func (t FiscalizationRecordData) ValueByDiscriminator() (interface{}, error) {
 		return nil, err
 	}
 	switch discriminator {
+	case "CzechEET":
+		return t.AsFiscalizationRecordDataCzechEET()
 	case "Invopop":
 		return t.AsFiscalizationRecordDataInvopop()
 	case "SaltPay":
