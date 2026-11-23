@@ -1653,6 +1653,11 @@ const (
 	Ios     PushTokenPlatform = "ios"
 )
 
+// Defines values for ReactivatePlanSubscriptionErrorCode.
+const (
+	OutstandingInvoices ReactivatePlanSubscriptionErrorCode = "outstanding_invoices"
+)
+
 // Defines values for RefundMarketplaceSaleErrorCode.
 const (
 	AlreadyRefunded       RefundMarketplaceSaleErrorCode = "already_refunded"
@@ -10958,6 +10963,16 @@ type PushTokenPlatform string
 //
 // Count can be any value, but generated events/blocked times past the 2 year mark will be ignored.
 type RRuleString string
+
+// ReactivatePlanSubscriptionError defines model for ReactivatePlanSubscriptionError.
+type ReactivatePlanSubscriptionError struct {
+	// Why a plan subscription could not be reactivated
+	Code    ReactivatePlanSubscriptionErrorCode `json:"code"`
+	Message string                              `json:"message"`
+}
+
+// Why a plan subscription could not be reactivated
+type ReactivatePlanSubscriptionErrorCode string
 
 // Information about how the user heard about Noona
 type Referer struct {
@@ -77846,6 +77861,7 @@ func (r CancelPlanSubscriptionResponse) StatusCode() int {
 type ReactivatePlanSubscriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON402      *ReactivatePlanSubscriptionError
 }
 
 // Status returns HTTPResponse.Status
@@ -95501,6 +95517,16 @@ func ParseReactivatePlanSubscriptionResponse(rsp *http.Response) (*ReactivatePla
 	response := &ReactivatePlanSubscriptionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 402:
+		var dest ReactivatePlanSubscriptionError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON402 = &dest
+
 	}
 
 	return response, nil
