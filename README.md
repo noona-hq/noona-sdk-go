@@ -49,3 +49,36 @@ func main() {
 
 
 ```
+
+## OAuth token exchange
+
+Noona Apps exchange an authorization code or refresh token for an access token using the app's client credentials. `NewWithClientCredentials` sends them as HTTP Basic on every request. Client credentials are only accepted in the `Authorization` header, never in the URL or request body.
+
+This example matches the SDK version generated after the removal of the deprecated `client_id`/`client_secret` parameters from the token endpoint (HQ-10548).
+
+```go
+c, err := noona.NewWithClientCredentials(noona.OAuthClientCredentials{
+	ClientID:     "<your-client-id>",
+	ClientSecret: "<your-client-secret>",
+})
+if err != nil {
+	panic(errors.Wrap(err, "failed to create client"))
+}
+
+code := "<authorization-code>"
+resp, err := c.GetOAuthTokenWithResponse(context.Background(), noona.GetOAuthTokenJSONRequestBody{
+	GrantType: noona.AuthorizationCode,
+	Code:      &code,
+})
+if err != nil {
+	panic(errors.Wrap(err, "failed to exchange code"))
+}
+
+token := resp.JSON200
+
+refreshToken := *token.RefreshToken
+resp, err = c.GetOAuthTokenWithResponse(context.Background(), noona.GetOAuthTokenJSONRequestBody{
+	GrantType:    noona.RefreshToken,
+	RefreshToken: &refreshToken,
+})
+```
